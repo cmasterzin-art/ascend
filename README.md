@@ -1,5 +1,9 @@
 # ASCEND — Crônicas da Ascensão
 
+[**Baixar APK Android 1.0.0 (18,4 MB)**](https://github.com/cmasterzin-art/ascend/raw/refs/heads/main/downloads/ASCEND-1.0.0.apk)
+
+Android 8.0 ou superior. Abra o APK no celular para instalar. O SHA-256 está em `downloads/ASCEND-1.0.0.apk.sha256`.
+
 RPG Android de hábitos, inteiramente local. O aplicativo funciona sem internet; o GitHub serve apenas para distribuir o código e o instalador. Kotlin, Jetpack Compose e Material 3; Room com transações e relacionamentos; DataStore para preferências; MVVM, Navigation Compose, Coroutines e StateFlow.
 
 - [Instalação e alternativa GitHub Actions](INSTALACAO.md)

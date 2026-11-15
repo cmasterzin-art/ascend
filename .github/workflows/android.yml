@@ -6,6 +6,20 @@ on:
 permissions:
   contents: read
 jobs:
+  distribuir:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Conferir APK já compilado e testado no Cloud
+        working-directory: downloads
+        run: sha256sum -c ASCEND-1.0.0.apk.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ASCEND-Android
+          path: downloads/ASCEND-1.0.0.apk
+          retention-days: 30
+          if-no-files-found: error
   apk:
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -16,6 +30,9 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+          log-accepted-android-sdk-licenses: false
       - uses: gradle/actions/setup-gradle@v4
       - name: Preparar assinatura de atualizações
         env:
@@ -31,7 +48,7 @@ jobs:
         run: chmod +x gradlew && ./gradlew testDebugUnitTest assembleDebug
       - uses: actions/upload-artifact@v4
         with:
-          name: ASCEND-Android
+          name: ASCEND-Compilacao
           path: app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
           if-no-files-found: error

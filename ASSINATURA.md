@@ -2,7 +2,7 @@
 
 Identificador estável: `br.com.ascend.aetheris`. Versão inicial: versionCode 1, versionName 1.0.0.
 
-Esta entrega usa a chave pessoal de depuração criada na compilação. A chave original permanece preservada no ambiente Cloud em `/workspace/work/signing/debug.keystore`; ela não está publicada no repositório ou na release. Guarde uma cópia privada ao transferir o ambiente de compilação. Nunca publique a chave em um repositório público. A chave usa o formato padrão de debug do Android (alias `androiddebugkey`, senhas `android`); ela serve para continuidade desta instalação pessoal, não para distribuição comercial.
+Esta entrega usa a chave pessoal de depuração criada na compilação. A chave original permanece preservada no ambiente Cloud em `/workspace/work/signing/debug.keystore`; ela não está publicada no repositório ou entre os downloads. Guarde uma cópia privada ao transferir o ambiente de compilação. Nunca publique a chave em um repositório público. A chave usa o formato padrão de debug do Android (alias `androiddebugkey`, senhas `android`); ela serve para continuidade desta instalação pessoal, não para distribuição comercial.
 
 Para uma nova compilação compatível, restaure esse mesmo arquivo em `~/.android/debug.keystore` no ambiente de compilação, aumente `versionCode` no projeto e mantenha o applicationId. Não gere outra chave. Instale o APK sobre o anterior e preserve o banco.
 
