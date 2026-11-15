@@ -1,6 +1,6 @@
 # ASCEND — Crônicas da Ascensão
 
-RPG Android de hábitos, inteiramente local. Kotlin, Jetpack Compose e Material 3; Room com transações e relacionamentos; DataStore para preferências; MVVM, Navigation Compose, Coroutines e StateFlow.
+RPG Android de hábitos, inteiramente local. O aplicativo funciona sem internet; o GitHub serve apenas para distribuir o código e o instalador. Kotlin, Jetpack Compose e Material 3; Room com transações e relacionamentos; DataStore para preferências; MVVM, Navigation Compose, Coroutines e StateFlow.
 
 - [Instalação e alternativa GitHub Actions](INSTALACAO.md)
 - [Funcionalidades e limites](PROGRESSO.md)

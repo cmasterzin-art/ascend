@@ -16,6 +16,6 @@ Para atualizar, instale uma versão com o mesmo applicationId e a mesma chave so
 
 O projeto inclui `.github/workflows/android.yml`. Em um repositório do GitHub, abra **Actions → Compilar ASCEND → Run workflow**. Após o job verde, baixe o artefato **ASCEND-Android**, extraia o ZIP e abra o APK no celular. Não requer Android Studio no seu computador.
 
-O workflow está preparado no código; isso não significa que tenha sido enviado ou executado em um repositório remoto. A execução depende de um repositório disponível. Use apenas a franquia gratuita aplicável à sua conta; nenhum serviço pago foi configurado.
+O workflow acompanha o projeto. O APK da release foi compilado e verificado no Cloud. Confira o resultado de cada execução na aba Actions antes de baixar uma compilação automática. Para instalar atualizações sobre o APK da release, preserve a assinatura conforme ASSINATURA.md. Use apenas a franquia gratuita aplicável à sua conta; nenhum serviço pago foi configurado.
 
 Consulte `ASSINATURA.md` para manter a mesma assinatura em novas compilações e `PROGRESSO.md` para recursos e limites reais da versão.
