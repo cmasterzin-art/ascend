@@ -1,0 +1,78 @@
+package br.com.ascend.aetheris
+
+import android.Manifest
+import android.os.Build
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.compose.*
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.*
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.*
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.*
+import androidx.lifecycle.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.*
+import kotlinx.coroutines.*
+
+class MainActivity:ComponentActivity(){override fun onCreate(savedInstanceState:Bundle?){super.onCreate(savedInstanceState);enableEdgeToEdge();setContent{AscendTheme{Ascend()}}}}
+@Composable fun Ascend(vm:GameViewModel=viewModel()){
+    val s by vm.state.collectAsStateWithLifecycle();val error by vm.error.collectAsStateWithLifecycle();val relaxed by vm.relaxed.collectAsStateWithLifecycle();val bosses by vm.bosses.collectAsStateWithLifecycle()
+    val nav=rememberNavController();val entry by nav.currentBackStackEntryAsState();val route=entry?.destination?.route?:"journey";val context=LocalContext.current
+    var habitEditor by remember{mutableStateOf<Habit?>(null)};var progress by remember{mutableStateOf<Pair<Habit,HabitRecord?>?>(null)};var focus by remember{mutableStateOf<Habit?>(null)};var levelup by remember{mutableStateOf<GameEvent?>(null)}
+    val snack=remember{SnackbarHostState()}
+    val permission=rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()){granted->if(!granted)vm.error.value="As notificações estão desativadas pelo Android. Você pode ativá-las nas configurações do aparelho."}
+    LaunchedEffect(Unit){vm.repo.events.collect{event->if(event.level>0)levelup=event else snack.showSnackbar(event.message,withDismissAction=true,duration=SnackbarDuration.Short)}}
+    LaunchedEffect(s?.habits){s?.let{Reminders.sync(context,it.habits)}}
+    val lifecycle=androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
+    DisposableEffect(lifecycle){val observer=LifecycleEventObserver{_,event->if(event==Lifecycle.Event.ON_RESUME)vm.run{vm.repo.refresh()}};lifecycle.addObserver(observer);onDispose{lifecycle.removeObserver(observer)}}
+    val addHabit={habitEditor=Habit(position=s?.habits?.size?:0)}
+    Surface(Modifier.fillMaxSize(),color=Night){
+        when{
+            s==null->Box(Modifier.fillMaxSize(),contentAlignment=Alignment.Center){Column(horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(16.dp)){Eyebrow("ASCEND");CircularProgressIndicator(color=Gold);Text("Abrindo as crônicas…",color=Muted)}}
+            s!!.player==null->Box(Modifier.safeDrawingPadding()){Onboarding{p,hs->vm.run{vm.repo.create(p,hs)}}}
+            else->{val state=s!!;Scaffold(snackbarHost={SnackbarHost(snack)},bottomBar={NavigationBar(containerColor=Night,tonalElevation=0.dp){val routes=listOf("journey","habits","missions","world","character");val names=listOf("Jornada","Hábitos","Missões","Mundo","Herói");val icons=listOf(Icons.Default.AutoAwesome,Icons.Default.Checklist,Icons.Default.OutlinedFlag,Icons.Default.Public,Icons.Default.PersonOutline);routes.forEachIndexed{i,r->NavigationBarItem(selected=route==r,onClick={nav.navigate(r){popUpTo("journey"){saveState=true};launchSingleTop=true;restoreState=true}},icon={Icon(icons[i],names[i])},label={Text(names[i],fontSize=10.sp)},colors=NavigationBarItemDefaults.colors(selectedIconColor=Gold,selectedTextColor=Gold,indicatorColor=Gold.copy(alpha=.12f),unselectedIconColor=Muted,unselectedTextColor=Muted))}}}){padding->
+                Box(Modifier.padding(padding)){
+                    NavHost(nav,startDestination="journey"){
+                        composable("journey"){Journey(state,{h,r->progress=h to r},{habitEditor=it},{focus=it},addHabit,{nav.navigate("journal")},vm,relaxed)}
+                        composable("habits"){HabitsScreen(state,vm,addHabit,{habitEditor=it},{h,r->progress=h to r},{focus=it})}
+                        composable("missions"){MissionsScreen(state,vm,bosses)}
+                        composable("world"){WorldScreen(state,vm)}
+                        composable("character"){CharacterScreen(state,vm,{nav.navigate("settings")},{nav.navigate("journal")})}
+                        composable("journal"){JournalScreen(state,vm)}
+                        composable("settings"){SettingsScreen(state,vm,relaxed)}
+                    }
+                }
+            }}
+        }
+    }
+    habitEditor?.let{h->HabitEditor(h,{habitEditor=null},{updated->vm.run{vm.repo.habit(updated);if(updated.reminder&&Build.VERSION.SDK_INT>=33)permission.launch(Manifest.permission.POST_NOTIFICATIONS);habitEditor=null}})}
+    progress?.let{(h,r)->ProgressEditor(h,r,{progress=null},{date,amount,correction->vm.run{vm.repo.progress(h,date,amount,correction);progress=null}})}
+    focus?.let{h->var minutes by remember(h.id){mutableStateOf(h.target.coerceAtMost(1440).toString())};AlertDialog(onDismissRequest={focus=null},title={Text("Foco · ${h.name}")},text={Column(verticalArrangement=Arrangement.spacedBy(12.dp)){Text("Reserve um intervalo. O tempo será registrado no mesmo histórico do hábito.",color=Muted);FormField(minutes,{minutes=it},"Duração em minutos",true)}},confirmButton={TextButton({vm.run{vm.repo.startFocus(h,minutes.toIntOrNull()?:0);focus=null;nav.navigate("journey"){launchSingleTop=true}}}){Text("Iniciar")}},dismissButton={TextButton({focus=null}){Text("Cancelar")}})}
+    error?.let{AlertDialog(onDismissRequest={vm.error.value=null},title={Text("Não foi possível concluir")},text={Text(it)},confirmButton={TextButton({vm.error.value=null}){Text("Entendi")}})}
+    levelup?.let{event->LevelUp(event,{levelup=null})}
+}
+@Composable fun LevelUp(event:GameEvent,onClose:()->Unit){
+    val transition=rememberInfiniteTransition(label="chama");val scale by transition.animateFloat(.95f,1.05f,infiniteRepeatable(tween(1400),RepeatMode.Reverse),label="brilho")
+    AlertDialog(onDismissRequest=onClose,containerColor=Surface,title={Column(horizontalAlignment=Alignment.CenterHorizontally,modifier=Modifier.fillMaxWidth()){Eyebrow("A chama se fortalece");Text("✦",color=Gold,fontSize=54.sp,modifier=Modifier.graphicsLayer{scaleX=scale;scaleY=scale});Text("Nível ${event.level}",style=MaterialTheme.typography.headlineLarge,color=Gold)}},text={Column(verticalArrangement=Arrangement.spacedBy(16.dp)){Text("+${event.xp} XP · ◈ 10 por nível alcançado",color=Blue);Text("“O sino ecoou um pouco mais longe. Agora sabemos que há caminhos além da névoa.”",fontFamily=androidx.compose.ui.text.font.FontFamily.Serif,fontSize=18.sp);Text("Consulte os novos títulos e regiões disponíveis no perfil e no mapa.",color=Muted,fontSize=12.sp)}},confirmButton={Action("Continuar a jornada",onClose)})
+}
+@Composable fun SettingsScreen(s:GameState,vm:GameViewModel,relaxed:Boolean){
+    val context=LocalContext.current;var pending by remember{mutableStateOf<GameState?>(null)};var busy by remember{mutableStateOf(false)}
+    val export=rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")){uri->if(uri!=null)vm.run{busy=true;try{withContext(Dispatchers.IO){context.contentResolver.openOutputStream(uri)?.bufferedWriter(Charsets.UTF_8)?.use{it.write(Backup.encode(s))}?:error("Não foi possível abrir o arquivo.")};vm.repo.events.emit(GameEvent("Backup exportado"))}finally{busy=false}}}
+    val importBackup=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()){uri->if(uri!=null)vm.run{busy=true;try{pending=withContext(Dispatchers.IO){val bytes=context.contentResolver.openInputStream(uri)?.use{input -> val output=java.io.ByteArrayOutputStream(); val buffer=ByteArray(8192); while(true){val count=input.read(buffer);if(count<0)break;require(output.size()+count<=20_000_000){"Backup maior que 20 MB."};output.write(buffer,0,count)};output.toByteArray()}?:error("Não foi possível ler o arquivo.");require(bytes.size<=20_000_000){"Backup maior que 20 MB."};Backup.decode(bytes.toString(Charsets.UTF_8))}}finally{busy=false}}}
+    Page{Title("Configurações","Seu progresso fica com você.");Panel{Eyebrow("Ritmo de jornada");Toggle("Modo livre de cobrança de frequência",relaxed,{vm.setting("relaxed",it)});Text(if(relaxed)"A jornada oferece hábitos ativos todos os dias, sem cobrança por atraso. A programação original é preservada no calendário." else "Dias não programados são descanso. Nenhuma ausência remove XP, níveis ou conquistas.",color=Muted,fontSize=13.sp);Text("Para descanso temporário, pause o hábito no Livro de hábitos. Edite seus dias para reorganizar a semana.",color=Muted,fontSize=12.sp)};Panel(accent=Blue){Eyebrow("Backup local versionado",Blue);Text("Exporte todas as crônicas, hábitos, recompensas, compras e páginas do diário. A importação valida o arquivo antes de substituir os dados.",color=Muted,fontSize=13.sp);Action("Exportar backup",{export.launch("ASCEND-backup-${today()}.json")},enabled=!busy);OutlinedButton({importBackup.launch(arrayOf("application/json","text/plain","application/octet-stream"))},enabled=!busy){Text("Importar backup")};if(busy)CircularProgressIndicator();Text("Guarde seu backup em um local privado. O arquivo inclui o diário e não é criptografado. As preferências de interface e permissões do Android são configuradas neste aparelho.",color=Muted,fontSize=12.sp)}
+        if(s.debt>0)Panel{Text("Compensação pendente: ${s.debt} fragmentos",color=Gold);Text("Registros corrigidos tinham recompensas já gastas. Novos ganhos compensarão essa diferença automaticamente.",color=Muted,fontSize=13.sp)}
+        Panel{Eyebrow("ASCEND · versão 1.0.0");Text("Crônicas da Ascensão\nAetheris existe nos seus próximos passos.",fontFamily=androidx.compose.ui.text.font.FontFamily.Serif,fontSize=18.sp);Text("Aplicativo offline. Sem conta, anúncios, compras reais ou coleta remota de dados.",color=Muted,fontSize=12.sp)}
+    }
+    pending?.let{backup->AlertDialog(onDismissRequest={pending=null},title={Text("Restaurar as crônicas?")},text={Text("Personagem: ${backup.player?.name}\n${backup.habits.size} hábitos · ${backup.records.size} registros\n\nOs dados atuais deste aparelho serão substituídos. Exporte um backup antes se desejar preservá-los.")},confirmButton={TextButton({vm.run{vm.repo.importState(backup);pending=null}}){Text("Restaurar")}},dismissButton={TextButton({pending=null}){Text("Cancelar")}})}
+}

@@ -1,0 +1,44 @@
+package br.com.ascend.aetheris
+
+import androidx.room.*
+
+@Dao
+interface GameDao {
+    @Query("SELECT * FROM player LIMIT 1") suspend fun player():Player?
+    @Query("SELECT * FROM habits ORDER BY position") suspend fun habits():List<Habit>
+    @Query("SELECT * FROM records ORDER BY date DESC") suspend fun records():List<HabitRecord>
+    @Query("SELECT * FROM ledger") suspend fun ledger():List<Reward>
+    @Query("SELECT * FROM quests") suspend fun quests():List<Quest>
+    @Query("SELECT * FROM claims") suspend fun claims():List<Claim>
+    @Query("SELECT * FROM assets") suspend fun assets():List<Asset>
+    @Query("SELECT * FROM achievements") suspend fun achievements():List<Unlocked>
+    @Query("SELECT * FROM diary ORDER BY date DESC") suspend fun journal():List<Journal>
+    @Query("SELECT * FROM routines") suspend fun routines():List<Routine>
+    @Query("SELECT * FROM focus LIMIT 1") suspend fun focus():Focus?
+    @Upsert suspend fun player(v:Player)
+    @Upsert suspend fun habit(v:Habit)
+    @Upsert suspend fun record(v:HabitRecord)
+    @Upsert suspend fun reward(v:Reward)
+    @Upsert suspend fun quest(v:Quest)
+    @Upsert suspend fun claim(v:Claim)
+    @Upsert suspend fun asset(v:Asset)
+    @Upsert suspend fun unlock(v:Unlocked)
+    @Upsert suspend fun journal(v:Journal)
+    @Upsert suspend fun routine(v:Routine)
+    @Upsert suspend fun focus(v:Focus)
+    @Query("DELETE FROM focus") suspend fun clearFocus()
+    @Query("DELETE FROM diary WHERE id=:id") suspend fun deleteJournal(id:String)
+    @Query("DELETE FROM routines WHERE id=:id") suspend fun deleteRoutine(id:String)
+    @Query("DELETE FROM player") suspend fun clearPlayer()
+    @Query("DELETE FROM records") suspend fun clearRecords()
+    @Query("DELETE FROM habits") suspend fun clearHabits()
+    @Query("DELETE FROM ledger") suspend fun clearLedger()
+    @Query("DELETE FROM quests") suspend fun clearQuests()
+    @Query("DELETE FROM claims") suspend fun clearClaims()
+    @Query("DELETE FROM assets") suspend fun clearAssets()
+    @Query("DELETE FROM achievements") suspend fun clearAchievements()
+    @Query("DELETE FROM diary") suspend fun clearJournal()
+    @Query("DELETE FROM routines") suspend fun clearRoutines()
+}
+@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class],version=1,exportSchema=true)
+abstract class GameDatabase:RoomDatabase(){abstract fun dao():GameDao}
