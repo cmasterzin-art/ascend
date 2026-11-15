@@ -40,4 +40,12 @@ Relatórios completos: `app/build/reports/tests/testDebugUnitTest/` e `app/build
 
 A compilação ocorreu integralmente no Cloud usando JDK Temurin 17, SDK Android 35 e Gradle Wrapper 8.9. O proxy e certificados do ambiente foram respeitados; TLS não foi desativado.
 
-A pasta de saída especificada pelo chat não pode ser criada pelo usuário do ambiente: `Permission denied`. O APK está preservado no caminho de build acima. A entrega alternativa utiliza o repositório `cmasterzin-art/ascend` no GitHub. O código foi enviado ao repositório. O instalador compilado no Cloud e seu checksum foram preparados em `downloads/`; a integridade do download remoto deve ser conferida após o envio. A configuração automática de secrets do Actions foi recusada pela API (HTTP 403), e nenhuma chave de assinatura foi publicada. A API de anexos de releases recusou a autenticação (HTTP 401), então o APK é distribuído como arquivo do repositório e também por um job de artefato do Actions. A primeira execução do build do Actions falhou ao tentar instalar o pacote obsoleto `tools`; o workflow foi corrigido para instalar explicitamente platform-tools, Android 35 e build-tools 35.0.0.
+A pasta de saída especificada pelo chat não pode ser criada pelo usuário do ambiente: `Permission denied`. O APK está preservado no caminho de build acima. A entrega alternativa utiliza o repositório `cmasterzin-art/ascend` no GitHub. O código foi enviado ao repositório. O instalador compilado no Cloud e seu checksum estão em `downloads/`. A configuração automática de secrets do Actions foi recusada pela API (HTTP 403), e nenhuma chave de assinatura foi publicada. A API de anexos de releases recusou a autenticação (HTTP 401), então o APK é distribuído como arquivo do repositório e também por um job de artefato do Actions. A primeira execução do build do Actions falhou ao tentar instalar o pacote obsoleto `tools`; o workflow foi corrigido para instalar explicitamente platform-tools, Android 35 e build-tools 35.0.0.
+
+## Download remoto confirmado
+
+- Download direto: https://github.com/cmasterzin-art/ascend/raw/refs/heads/main/downloads/ASCEND-1.0.0.apk
+- O arquivo foi baixado novamente do GitHub no Cloud; `cmp` confirmou igualdade byte a byte com o APK original.
+- SHA-256 remoto: `feb0f146b7f50482262484028b314bb39d80585032523e5753166817d475fb67`.
+- O job `distribuir` do Actions concluiu com sucesso e publicou o artefato **ASCEND-Android**, ID `14171198654`, na execução https://github.com/cmasterzin-art/ascend/actions/runs/43739752471.
+- A recompilação independente do código no job `apk` ainda estava em andamento ao registrar esta entrega; ela não é necessária para instalar o APK acima, que já foi compilado e testado no Cloud.
