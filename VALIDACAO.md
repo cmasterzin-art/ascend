@@ -1,47 +1,36 @@
-# Validação — ASCEND 1.3.1
+# Validação — ASCEND 1.4.0
 
-Data: 16/11/2026. Base: `6e6aa3cb6192773c6ae8b2d69fc459070aeed978` (1.3).
+16/11/2026. Base 1.3.1: `5dc9d7083bfbf111bff86b9612abdc605d04c05d`.
 
-## Resultado
+- `testDebugUnitTest assembleDebug`: **BUILD SUCCESSFUL**, **67 testes aprovados**, zero falhas, erros ou ignorados.
+- APK: `downloads/ASCEND-1.4.0.apk`, 22,362,121 bytes.
+- SHA-256: `26c187f35f5e69b68ff0c8e12f67107dc11807648f39f8df91856ab70b8114ad`.
+- Assinatura v2 válida, mesmo certificado desde a 1.1: `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
+- `zipalign -c 4`: aprovado. Manifesto: `br.com.ascend.aetheris`, versionName 1.4.0, versionCode 6, minSdk 26/targetSdk 35, **sem INTERNET**.
+- JDK Temurin 17, SDK Android 35, Gradle 8.9; compilação pessoal de depuração assinada. Chave privada preservada, fora do Git.
 
-- `testDebugUnitTest assembleDebug`: **BUILD SUCCESSFUL**.
-- **59 testes aprovados**, zero falhas, erros ou testes ignorados.
-- JDK Temurin 17, SDK Android 35, Gradle 8.9.
-- APK: `downloads/ASCEND-1.3.1.apk`, 23,034,449 bytes.
-- SHA-256: `1644a02e5fde657c044a0ffabbe34beb2a8d3a1afcde37c75732f33a6fde7bf8`.
-- Assinatura v2 válida, RSA 2048 bits, mesmo certificado dos APKs 1.1/1.2/1.3 fornecidos. Chave preservada, fora do Git.
-- `zipalign -c 4`: aprovado. `git diff --check`: aprovado.
-- Manifesto: `br.com.ascend.aetheris`, versionCode **5**, versionName **1.3.1**, minSdk 26, targetSdk 35. **Sem permissão INTERNET**.
+## Cobertura nova e regressão
 
-## Cobertura
+As 59 verificações anteriores foram preservadas. Adaptações nos testes de interface confirmam o novo painel de recompensa, e a leitura agora verifica o primeiro parágrafo em vez de um único bloco de capítulo. As migrações antigas atravessam também 3 → 4.
 
-| Suíte | Testes | Verificação |
+| Suíte | Testes | Escopo |
 |---|---:|---|
-| CatalogTest | 5 | 102 modelos íntegros e IDs únicos, instanciação independente, busca normalizada, seis filtros/quatro ordenações, sugestões/dispensa e seis rotinas |
-| CatalogRepositoryTest | 6 | Personalização e edição com snapshot, reload/backup, oito tentativas concorrentes de duplicação, reutilização de hábitos manuais, rotina atômica/idempotente, migração real de v2 e sequência opcional |
-| GrimoireUiTest | 4 | Busca narrativa → editar XP/meta/frequência → salvar → concluir → editar preservando XP; interesses/dispensa; rotina parcial com personalização/lembrete em 320 dp; três cenas de biblioteca ligadas ao estado salvo |
-| ProgressionTest | 6 | Níveis, proporcionalidade, calendários, missões e moedas |
-| RepositoryTest | 12 | Snapshots, reversão, compras concorrentes, foco, missões, backup e persistência |
-| InsightsTest | 5 | Descansos, sequências, taxa, arquivo e virada de dia |
-| Version11Test | 5 | Descansos, backups antigos, migração real 1 → 2 → 3 e programação histórica |
-| RemindersTest | 4 | Descanso, retomada, horário de verão e lembretes desativados |
-| OnboardingTest | 7 | Criação, edição, temas, telas RPG, equipamentos, vila/chefe/crônicas e tela estreita |
-| RpgTest | 5 | Habilidades, exclusividade de equipamento, correção de XP, reconstrução e backup v2 |
+| SagaTest | 6 | Baseline do dia atual, marcos 25/50/75/100, seis resgates concorrentes com um sucesso, correções/zero/restauração do progresso, minutos/páginas/conclusões, edição e termos fixos, reload, backup v5, backup v4 sem novos campos, migração real v3 e diálogos/recompensas consolidadas |
+| NorthUiTest | 2 | Criação pelo formulário, seleção real de hábito, resgate com nível no mesmo painel, diálogo contextual e saga em 320 dp/fonte 130%/redução de movimento |
+| CatalogTest / CatalogRepositoryTest / GrimoireUiTest | 15 | 102 modelos, seis rotinas, filtros, busca, duplicatas concorrentes, personalização e snapshots, persistência e criação/edição pela interface |
+| ProgressionTest / RepositoryTest / InsightsTest | 23 | XP, moedas, atributos, missões, snapshot, reversões, foco, estatísticas e descanso |
+| Version11Test / RemindersTest / RpgTest / OnboardingTest | 21 | Migrações 1 → 4 e 2 → 4, backups antigos, notificações, inventário, árvore, reconstrução, temas, navegação e telas RPG |
 
-O fluxo principal cria um hábito com XP **73** e meta **15 minutos**, conclui e depois altera XP para **95**. O registro mantém **73**, e a configuração editada persiste. O teste de rotina desmarca dois dos quatro hábitos, personaliza XP para **44**, ativa um lembrete e confere dois hábitos salvos, uma rotina e **zero XP por adição**. A revisão inclui cartões completos em 320 dp com fonte a 130%.
+Recompensa consolidada validada com deltas reais: 150 XP, nível 2 e atributos; ação repetida sem mudança não gera novos destaques. No fluxo de saga da interface, um único resgate concede 150 XP e 20 Fragmentos (10 configurados + 10 do nível), exibidos juntos. Corrigir um registro reduz a recompensa da saga no mesmo ledger; recuperar o progresso revalida o resgate existente, sem novo Claim.
 
-## Compatibilidade e dados
-
-A Room v3 acrescenta somente `templateId`, `narrativeName` e `trackStreak` por `ALTER TABLE`, com defaults explícitos. Não recria tabelas nem usa fallback destrutivo. Os testes constroem os esquemas antigos exportados, inserem dados e executam as migrações reais. O teste v2 compara todo o GameState antes/depois: personagem, hábitos, registros, XP, moedas, inventário, descanso, diário, rotina, missões e reconstrução. O teste v1 atravessa ambas as migrações.
-
-Backup v4 aceita v1–v4. Um backup v3 sem os novos campos restaura nome funcional, origem vazia e sequências ativadas. Catálogo e rotinas copiam valores; alterações no catálogo não reescrevem os hábitos criados. Não houve alteração da fórmula de XP ou de recompensas da economia.
-
-Certificado SHA-256: `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`. Package e certificado iguais com versionCode maior permitem atualizar os APKs 1.1–1.3 fornecidos sem desinstalar. A antiga 1.0 usa outro certificado; veja [instalação](INSTALACAO.md).
+Room v4: somente quatro colunas novas no total (`sagaStart` e `sagaBaseline` em `quests` e `claims`), com defaults vazios. Migrações explícitas 1 → 2 → 3 → 4 e esquemas exportados, sem fallback destrutivo. Backup v5 aceita v1–v5; preserva sagas, snapshots e memórias narrativas. Nenhuma fórmula histórica de XP foi alterada.
 
 ## Evidências e limites
 
-[JUnit e verificação do APK](docs/validation/) · [Capturas e revisão visual](docs/VISUAL-1.3.1.md) · [Catálogo e rotinas](docs/GRIMORIO.md).
+[Relatórios JUnit e verificação de assinatura](docs/validation/) · [Comparação e capturas reais](docs/VISUAL-1.4.md) · [Regras das sagas](SAGAS.md).
 
-Robolectric API 28 com renderização nativa cobre 411 × 891 dp e 320 × 740 dp, fonte a 130%, redução de movimento e tema claro. Não houve instalação em aparelho físico ou emulador completo, nem teste de atualização sobre um telefone real, Android Lint ou benchmark físico. Permissão de notificação Android 13+, entrega de alarmes pelo fabricante e seletor de arquivos ainda dependem de verificação em aparelho. Lembretes são locais e aproximados.
+Robolectric API 28 com renderização nativa: 411 × 891 dp, 320 × 740 dp, fonte a 130%, tema claro, modo minimalista e redução de movimento. Não houve instalação em aparelho físico ou emulador completo, teste de atualização sobre telefone real, Android Lint ou benchmark físico. Permissão de notificações Android 13+, seletor de arquivos e entrega de alarmes pelo fabricante permanecem sujeitos à verificação em aparelho.
 
-Trata-se de APK pessoal de depuração assinado. Dez pinturas WebP (seis anteriores + quatro atlas novos), fonte e catálogo estão incorporados; não há backend, download durante o uso ou serviço pago.
+O package e certificado iguais, com versionCode maior, permitem atualizar os APKs 1.1–1.3.1 fornecidos sem desinstalar. A antiga 1.0 tem outra assinatura. Confira [INSTALACAO.md](INSTALACAO.md) e exporte um backup antes de atualizar.
+
+Sem sons/vibração nesta entrega. As imagens, fonte, modelos e textos são locais; o APK não exige conta, backend ou serviço pago.

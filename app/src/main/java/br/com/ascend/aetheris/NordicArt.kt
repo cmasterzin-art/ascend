@@ -132,6 +132,7 @@ val Ember=Color(0xFF8D4B43)
                     Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(8.dp)){
                         Text(p.name,color=WornIvory,style=MaterialTheme.typography.headlineLarge)
                         Text(p.title,color=Color(0xFFC4A36A),fontFamily=SagaFont,fontSize=13.sp,lineHeight=20.sp)
+                        ClassEmblem(p.heroClass,Modifier.size(28.dp))
                         Text(classes[p.heroClass].uppercase(),color=Color(0xFFB5BECA),fontSize=10.sp,letterSpacing=1.8.sp)
                         Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)){Text("${s.level}",color=WornIvory,fontFamily=SagaFont,fontSize=38.sp);Text("NÍVEL",color=Color(0xFFB5BECA),fontSize=10.sp)}
                     }

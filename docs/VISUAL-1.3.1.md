@@ -6,9 +6,9 @@ A 1.3 estabeleceu as pinturas, a paleta fria e o códice. A 1.3.1 aproxima os el
 
 | Busca funcional/narrativa · 411 dp | Personalização antes de salvar | Cartão · 320 dp, texto 130% |
 |---|---|---|
-| <img src="screenshots/grimoire-busca.png" width="240" alt="Busca por Tomos da Justiça com sugestão e recompensa"> | <img src="screenshots/grimoire-personalizar.png" width="240" alt="Meta, XP e dias personalizados no editor"> | <img src="screenshots/grimoire-cartao-320.png" width="220" alt="Cartão do catálogo em tela estreita com texto ampliado"> |
+| <img src="screenshots/v1.3.1/grimoire-busca.png" width="240" alt="Busca por Tomos da Justiça com sugestão e recompensa"> | <img src="screenshots/v1.3.1/grimoire-personalizar.png" width="240" alt="Meta, XP e dias personalizados no editor"> | <img src="screenshots/v1.3.1/grimoire-cartao-320.png" width="220" alt="Cartão do catálogo em tela estreita com texto ampliado"> |
 
-[Catálogo por categoria](screenshots/grimoire-catalogo.png) · [Sugestões por interesse](screenshots/grimoire-sugestoes.png) · [Seleção parcial de rotina](screenshots/rotina-selecao-320.png) · [Guia funcional](GRIMORIO.md).
+[Catálogo por categoria](screenshots/v1.3.1/grimoire-catalogo.png) · [Sugestões por interesse](screenshots/v1.3.1/grimoire-sugestoes.png) · [Seleção parcial de rotina](screenshots/v1.3.1/rotina-selecao-320.png) · [Guia funcional](GRIMORIO.md).
 
 Os cartões usam superfícies escuras em couro, rebites discretos, símbolos de atributo e recompensa separada do objetivo. O cabeçalho e os filtros rolam junto com a lista, deixando espaço para o conteúdo em telas menores. Busca, categorias, filtros e listas são componentes reais, não parte de uma pintura.
 
@@ -16,8 +16,8 @@ Os cartões usam superfícies escuras em couro, rebites discretos, símbolos de 
 
 | Tela | 1.3 | 1.3.1 |
 |---|---|---|
-| Equipamentos | <img src="screenshots/v1.3/inventario-equipado.png" width="240" alt="Equipamentos vetoriais sobrepostos ao corpo na 1.3"> | <img src="screenshots/inventario-equipado.png" width="240" alt="Pinturas em nichos separados na 1.3.1"> |
-| Mapa | <img src="screenshots/v1.3/mapa-aetheris.png" width="240" alt="Marcadores anteriores"> | <img src="screenshots/mapa-aetheris.png" width="240" alt="Marcos de pedra esculpida selecionáveis"> |
+| Equipamentos | <img src="screenshots/v1.3/inventario-equipado.png" width="240" alt="Equipamentos vetoriais sobrepostos ao corpo na 1.3"> | <img src="screenshots/v1.3.1/inventario-equipado.png" width="240" alt="Pinturas em nichos separados na 1.3.1"> |
+| Mapa | <img src="screenshots/v1.3/mapa-aetheris.png" width="240" alt="Marcadores anteriores"> | <img src="screenshots/v1.3.1/mapa-aetheris.png" width="240" alt="Marcos de pedra esculpida selecionáveis"> |
 
 **Personagem/inventário:** espada, elmo e amuleto deixam de cobrir o corpo pintado. Equipamentos e companheiros ocupam nichos ao redor do retrato e uma galeria no perfil; sombras e iluminação já fazem parte das pinturas. Os 17 itens têm correspondência visual própria, incluindo âmbar/azul dos amuletos, manto verde/violeta, armadura de cobre, coroa, lâminas, corvo, raposa, dragão, molduras, biblioteca, céu e lanterna. Slots vazios ficam esmaecidos, com rótulo explícito. Equipar/retirar mantém persistência, exclusividade e feedback. O retrato continua estático, comum às classes e disponível em três tons de pele; os itens não são vestimentas articuladas sobre o corpo.
 
@@ -27,7 +27,7 @@ Os cartões usam superfícies escuras em couro, rebites discretos, símbolos de 
 
 | Biblioteca em ruínas | Em reconstrução | Restaurada |
 |---|---|---|
-| <img src="screenshots/biblioteca-ruinas.png" width="240" alt="Biblioteca com teto e paredes danificados"> | <img src="screenshots/biblioteca-parcial.png" width="240" alt="Biblioteca com andaimes e estrutura parcial"> | <img src="screenshots/biblioteca-restaurada.png" width="240" alt="Biblioteca íntegra e iluminada"> |
+| <img src="screenshots/v1.3.1/biblioteca-ruinas.png" width="240" alt="Biblioteca com teto e paredes danificados"> | <img src="screenshots/v1.3.1/biblioteca-parcial.png" width="240" alt="Biblioteca com andaimes e estrutura parcial"> | <img src="screenshots/v1.3.1/biblioteca-restaurada.png" width="240" alt="Biblioteca íntegra e iluminada"> |
 
 Biblioteca, forja, jardim, torre do cronista e praça central têm três imagens cada. Paredes danificadas, andaimes, telhados, vegetação, luzes e atividade diferenciam os estágios. São quinze cenas originais em dois atlas WebP, escolhidas pelo estado real já salvo da construção. O panorama geral da vila continua com os sinais luminosos existentes; as pinturas de cada etapa aparecem no painel de cada construção. Custos de restauração permanecem 30/60 fragmentos.
 

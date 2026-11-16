@@ -149,7 +149,6 @@ class OnboardingTest {
             vm.setting("bosses",true);vm.setting("reducedMotion",true)
         }
         waitForState{app.repository.state.value!!.assets.any{it.id=="building:0"&&it.stage==2}}
-        compose.onNodeWithText("Continuar a jornada").performClick()
         waitForState{vm.reducedMotion.value}
         capture("jornada-equipada")
         compose.onNodeWithText("Herói").performClick();shot("perfil")
@@ -162,7 +161,7 @@ class OnboardingTest {
         compose.onNodeWithText("Mundo").performClick();shot("mapa-revelado")
         compose.onNodeWithText("Vila").performClick();shot("vila")
         compose.onNodeWithText("Crônicas").performScrollTo().performClick()
-        compose.onAllNodesWithText("Abrir capítulo").onFirst().performScrollTo().performClick();compose.onNodeWithText(chapterTexts[0]).assertExists();shot("cronicas")
+        compose.onAllNodesWithText("Abrir capítulo").onFirst().performScrollTo().performClick();compose.onNodeWithText(chapterTexts[0].split("\n\n")[0]).assertExists();shot("cronicas")
         compose.onNodeWithText("Fechar").performClick()
         compose.onNodeWithText("Missões").performClick()
         compose.onNodeWithText("Chefes").performScrollTo().performClick()
@@ -228,7 +227,7 @@ class OnboardingTest {
         compose.waitUntil(15000){Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();condition()}
         compose.waitForIdle()
         val dismiss=compose.onAllNodesWithContentDescription("Dismiss")
-        if(dismiss.fetchSemanticsNodes().isNotEmpty())dismiss.onFirst().performClick()
+        if(dismiss.fetchSemanticsNodes().isNotEmpty())dismiss.onFirst().performClick();val reward=compose.onAllNodesWithText("Continuar a jornada");if(reward.fetchSemanticsNodes().isNotEmpty())reward.onFirst().performClick()
     }
 
 }

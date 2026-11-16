@@ -1,3 +1,15 @@
+# Mudanças — 1.4.0 · O Juramento do Norte
+
+- Sagas Pessoais na área de Missões, seis modelos e criação personalizada; seleção de hábitos, métrica de conclusões/minutos/páginas, meta, prazo opcional, XP/moedas editáveis, marcos narrativos de 25/50/75/100% e resgate único.
+- Fotografia dos registros no início, incluindo o dia atual; progresso anterior não conta. Correções recalculam progresso e recompensa resgatada com o ledger existente. Hábitos/métrica ficam fixos após iniciar; outros termos podem ser editados até o resgate.
+- Novo SagaButton primário/secundário/destrutivo, estados pressionado/desativado/carregando/concluído, bronze com relevo e resposta curta. Ações compartilhadas, formulários, loja e resgates usam o componente.
+- Jornada com região, emblema da classe, percentual do dia, pendências e próxima atividade. Medidores refinados e ações de hábitos em ferro recortado.
+- Recompensas consolidadas por transação: valores reais de XP, saldo disponível e atributos; nível, conquistas raras, artefatos e restauração no mesmo painel quando ocorrerem juntos.
+- Diálogos contextuais locais com prioridade e confirmação persistida; Cronista, restauração de moradores, saga, nível, conquista e retorno reconhecidos sem IA externa.
+- Revisão pontual de oito capítulos, preservando os nove títulos, acontecimentos e desbloqueios; códice com parágrafos, diálogos e progresso de capítulos.
+- Cinco emblemas originais, descrições de classe, pré-requisitos/estados mais explícitos na árvore, transição breve de reconstrução respeitando redução de movimento.
+- Room v4 aditiva e backup v5 aceitando v1–v5. Mesmo certificado desde a 1.1, applicationId preservado, versionCode 6.
+
 # Mudanças — 1.3.1 · Grimório e coerência artística
 
 - Grimório dos Hábitos com 102 modelos, nove categorias, busca por palavras/nomes narrativos, seis filtros e quatro ordenações; formulário completo antes de adicionar.

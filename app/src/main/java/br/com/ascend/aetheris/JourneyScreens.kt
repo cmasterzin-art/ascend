@@ -31,7 +31,7 @@ import java.util.Locale
             if(h.paused||h.archived)Text(if(h.archived)"Arquivado" else "Em pausa",color=Gold,fontSize=11.sp)
         }
         if(h.type==2 && !complete)IconButton(onFocus,Modifier.size(48.dp)){Icon(Icons.Default.PlayArrow,"Iniciar foco",tint=color)}
-        IconButton(onProgress,Modifier.size(48.dp).background(if(complete)Green.copy(alpha=.18f) else CardColor,CircleShape)){Icon(if(complete)Icons.Default.Check else Icons.Default.Add,if(complete)"Editar conclusão" else "Registrar progresso",tint=if(complete)Green else Ink)}
+        IconButton(onProgress,Modifier.size(48.dp).materialSurface(accent=if(complete)Green else color).border(1.dp,if(complete)Green else color.copy(alpha=.65f),CutCornerShape(8.dp))){Icon(if(complete)Icons.Default.Check else Icons.Default.Add,if(complete)"Editar conclusão" else "Registrar progresso",tint=if(complete)Green else Ink)}
     }
 }
 @Composable fun FocusCard(f:Focus,s:GameState,vm:GameViewModel){
@@ -80,17 +80,20 @@ import java.util.Locale
     Page{
         Title("Contratos da jornada","O livro das ações que devolvem luz ao mundo.")
         SagaCover(s.claims.size)
-        ChipRow(listOf("Diárias","Semanais","Épicas","Chefes","Resgates"),tab,{tab=it});Action("+ Missão personalizada",{editor=true})
+        ChipRow(listOf("Diárias","Semanais","Épicas","Chefes","Resgates","Sagas"),tab,{tab=it});if(tab!=5)Action("+ Missão personalizada",{editor=true})
+        if(tab==5)SagaBook(s,vm)
         if(tab==3){Toggle("Ativar chefes opcionais",bosses,{vm.setting("bosses",it)});Text("Cada hábito completo enfraquece a névoa. Sem perdas por ausência.",color=Muted,fontSize=13.sp)}
         if(tab==4){if(s.claims.isEmpty())Empty("Seu livro ainda aguarda os primeiros resgates.");s.claims.sortedByDescending{it.date}.forEach{c->Manuscript{Text(s.quests.find{it.id==c.questId}?.name?:"Missão",fontFamily=FontFamily.Serif,fontSize=22.sp);Text("${c.date} · ${c.occurrence}",fontSize=12.sp);Text("Recompensa registrada no histórico",fontSize=12.sp)}}}
-        else if(tab!=3||bosses){s.quests.filter{it.period==tab}.forEach{q->
+        else if(tab<4&&(tab!=3||bosses)){s.quests.filter{it.period==tab&&it.sagaStart.isBlank()}.forEach{q->
             val value=questProgress(q,s);val claimed=s.claims.any{it.id=="${q.id}@${occurrence(q)}"}
             Manuscript{
                 Text(if(claimed)"CONTRATO RESGATADO" else if(value>=q.target)"OBJETIVO ALCANÇADO" else "MISSÃO ATIVA",color=Sepia,fontSize=10.sp,letterSpacing=2.sp)
                 Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){RuneSeal(if(claimed)4 else tab,Sepia,Modifier.size(36.dp));Text(q.name,Modifier.weight(1f),fontFamily=SagaFont,fontSize=23.sp,lineHeight=30.sp,color=Sepia)}
                 if(tab==3){BossPortrait();Text("Vida: ${(100*(1-value.toFloat()/q.target)).coerceIn(0f,100f).toInt()} / 100",color=Sepia)}
+                Text(listOf("DIÁRIO · BREVE","SEMANAL · PROLONGADO","ÉPICO · LONGO CURSO","CHEFE · RITUAL")[tab],color=Sepia,fontSize=11.sp)
                 Text(q.description,color=Sepia,fontSize=15.sp,lineHeight=23.sp)
                 HorizontalDivider(color=Sepia.copy(alpha=.3f))
+                Text("Contribuem: "+s.habits.filter{!it.deleted&&(q.habitIds.isBlank()||it.id in q.habitIds.split(','))&&(q.attribute<0||it.attribute==q.attribute)&&(q.metric!=1||it.type==2)&&(q.metric!=3||it.unit.contains("página",true))}.joinToString{it.name}.ifBlank{"Nenhum hábito compatível"},color=Sepia,fontSize=12.sp)
                 Text("Objetivo",fontFamily=FontFamily.Serif,fontSize=21.sp,color=Sepia)
                 Text("${value.coerceAtMost(q.target.toLong())} de ${q.target} · ${listOf("conclusões","minutos","XP de hábitos","páginas")[q.metric]}",color=Sepia,fontSize=14.sp)
                 Meter(value.toFloat()/q.target,Color(0xFF4E4937),trackColor=Sepia.copy(alpha=.16f))
@@ -98,7 +101,7 @@ import java.util.Locale
                 Text("Recompensas",fontFamily=FontFamily.Serif,fontSize=21.sp,color=Sepia)
                 Row(Modifier.fillMaxWidth().border(1.dp,Sepia.copy(alpha=.3f),CutCornerShape(4.dp)).padding(12.dp),horizontalArrangement=Arrangement.spacedBy(18.dp),verticalAlignment=Alignment.CenterVertically){RuneSeal(2,Sepia,Modifier.size(32.dp));Column{Text("${q.xp} XP",color=Sepia,fontFamily=SagaFont,fontSize=20.sp);Text("◈ ${q.coins} fragmentos",color=Sepia,fontSize=12.sp)}}
                 if(q.special.isNotBlank())Text("Troféu: ${q.special}",color=Sepia,fontSize=13.sp)
-                Button({vm.run{vm.repo.claim(q)}},enabled=!claimed&&value>=q.target,colors=ButtonDefaults.buttonColors(containerColor=Sepia,contentColor=Parchment,disabledContainerColor=Sepia.copy(alpha=.14f),disabledContentColor=Sepia.copy(alpha=.7f)),shape=RoundedCornerShape(4.dp)){Text(if(claimed)"Recompensa resgatada" else "Resgatar recompensa")}
+                Action(if(claimed)"Recompensa resgatada" else "Resgatar recompensa",{vm.run{vm.repo.claim(q)}},enabled=!claimed&&value>=q.target,completed=claimed)
                 TextButton({editing=q;editor=true},colors=ButtonDefaults.textButtonColors(contentColor=Sepia)){Text("Editar missão")}
             }
         }}

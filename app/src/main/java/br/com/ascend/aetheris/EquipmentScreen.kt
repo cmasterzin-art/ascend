@@ -57,7 +57,7 @@ import androidx.compose.ui.semantics.*
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center){RelicArt(item.kind,color,Modifier.size(120.dp),item.id)}
             Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){RuneSeal(rarity(item),color,Modifier.size(28.dp));Eyebrow(rarityNames[rarity(item)],color)}
             Text(item.description);SagaDivider(color=color);Eyebrow("Procedência",color);Text(itemOrigin(item),color=Muted,fontSize=13.sp);if(owned!=null)Text("Guardado na coleção em ${owned.date}",color=Muted,fontSize=12.sp)
-        }},confirmButton={TextButton({vm.run{if(owned!=null)vm.repo.equip(owned) else vm.repo.buy(item);selected=null}},enabled=owned!=null||s.coins>=item.cost){Text(if(owned!=null)if(owned.equipped)"Desequipar" else "Equipar" else "Adquirir · ${item.cost}")}},dismissButton={TextButton({selected=null}){Text("Fechar")}})
+        }},confirmButton={Action(if(owned!=null)if(owned.equipped)"Desequipar" else "Equipar" else "Adquirir · ${item.cost}",{vm.run{if(owned!=null)vm.repo.equip(owned) else vm.repo.buy(item);selected=null}},enabled=owned!=null||s.coins>=item.cost)},dismissButton={TextButton({selected=null}){Text("Fechar")}})
     }
 }
 @Composable private fun EquipmentSlot(kind:String,label:String,s:GameState,select:(String)->Unit){
@@ -74,9 +74,9 @@ import androidx.compose.ui.semantics.*
     skillDefs.groupBy{it.path}.forEach{(path,nodes)->
         Eyebrow(path)
         nodes.forEachIndexed{i,skill->
-            if(i>0)Text("│",Modifier.padding(start=27.dp),color=Gold,fontSize=26.sp)
+            if(i>0)SagaDivider(color=Blue)
             val owned=s.assets.any{it.id=="skill:${skill.id}"};val ready=s.level>=skill.level&&(skill.parent==null||s.assets.any{it.id=="skill:${skill.parent}"})&&skillPoints(s)>0
-            Panel(accent=if(owned)Green else Violet){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){RelicArt(shopItems.first{it.id==skill.item}.kind,if(owned)Green else Violet,itemId=skill.item);Column(Modifier.weight(1f)){Text(skill.name,style=MaterialTheme.typography.titleLarge);Text("Nível ${skill.level} · 1 ponto",color=Muted,fontSize=12.sp)}};Text(skill.description,color=Muted);Action(if(owned)"Despertada · item no inventário" else "Despertar habilidade",{vm.run{vm.repo.unlockSkill(skill.id)}},enabled=!owned&&ready)}
+            Panel(accent=if(owned)Green else Violet){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){RelicArt(shopItems.first{it.id==skill.item}.kind,if(owned)Green else Violet,itemId=skill.item);Column(Modifier.weight(1f)){Text(skill.name,style=MaterialTheme.typography.titleLarge);Text("Nível ${skill.level} · 1 ponto",color=Muted,fontSize=12.sp);Text(if(owned)"Inscrita na constelação" else if(ready)"Disponível" else "Bloqueada",color=if(owned)Green else Muted,fontSize=12.sp)}};skill.parent?.let{parent->Text("Requer: ${skillDefs.first{it.id==parent}.name}",color=Muted,fontSize=12.sp)};Text(skill.description,color=Muted);Action(if(owned)"Despertada · item no inventário" else "Despertar habilidade",{vm.run{vm.repo.unlockSkill(skill.id)}},enabled=!owned&&ready)}
         }
     }
 }
