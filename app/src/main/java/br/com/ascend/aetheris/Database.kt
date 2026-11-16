@@ -4,6 +4,10 @@ import androidx.room.*
 
 @Dao
 interface GameDao {
+    @Query("SELECT * FROM rest_days ORDER BY date") suspend fun restDays():List<RestDay>
+    @Upsert suspend fun restDay(v:RestDay)
+    @Query("DELETE FROM rest_days WHERE date=:date") suspend fun deleteRestDay(date:String)
+    @Query("DELETE FROM rest_days") suspend fun clearRestDays()
     @Query("SELECT * FROM player LIMIT 1") suspend fun player():Player?
     @Query("SELECT * FROM habits ORDER BY position") suspend fun habits():List<Habit>
     @Query("SELECT * FROM records ORDER BY date DESC") suspend fun records():List<HabitRecord>
@@ -40,5 +44,10 @@ interface GameDao {
     @Query("DELETE FROM diary") suspend fun clearJournal()
     @Query("DELETE FROM routines") suspend fun clearRoutines()
 }
-@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class],version=1,exportSchema=true)
+val MIGRATION_1_2 = object : androidx.room.migration.Migration(1,2) {
+    override fun migrate(db:androidx.sqlite.db.SupportSQLiteDatabase) {
+        db.execSQL("CREATE TABLE IF NOT EXISTS `rest_days` (`date` TEXT NOT NULL, PRIMARY KEY(`date`))")
+    }
+}
+@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class],version=2,exportSchema=true)
 abstract class GameDatabase:RoomDatabase(){abstract fun dao():GameDao}

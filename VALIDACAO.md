@@ -1,51 +1,50 @@
-# Validação executada — ASCEND 1.0.0
+# Validação — ASCEND 1.1.0
 
-Data: 15/11/2026. Projeto: `/workspace/work/ascend`.
+Data: 16/11/2026. Base: `989eb19458c02773caca5db885807367ab21f286` (versão 1.0), com as alterações da versão 1.1 nesta branch.
 
 ## Resultado
 
-- `./gradlew testDebugUnitTest assembleDebug lintDebug`: **BUILD SUCCESSFUL**.
-- **19 testes aprovados, zero falhas**: 6 de regras, 12 de persistência/transações/backup, 1 de interface Compose.
-- Android Lint: **0 erros e 8 avisos**. Os avisos apontam versões mais recentes de bibliotecas; as versões usadas são estáveis e compatíveis.
-- APK realmente criado: `app/build/outputs/apk/debug/app-debug.apk`.
-- Tamanho: 18,385,502 bytes (17.53 MiB).
-- SHA-256: `feb0f146b7f50482262484028b314bb39d80585032523e5753166817d475fb67`.
-- Assinatura verificada com `apksigner verify --verbose`: APK Signature Scheme v2, um assinante.
-- Alinhamento verificado com `zipalign -c 4`.
-- Manifesto inspecionado com `aapt dump badging`: applicationId `br.com.ascend.aetheris`, versão 1.0.0, minSdk 26, targetSdk 35, atividade inicial `MainActivity`.
-- ABIs do APK: arm64-v8a, armeabi-v7a, x86, x86_64.
-- **Sem permissão INTERNET** no APK.
+- Tarefas Gradle **testDebugUnitTest** e **assembleDebug**: **BUILD SUCCESSFUL**.
+- **36 testes aprovados, zero falhas e zero erros**.
+- Ambiente: JDK Temurin 17 completo, SDK Android 35 e Gradle 8.9, mesma versão declarada no wrapper.
+- APK gerado: `app/build/outputs/apk/debug/app-debug.apk`.
+- Cópia para distribuição: `downloads/ASCEND-1.1.0.apk`, 18.460.249 bytes (aproximadamente 17,60 MiB).
+- SHA-256: `528dd5c2669c1ac4fb030be9519a787985c70d36f9135e1c0125d040eff4486b`.
+- Assinatura conferida com `apksigner verify --verbose --print-certs`: v2, um assinante RSA de 2048 bits.
+- Alinhamento conferido com `zipalign -c 4`.
+- Manifesto inspecionado: `br.com.ascend.aetheris`, versionCode 2, versionName 1.1.0, minSdk 26, targetSdk 35; **sem permissão INTERNET**.
+- `git diff --check`: sem problemas de whitespace.
 
-## O que foi exercitado
+## Cobertura
 
-- Limiares de níveis e avanço por múltiplos níveis; recompensas proporcionais sem overflow.
-- Sequências que ignoram dias não previstos, pausas e alterações de programação.
-- Recorrência diária/semanal de missões baseada em registros reais.
-- Registros repetidos sem pagamento duplo, conclusão parcial, edição de valores e reversão de XP/pontos/nível.
-- Snapshot de recompensas após editar hábitos e snapshots de missões já resgatadas.
-- Conclusão manual junto de cronômetro, persistência de foco pausado.
-- Compras concorrentes, prevenção de duplicidade e de gastos sem saldo.
-- Reconstrução, desbloqueio de capítulo, recarga dos dados e fechamento/reabertura de um banco Room em disco.
-- Backup íntegro, corrupção rejeitada, importação atômica e importação inválida sem modificar dados.
-- Interface em Android simulado por Robolectric API 28 com renderização nativa: criar Aria/Mago, usar hábito inicial Estudar Direito, registrar meta de 60 minutos, confirmar 60 XP e 5 pontos de Intelecto; visitar Mundo, Vila, Missões, Personagem, Conquistas e Histórico.
-- Captura real da renderização do teste em `app/build/reports/screenshots/jornada.png`, inspecionada visualmente.
+| Suíte | Testes | Verificação |
+|---|---:|---|
+| ProgressionTest | 6 | Níveis, múltiplos avanços, proporcionalidade, calendários, missões e moedas |
+| RepositoryTest | 12 | Snapshots, reversão, compras concorrentes, foco, missões, backup e banco em disco |
+| InsightsTest | 5 | Descansos nas sequências, recorde histórico, taxa de cumprimento, arquivo e fuso na virada do dia |
+| Version11Test | 5 | Persistência de descanso, backup v2, leitura de v1, migração 1 → 2 e programação após arquivar |
+| RemindersTest | 4 | Descanso, retomada após semanas, horário de verão e lembretes desativados |
+| OnboardingTest | 4 | Criação de personagem, hábitos/XP/edição/desfazer, tema claro e descanso pelo calendário |
 
-## Alcance da validação
+O fluxo de interface cria Kael/Mago, cria Estudar com 50 XP e Ler com 30 XP, conclui ambos e confere 80 XP; muda a recompensa futura de Ler para 40 XP, confere que o registro antigo continua com 30 XP e desfaz a conclusão, voltando a 50 XP.
 
-Os testes usam JUnit, Room/SQLite com Robolectric e Compose UI Test no Cloud. Não foi usado um celular físico nem um emulador Android com sistema operacional completo. Instalação em aparelho real, permissões/notificações do fabricante e seleção de documentos precisam de verificação no telefone do usuário.
+O teste original de personagem registra a meta de 60 minutos, confere 60 XP e os pontos de atributo, e visita Mundo, Vila, Missões, Personagem, Conquistas e Histórico. O teste de tema seleciona Claro pelas configurações e confere a preferência local. O teste de calendário ativa e remove descanso sem gerar XP.
 
-Relatórios completos: `app/build/reports/tests/testDebugUnitTest/` e `app/build/reports/lint-results-debug.html`.
+Resultados JUnit completos estão em [docs/validation/](docs/validation/). Capturas da renderização nativa dos testes, inspecionadas visualmente:
 
-## Entrega e ambiente
+- [Jornada escura](docs/screenshots/jornada-escuro.png)
+- [Jornada clara](docs/screenshots/jornada-claro.png)
 
-A compilação ocorreu integralmente no Cloud usando JDK Temurin 17, SDK Android 35 e Gradle Wrapper 8.9. O proxy e certificados do ambiente foram respeitados; TLS não foi desativado.
+## Compatibilidade e assinatura
 
-A pasta de saída especificada pelo chat não pode ser criada pelo usuário do ambiente: `Permission denied`. O APK está preservado no caminho de build acima. A entrega alternativa utiliza o repositório `cmasterzin-art/ascend` no GitHub. O código foi enviado ao repositório. O instalador compilado no Cloud e seu checksum estão em `downloads/`. A configuração automática de secrets do Actions foi recusada pela API (HTTP 403), e nenhuma chave de assinatura foi publicada. A API de anexos de releases recusou a autenticação (HTTP 401), então o APK é distribuído como arquivo do repositório e também por um job de artefato do Actions. A primeira execução do build do Actions falhou ao tentar instalar o pacote obsoleto `tools`; o workflow foi corrigido para instalar explicitamente platform-tools, Android 35 e build-tools 35.0.0.
+A migração é testada com um banco em disco marcado como v1, com a identidade Room original, personagem e recompensa gravados. A abertura na v2 preserva nome, histórico e XP e permite criar descansos. As tabelas v1 exportadas são idênticas às correspondentes v2; a única adição é `rest_days`.
 
-## Download remoto confirmado
+O teste de backup v1 remove o campo novo, recalcula o checksum no envelope original e restaura os dados. Backups v2 incluem descansos. Importações inválidas são rejeitadas sem alterar o estado atual.
 
-- Download direto: https://github.com/cmasterzin-art/ascend/raw/refs/heads/main/downloads/ASCEND-1.0.0.apk
-- O arquivo foi baixado novamente do GitHub no Cloud; `cmp` confirmou igualdade byte a byte com o APK original.
-- SHA-256 remoto: `feb0f146b7f50482262484028b314bb39d80585032523e5753166817d475fb67`.
-- O job `distribuir` do Actions concluiu com sucesso e publicou o artefato **ASCEND-Android**, ID `14171198654`, na execução https://github.com/cmasterzin-art/ascend/actions/runs/43739752471.
-- A recompilação independente do código no job `apk` ainda estava em andamento ao registrar esta entrega; ela não é necessária para instalar o APK acima, que já foi compilado e testado no Cloud.
+O certificado da versão 1.0 é diferente do APK 1.1 fornecido. A chave original não está neste ambiente, e o acesso a secrets do GitHub retornou HTTP 403. Nenhum secret foi modificado. A nova chave permanece fora do Git público. O procedimento de exportar/reinstalar/importar está em [INSTALACAO.md](INSTALACAO.md).
+
+## Alcance
+
+As verificações de interface usam Robolectric Android API 28, Compose UI Test e renderização nativa em viewport de 411 × 891 dp. Não houve teste em aparelho físico ou emulador com sistema operacional completo. Permissões de notificação e o seletor de documentos do fabricante precisam de verificação no telefone. Não foi executado Android Lint nesta sessão.
+
+A compilação baixou ferramentas e dependências de desenvolvimento gratuitas. TLS permaneceu habilitado, usando os certificados do ambiente. O aplicativo instalado usa somente recursos locais e não depende desse ambiente de desenvolvimento.

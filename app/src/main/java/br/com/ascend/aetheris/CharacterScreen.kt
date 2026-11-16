@@ -11,6 +11,7 @@ import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.semantics.*
 import java.time.*
 
 @Composable fun CharacterScreen(s:GameState,vm:GameViewModel,onSettings:()->Unit,onJournal:()->Unit){
@@ -35,18 +36,62 @@ import java.time.*
     FullForm("Personalizar",onDismiss,{onSave(next)}){Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){Avatar(next,size=130.dp)};FormField(name,{name=it.take(40)},"Nome");ChipRow(classes,cls,{cls=it});ChipRow(listOf("Pele clara","Pele escura","Pele média"),face,{face=it});ChipRow(listOf("Ouro","Azul","Violeta","Verde","Coral"),color,{color=it});ChipRow(listOf("Túnica","Veste de viagem","Cerimonial"),outfit,{outfit=it});ChipRow(listOf("Simples","Solar","Estrelada"),frame,{frame=it});FormField(goals,{goals=it},"Seus propósitos",multi=true)}
 }
 @Composable fun Statistics(s:GameState){
-    var range by remember{mutableIntStateOf(0)};ChipRow(listOf("7 dias","30 dias","90 dias","Tudo"),range,{range=it})
-    val days=when(range){0->7;1->30;2->90;else->(java.time.temporal.ChronoUnit.DAYS.between(LocalDate.parse(s.player!!.created),LocalDate.now()).toInt()+1).coerceAtLeast(1)}
-    val start=LocalDate.now().minusDays(days-1L).toString();val rs=s.records.filter{it.date>=start && it.progress>0};val earned=s.ledger.filter{it.date>=start}.sumOf{it.xp};val completed=rs.count{it.complete}
-    var planned=0;for(n in 0 until days.coerceAtMost(36600)){planned+=s.habits.count{scheduled(it,LocalDate.now().minusDays(n.toLong()).toString())}}
-    Panel(accent=Blue){Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Stat("$earned","XP NO PERÍODO",Blue);Stat("$completed","CONCLUSÕES",Green);Stat(if(planned==0)"—" else "${(100*completed/planned).coerceAtMost(100)}%","TAXA",Gold)};Text("Taxa considera os dias programados e as pausas registradas. Dias de descanso não entram no total de metas.",color=Muted,fontSize=11.sp);Text("Foco de Intelecto: ${rs.filter{it.type==2&&it.attribute==0}.sumOf{it.progress}/60}h ${rs.filter{it.type==2&&it.attribute==0}.sumOf{it.progress}%60}min",color=Muted);Text("Maior sequência atual: ${s.habits.maxOfOrNull{streak(it,s.records)}?:0} dias programados",color=Muted)}
-    val buckets=if(days<=7)7 else if(days<=30)Math.min(days,30) else 12
-    val width=if(days<=30)1 else kotlin.math.ceil(days.toDouble()/buckets).toInt()
-    val values=(0 until buckets).map{i->val from=LocalDate.parse(start).plusDays(i.toLong()*width);val to=from.plusDays(width-1L);s.ledger.filter{it.date>=from.toString()&&it.date<=to.toString()}.sumOf{it.xp}.toFloat()}
-    Panel(accent=Blue){Eyebrow(if(days<=30)"XP por dia" else "XP por intervalo de $width dias",Blue);Canvas(Modifier.fillMaxWidth().height(130.dp)){val max=(values.maxOrNull()?:1f).coerceAtLeast(1f);val step=size.width/values.size;values.forEachIndexed{i,v->drawRoundRect(Blue.copy(alpha=.8f),Offset(i*step+2,size.height-(v/max*size.height).coerceAtLeast(1f)),Size((step-4).coerceAtLeast(2f),(v/max*size.height).coerceAtLeast(1f)),CornerRadius(3f))}};Text("$start → ${today()}",color=Muted,fontSize=11.sp)}
-    Panel(accent=Green){Eyebrow("Calendário de consistência",Green);val count=days.coerceAtMost(91);for(row in 0 until (count+12)/13){Row(horizontalArrangement=Arrangement.spacedBy(4.dp)){for(col in 0..12){val n=row*13+col;val d=LocalDate.now().minusDays((count-1-n).toLong()).toString();val c=rs.count{it.date==d&&it.complete};Box(Modifier.weight(1f).aspectRatio(1f).background(if(n>=count)Color.Transparent else if(c==0)CardColor else Green.copy(alpha=(.2f+c*.15f).coerceAtMost(1f)),androidx.compose.foundation.shape.RoundedCornerShape(3.dp)))}}};Text("Últimos ${count} dias · mais claro = mais conclusões",color=Muted,fontSize=11.sp)}
-    Panel(accent=Violet){Eyebrow("XP por semana e mês",Violet);val weeks=s.ledger.filter{it.date>=start}.groupBy{weekOf(it.date)};weeks.toSortedMap().forEach{(w,rows)->Text("Semana $w · ${rows.sumOf{it.xp}} XP",color=Muted,fontSize=12.sp)};val months=s.ledger.filter{it.date>=start}.groupBy{it.date.take(7)};months.toSortedMap().forEach{(m,rows)->Text("Mês $m · ${rows.sumOf{it.xp}} XP",color=Gold,fontSize=12.sp)}}
-    Panel{Eyebrow("Atividade por categoria");rs.groupBy{it.category}.forEach{(name,rows)->Text("$name · ${rows.count{it.complete}} conclusões · ${rows.sumOf{Progression.reward(it.xp,it.progress,it.target,it.proportional)}} XP",color=Muted,fontSize=13.sp)}}
+    var range by remember{mutableIntStateOf(0)}
+    ChipRow(listOf("7 dias","30 dias","90 dias"),range,{range=it})
+    val days=listOf(7,30,90)[range];val day=currentDay();val end=LocalDate.parse(day);val start=end.minusDays(days-1L)
+    val summary=periodSummary(s,start.toString(),day)
+    val previous=periodSummary(s,start.minusDays(days.toLong()).toString(),start.minusDays(1).toString())
+    val Blue=Blue;val Green=Green;val CardColor=CardColor
+    val rs=s.records.filter{it.date in start.toString()..day && it.progress>0}
+    Panel(accent=Blue){
+        Eyebrow("Seu caminho em números",Blue)
+        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Stat("${summary.xp}","XP NO PERÍODO",Blue);Stat("${summary.completed}","CONCLUSÕES",Green);Stat(summary.rate?.let{"$it%"}?:"—","CONSISTÊNCIA",Gold)}
+        Text("${summary.scheduledCompleted} de ${summary.planned} metas programadas. Descansos e atividades extras ficam fora da taxa.",color=Muted,fontSize=12.sp)
+        val difference=summary.xp-previous.xp
+        Text(if(previous.planned==0)"O começo de uma nova história." else "${if(difference>=0)"+" else ""}$difference XP em relação aos $days dias anteriores",color=if(difference>=0)Green else Muted,fontSize=13.sp)
+        HorizontalDivider(color=CardColor)
+        Text("Tempo registrado: ${summary.minutes/60}h ${summary.minutes%60}min",color=Muted,fontSize=13.sp)
+        val current=s.habits.maxOfOrNull{streak(it,s.records,restDates=s.restDates)}?:0
+        val best=s.habits.maxOfOrNull{bestStreak(it,s.records,restDates=s.restDates)}?:0
+        Text("Sequência atual: $current · recorde histórico: $best dias programados",color=Muted,fontSize=12.sp)
+    }
+    val daily=(0 until days).map{i->val date=start.plusDays(i.toLong()).toString();s.ledger.filter{it.date==date}.sumOf{it.xp}.toFloat()}
+    Panel(accent=Blue){
+        Eyebrow("Experiência ao longo do tempo",Blue)
+        Text("Cada ponto representa um dia real da sua jornada.",color=Muted,fontSize=12.sp)
+        XpChart(daily)
+        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(start.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM")),color=Muted,fontSize=11.sp);Text("Pico: ${(daily.maxOrNull()?:0f).toLong()} XP",color=Blue,fontSize=11.sp);Text(end.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM")),color=Muted,fontSize=11.sp)}
+    }
+    Panel(accent=Green){
+        Eyebrow("Calendário de consistência",Green)
+        val count=days
+        for(row in 0 until (count+12)/13){Row(horizontalArrangement=Arrangement.spacedBy(4.dp)){for(col in 0..12){val n=row*13+col;val d=start.plusDays(n.toLong()).toString();val c=rs.count{it.date==d&&it.complete};val rest=d in s.restDates
+            Box(Modifier.weight(1f).aspectRatio(1f).background(if(n>=count)Color.Transparent else if(rest)Gold.copy(alpha=.35f) else if(c==0)CardColor else Green.copy(alpha=(.25f+c*.15f).coerceAtMost(1f)),androidx.compose.foundation.shape.RoundedCornerShape(4.dp)).semantics{contentDescription=if(n>=count)"" else "$d: $c conclusões${if(rest)", descanso" else ""}"})
+        }}}
+        Text("Mais verde = mais conclusões · dourado = descanso",color=Muted,fontSize=11.sp)
+    }
+    Panel(accent=Violet){
+        Eyebrow("Equilíbrio entre atributos",Violet)
+        val counts=attributes.indices.map{i->rs.count{it.complete&&it.attribute==i}}
+        val max=(counts.maxOrNull()?:0).coerceAtLeast(1)
+        attributes.forEachIndexed{i,name->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(name,color=habitColor(i),fontSize=13.sp);Text("${counts[i]} conclusões",color=Muted,fontSize=12.sp)};Meter(counts[i].toFloat()/max,habitColor(i))}
+        Text("São indicadores do jogo, sem avaliação clínica ou comparação com outras pessoas.",color=Muted,fontSize=11.sp)
+    }
+}
+@Composable fun XpChart(values:List<Float>){
+    val blue=Blue;val grid=CardColor
+    val description="XP por dia: "+values.mapIndexed{i,x->"dia ${i+1}: ${x.toLong()}"}.joinToString(", ")
+    Canvas(Modifier.fillMaxWidth().height(150.dp).semantics{contentDescription=description}){
+        val margin=8.dp.toPx();val height=size.height-margin*2;val width=size.width-margin*2
+        repeat(4){i->val y=margin+height*i/3;drawLine(grid,Offset(margin,y),Offset(size.width-margin,y),1.dp.toPx())}
+        val max=(values.maxOrNull()?:0f).coerceAtLeast(1f)
+        val points=values.mapIndexed{i,v->Offset(margin+width*i/(values.size-1).coerceAtLeast(1),margin+height*(1-v/max))}
+        val line=Path().apply{points.forEachIndexed{i,p->if(i==0)moveTo(p.x,p.y) else lineTo(p.x,p.y)}}
+        val area=Path().apply{addPath(line);lineTo(points.last().x,size.height-margin);lineTo(points.first().x,size.height-margin);close()}
+        drawPath(area,Brush.verticalGradient(listOf(blue.copy(alpha=.27f),blue.copy(alpha=.01f))))
+        drawPath(line,blue,style=androidx.compose.ui.graphics.drawscope.Stroke(2.5.dp.toPx(),cap=StrokeCap.Round,join=StrokeJoin.Round))
+        if(values.size<=7)points.forEach{drawCircle(blue,3.5.dp.toPx(),it)}
+    }
 }
 @Composable fun JournalScreen(s:GameState,vm:GameViewModel){
     var search by remember{mutableStateOf("")};var editor by remember{mutableStateOf(false)};var editing by remember{mutableStateOf<Journal?>(null)};var deleting by remember{mutableStateOf<Journal?>(null)}

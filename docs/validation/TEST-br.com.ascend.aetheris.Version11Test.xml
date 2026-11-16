@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.Version11Test" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-16T04:39:31" hostname="d3670917dde3" time="0.458">
+  <properties/>
+  <testcase name="archivePauseDuplicateAndHistoricalScheduleRemainConsistent" classname="br.com.ascend.aetheris.Version11Test" time="0.09"/>
+  <testcase name="restDaysArePersistentReversibleAndDoNotAlterRewards" classname="br.com.ascend.aetheris.Version11Test" time="0.094"/>
+  <testcase name="restDayBackupAndInvalidRestoreAreAtomic" classname="br.com.ascend.aetheris.Version11Test" time="0.106"/>
+  <testcase name="migrateVersionOneDatabasePreservesCharacterAndLedger" classname="br.com.ascend.aetheris.Version11Test" time="0.107"/>
+  <testcase name="versionOneBackupWithoutNewFieldsRemainsReadable" classname="br.com.ascend.aetheris.Version11Test" time="0.061"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

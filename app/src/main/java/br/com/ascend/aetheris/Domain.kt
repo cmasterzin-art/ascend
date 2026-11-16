@@ -10,7 +10,7 @@ val classDescriptions = listOf("A coragem de continuar, um passo de cada vez.", 
 val glyphs = listOf("✦", "◆", "☽", "❖", "✧", "⚑", "◈", "✺")
 val palette = listOf(0xFFD9AD61, 0xFF7299F4, 0xFFA084E8, 0xFF67BE92, 0xFFE39483)
 val weekdays = listOf("S", "T", "Q", "Q", "S", "S", "D")
-fun today(): String = LocalDate.now().toString()
+fun today(clock: Clock = Clock.systemDefaultZone()): String = LocalDate.now(clock).toString()
 fun weekOf(date: String): String = LocalDate.parse(date).with(java.time.DayOfWeek.MONDAY).toString()
 fun uid(): String = java.util.UUID.randomUUID().toString()
 
@@ -34,12 +34,14 @@ data class Unlocked(@PrimaryKey val id: String, val date: String = today())
 data class Journal(@PrimaryKey val id: String = uid(), val title: String = "", val text: String = "", val date: String = today())
 @Entity(tableName="routines")
 data class Routine(@PrimaryKey val id: String = uid(), val name: String, val habitIds: String, val time: String = "08:00")
+@Entity(tableName="rest_days")
+data class RestDay(@PrimaryKey val date: String)
 @Entity(tableName="focus", foreignKeys=[ForeignKey(entity=Habit::class,parentColumns=["id"],childColumns=["habitId"],onDelete=ForeignKey.RESTRICT)],indices=[Index("habitId")])
 data class Focus(@PrimaryKey val id: Int = 1, val habitId: String, val date: String = today(), val duration: Int = 25, val elapsed: Long = 0, val startedAt: Long = 0, val baseline: Int = 0) {
     fun seconds(now: Long = System.currentTimeMillis()) = (elapsed + if(startedAt>0) max(0L,(now-startedAt)/1000) else 0).coerceAtMost(duration*60L)
 }
 
-data class GameState(val player: Player? = null, val habits: List<Habit> = emptyList(), val records: List<HabitRecord> = emptyList(), val ledger: List<Reward> = emptyList(), val quests: List<Quest> = emptyList(), val claims: List<Claim> = emptyList(), val assets: List<Asset> = emptyList(), val achievements: List<Unlocked> = emptyList(), val journal: List<Journal> = emptyList(), val routines: List<Routine> = emptyList(), val focus: Focus? = null) {
+data class GameState(val player: Player? = null, val habits: List<Habit> = emptyList(), val records: List<HabitRecord> = emptyList(), val ledger: List<Reward> = emptyList(), val quests: List<Quest> = emptyList(), val claims: List<Claim> = emptyList(), val assets: List<Asset> = emptyList(), val achievements: List<Unlocked> = emptyList(), val journal: List<Journal> = emptyList(), val routines: List<Routine> = emptyList(), val focus: Focus? = null, val restDays: List<RestDay> = emptyList()) {
     val xp get() = ledger.sumOf{it.xp}.coerceAtLeast(0)
     val level get() = Progression.level(xp)
     val rawCoins get() = ledger.sumOf{it.coins}
@@ -47,7 +49,8 @@ data class GameState(val player: Player? = null, val habits: List<Habit> = empty
     val debt get() = (-rawCoins).coerceAtLeast(0)
     fun points(attr: Int) = ledger.filter{it.attribute==attr}.sumOf{it.points}.coerceAtLeast(0)
     fun record(habitId: String, date: String = today()) = records.find{it.habitId==habitId && it.date==date}
-    fun due(date: String = today()) = habits.filter{!it.archived && !it.deleted && scheduled(it,date)}.sortedBy{it.position}
+    val restDates get() = restDays.map { it.date }.toSet()
+    fun due(date: String = today()) = habits.filter{scheduled(it,date,restDates)}.sortedBy{it.position}
 }
 object Progression {
     fun threshold(level: Int): Long = 25L*(level-1)*(level+2)
@@ -56,19 +59,19 @@ object Progression {
     fun current(xp: Long) = xp-threshold(level(xp))
     fun reward(max: Int, progress: Int, target: Int, proportional: Boolean): Long = if(proportional) max.toLong()*progress.coerceIn(0,target)/target.coerceAtLeast(1) else if(progress>=target) max.toLong() else 0L
 }
-fun scheduled(h: Habit, date: String): Boolean {
-    if(date<h.created) return false
+fun scheduled(h: Habit, date: String, restDates: Set<String> = emptySet()): Boolean {
+    if(date<h.created || date in restDates) return false
     val entry=h.scheduleHistory.split(';').map{it.split('|')}.filter{it.size==3 && it[0]<=date}.maxByOrNull{it[0]}
     val days=entry?.get(1)?:h.days
-    val paused=entry?.get(2)?.toBooleanStrictOrNull()?:h.paused
+    val paused=entry?.get(2)?.toBooleanStrictOrNull()?:(h.paused||h.archived||h.deleted)
     return !paused && LocalDate.parse(date).dayOfWeek.value.toString() in days.split(',')
 }
-fun streak(h: Habit, records: List<HabitRecord>, end: String=today()): Int {
+fun streak(h: Habit, records: List<HabitRecord>, end: String=today(), restDates: Set<String> = emptySet()): Int {
     val dates=records.filter{it.habitId==h.id && it.complete}.map{it.date}.toSet()
     var day=LocalDate.parse(end); var count=0; var skippedToday=false
     repeat(36600) {
         if(day.toString()<h.created) return count
-        if(scheduled(h,day.toString())) {
+        if(scheduled(h,day.toString(),restDates)) {
             if(day.toString() in dates) count++ else if(day.toString()==end && !skippedToday) skippedToday=true else return count
         }
         day=day.minusDays(1)
@@ -94,7 +97,7 @@ fun achievementProgress(a: AchievementDef,s: GameState): Long = when(a.id){
     "first","hundred"->s.records.count{it.complete}.toLong()
     "five","fifty"->s.level.toLong()
     "study"->s.records.filter{it.type==2 && it.attribute==0}.sumOf{it.progress.toLong()}
-    "streak"->s.habits.maxOfOrNull{streak(it,s.records)}?.toLong()?:0
+    "streak"->s.habits.maxOfOrNull{streak(it,s.records,restDates=s.restDates)}?.toLong()?:0
     "return"->{val ds=s.records.filter{it.complete}.map{LocalDate.parse(it.date)}.distinct().sorted(); if(ds.zipWithNext().any{(x,y)->java.time.temporal.ChronoUnit.DAYS.between(x,y)>=7}) 1 else 0}
     "restore"->s.assets.count{it.kind=="building"}.toLong()
     else->0
@@ -113,11 +116,19 @@ val buildings=listOf("A Biblioteca","A Forja","O Jardim","A Torre do Cronista","
 val regions=listOf("Vila do Despertar","Floresta da Persistência","Biblioteca das Eras","Montanhas da Disciplina","Santuário do Equilíbrio","Fortaleza da Vontade")
 val regionLevels=listOf(1,3,5,8,12,20)
 val regionDescriptions=listOf("As pedras ainda guardam o calor de uma comunidade. A primeira chama aguarda suas mãos.","Sob a névoa, raízes continuam abrindo caminhos. Aqui, cada retorno deixa uma trilha.","Estantes vazias guardam as marcas de livros que um dia voltarão. O conhecimento reconstrói suas paredes.","Os cumes não pedem pressa. Somente o passo seguinte.","Entre fontes silenciosas, o mundo reaprende a respirar.","A última muralha não foi erguida contra invasores, mas contra o esquecimento.")
-val chapterNames=listOf("I · O Despertar","II · Ecos da Estagnação","III · A Primeira Chama","IV · O Caminho Esquecido","V · A Biblioteca das Eras")
-val chapterTexts=listOf(
+val chapterNames=listOf("I · O Despertar","II · Ecos da Estagnação","III · A Primeira Chama","IV · O Caminho Esquecido","V · A Biblioteca das Eras","VI · As Promessas do Bosque","VII · A Cartógrafa do Silêncio","VIII · A Fortaleza da Vontade","IX · A Aurora de Aetheris")
+val chapterTexts get()=initialChapterTexts+laterChapterTexts
+private val initialChapterTexts get()=listOf(
     "Você desperta ao som de um sino que não se move. Na praça, uma figura recolhe nomes apagados de uma placa de pedra.\n\n— Ainda não sei o seu — diz o Cronista. — Mas talvez você possa me ajudar a lembrar os outros.\n\nA vila tem portas sem moradores e uma fonte sem água. Em sua palma, uma brasa pequena ilumina uma única palavra: começar.\n\n— Não procure uma espada — ele acrescenta. — Procure algo que você consiga fazer hoje.",
     "Ao voltar de sua primeira tarefa, você encontra uma janela acesa. Não havia ninguém ali antes.\n\nO Cronista toca a moldura. A madeira deixou de apodrecer.\n\n— Chamamos de Estagnação aquilo que cresce quando ninguém retorna. Ela não vence batalhas. Apenas espera.\n\nVocê pergunta se uma única janela pode mudar alguma coisa. Ele abre o caderno. Na página, surge o desenho de uma casa inteira.\n\n— É assim que sabemos onde recomeçar.",
     "Quando a primeira construção recebe suas últimas pedras, o sino finalmente se move. O som não é alto. Ainda assim, pássaros levantam voo além da névoa.\n\nO Cronista deixa o caderno no chão e ajuda a varrer a entrada. Pela primeira vez, parece menos uma sombra.\n\n— Pensei que estivesse registrando uma ruína — admite. — Talvez estivesse esperando uma história nova.\n\nNa praça, a Chama da Ascensão encontra abrigo. Aetheris não está pronta. Mas agora tem um lugar para receber quem voltar.",
     "Uma trilha aparece além dos portões. No chão, marcas antigas de rodas seguem até a floresta. O Cronista entrega um mapa incompleto.\n\n— Não desenhei o que ainda não atravessamos.\n\nEntre as árvores, pequenas lanternas apagadas indicam uma estrada. Você acende a primeira. A próxima está distante, mas já pode ser vista.",
     "A porta da Biblioteca das Eras se abre sem ruído. Há pó sobre as mesas, mas nenhum sobre os livros.\n\nEm cada lombada, um assunto que alguém abandonou antes de entender. O Cronista escolhe um volume e oferece a você.\n\n— Algumas cidades são reconstruídas com pedra. Esta precisa de perguntas.\n\nVocê abre a primeira página. A sala inteira recebe um pouco de luz.")
-fun chapterUnlocked(i:Int,s:GameState)=when(i){0->true;1->s.records.any{it.complete};2->s.assets.any{it.kind=="building"};3->s.level>=3;else->s.level>=5}
+fun chapterUnlocked(i:Int,s:GameState)=when(i){0->true;1->s.records.any{it.complete};2->s.assets.any{it.kind=="building"};3->s.level>=3;4->s.level>=5;5->s.level>=10;6->s.level>=15;7->s.level>=20;else->s.level>=30}
+
+private val laterChapterTexts get()=listOf(
+    "No bosque, fitas antigas prendem promessas aos galhos. Você reconhece a letra de alguém que quis aprender a tocar um instrumento. Outra fita menciona uma horta. Muitas não dizem nada: a chuva levou as palavras.\n\nUma criança recolhe as que caíram. Chama-se Nara.\n\n— Preciso devolver tudo às árvores? — pergunta.\n\nVocê a ajuda a separar as fitas que ainda podem ser usadas. Algumas se tornam laços para mudas novas.\n\nO Cronista anota apenas uma frase: nem todo caminho precisa continuar na direção em que começou.",
+    "Além das montanhas, uma mulher desenha um mapa sem estradas. Sobre a mesa, há somente pontos azuis.\n\n— São lugares onde alguém parou para respirar — explica. — Estradas já existem em mapas demais.\n\nEla se chama Ione e procura o Santuário do Equilíbrio. Você oferece água. Ela oferece um lugar ao lado da fogueira.\n\nAo amanhecer, um ponto novo surge no papel. Ione escreve o nome que você deu àquela pequena pausa.\n\nPela primeira vez, você percebe que descansar também pode deixar uma marca no mundo.",
+    "A fortaleza tem um portão enorme e uma dobradiça quebrada. Você empurra. Nada. Empurra de novo, até ouvir o Cronista rir baixinho.\n\n— Há anos tentamos vencer esse portão. Nunca pensamos em consertá-lo.\n\nNa forja, a peça leva tempo. O ferreiro exige medidas, depois paciência. Nara traz ferramentas. Ione segura a lanterna.\n\nQuando a porta finalmente se move, ninguém entra correndo. Do outro lado há um pátio coberto de flores.\n\nA vontade não era uma força para derrubar paredes. Era aquilo que reuniu mãos para cuidar de uma passagem.",
+    "A névoa se afasta da vila sem anúncio. Uma manhã, da janela da biblioteca, você consegue ver o mar.\n\nO Cronista fecha o primeiro volume das Crônicas. A capa está gasta. Há manchas de chá e uma pétala entre duas páginas.\n\n— Terminamos? — você pergunta.\n\nEle olha para a praça. Nara ensina alguém a plantar. Ione deixa um mapa na fonte. O ferreiro abre as janelas.\n\n— Este livro, sim.\n\nSobre a mesa, um caderno novo espera. Você não precisa abri-lo hoje. O sol já entrou, e existe uma cidade inteira para viver."
+)
