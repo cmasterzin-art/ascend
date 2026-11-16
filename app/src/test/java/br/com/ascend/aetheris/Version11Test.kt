@@ -54,15 +54,10 @@ class Version11Test {
     }
     @Test fun migrateVersionOneDatabasePreservesCharacterAndLedger()=runBlocking{
         val name="migration-v1.db";context.deleteDatabase(name)
-        var disk=Room.databaseBuilder(context,GameDatabase::class.java,name).build()
-        val first=GameRepository(disk);first.refresh();first.create(Player(name="Kael",heroClass=1),listOf(h));first.progress(h,today(),1);disk.close()
-        // All v1 tables are unchanged. Remove the v2 addition and restore the original Room identity.
-        val schema=JsonParser.parseString(java.io.File("schemas/br.com.ascend.aetheris.GameDatabase/1.json").readText()).asJsonObject
-        val identity=schema["database"].asJsonObject["identityHash"].asString
-        SQLiteDatabase.openDatabase(context.getDatabasePath(name).path,null,SQLiteDatabase.OPEN_READWRITE).use { old ->
-            old.execSQL("DROP TABLE rest_days");old.execSQL("UPDATE room_master_table SET identity_hash=? WHERE id=42",arrayOf(identity));old.version=1
-        }
-        disk=Room.databaseBuilder(context,GameDatabase::class.java,name).addMigrations(MIGRATION_1_2).build()
+        val fixture=Room.inMemoryDatabaseBuilder(context,GameDatabase::class.java).build()
+        val first=GameRepository(fixture);first.refresh();first.create(Player(name="Kael",heroClass=1),listOf(h));first.progress(h,today(),1)
+        val state=first.state.value!!;fixture.close();legacyDatabase(context,name,1,state)
+        val disk=Room.databaseBuilder(context,GameDatabase::class.java,name).addMigrations(MIGRATION_1_2,MIGRATION_2_3).build()
         try{
             val migrated=GameRepository(disk);migrated.refresh()
             assertEquals("Kael",migrated.state.value!!.player!!.name);assertEquals(50L,migrated.state.value!!.xp)

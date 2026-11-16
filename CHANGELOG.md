@@ -1,3 +1,17 @@
+# Mudanças — 1.3.1 · Grimório e coerência artística
+
+- Grimório dos Hábitos com 102 modelos, nove categorias, busca por palavras/nomes narrativos, seis filtros e quatro ordenações; formulário completo antes de adicionar.
+- Seis modelos de rotina com prévia, seleção parcial, edição de cada novo hábito, reutilização de existentes e gravação transacional sem bônus de XP.
+- Sugestões por interesses, calculadas localmente, dispensáveis. Nomes narrativos opcionais preservam o nome funcional. Contagem de sequência opcional por hábito, desativada inicialmente nos modelos de descanso/autocuidado.
+- Equipamentos e companheiros pintados em nichos fora do retrato; 17 itens com imagens próprias, mantendo ações de equipar/retirar, raridades e procedência.
+- Marcadores do atlas em pedra esculpida, símbolos regionais, fratura para bloqueio e contorno de seleção.
+- Quinze cenas de reconstrução: cinco construções × três estágios. Ruínas, andaimes e edifícios iluminados diferenciam os estados visualmente.
+- Botões em couro/metal, medidores entalhados e cartões de hábitos com dificuldade e nome narrativo; cabeçalho do Grimório acompanha a rolagem em telas pequenas.
+- Room 3 com migração explícita 2 → 3 de três colunas; mantém 1 → 2. Backup 4 aceita 1–4; applicationId, certificado e cálculo de recompensas preservados.
+- versionName 1.3.1, versionCode 5. Evidências em [VALIDACAO.md](VALIDACAO.md), [guia do Grimório](docs/GRIMORIO.md) e [revisão visual](docs/VISUAL-1.3.1.md).
+
+---
+
 # Mudanças — 1.3.0 · Redesign nórdico sombrio
 
 ## Telas

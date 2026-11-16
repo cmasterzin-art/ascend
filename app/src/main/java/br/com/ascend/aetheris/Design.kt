@@ -21,6 +21,7 @@ import androidx.compose.ui.semantics.*
 import kotlin.math.*
 
 data class Appearance(val dark:Boolean=true,val reducedMotion:Boolean=false,val minimal:Boolean=false)
+val LocalNarrativeNames=staticCompositionLocalOf { false }
 val LocalAppearance=staticCompositionLocalOf { Appearance() }
 val Night:Color @Composable get()=MaterialTheme.colorScheme.background
 val Surface:Color @Composable get()=MaterialTheme.colorScheme.surface
@@ -61,14 +62,14 @@ val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
     val fraction by animateFloatAsState(value.coerceIn(0f,1f),tween(if(LocalAppearance.current.reducedMotion)0 else 550),label="progresso")
     val track=trackColor
     Canvas(modifier.fillMaxWidth().height(9.dp).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)}){
-        drawRect(track);drawRect(color.copy(alpha=.3f),style=Stroke(1.dp.toPx()))
-        if(fraction>0)drawRect(Brush.horizontalGradient(listOf(color.copy(alpha=.45f),color)),size=Size(size.width*fraction,size.height))
+        drawRect(Brush.verticalGradient(listOf(Color.Black.copy(alpha=.5f),track,Color.Black.copy(alpha=.2f))));drawRect(color.copy(alpha=.3f),style=Stroke(1.dp.toPx()))
+        if(fraction>0)drawRect(Brush.horizontalGradient(listOf(color.copy(alpha=.5f),color.copy(alpha=.9f),color)),size=Size(size.width*fraction,size.height))
         repeat(10){i->val x=size.width*i/10;drawLine(Color.Black.copy(alpha=.32f),Offset(x,0f),Offset(x,size.height),1.dp.toPx())}
         drawLine(Color.White.copy(alpha=.2f),Offset.Zero,Offset(size.width*fraction,0f),1f)
     }
 }
 @Composable fun Stat(value:String,label:String,color:Color=Gold){Column{Text(value,color=color,fontSize=24.sp,fontFamily=SagaFont);Text(label,color=Muted,fontSize=10.sp,letterSpacing=.6.sp)}}
-@Composable fun Action(text:String,onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boolean=true){Button(onClick,modifier.heightIn(min=48.dp),enabled=enabled,shape=CutCornerShape(5.dp),border=BorderStroke(1.dp,if(enabled)Gold else Muted.copy(alpha=.2f)),colors=ButtonDefaults.buttonColors(containerColor=Gold,contentColor=MaterialTheme.colorScheme.onPrimary)){Text(text,fontWeight=FontWeight.SemiBold)}}
+@Composable fun Action(text:String,onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boolean=true){Button(onClick,modifier.heightIn(min=48.dp).materialSurface(accent=if(enabled)Gold else Muted,leather=true),enabled=enabled,shape=CutCornerShape(5.dp),border=BorderStroke(1.dp,if(enabled)Gold else Muted.copy(alpha=.2f)),colors=ButtonDefaults.buttonColors(containerColor=Color.Transparent,contentColor=Gold,disabledContainerColor=Color.Transparent,disabledContentColor=Muted)){Text(text,fontWeight=FontWeight.SemiBold)}}
 @Composable fun Empty(text:String){Panel(accent=Muted){RuneSeal(0,Gold,Modifier.size(34.dp));Text(text,color=Muted,fontSize=14.sp)}}
 @Composable fun ChipRow(values:List<String>,selected:Int,onSelect:(Int)->Unit){Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(6.dp)){values.forEachIndexed{i,v->FilterChip(selected==i,{onSelect(i)},modifier=Modifier.heightIn(min=48.dp),label={Text(v,fontSize=12.sp)},shape=CutCornerShape(4.dp),colors=FilterChipDefaults.filterChipColors(selectedContainerColor=Gold.copy(alpha=.16f),selectedLabelColor=Gold,labelColor=Muted),border=FilterChipDefaults.filterChipBorder(enabled=true,selected=selected==i,borderColor=Muted.copy(alpha=.28f),selectedBorderColor=Gold.copy(alpha=.7f)))}}}
 @Composable fun FormField(value:String,onChange:(String)->Unit,label:String,number:Boolean=false,multi:Boolean=false){OutlinedTextField(value,onChange,Modifier.fillMaxWidth(),label={Text(label)},singleLine=!multi,minLines=if(multi)3 else 1,keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=if(number)androidx.compose.ui.text.input.KeyboardType.Number else androidx.compose.ui.text.input.KeyboardType.Text),shape=CutCornerShape(5.dp))}

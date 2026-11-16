@@ -78,53 +78,16 @@ val Ember=Color(0xFF8D4B43)
         Canvas(Modifier.matchParentSize()){
             scale(this.size.width/100f,this.size.height/150f,Offset.Zero){
                 fun poly(vararg xy:Float)=Path().apply{moveTo(xy[0],xy[1]);for(i in 2 until xy.size step 2)lineTo(xy[i],xy[i+1]);close()}
-                val background=assets.find{it.kind=="background"}?.id
-                if(background=="scholar-bg"){
-                    listOf(5f,79f).forEach{x->drawRect(Color(0xFF171719).copy(alpha=.9f),Offset(x,8f),Size(16f,55f));repeat(7){i->drawRect(Brush.horizontalGradient(listOf(OldBronze,Color(0xFF27313D))),Offset(x+1+i*2,12f),Size(1.4f,44f))};drawLine(OldBronze,Offset(x,58f),Offset(x+16f,58f),1f)}
-                } else if(background!=null){drawCircle(Color(0xFFABC6DA).copy(alpha=.65f),7f,Offset(82f,16f));drawCircle(Color(0xFF14222E),6f,Offset(85f,14f));repeat(15){i->drawCircle(WornIvory.copy(alpha=.6f),.25f,Offset((i*13%90+5).toFloat(),(i*7%22+5).toFloat()))}}
-                val outfit=assets.find{it.kind=="outfit"}?.id
-                val cloth=when(outfit){"cloak"->Color(0xFF655268);"armor"->Color(0xFF596570);"dawn-outfit"->Color(0xFF506151);else->when(p.outfit){1->Color(0xFF495646);2->Color(0xFF7A5A3A);else->color.copy(alpha=.45f)}}
-                // Outer shoulder panels leave the face, fur and clasp visible.
-                val left=Path().apply{moveTo(0f,94f);quadraticTo(15f,85f,26f,93f);quadraticTo(17f,118f,20f,150f);lineTo(0f,150f);close()}
-                val right=Path().apply{moveTo(100f,94f);quadraticTo(85f,85f,74f,93f);quadraticTo(83f,118f,80f,150f);lineTo(100f,150f);close()}
-                val clothAlpha=if(outfit!=null||p.outfit>0).43f else .08f
-                listOf(left,right).forEach{drawPath(it,Brush.horizontalGradient(listOf(cloth.copy(alpha=clothAlpha),Color.Transparent,cloth.copy(alpha=clothAlpha))));drawPath(it,color.copy(alpha=.3f),style=Stroke(.35f))}
-                repeat(15){i->val y=96f+i*3.2f;drawLine(Color.Black.copy(alpha=.07f),Offset(1f,y),Offset(18f,y+4f),.4f);drawLine(WornIvory.copy(alpha=.12f),Offset(83f,y),Offset(99f,y+2f),.3f)}
-                if(outfit=="armor")repeat(5){i->val y=99f+i*9;drawPath(poly(2f,y,21f,y-6,19f,y+1,2f,y+7),Brush.verticalGradient(listOf(ColdIron,Color(0xFF28323D)),startY=y,endY=y+6));drawCircle(WornIvory, .6f,Offset(6f,y))}
-                val head=assets.find{it.kind=="head"}?.id
-                if(head!=null){
-                    val metal=Brush.horizontalGradient(listOf(Color(0xFF34373B),if(head=="will-helm")Color(0xFFC2A36A) else Color(0xFFA7B0B7),Color(0xFF42474F)),startX=31f,endX=69f)
-                    val band=poly(31f,36f,34f,32f,50f,34f,66f,32f,69f,36f,66f,39f,50f,37f,34f,39f)
-                    drawPath(band,metal);drawPath(band,Color(0xFFD8CCB0).copy(alpha=.6f),style=Stroke(.45f))
-                    if(head=="will-helm")drawPath(poly(36f,34f,37f,27f,44f,32f,50f,24f,56f,32f,63f,27f,64f,34f),metal)
-                    else {drawPath(poly(48.5f,36f,51.5f,36f,52f,56f,50f,58f,48f,56f),metal);drawLine(WornIvory,Offset(50f,37f),Offset(50f,55f),.4f)}
-                    repeat(7){i->drawCircle(Color(0xFF28231F),.55f,Offset(35f+i*5,35.5f))}
-                }
-                val accessory=assets.find{it.kind=="accessory"}?.id
-                if(accessory!=null){
-                    drawPath(Path().apply{moveTo(36f,80f);quadraticTo(50f,115f,64f,80f)},OldBronze,style=Stroke(1.1f))
-                    val gem=if(accessory=="ember-amulet")Color(0xFFD58C58) else Color(0xFF8BA2C7)
-                    drawCircle(Brush.radialGradient(listOf(gem.copy(alpha=.45f),Color.Transparent),Offset(50f,101f),9f),9f,Offset(50f,101f))
-                    drawPath(poly(50f,94f,55f,100f,50f,108f,45f,100f),OldBronze)
-                    drawPath(poly(50f,96f,53f,100f,50f,105f,47f,100f),gem);drawLine(WornIvory,Offset(50f,96f),Offset(50f,104f),.5f)
-                }
-                if(assets.any{it.kind=="weapon"}){
-                    rotate(-12f,Offset(15f,120f)){
-                        drawPath(poly(13f,124f,12f,78f,15f,67f,18f,78f,17f,124f),Brush.horizontalGradient(listOf(ColdIron,Color(0xFFD2D9DC),Color(0xFF515D68)),startX=12f,endX=18f))
-                        drawLine(WornIvory,Offset(15f,72f),Offset(15f,122f),.6f)
-                        drawPath(poly(5f,123f,15f,121f,25f,123f,24f,126f,15f,125f,6f,126f),OldBronze)
-                        drawLine(Color(0xFF755239),Offset(15f,125f),Offset(15f,139f),3.5f);repeat(5){i->drawLine(Color(0xFF322721),Offset(13f,127f+i*2),Offset(17f,128f+i*2),.65f)}
-                        drawCircle(OldBronze,2.3f,Offset(15f,140f))
-                    }
-                }
-                drawRect(Brush.verticalGradient(listOf(Color.Transparent,Color(0xFF070A0F).copy(alpha=.5f)),startY=128f,endY=150f))
+                // Equipment occupies real display niches outside this painting, not artificial body overlays.
+                drawRect(Brush.verticalGradient(listOf(Color.Transparent,Color(0xFF070A0F).copy(alpha=.35f)),startY=130f,endY=150f))
                 drawRect(border.copy(alpha=.7f),Offset(1.5f,1.5f),Size(97f,147f),style=Stroke(.65f))
                 drawRect(border.copy(alpha=.25f),Offset(3f,3f),Size(94f,144f),style=Stroke(.4f))
                 repeat(if(p.frame>0||assets.any{it.kind=="frame"})12 else 4){i->val y=8f+i*11.6f;drawPath(poly(2f,y,5f,y+3,2f,y+6),border,style=Stroke(.6f));drawPath(poly(98f,y,95f,y+3,98f,y+6),border,style=Stroke(.6f))}
+                drawLine(color.copy(alpha=.7f),Offset(12f,146f),Offset(88f,146f),if(p.outfit==0).6f else if(p.outfit==1)1.2f else 2f)
                 drawRect(border.copy(alpha=flash.value))
             }
         }
-        assets.find{it.kind=="companion"}?.let{companion->RelicArt("companion",if(companion.id=="lyra")Color(0xFFC6A77C) else if(companion.id=="corvus")Color(0xFF9BB0C6) else Color(0xFFC48B72),Modifier.align(Alignment.BottomEnd).padding(7.dp).size(size*.3f),companion.id)}
+
     }
 }
 

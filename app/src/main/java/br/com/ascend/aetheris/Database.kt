@@ -49,5 +49,12 @@ val MIGRATION_1_2 = object : androidx.room.migration.Migration(1,2) {
         db.execSQL("CREATE TABLE IF NOT EXISTS `rest_days` (`date` TEXT NOT NULL, PRIMARY KEY(`date`))")
     }
 }
-@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class],version=2,exportSchema=true)
+val MIGRATION_2_3 = object : androidx.room.migration.Migration(2,3) {
+    override fun migrate(db:androidx.sqlite.db.SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE habits ADD COLUMN templateId TEXT NOT NULL DEFAULT ''")
+        db.execSQL("ALTER TABLE habits ADD COLUMN narrativeName TEXT NOT NULL DEFAULT ''")
+        db.execSQL("ALTER TABLE habits ADD COLUMN trackStreak INTEGER NOT NULL DEFAULT 1")
+    }
+}
+@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class],version=3,exportSchema=true)
 abstract class GameDatabase:RoomDatabase(){abstract fun dao():GameDao}

@@ -11,6 +11,7 @@ import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
+import androidx.compose.ui.semantics.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun FullForm(title:String,onDismiss:()->Unit,onSave:()->Unit,saveLabel:String="Salvar",content:@Composable ColumnScope.()->Unit){
@@ -19,12 +20,13 @@ import androidx.compose.ui.window.*
     }
 }
 @Composable fun HabitEditor(h:Habit,onDismiss:()->Unit,onSave:(Habit)->Unit){
+    var narrative by remember{mutableStateOf(h.narrativeName)};var trackStreak by remember{mutableStateOf(h.trackStreak)}
     var name by remember{mutableStateOf(h.name)};var desc by remember{mutableStateOf(h.description)};var category by remember{mutableStateOf(h.category)};var attr by remember{mutableIntStateOf(h.attribute)};var type by remember{mutableIntStateOf(h.type)};var target by remember{mutableStateOf(h.target.toString())};var unit by remember{mutableStateOf(h.unit)}
     var xp by remember{mutableStateOf(h.xp.toString())};var coins by remember{mutableStateOf(h.coins.toString())};var points by remember{mutableStateOf(h.points.toString())};var days by remember{mutableStateOf(h.days.split(',').mapNotNull{it.toIntOrNull()}.toSet())};var time by remember{mutableStateOf(h.time)};var proportional by remember{mutableStateOf(h.proportional)};var reminder by remember{mutableStateOf(h.reminder)};var difficulty by remember{mutableIntStateOf(h.difficulty)};var icon by remember{mutableIntStateOf(h.icon)};var color by remember{mutableIntStateOf(h.color)}
-    FullForm(if(h.name.isBlank())"Novo hábito" else "Editar hábito",onDismiss,{
-        onSave(h.copy(name=name.trim(),description=desc,category=category,attribute=attr,type=type,target=if(type==0)1 else target.toIntOrNull()?:0,unit=if(type==2)"minutos" else if(type==0)"vez" else unit,xp=xp.toIntOrNull()?:-1,coins=coins.toIntOrNull()?:-1,points=points.toIntOrNull()?:-1,days=days.sorted().joinToString(","),time=time,proportional=proportional && type in 1..2,reminder=reminder,difficulty=difficulty,icon=icon,color=color))
+    FullForm(if(h.name.isBlank())"Novo hábito" else if(h.templateId.isNotBlank()&&h.scheduleHistory.isBlank())"Personalizar ritual" else "Editar hábito",onDismiss,{
+        onSave(h.copy(name=name.trim(),narrativeName=narrative.trim(),trackStreak=trackStreak,description=desc,category=category,attribute=attr,type=type,target=if(type==0)1 else target.toIntOrNull()?:0,unit=if(type==2)"minutos" else unit,xp=xp.toIntOrNull()?:-1,coins=coins.toIntOrNull()?:-1,points=points.toIntOrNull()?:-1,days=days.sorted().joinToString(","),time=time,proportional=proportional && type in 1..2,reminder=reminder,difficulty=difficulty,icon=icon,color=color))
     }){
-        var advanced by remember{mutableStateOf(false)}
+        var advanced by remember{mutableStateOf(h.templateId.isNotBlank())}
         Panel(accent=habitColor(color)){
             Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){
                 Text(glyphs[icon],color=habitColor(color),fontSize=36.sp)
@@ -38,12 +40,15 @@ import androidx.compose.ui.window.*
         Text("A recompensa é sua escolha. Sugestões: 15, 30 ou 50 XP.",color=Muted,fontSize=12.sp)
         Text("Atributo associado",color=Muted);ChipRow(attributes,attr,{attr=it})
         Eyebrow("Dias programados")
-        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(3.dp)){weekdays.forEachIndexed{i,d->val day=i+1;FilterChip(day in days,{days=if(day in days) days-day else days+day},label={Text(d)},modifier=Modifier.weight(1f),shape=androidx.compose.foundation.shape.CircleShape)}}
+        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(3.dp)){weekdays.forEachIndexed{i,d->val day=i+1;FilterChip(day in days,{days=if(day in days) days-day else days+day},label={Text(d)},modifier=Modifier.weight(1f).heightIn(min=48.dp).semantics{contentDescription=listOf("Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo")[i]},shape=androidx.compose.foundation.shape.CutCornerShape(3.dp))}}
         Text("Dias sem seleção são descanso. Não quebram sua sequência.",color=Muted,fontSize=12.sp)
         if(type in 1..2)Toggle("Recompensa proporcional ao progresso",proportional,{proportional=it})
         Toggle("Mais opções de personalização",advanced,{advanced=it})
         if(advanced){
             FormField(desc,{desc=it},"Descrição",multi=true)
+            FormField(narrative,{narrative=it.take(200)},"Nome narrativo opcional")
+            if(type==0)FormField(unit,{unit=it},"Unidade")
+            Toggle("Contar sequências deste hábito",trackStreak,{trackStreak=it})
             Eyebrow("Identidade visual");ChipRow(glyphs,icon,{icon=it});ChipRow(listOf("Ouro","Azul","Violeta","Verde","Coral"),color,{color=it})
             FormField(category,{category=it},"Categoria")
             Text("Dificuldade narrativa",color=Muted);ChipRow(listOf("Leve","Moderada","Desafiadora"),difficulty,{difficulty=it})
