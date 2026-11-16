@@ -6,10 +6,10 @@ A direção de arte deixa a geometria esquemática da 1.2 e passa a combinar pin
 
 | Tela | 1.2 | 1.3 |
 |---|---|---|
-| Jornada | <img src="screenshots/v1.2-jornada-escuro.png" width="220" alt="Jornada anterior"> | <img src="screenshots/jornada-escuro.png" width="220" alt="Jornada nórdica"> |
-| Mapa | <img src="screenshots/v1.2-mapa-aetheris.png" width="220" alt="Mapa esquemático anterior"> | <img src="screenshots/mapa-aetheris.png" width="220" alt="Atlas ilustrado novo"> |
-| Inventário | <img src="screenshots/v1.2-inventario.png" width="220" alt="Inventário anterior"> | <img src="screenshots/inventario.png" width="220" alt="Arsenal novo"> |
-| Missões | <img src="screenshots/v1.2-livro-missoes.png" width="220" alt="Livro anterior"> | <img src="screenshots/livro-missoes.png" width="220" alt="Códice novo"> |
+| Jornada | <img src="screenshots/v1.2-jornada-escuro.png" width="220" alt="Jornada anterior"> | <img src="screenshots/v1.3/jornada-escuro.png" width="220" alt="Jornada nórdica"> |
+| Mapa | <img src="screenshots/v1.2-mapa-aetheris.png" width="220" alt="Mapa esquemático anterior"> | <img src="screenshots/v1.3/mapa-aetheris.png" width="220" alt="Atlas ilustrado novo"> |
+| Inventário | <img src="screenshots/v1.2-inventario.png" width="220" alt="Inventário anterior"> | <img src="screenshots/v1.3/inventario.png" width="220" alt="Arsenal novo"> |
+| Missões | <img src="screenshots/v1.2-livro-missoes.png" width="220" alt="Livro anterior"> | <img src="screenshots/v1.3/livro-missoes.png" width="220" alt="Códice novo"> |
 
 As capturas vêm da renderização nativa de testes, não de mockups. Personagens e recompensas são fixtures locais de teste; o aplicativo não recebe dados fictícios.
 
@@ -32,12 +32,12 @@ Durante a revisão, foram corrigidos: sobreposições opacas nos ombros, rótulo
 
 ## Outras capturas
 
-- [Inventário equipado](screenshots/inventario-equipado.png), [perfil](screenshots/perfil.png) e [loja](screenshots/loja.png).
-- [Vila](screenshots/vila.png), [crônicas abertas](screenshots/cronicas.png) e [chefe](screenshots/chefe.png).
-- [Tema claro](screenshots/jornada-claro.png).
-- [Jornada em 320 dp com texto a 130%](screenshots/jornada-320-texto130.png).
-- [Inventário em 320 dp com texto a 130%](screenshots/inventario-320-texto130.png).
-- [Modo minimalista](screenshots/jornada-minimalista.png).
+- [Inventário equipado](screenshots/v1.3/inventario-equipado.png), [perfil](screenshots/v1.3/perfil.png) e [loja](screenshots/v1.3/loja.png).
+- [Vila](screenshots/v1.3/vila.png), [crônicas abertas](screenshots/v1.3/cronicas.png) e [chefe](screenshots/v1.3/chefe.png).
+- [Tema claro](screenshots/v1.3/jornada-claro.png).
+- [Jornada em 320 dp com texto a 130%](screenshots/v1.3/jornada-320-texto130.png).
+- [Inventário em 320 dp com texto a 130%](screenshots/v1.3/inventario-320-texto130.png).
+- [Modo minimalista](screenshots/v1.3/jornada-minimalista.png).
 
 ## Materiais, movimento e desempenho
 

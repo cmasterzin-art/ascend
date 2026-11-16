@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.semantics.*
@@ -27,6 +28,7 @@ import androidx.compose.ui.semantics.*
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceEvenly){equipmentSlots.drop(4).forEach{(kind,label)->EquipmentSlot(kind,label,s){selected=it}}}
             SagaDivider(color=OldBronze)
             Text("${s.assets.count{it.equipped}} equipados · ${s.assets.count{a->shopItems.any{it.id==a.id}}} artefatos na coleção",color=Muted,fontSize=11.sp)
+            Text("Seus artefatos ocupam nichos ao redor do retrato. Toque em um item equipado para inspecionar.",color=Muted,fontSize=11.sp)
         }
     }else{
         Column(Modifier.fillMaxWidth().materialSurface(accent=OldBronze,leather=true).padding(18.dp),verticalArrangement=Arrangement.spacedBy(8.dp)){
@@ -61,7 +63,7 @@ import androidx.compose.ui.semantics.*
 @Composable private fun EquipmentSlot(kind:String,label:String,s:GameState,select:(String)->Unit){
     val a=s.assets.find{it.kind==kind&&it.equipped};val item=shopItems.find{it.id==a?.id};val color=if(item!=null)rarityColor(rarity(item)) else Muted
     Column(Modifier.width(62.dp).heightIn(min=72.dp).clip(CutCornerShape(5.dp)).background(color.copy(alpha=.08f)).border(if(item!=null)1.5.dp else 1.dp,color.copy(alpha=if(item!=null).65f else .3f),CutCornerShape(5.dp)).clickable(enabled=item!=null,onClickLabel="Detalhes de ${item?.name?:label}"){select(item!!.id)}.padding(5.dp).semantics(mergeDescendants=true){contentDescription="$label: ${item?.name?:"vazio"}"},horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(3.dp)){
-        RelicArt(kind,color.copy(alpha=if(item==null).55f else 1f),Modifier.size(42.dp),item?.id)
+        RelicArt(kind,color.copy(alpha=if(item==null).55f else 1f),Modifier.size(42.dp).alpha(if(item==null).22f else 1f),item?.id)
         Text(when(kind){"companion"->"Aliado";"weapon"->"Arma";"outfit"->"Traje";else->label},color=color,fontSize=9.sp,lineHeight=12.sp)
         Text(if(a==null)"Vazio" else "◆",color=color,fontSize=9.sp)
     }
@@ -74,7 +76,18 @@ import androidx.compose.ui.semantics.*
         nodes.forEachIndexed{i,skill->
             if(i>0)Text("│",Modifier.padding(start=27.dp),color=Gold,fontSize=26.sp)
             val owned=s.assets.any{it.id=="skill:${skill.id}"};val ready=s.level>=skill.level&&(skill.parent==null||s.assets.any{it.id=="skill:${skill.parent}"})&&skillPoints(s)>0
-            Panel(accent=if(owned)Green else Violet){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){RelicArt(shopItems.first{it.id==skill.item}.kind,if(owned)Green else Violet);Column(Modifier.weight(1f)){Text(skill.name,style=MaterialTheme.typography.titleLarge);Text("Nível ${skill.level} · 1 ponto",color=Muted,fontSize=12.sp)}};Text(skill.description,color=Muted);Action(if(owned)"Despertada · item no inventário" else "Despertar habilidade",{vm.run{vm.repo.unlockSkill(skill.id)}},enabled=!owned&&ready)}
+            Panel(accent=if(owned)Green else Violet){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){RelicArt(shopItems.first{it.id==skill.item}.kind,if(owned)Green else Violet,itemId=skill.item);Column(Modifier.weight(1f)){Text(skill.name,style=MaterialTheme.typography.titleLarge);Text("Nível ${skill.level} · 1 ponto",color=Muted,fontSize=12.sp)}};Text(skill.description,color=Muted);Action(if(owned)"Despertada · item no inventário" else "Despertar habilidade",{vm.run{vm.repo.unlockSkill(skill.id)}},enabled=!owned&&ready)}
         }
+    }
+}
+
+@Composable fun EquippedNiches(s:GameState){
+    val items=s.assets.filter{it.equipped}.mapNotNull{a->shopItems.find{it.id==a.id}}
+    if(items.isNotEmpty()){
+        Eyebrow("Artefatos preparados")
+        items.chunked(3).forEach{row->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
+            row.forEach{item->Column(Modifier.weight(1f),horizontalAlignment=Alignment.CenterHorizontally){RelicArt(item.kind,rarityColor(rarity(item)),Modifier.fillMaxWidth().aspectRatio(1f),item.id);Text(item.name,color=Muted,fontSize=10.sp,lineHeight=14.sp)}}
+            repeat(3-row.size){Spacer(Modifier.weight(1f))}
+        }}
     }
 }

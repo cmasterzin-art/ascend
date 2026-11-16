@@ -16,7 +16,7 @@ import java.security.MessageDigest
 
 val Context.preferences by preferencesDataStore("ascend_settings")
 class AscendApp:Application(){
-    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2).build() }
+    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3).build() }
     val repository by lazy { GameRepository(database) }
 }
 data class GameEvent(val message:String,val level:Int=0,val xp:Long=0)
@@ -69,9 +69,7 @@ class GameRepository(private val db:GameDatabase){
     }
     suspend fun player(p:Player)=change("Personagem atualizado"){require(p.name.isNotBlank());d.player(p)}
     suspend fun habit(h:Habit)=change("Hábito salvo"){
-        require(h.name.isNotBlank() && h.target in 1..1000000 && h.xp in 0..1000000 && h.coins in 0..1000000 && h.points in 0..1000000){"Revise o nome, a meta e as recompensas (0 a 1.000.000)."}
-        require(h.attribute in 0..4 && h.type in 0..3 && h.days.split(',').all{it.toIntOrNull() in 1..7}){"Selecione ao menos um dia."}
-        require(Regex("([01]\\d|2[0-3]):[0-5]\\d").matches(h.time)){"Use um horário como 08:00."}
+        validateHabitInput(h)
         val old=d.habits().find{it.id==h.id}
         val inactive=h.paused||h.archived||h.deleted
         val history=if(old==null) "${h.created}|${h.days}|$inactive" else if(old.days!=h.days || old.paused!=h.paused || old.archived!=h.archived || old.deleted!=h.deleted){
@@ -79,6 +77,29 @@ class GameRepository(private val db:GameDatabase){
             (previous.split(';').filter{!it.startsWith(today()+"|")}+"${today()}|${h.days}|$inactive").joinToString(";")
         }else old.scheduleHistory
         d.habit(h.copy(scheduleHistory=history))
+    }
+    suspend fun addCatalogHabit(h:Habit)=change("Ritual adicionado à jornada"){
+        require(habitTemplates.any{it.id==h.templateId}){"Modelo desconhecido."}
+        validateHabitInput(h)
+        val habits=d.habits()
+        require(habits.none{it.id==h.id} && matchingHabit(habits,h)==null){"Este hábito já existe. Edite ou reative o existente em Hábitos."}
+        d.habit(h.copy(position=(habits.maxOfOrNull{it.position}?:-1)+1,scheduleHistory="${h.created}|${h.days}|false",paused=false,archived=false,deleted=false))
+    }
+    suspend fun addRoutineTemplate(templateId:String,selected:List<Habit>)=change("Rotina guardada"){
+        val template=routineTemplates.firstOrNull{it.id==templateId}?:error("Rotina desconhecida")
+        require(selected.isNotEmpty() && selected.map{it.templateId}.distinct().size==selected.size){"Selecione ao menos um hábito, sem repetições."}
+        selected.forEach{h->require(template.choices.any{it.templateId==h.templateId});validateHabitInput(h)}
+        var habits=d.habits()
+        val ids=selected.map{h->
+            val existing=matchingHabit(habits,h)
+            if(existing!=null)existing.id else {
+                require(habits.none{it.id==h.id}){"Identificador de hábito já utilizado."}
+                val saved=h.copy(position=(habits.maxOfOrNull{it.position}?:-1)+1,scheduleHistory="${h.created}|${h.days}|false",paused=false,archived=false,deleted=false)
+                d.habit(saved);habits=habits+saved;saved.id
+            }
+        }
+        val key="routine-template:${template.id}";val old=d.routines().find{it.id==key}
+        d.routine(Routine(key,old?.name?:template.name,((old?.habitIds?.split(',')?:emptyList())+ids).distinct().joinToString(","),old?.time?:template.time))
     }
     suspend fun reorder(h:Habit,step:Int)=change("Ordem atualizada"){
         val hs=d.habits().filter{!it.deleted && !it.archived}.sortedBy{it.position}.toMutableList();val i=hs.indexOfFirst{it.id==h.id};val j=(i+step).coerceIn(0,(hs.size-1).coerceAtLeast(0))
@@ -165,7 +186,14 @@ class GameRepository(private val db:GameDatabase){
         s.player?.let{d.player(it)};s.habits.forEach{d.habit(it)};s.records.forEach{d.record(it)};s.ledger.forEach{d.reward(it)};s.quests.forEach{d.quest(it)};s.claims.forEach{d.claim(it)};s.assets.forEach{d.asset(it)};s.achievements.forEach{d.unlock(it)};s.journal.forEach{d.journal(it)};s.routines.forEach{d.routine(it)};s.focus?.let{d.focus(it.copy(elapsed=it.seconds(),startedAt=0))}
     }
 }
-data class BackupEnvelope(val format:String="ASCEND",val version:Int=3,val sha256:String,val payload:String)
+fun validateHabitInput(h:Habit){
+        require(h.name.isNotBlank() && h.target in 1..1000000 && h.xp in 0..1000000 && h.coins in 0..1000000 && h.points in 0..1000000){"Revise o nome, a meta e as recompensas (0 a 1.000.000)."}
+        require(h.attribute in 0..4 && h.type in 0..3 && h.days.split(',').all{it.toIntOrNull() in 1..7}){"Selecione ao menos um dia."}
+        require(Regex("([01]\\d|2[0-3]):[0-5]\\d").matches(h.time)){"Use um horário como 08:00."}
+    require(h.difficulty in 0..2 && h.icon in glyphs.indices && h.color in palette.indices){"Revise a dificuldade, o ícone e a cor."}
+    require(h.templateId.length<=100 && h.narrativeName.length<=200){"Nome narrativo muito longo."}
+}
+data class BackupEnvelope(val format:String="ASCEND",val version:Int=4,val sha256:String,val payload:String)
 object Backup {
     private val gson=Gson()
     private fun digest(s:String)=MessageDigest.getInstance("SHA-256").digest(s.toByteArray(Charsets.UTF_8)).joinToString(""){"%02x".format(it)}
@@ -173,11 +201,12 @@ object Backup {
     fun decode(text:String):GameState {
         require(text.length<=20_000_000){"Backup muito grande (máximo 20 MB)."}
         val b=gson.fromJson(text,BackupEnvelope::class.java)
-        require(b.format=="ASCEND" && b.version in 1..3 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
+        require(b.format=="ASCEND" && b.version in 1..4 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
         val s=gson.fromJson(b.payload,GameState::class.java);validateState(s);return s
     }
 }
 fun validateState(s:GameState){
+    s.habits.forEach{require(it.templateId.length<=100 && it.narrativeName.length<=200)}
     val p=requireNotNull(s.player){"Backup sem personagem."}; require(p.id==1 && p.name.isNotBlank() && p.heroClass in 0..4 && p.color in 0..4 && p.face in 0..2 && p.outfit in 0..2 && p.frame in 0..2)
     require(s.habits.size<=10000 && s.records.size<=200000 && s.ledger.size<=300000)
     fun distinct(ids:List<String>)=require(ids.all{it.isNotBlank()} && ids.distinct().size==ids.size)
@@ -213,6 +242,12 @@ class GameViewModel(app:Application):AndroidViewModel(app){
     val appearance=app.preferences.data.map{it[stringPreferencesKey("theme")]?:"dark"}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),"dark")
     val reducedMotion=app.preferences.data.map{it[booleanPreferencesKey("reducedMotion")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
     val minimal=app.preferences.data.map{it[booleanPreferencesKey("minimal")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
+    val narrativeNames=app.preferences.data.map{it[booleanPreferencesKey("narrative_names")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
+    val catalogInterests=app.preferences.data.map{it[stringSetPreferencesKey("catalog_interests")]?:emptySet()}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptySet())
+    val dismissedSuggestions=app.preferences.data.map{it[stringSetPreferencesKey("catalog_dismissed")]?:emptySet()}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptySet())
+    fun interest(category:String)=run{getApplication<Application>().preferences.edit{p->val key=stringSetPreferencesKey("catalog_interests");val old=p[key]?:emptySet();p[key]=if(category in old)old-category else old+category}}
+    fun dismissSuggestion(id:String)=run{getApplication<Application>().preferences.edit{p->val key=stringSetPreferencesKey("catalog_dismissed");p[key]=(p[key]?:emptySet())+id}}
+    fun resetSuggestions()=run{getApplication<Application>().preferences.edit{it.remove(stringSetPreferencesKey("catalog_dismissed"))}}
     init{run{repo.refresh()}}
     fun run(block:suspend ()->Unit){viewModelScope.launch{try{block()}catch(e:CancellationException){throw e}catch(e:Exception){error.value=when(e){
             is java.time.format.DateTimeParseException -> "Informe uma data no formato AAAA-MM-DD ou um horário no formato HH:mm."

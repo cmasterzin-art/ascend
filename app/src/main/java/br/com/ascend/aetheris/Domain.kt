@@ -17,7 +17,7 @@ fun uid(): String = java.util.UUID.randomUUID().toString()
 @Entity(tableName="player")
 data class Player(@PrimaryKey val id: Int = 1, val name: String = "", val heroClass: Int = 1, val color: Int = 1, val face: Int = 0, val outfit: Int = 0, val frame: Int = 0, val title: String = "O Desperto", val goals: String = "", val created: String = today())
 @Entity(tableName="habits")
-data class Habit(@PrimaryKey val id: String = uid(), val name: String = "", val description: String = "", val icon: Int = 0, val color: Int = 1, val category: String = "Estudo", val attribute: Int = 0, val difficulty: Int = 1, val type: Int = 0, val target: Int = 1, val unit: String = "vez", val days: String = "1,2,3,4,5,6,7", val time: String = "08:00", val xp: Int = 50, val coins: Int = 5, val points: Int = 5, val proportional: Boolean = false, val reminder: Boolean = false, val paused: Boolean = false, val archived: Boolean = false, val deleted: Boolean = false, val position: Int = 0, val created: String = today(), val scheduleHistory: String = "")
+data class Habit(@PrimaryKey val id: String = uid(), val name: String = "", val description: String = "", val icon: Int = 0, val color: Int = 1, val category: String = "Estudo", val attribute: Int = 0, val difficulty: Int = 1, val type: Int = 0, val target: Int = 1, val unit: String = "vez", val days: String = "1,2,3,4,5,6,7", val time: String = "08:00", val xp: Int = 50, val coins: Int = 5, val points: Int = 5, val proportional: Boolean = false, val reminder: Boolean = false, val paused: Boolean = false, val archived: Boolean = false, val deleted: Boolean = false, val position: Int = 0, val created: String = today(), val scheduleHistory: String = "", @ColumnInfo(defaultValue="''") val templateId:String="", @ColumnInfo(defaultValue="''") val narrativeName:String="", @ColumnInfo(defaultValue="1") val trackStreak:Boolean=true)
 @Entity(tableName="records", foreignKeys=[ForeignKey(entity=Habit::class,parentColumns=["id"], childColumns=["habitId"], onDelete=ForeignKey.RESTRICT)], indices=[Index("habitId")])
 data class HabitRecord(@PrimaryKey val id: String, val habitId: String, val date: String, val progress: Int, val target: Int, val xp: Int, val coins: Int, val points: Int, val attribute: Int, val proportional: Boolean, val type: Int, val category: String, val unit: String, val name: String, val scheduled: Boolean = true) { val complete get() = progress >= target }
 @Entity(tableName="ledger")
@@ -67,6 +67,7 @@ fun scheduled(h: Habit, date: String, restDates: Set<String> = emptySet()): Bool
     return !paused && LocalDate.parse(date).dayOfWeek.value.toString() in days.split(',')
 }
 fun streak(h: Habit, records: List<HabitRecord>, end: String=today(), restDates: Set<String> = emptySet()): Int {
+    if(!h.trackStreak) return 0
     val dates=records.filter{it.habitId==h.id && it.complete}.map{it.date}.toSet()
     var day=LocalDate.parse(end); var count=0; var skippedToday=false
     repeat(36600) {

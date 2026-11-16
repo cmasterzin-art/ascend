@@ -1,12 +1,14 @@
-# ASCEND — Crônicas da Ascensão · 1.3
+# ASCEND — Crônicas da Ascensão · 1.3.1
 
-[**Baixar APK Android 1.3.0**](downloads/ASCEND-1.3.0.apk?raw=true)
+[**Baixar APK Android 1.3.1**](downloads/ASCEND-1.3.1.apk?raw=true)
 
 RPG de hábitos para Android 8.0 ou superior. **Tudo funciona localmente**, sem conta, internet, anúncios, assinatura ou serviços pagos. O GitHub distribui o código e o instalador; o aplicativo não tem permissão INTERNET.
 
-A versão 1.3 traz um **redesign nórdico sombrio**: retratos ilustrados, fiordes e névoa, atlas geográfico, códice de juramentos, arsenal ritual, ferro envelhecido, couro, costuras e selos. As artes e a fonte estão no APK; nenhum recurso visual precisa de download durante o uso. Hábitos, recompensas, habilidades e dados da 1.2 foram preservados.
+A versão **1.3.1** acrescenta o **Grimório dos Hábitos**, com 102 sugestões locais, nove categorias, seis modelos de rotina, busca, filtros, interesses e nomes narrativos opcionais. Cada sugestão abre o editor completo; nada é ativado sem sua escolha. A criação manual continua disponível.
 
-**Atualização dos APKs 1.1 ou 1.2 fornecidos neste repositório:** exporte um backup de segurança e instale a 1.3 por cima, **sem desinstalar**. O certificado é o mesmo. A antiga 1.0 possui assinatura diferente; consulte [INSTALACAO.md](INSTALACAO.md).
+O refinamento artístico troca equipamentos sobrepostos por pinturas em nichos, diferencia as 17 relíquias da coleção, adiciona pedras rúnicas interativas ao mapa e três cenas para cada uma das cinco construções. Botões, medidores e cartões seguem couro, ferro e bronze. Artes e fonte estão incluídas no APK.
+
+**Atualização dos APKs 1.1, 1.2 ou 1.3 fornecidos neste repositório:** exporte um backup de segurança e instale a 1.3.1 por cima, **sem desinstalar**. O certificado é o mesmo. A antiga 1.0 possui assinatura diferente; consulte [INSTALACAO.md](INSTALACAO.md).
 
 - [Instalação e atualização](INSTALACAO.md)
 - [Funcionalidades e limites reais](PROGRESSO.md)
@@ -17,9 +19,9 @@ A versão 1.3 traz um **redesign nórdico sombrio**: retratos ilustrados, fiorde
 
 | Jornada | Atlas | Arsenal |
 |---|---|---|
-| <img src="docs/screenshots/jornada-escuro.png" width="240" alt="Jornada nórdica com retrato e fiorde"> | <img src="docs/screenshots/mapa-aetheris.png" width="240" alt="Atlas geográfico de Aetheris"> | <img src="docs/screenshots/inventario-equipado.png" width="240" alt="Personagem com equipamentos sobrepostos"> |
+| <img src="docs/screenshots/jornada-escuro.png" width="240" alt="Jornada nórdica com retrato e fiorde"> | <img src="docs/screenshots/mapa-aetheris.png" width="240" alt="Atlas geográfico de Aetheris"> | <img src="docs/screenshots/inventario-equipado.png" width="240" alt="Personagem com equipamentos em nichos"> |
 
-**[Comparação 1.2 → 1.3 e revisão tela por tela](docs/VISUAL-1.3.md)** · [Missões](docs/screenshots/livro-missoes.png) · [Chefe](docs/screenshots/chefe.png) · [Crônicas](docs/screenshots/cronicas.png)
+**[Novas capturas e revisão da 1.3.1](docs/VISUAL-1.3.1.md)** · [Guia do Grimório e rotinas](docs/GRIMORIO.md) · [Comparação 1.2 → 1.3](docs/VISUAL-1.3.md) · [Missões](docs/screenshots/livro-missoes.png) · [Chefe](docs/screenshots/chefe.png) · [Crônicas](docs/screenshots/cronicas.png)
 
 Capturas dos testes de interface com personagens de teste. Nenhuma conclusão fictícia é incluída no aplicativo.
 
@@ -37,4 +39,4 @@ Para usar a chave de depuração preservada, configure `ASCEND_KEYSTORE_PATH` co
 
 O fluxo central continua: registro por hábito/dia → recompensa com chave determinística → ledger transacional → nível/atributos/moedas derivados. Recompensas são snapshots; editar um hábito não reescreve XP histórico. Reverter moedas já gastas gera compensação futura, com saldo disponível limitado a zero.
 
-Banco Room v2, com migração explícita de v1; backups v3 leem também arquivos v1 e v2. Nenhum fallback destrutivo é usado. As preferências de aparência são locais ao aparelho e não são transferidas pelo backup.
+Banco Room v3, com migrações explícitas 1 → 2 → 3; backups v4 leem também arquivos v1, v2 e v3. A migração acrescenta somente origem do modelo, nome narrativo e opção de sequência aos hábitos existentes. Nenhum fallback destrutivo é usado. Preferências de aparência, interesses e sugestões dispensadas ficam no aparelho e não são transferidas pelo backup.

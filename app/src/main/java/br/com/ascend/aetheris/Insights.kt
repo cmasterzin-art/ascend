@@ -22,6 +22,7 @@ fun periodSummary(s:GameState,start:String,end:String):PeriodSummary {
         records.filter{it.type==2}.sumOf{it.progress.toLong()})
 }
 fun bestStreak(h:Habit,records:List<HabitRecord>,end:String=today(),restDates:Set<String> = emptySet()):Int {
+    if(!h.trackStreak) return 0
     val dates=records.filter{it.habitId==h.id && it.complete}.map{it.date}.toSet()
     var day=LocalDate.parse(h.created);val last=LocalDate.parse(end);var count=0;var best=0
     repeat(36600) {

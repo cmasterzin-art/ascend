@@ -16,10 +16,11 @@ import java.time.LocalDate
     FullForm("Detalhes do hábito",onDismiss,onEdit,"Editar"){
         Eyebrow("${h.category} · ${attributes[h.attribute]}",color)
         Text("${glyphs[h.icon]} ${h.name}",style=MaterialTheme.typography.headlineMedium)
+        if(h.narrativeName.isNotBlank())Text(h.narrativeName,color=Gold,fontFamily=SagaFont)
         if(h.description.isNotBlank())Text(h.description,color=Muted)
         Panel(accent=color){
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Stat("${streak(h,s.records,restDates=rests)}","SEQUÊNCIA",color);Stat("${bestStreak(h,s.records,restDates=rests)}","RECORDE",Green);Stat("${records.count{it.complete}}","CONCLUSÕES",Blue)}
-            Text("Sequências contam somente os dias programados. Descansos planejados são preservados.",color=Muted,fontSize=12.sp)
+            Text(if(h.trackStreak)"Sequências contam somente os dias programados. Descansos planejados são preservados." else "Contagem de sequências desativada. Seu progresso e suas recompensas continuam registrados.",color=Muted,fontSize=12.sp)
         }
         Panel(accent=color){Eyebrow("Sua programação",color);Text("${h.days.split(',').mapNotNull{it.toIntOrNull()}.joinToString(" · "){listOf("Seg","Ter","Qua","Qui","Sex","Sáb","Dom")[it-1]}} às ${h.time}",color=Ink);Text("Meta: ${h.target} ${h.unit} · ${if(h.proportional)"recompensa proporcional" else "recompensa ao atingir a meta"}",color=Muted,fontSize=13.sp);Text("+${h.xp} XP · ◈ ${h.coins} · +${h.points} ${attributes[h.attribute]}",color=color,fontSize=13.sp)}
         Eyebrow("Últimos 14 dias",color)
