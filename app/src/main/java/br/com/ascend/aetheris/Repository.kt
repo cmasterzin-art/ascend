@@ -16,7 +16,7 @@ import java.security.MessageDigest
 
 val Context.preferences by preferencesDataStore("ascend_settings")
 class AscendApp:Application(){
-    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4).build() }
+    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5).build() }
     val repository by lazy { GameRepository(database) }
 }
 data class GameEvent(val message:String,val level:Int=0,val xp:Long=0,val coins:Long=0,val points:List<Long> = emptyList(),val highlights:List<String> = emptyList())
@@ -119,6 +119,7 @@ class GameRepository(private val db:GameDatabase){
     suspend fun claim(q:Quest)=change("Recompensa resgatada"){
         val s=read();require(s.quests.any{it==q}){"Missão desatualizada. Abra novamente."};val occ=occurrence(q);val id="${q.id}@$occ"
         require(s.claims.none{it.id==id}){"Esta recompensa já foi resgatada."}
+        require(q.sagaState !in listOf(1,3)){"Esta saga foi abandonada."}
         require(questProgress(q,s)>=q.target){"A missão ainda está em andamento."}
         d.claim(Claim(id,q.id,occ,xp=q.xp,coins=q.coins,target=q.target,metric=q.metric,habitIds=q.habitIds,period=q.period,attribute=q.attribute,deadline=q.deadline,sagaStart=q.sagaStart,sagaBaseline=q.sagaBaseline))
         if(q.special.isNotBlank()) d.asset(Asset("quest:$id","trophy"))
@@ -134,15 +135,34 @@ class GameRepository(private val db:GameDatabase){
         val s=read();val old=s.quests.find{it.id==q.id}
         require(old==null || old.sagaStart.isNotBlank())
         require(s.claims.none{it.questId==q.id}){"Uma saga resgatada preserva seus termos."}
+        require(old==null || old.sagaState==0){"Esta saga está no histórico."}
         validateSaga(q,s)
         val ids=q.habitIds.split(',').toSet()
         val baseline=old?.sagaBaseline ?: s.records.filter{it.habitId in ids}.joinToString(";"){"${it.id}=${it.progress}"}
         if(old!=null)require(q.habitIds==old.habitIds && q.metric==old.metric){"Hábitos e métrica são fixados ao iniciar. Crie outro juramento para mudá-los."}
-        d.quest(q.copy(period=2,attribute=-1,sagaStart=old?.sagaStart?:today(),sagaBaseline=baseline))
+        d.quest(q.copy(period=2,attribute=-1,sagaStart=old?.sagaStart?:today(),sagaBaseline=baseline,sagaState=0,sagaEnd="",sagaStopped=0))
+    }
+    suspend fun abandonSaga(id:String)=change("Saga abandonada · seus hábitos permanecem"){
+        val s=read();val q=requireNotNull(s.quests.find{it.id==id&&it.sagaStart.isNotBlank()})
+        require(q.sagaState==0 && s.claims.none{it.questId==id}){"Somente sagas não resgatadas podem ser abandonadas."}
+        d.quest(q.copy(sagaState=1,sagaEnd=today(),sagaStopped=questProgress(q,s)))
+    }
+    suspend fun archiveSaga(id:String)=change("Saga arquivada"){
+        val s=read();val q=requireNotNull(s.quests.find{it.id==id&&it.sagaStart.isNotBlank()})
+        require(q.sagaState in 0..1 && (q.sagaState==1||s.claims.any{it.questId==id})){"Conclua ou abandone a saga antes de arquivar."}
+        d.quest(q.copy(sagaState=if(q.sagaState==1)3 else 2))
+    }
+    suspend fun restartSaga(id:String)=change("Nova tentativa iniciada"){
+        val s=read();val q=requireNotNull(s.quests.find{it.id==id&&it.sagaStart.isNotBlank()})
+        require(q.sagaState!=0 || s.claims.any{it.questId==id}){"Encerre a tentativa atual primeiro."}
+        require(s.quests.none{it.name==q.name&&it.sagaStart.isNotBlank()&&it.sagaState==0&&s.claims.none{c->c.questId==it.id}}){"Já existe uma tentativa em curso."}
+        val baseline=s.records.filter{it.habitId in q.habitIds.split(',')}.joinToString(";"){"${it.id}=${it.progress}"}
+        d.quest(q.copy(id=uid(),sagaStart=today(),sagaBaseline=baseline,sagaState=0,sagaEnd="",sagaStopped=0))
     }
     suspend fun rememberNarrative(id:String)=change("Memória guardada"){
         require(narrativeCandidates(read()).any{it.id==id})
-        d.asset(Asset("memory:$id","memory"))
+        val line=narrativeCandidates(read()).first{it.id==id}
+        d.asset(Asset("memory:$id","memory",memorySpeaker=line.speaker,memoryText=line.text))
     }
     suspend fun unlockSkill(id:String)=change("Habilidade despertada"){
         val skill=skillDefs.firstOrNull{it.id==id}?:error("Habilidade desconhecida")
@@ -209,7 +229,7 @@ fun validateHabitInput(h:Habit){
     require(h.difficulty in 0..2 && h.icon in glyphs.indices && h.color in palette.indices){"Revise a dificuldade, o ícone e a cor."}
     require(h.templateId.length<=100 && h.narrativeName.length<=200){"Nome narrativo muito longo."}
 }
-data class BackupEnvelope(val format:String="ASCEND",val version:Int=5,val sha256:String,val payload:String)
+data class BackupEnvelope(val format:String="ASCEND",val version:Int=6,val sha256:String,val payload:String)
 object Backup {
     private val gson=Gson()
     private fun digest(s:String)=MessageDigest.getInstance("SHA-256").digest(s.toByteArray(Charsets.UTF_8)).joinToString(""){"%02x".format(it)}
@@ -217,9 +237,11 @@ object Backup {
     fun decode(text:String):GameState {
         require(text.length<=20_000_000){"Backup muito grande (máximo 20 MB)."}
         val b=gson.fromJson(text,BackupEnvelope::class.java)
-        require(b.format=="ASCEND" && b.version in 1..5 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
+        require(b.format=="ASCEND" && b.version in 1..6 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
         val json=com.google.gson.JsonParser.parseString(b.payload).asJsonObject
         listOf("quests","claims").forEach{table->json.getAsJsonArray(table)?.forEach{row->listOf("sagaStart","sagaBaseline").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}}
+        json.getAsJsonArray("quests")?.forEach{row->val obj=row.asJsonObject;if(!obj.has("sagaState"))obj.addProperty("sagaState",0);if(!obj.has("sagaEnd"))obj.addProperty("sagaEnd","");if(!obj.has("sagaStopped"))obj.addProperty("sagaStopped",0)}
+        json.getAsJsonArray("assets")?.forEach{row->listOf("memorySpeaker","memoryText").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}
         val s=gson.fromJson(json,GameState::class.java);validateState(s);return s
     }
 }
@@ -237,8 +259,9 @@ fun validateState(s:GameState){
     s.records.forEach{r->require(s.habits.any{it.id==r.habitId} && r.id=="${r.habitId}@${r.date}" && r.target in 1..1000000 && r.progress in 0..r.target && r.attribute in 0..4 && r.type in 0..3 && r.xp in 0..1000000 && r.coins in 0..1000000 && r.points in 0..1000000 && r.date<=today());LocalDate.parse(r.date)}
     s.ledger.forEach{require(kotlin.math.abs(it.xp)<=1000000000L && kotlin.math.abs(it.coins)<=1000000000L && kotlin.math.abs(it.points)<=1000000000L && it.attribute in -1..4);LocalDate.parse(it.date)}
     s.quests.filter{it.sagaStart.isNotBlank()}.forEach{validateSaga(it,s);LocalDate.parse(it.sagaStart);parseBaseline(it.sagaBaseline)}
-    s.quests.forEach{require(it.attribute in -1..4 && it.name.isNotBlank() && it.target in 1..1000000 && it.xp in 0..1000000 && it.coins in 0..1000000 && it.period in 0..3 && it.metric in 0..3);if(it.deadline.isNotEmpty())LocalDate.parse(it.deadline)}
+    s.quests.forEach{require(it.sagaState in 0..3 && it.sagaStopped>=0);if(it.sagaEnd.isNotBlank())LocalDate.parse(it.sagaEnd);require(it.attribute in -1..4 && it.name.isNotBlank() && it.target in 1..1000000 && it.xp in 0..1000000 && it.coins in 0..1000000 && it.period in 0..3 && it.metric in 0..3);if(it.deadline.isNotEmpty())LocalDate.parse(it.deadline)}
     s.assets.forEach{a->
+        require(a.memorySpeaker.length<=200 && a.memoryText.length<=10000)
         require(a.kind in setOf("building","outfit","frame","background","companion","decoration","trophy","head","accessory","weapon","skill","memory"))
         if(a.kind=="building") require(a.id.removePrefix("building:").toIntOrNull() in buildings.indices && a.stage in 1..2)
         else if(a.kind=="memory") require(a.id.startsWith("memory:") && a.id.length<=250)
@@ -262,6 +285,9 @@ class GameViewModel(app:Application):AndroidViewModel(app){
     val appearance=app.preferences.data.map{it[stringPreferencesKey("theme")]?:"dark"}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),"dark")
     val reducedMotion=app.preferences.data.map{it[booleanPreferencesKey("reducedMotion")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
     val minimal=app.preferences.data.map{it[booleanPreferencesKey("minimal")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
+    val soundEnabled=app.preferences.data.map{it[booleanPreferencesKey("sound_enabled")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
+    val soundVolume=app.preferences.data.map{it[floatPreferencesKey("sound_volume")]?:.35f}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),.35f)
+    fun volume(value:Float)=run{getApplication<Application>().preferences.edit{it[floatPreferencesKey("sound_volume")]=value.coerceIn(0f,1f)}}
     val narrativeNames=app.preferences.data.map{it[booleanPreferencesKey("narrative_names")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
     val catalogInterests=app.preferences.data.map{it[stringSetPreferencesKey("catalog_interests")]?:emptySet()}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptySet())
     val dismissedSuggestions=app.preferences.data.map{it[stringSetPreferencesKey("catalog_dismissed")]?:emptySet()}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptySet())

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.VoicesUiTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-16T19:51:16" hostname="da0963ce0ccf" time="6.824">
+  <properties/>
+  <testcase name="mainRoutesWeeklyMemoriesAndBackPreserveSections" classname="br.com.ascend.aetheris.VoicesUiTest" time="1.495"/>
+  <testcase name="datePickerAndSagaAbandonmentHaveRealControls" classname="br.com.ascend.aetheris.VoicesUiTest" time="2.505"/>
+  <testcase name="recognizedConversationsAndRichWeeklyPageCanBeRevisited" classname="br.com.ascend.aetheris.VoicesUiTest" time="1.844"/>
+  <testcase name="menusRemainUsableWithLargeTextAndLightTheme" classname="br.com.ascend.aetheris.VoicesUiTest" time="0.975"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Invalid ID 0x00000000.
+]]></system-err>
+</testsuite>

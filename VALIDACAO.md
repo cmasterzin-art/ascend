@@ -1,36 +1,38 @@
-# Validação — ASCEND 1.4.0
+# Validação — ASCEND 1.4.5
 
-16/11/2026. Base 1.3.1: `5dc9d7083bfbf111bff86b9612abdc605d04c05d`.
+16/11/2026. Base 1.4: `2e043984e1b2553dbf5b5d8345e85aa5c7820109`.
 
-- `testDebugUnitTest assembleDebug`: **BUILD SUCCESSFUL**, **67 testes aprovados**, zero falhas, erros ou ignorados.
-- APK: `downloads/ASCEND-1.4.0.apk`, 22,362,121 bytes.
-- SHA-256: `26c187f35f5e69b68ff0c8e12f67107dc11807648f39f8df91856ab70b8114ad`.
-- Assinatura v2 válida, mesmo certificado desde a 1.1: `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
-- `zipalign -c 4`: aprovado. Manifesto: `br.com.ascend.aetheris`, versionName 1.4.0, versionCode 6, minSdk 26/targetSdk 35, **sem INTERNET**.
-- JDK Temurin 17, SDK Android 35, Gradle 8.9; compilação pessoal de depuração assinada. Chave privada preservada, fora do Git.
+- `testDebugUnitTest assembleDebug`: **BUILD SUCCESSFUL**, **78 testes aprovados**, zero falhas, erros ou ignorados.
+- APK: `downloads/ASCEND-1.4.5.apk`, 22,568,922 bytes.
+- SHA-256: `f1a86f6d14aabe7250641f46aa4e9d1663c5078023eb2a7a70b25e7390b545bf`.
+- Assinatura v2 válida; certificado preservado desde a 1.1: `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
+- `zipalign -c 4` e `git diff --check`: aprovados.
+- Manifesto: `br.com.ascend.aetheris`, versionName 1.4.5, versionCode 7, minSdk 26/targetSdk 35. **Sem INTERNET ou VIBRATE**.
+- JDK Temurin 17, SDK Android 35, Gradle 8.9. APK pessoal de depuração assinado; chave privada fora do Git.
 
-## Cobertura nova e regressão
+## Cobertura
 
-As 59 verificações anteriores foram preservadas. Adaptações nos testes de interface confirmam o novo painel de recompensa, e a leitura agora verifica o primeiro parágrafo em vez de um único bloco de capítulo. As migrações antigas atravessam também 3 → 4.
+Os 67 testes da 1.4 continuam passando. Nos testes de interface, foi removida a tentativa de rolar os menus fixos do Herói: as opções agora ficam inteiramente visíveis. Não foram removidas verificações funcionais. Builders de bancos antigos atravessam também a migração 4 → 5.
 
-| Suíte | Testes | Escopo |
+| Suíte nova | Testes | Verificação |
 |---|---:|---|
-| SagaTest | 6 | Baseline do dia atual, marcos 25/50/75/100, seis resgates concorrentes com um sucesso, correções/zero/restauração do progresso, minutos/páginas/conclusões, edição e termos fixos, reload, backup v5, backup v4 sem novos campos, migração real v3 e diálogos/recompensas consolidadas |
-| NorthUiTest | 2 | Criação pelo formulário, seleção real de hábito, resgate com nível no mesmo painel, diálogo contextual e saga em 320 dp/fonte 130%/redução de movimento |
-| CatalogTest / CatalogRepositoryTest / GrimoireUiTest | 15 | 102 modelos, seis rotinas, filtros, busca, duplicatas concorrentes, personalização e snapshots, persistência e criação/edição pela interface |
-| ProgressionTest / RepositoryTest / InsightsTest | 23 | XP, moedas, atributos, missões, snapshot, reversões, foco, estatísticas e descanso |
-| Version11Test / RemindersTest / RpgTest / OnboardingTest | 21 | Migrações 1 → 4 e 2 → 4, backups antigos, notificações, inventário, árvore, reconstrução, temas, navegação e telas RPG |
+| VoicesTest | 7 | Semana civil, percentual e correções; dias de descanso e avanço de saga por período limitado à meta (sem avanço fictício após a conclusão); abandono congelado sem recompensa, arquivo e reinício com nova identidade/linha de base; resgate único após arquivo; conversas persistidas como texto; memórias sem datas inventadas; migração real v4; backup v5 sem novos campos; política sonora e preferências locais |
+| VoicesUiTest | 4 | Cinco áreas e retorno Android; menus de Missões inteiros; Crônica e Salão; retrato ampliado e retorno ao Inventário; calendário Android real; abandono/arquivo/reinício; 320 dp/fonte 130%/tema claro/redução de movimento; Crônica com feitos e histórico de conversas |
 
-Recompensa consolidada validada com deltas reais: 150 XP, nível 2 e atributos; ação repetida sem mudança não gera novos destaques. No fluxo de saga da interface, um único resgate concede 150 XP e 20 Fragmentos (10 configurados + 10 do nível), exibidos juntos. Corrigir um registro reduz a recompensa da saga no mesmo ledger; recuperar o progresso revalida o resgate existente, sem novo Claim.
+A regressão de 67 testes cobre Grimório/rotinas, XP/snapshots, correções, missões, Sagas, inventário, árvore, reconstrução, estatísticas, descanso, lembretes, migrações 1/2/3 e backups antigos. A suíte completa exercita 411 × 891 dp e 320 × 740 dp, texto 130%, temas claro/escuro, modo minimalista e redução de movimento. Capturas são da renderização nativa Robolectric API 28, com fixtures de teste que não são incluídas no aplicativo.
 
-Room v4: somente quatro colunas novas no total (`sagaStart` e `sagaBaseline` em `quests` e `claims`), com defaults vazios. Migrações explícitas 1 → 2 → 3 → 4 e esquemas exportados, sem fallback destrutivo. Backup v5 aceita v1–v5; preserva sagas, snapshots e memórias narrativas. Nenhuma fórmula histórica de XP foi alterada.
+## Dados e regras
+
+Room v5: migração explícita 4 → 5 adiciona `sagaState`, `sagaEnd`, `sagaStopped` em `quests` e `memorySpeaker`, `memoryText` em `assets`, com defaults. Mantém 1 → 2 → 3 → 4; sem fallback destrutivo. Backup v6 lê v1–v6 e preenche campos ausentes. Estados antigos de saga começam ativos; resgates antigos continuam reconhecidos no histórico.
+
+A Crônica Semanal é derivada, sem cópias persistidas dos totais. O Salão consulta histórico, ledger, resgates, conquistas e assets. Nenhuma das duas telas concede XP. Sagas abandonadas guardam uma fotografia do progresso; nova tentativa possui UUID e baseline próprios. Recompensas continuam usando o ledger existente e resgate único, sem alterações na economia.
 
 ## Evidências e limites
 
-[Relatórios JUnit e verificação de assinatura](docs/validation/) · [Comparação e capturas reais](docs/VISUAL-1.4.md) · [Regras das sagas](SAGAS.md).
+[Comparação visual e capturas](docs/VISUAL-1.4.5.md) · [JUnit e certificado](docs/validation/) · [Regras das Sagas](SAGAS.md) · [Áudio original e limites](docs/art/SOUNDS.md).
 
-Robolectric API 28 com renderização nativa: 411 × 891 dp, 320 × 740 dp, fonte a 130%, tema claro, modo minimalista e redução de movimento. Não houve instalação em aparelho físico ou emulador completo, teste de atualização sobre telefone real, Android Lint ou benchmark físico. Permissão de notificações Android 13+, seletor de arquivos e entrega de alarmes pelo fabricante permanecem sujeitos à verificação em aparelho.
+Não houve instalação ou audição em telefone físico, emulador completo, Android Lint ou benchmark físico. A lógica de áudio e preferências foi testada; volume percebido, DND, restrições de fabricante, permissões Android 13+ e insets físicos de gestos/três botões ainda dependem de verificação no aparelho. O código usa sonificação, modo normal, volume de mídia e navigationBarsPadding.
 
-O package e certificado iguais, com versionCode maior, permitem atualizar os APKs 1.1–1.3.1 fornecidos sem desinstalar. A antiga 1.0 tem outra assinatura. Confira [INSTALACAO.md](INSTALACAO.md) e exporte um backup antes de atualizar.
+As artes, textos, modelos e sons são locais. Sem conta, backend, serviço pago, música contínua ou vibração. Preferências de som/aparência ficam no aparelho e não acompanham o backup de progresso. Conversas anteriores sem texto só podem ser reconstruídas quando a condição histórica ainda está disponível; datas desconhecidas não são fabricadas.
 
-Sem sons/vibração nesta entrega. As imagens, fonte, modelos e textos são locais; o APK não exige conta, backend ou serviço pago.
+O package/certificado iguais e versionCode maior permitem atualizar os APKs 1.1–1.4 fornecidos sem desinstalar; atualização sobre uma instalação física não foi executada. A 1.0 usa outra assinatura. Exporte um backup antes de atualizar, conforme [INSTALACAO.md](INSTALACAO.md).

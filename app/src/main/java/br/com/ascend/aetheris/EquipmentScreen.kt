@@ -54,8 +54,9 @@ import androidx.compose.ui.semantics.*
     if(!store)s.assets.filter{it.kind=="trophy"}.forEach{a->Panel{RuneSeal(4,Gold,Modifier.size(36.dp));Eyebrow("Troféu de missão");Text(s.quests.find{q->s.claims.any{it.questId==q.id&&"quest:${it.id}"==a.id}}?.special?:"Memória da jornada")}}
     selected?.let{id->val item=shopItems.first{it.id==id};val owned=s.assets.find{it.id==id};val color=rarityColor(rarity(item))
         AlertDialog(onDismissRequest={selected=null},title={Text(item.name,fontFamily=SagaFont)},text={Column(verticalArrangement=Arrangement.spacedBy(12.dp)){
-            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center){RelicArt(item.kind,color,Modifier.size(120.dp),item.id)}
+            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center){RelicArt(item.kind,color,Modifier.size(170.dp),item.id)}
             Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){RuneSeal(rarity(item),color,Modifier.size(28.dp));Eyebrow(rarityNames[rarity(item)],color)}
+            Text(if(owned?.equipped==true)"Equipado" else if(owned!=null)"Na coleção" else "Disponível no arsenal",color=color,fontSize=12.sp)
             Text(item.description);SagaDivider(color=color);Eyebrow("Procedência",color);Text(itemOrigin(item),color=Muted,fontSize=13.sp);if(owned!=null)Text("Guardado na coleção em ${owned.date}",color=Muted,fontSize=12.sp)
         }},confirmButton={Action(if(owned!=null)if(owned.equipped)"Desequipar" else "Equipar" else "Adquirir · ${item.cost}",{vm.run{if(owned!=null)vm.repo.equip(owned) else vm.repo.buy(item);selected=null}},enabled=owned!=null||s.coins>=item.cost)},dismissButton={TextButton({selected=null}){Text("Fechar")}})
     }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.RemindersTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-16T18:40:03" hostname="da0963ce0ccf" time="0.002">
+<testsuite name="br.com.ascend.aetheris.RemindersTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-16T19:51:14" hostname="da0963ce0ccf" time="0.006">
   <properties/>
-  <testcase name="daylightSavingGapUsesNextValidLocalTime" classname="br.com.ascend.aetheris.RemindersTest" time="0.002"/>
+  <testcase name="daylightSavingGapUsesNextValidLocalTime" classname="br.com.ascend.aetheris.RemindersTest" time="0.005"/>
   <testcase name="restDaySkipsReminderWithoutChangingHabitSchedule" classname="br.com.ascend.aetheris.RemindersTest" time="0.0"/>
   <testcase name="severalWeeksOfRestStillScheduleTheNextReminder" classname="br.com.ascend.aetheris.RemindersTest" time="0.0"/>
   <testcase name="disabledOrPausedHabitsHaveNoReminder" classname="br.com.ascend.aetheris.RemindersTest" time="0.0"/>

@@ -9,6 +9,7 @@ fun validateSaga(q:Quest,s:GameState){
     if(q.deadline.isNotBlank()){LocalDate.parse(q.deadline);require(q.deadline>=(q.sagaStart.ifBlank{today()})){"O prazo deve ser posterior ao início."}}
 }
 fun sagaProgress(q:Quest,s:GameState):Long{
+    if(q.sagaState in listOf(1,3))return q.sagaStopped
     val baseline=parseBaseline(q.sagaBaseline);val ids=q.habitIds.split(',').toSet()
     return s.records.filter{it.habitId in ids&&it.date>=q.sagaStart&&(q.deadline.isBlank()||it.date<=q.deadline)}.sumOf{r->
         val prior=baseline[r.id]?:0;val delta=(r.progress-prior).coerceAtLeast(0).toLong()
@@ -42,6 +43,11 @@ fun narrativeCandidates(s:GameState):List<NarrativeLine> = buildList{
  if(s.achievements.any{it.id=="return"})add(NarrativeLine("return","O Cronista","Deixei a cadeira junto à porta. O inverno não me disse quando você voltaria."))
  listOf(30,20,10,5).forEach{if(s.level>=it)add(NarrativeLine("level:$it","O Cronista","No registro do nível $it, a tinta já alcança a margem. Preciso de outro caderno. Este ficará na prateleira de quem atravessou a névoa."))}
  s.quests.filter{it.sagaStart.isNotBlank()}.forEach{add(NarrativeLine("saga-start:${it.id}","O Cronista","Você deu um nome ao caminho: ${it.name}. Vou anotá-lo sem preencher o fim. Essa parte ainda não nos pertence."))}
+ (0..2).forEach{i->if(s.assets.any{it.id=="building:$i"&&it.stage==1}){val d=villagerDialogue(i,1);add(NarrativeLine("rebuilding:$i",d.first,d.second))}}
+ if(s.level>=10)add(NarrativeLine("elyra-level10","Elyra · Bibliotecária","Encontrei sua anotação num volume que ninguém abria. Deixei outra ao lado. Talvez uma terceira pessoa nos responda daqui a um inverno."))
+ if(s.quests.any{it.sagaStart.isNotBlank()&&it.sagaState==0&&it.metric==1})add(NarrativeLine("darian-saga","Darian · Ferreiro","Marquei as horas na madeira do banco. Não para apressar o trabalho. Para saber quanto dele ficou aqui quando eu for embora."))
+ if(chapterUnlocked(6,s))add(NarrativeLine("discovery-ione","O Cronista","Ione voltou com a margem do mapa molhada. Onde o rio mudou, ela desenhou duas linhas: uma para a água, outra para a lembrança."))
+ if(s.achievements.any{it.id=="return"})add(NarrativeLine("seren-return","Seren · Guardiã do Jardim","As sementes ficaram sob a terra enquanto você esteve longe. Algumas esperaram. Outras encontraram seu próprio tempo."))
  if(s.records.any{it.complete})add(NarrativeLine("first","O Cronista","Encontrei terra na soleira. Até ontem, só havia poeira. Alguém saiu e voltou; é o primeiro fato deste volume."))
 }
 fun nextNarrative(s:GameState)=narrativeCandidates(s).firstOrNull{line->s.assets.none{it.id=="memory:${line.id}"}}
