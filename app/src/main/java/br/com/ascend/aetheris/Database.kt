@@ -56,5 +56,14 @@ val MIGRATION_2_3 = object : androidx.room.migration.Migration(2,3) {
         db.execSQL("ALTER TABLE habits ADD COLUMN trackStreak INTEGER NOT NULL DEFAULT 1")
     }
 }
-@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class],version=3,exportSchema=true)
+@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class],version=4,exportSchema=true)
 abstract class GameDatabase:RoomDatabase(){abstract fun dao():GameDao}
+
+val MIGRATION_3_4 = object : androidx.room.migration.Migration(3,4) {
+    override fun migrate(db:androidx.sqlite.db.SupportSQLiteDatabase) {
+        listOf("quests","claims").forEach { table ->
+            db.execSQL("ALTER TABLE $table ADD COLUMN sagaStart TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE $table ADD COLUMN sagaBaseline TEXT NOT NULL DEFAULT ''")
+        }
+    }
+}

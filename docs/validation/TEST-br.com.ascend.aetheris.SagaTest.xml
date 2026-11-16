@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.SagaTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-16T18:40:04" hostname="da0963ce0ccf" time="0.466">
+  <properties/>
+  <testcase name="consolidatedRewardsUseActualDeltasAndNarrativesAreAcknowledged" classname="br.com.ascend.aetheris.SagaTest" time="0.059"/>
+  <testcase name="baselineMilestonesCorrectionsAndUniqueClaim" classname="br.com.ascend.aetheris.SagaTest" time="0.122"/>
+  <testcase name="completionAndPageMetricsExcludePriorRecords" classname="br.com.ascend.aetheris.SagaTest" time="0.07"/>
+  <testcase name="persistenceBackupAndFrozenTerms" classname="br.com.ascend.aetheris.SagaTest" time="0.06"/>
+  <testcase name="legacyV4BackupWithoutSagaFieldsRemainsReadable" classname="br.com.ascend.aetheris.SagaTest" time="0.062"/>
+  <testcase name="realV3MigrationPreservesEntireState" classname="br.com.ascend.aetheris.SagaTest" time="0.092"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

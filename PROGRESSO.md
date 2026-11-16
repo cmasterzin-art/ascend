@@ -1,8 +1,16 @@
-# ASCEND — progresso da versão 1.3.1
+# ASCEND — progresso da versão 1.4.0
 
 Implementação nativa em Kotlin, Compose, Material 3, Navigation, Room, DataStore, ViewModel, Coroutines e StateFlow. Sem permissão INTERNET, contas, anúncios ou backend.
 
-## Adicionado/refinado na 1.3.1
+## Adicionado/refinado na 1.4
+
+- Sagas Pessoais, quatro marcos, início com fotografia de progresso, resgate único e correções integradas. [Regras e limites](SAGAS.md).
+- Botões em bronze, pressão breve, recompensas consolidadas, emblemas, Jornada com próxima atividade e região, leitura por parágrafos e capítulos revelados.
+- Diálogos contextuais por prioridade; a ação Guardar esta memória impede reexibição e acompanha o backup. Não é uma simulação por IA.
+- Reconstrução com crossfade de 450 ms (0 em redução de movimento), pré-requisitos e estados da árvore mais claros.
+- Room 4/backup 5 com compatibilidade anterior. [Capturas e revisão](docs/VISUAL-1.4.md).
+
+## Adicionado/refinado na 1.3.1 (histórico)
 
 - 102 sugestões em nove categorias e seis rotinas, totalmente offline. Busca, filtros, ordenação, interesses e nomes narrativos opcionais. [Fluxo completo e contagens](docs/GRIMORIO.md).
 - Formulário completo antes de adicionar; seleção parcial de rotinas, edição individual e prevenção transacional de duplicatas. Nenhuma mudança no cálculo de XP ou moeda.
@@ -76,6 +84,6 @@ Implementação nativa em Kotlin, Compose, Material 3, Navigation, Room, DataSto
 - Conquistas representam marcos atingidos e são preservadas após correções; XP, pontos, moedas e recompensas de missões são recalculados. Missões resgatadas preservam snapshots das regras e recompensas por ocorrência; edições afetam as próximas ocorrências.
 - Ao desfazer moedas já gastas, o saldo disponível fica em zero e ganhos futuros compensam a diferença. Nenhuma compra pode exceder o saldo.
 - Preferências de interface e permissões de notificações pertencem ao aparelho e não são transferidas no backup. O diário do backup é texto legível.
-- Banco Room v3 com migrações explícitas 1 → 2 → 3, sem destruição dos dados. Backups v4 incluem origem de modelos, nomes narrativos e sequência opcional; continuam lendo v1–v3. Preferências visuais, interesses e dispensas permanecem no aparelho.
+- Banco Room v4 com migrações explícitas 1 → 2 → 3 → 4, sem destruição dos dados. Backups v5 incluem também termos das sagas e memórias narrativas; continuam lendo v1–v4. Preferências visuais, interesses e dispensas permanecem no aparelho.
 
 A validação executada e os resultados de compilação constam em VALIDACAO.md.

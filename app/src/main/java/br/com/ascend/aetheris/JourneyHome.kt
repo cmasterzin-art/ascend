@@ -39,12 +39,15 @@ import java.util.Locale
             Surface(shape=CutCornerShape(5.dp),color=Gold.copy(alpha=.1f)){Text("◈ ${s.coins}",Modifier.padding(horizontal=14.dp,vertical=10.dp),color=Gold,fontWeight=FontWeight.SemiBold,fontSize=13.sp)}
         }
         HeroSaga(s)
+        Text("${regions[regionLevels.indexOfLast{it<=s.level}.coerceAtLeast(0)]} · O Juramento do Norte",color=Muted,fontSize=12.sp)
         Panel(accent=Green){
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
                 Column{Eyebrow("Hábitos de hoje",Green);Text(if(rested)"Descanso" else "$done de ${due.size}",fontSize=26.sp,fontFamily=FontFamily.Serif,color=Ink)}
                 Column(horizontalAlignment=Alignment.End){Eyebrow("XP do dia");Text("+$earned",fontSize=26.sp,fontFamily=FontFamily.Serif,color=Gold)}
             }
             Meter(if(due.isEmpty())0f else done.toFloat()/due.size,Green)
+            Text("${if(due.isEmpty())0 else done*100/due.size}% do dia · ${due.size-done} pendentes",color=Green,fontSize=12.sp)
+            due.firstOrNull{s.record(it.id,day)?.complete!=true}?.let{Text("A seguir · ${it.time} · ${it.name}",color=Muted,fontSize=13.sp)}
         }
         s.focus?.let{FocusCard(it,s,vm)}
         Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){
@@ -58,6 +61,7 @@ import java.util.Locale
         visible.forEach{h->HabitCard(h,s.record(h.id,day),{
             if(h.type==0 && s.record(h.id,day)?.complete!=true)vm.run{vm.repo.progress(h,day,1)}else onProgress(h,s.record(h.id,day))
         },{detail=h},{onFocus(h)})}
+        NarrativePanel(s,vm)
         WeekStrip(s,day)
         if(!appearance.minimal)s.quests.filter{it.period==0}.firstOrNull{q->s.claims.none{it.id=="${q.id}@${occurrence(q,day)}"}}?.let{q->
             val n=questProgress(q,s,occurrence(q,day));Panel(accent=Violet){Eyebrow("Contrato do dia",Violet);Text(q.name,style=MaterialTheme.typography.titleLarge);Text(q.description,color=Muted,fontSize=13.sp);Meter(n.toFloat()/q.target,Violet);Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("${n.coerceAtMost(q.target.toLong())}/${q.target}",color=Muted,fontSize=12.sp);Text("+${q.xp} XP · ◈ ${q.coins}",color=Violet,fontSize=12.sp)};if(n>=q.target)Action("Resgatar recompensa",{vm.run{vm.repo.claim(q)}})}
@@ -69,7 +73,7 @@ import java.util.Locale
         }
         Panel {
             Eyebrow(if(appearance.minimal)"Uma pausa para refletir" else "Palavras do Cronista")
-            Text(when{rested->"“A estrada não desaparece quando você para para respirar.”";done==due.size&&due.isNotEmpty()->"“Guarde a brasa. Amanhã haverá outros caminhos.”";else->"“Não é o tamanho do passo que devolve luz ao mundo. É a sua presença.”"},fontFamily=FontFamily.Serif,fontSize=19.sp,lineHeight=27.sp)
+            Text(when{rested->"“A estrada não desaparece quando você para para respirar.”";done==due.size&&due.isNotEmpty()->"“Guarde a brasa. Amanhã haverá outros caminhos.”";else->"“A tinta secou na última página. Deixei a seguinte em branco.”"},fontFamily=FontFamily.Serif,fontSize=19.sp,lineHeight=27.sp)
             TextButton(onJournal){Icon(Icons.Default.EditNote,null,Modifier.size(18.dp));Spacer(Modifier.width(8.dp));Text("Escrever no diário")}
         }
     }
