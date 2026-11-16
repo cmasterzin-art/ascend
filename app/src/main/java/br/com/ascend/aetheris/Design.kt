@@ -31,7 +31,7 @@ val Muted:Color @Composable get()=MaterialTheme.colorScheme.onSurfaceVariant
 @Composable fun habitColor(index:Int):Color=if(LocalAppearance.current.dark)Color(palette[index]) else listOf(Color(0xFF866023),Color(0xFF385FA6),Color(0xFF7551AD),Color(0xFF236848),Color(0xFFA44936))[index]
 @Composable fun AscendTheme(mode:String="dark",reducedMotion:Boolean=false,minimal:Boolean=false,content:@Composable ()->Unit){
     val dark=when(mode){"light"->false;"system"->isSystemInDarkTheme();else->true}
-    val scheme=if(dark)darkColorScheme(primary=Color(0xFFE1BC79),onPrimary=Color(0xFF201B12),secondary=Color(0xFF94AFF2),tertiary=Color(0xFFB6A0EA),background=Color(0xFF0D131B),surface=Color(0xFF17212C),surfaceVariant=Color(0xFF23303E),onBackground=Color(0xFFF1EEE7),onSurface=Color(0xFFF1EEE7),onSurfaceVariant=Color(0xFFACB9C9),outline=Color(0xFF46566B))
+    val scheme=if(dark)darkColorScheme(primary=Color(0xFFE1BC79),onPrimary=Color(0xFF201B12),secondary=Color(0xFF94AFF2),tertiary=Color(0xFFB6A0EA),background=Color(0xFF0D1119),surface=Color(0xFF151B26),surfaceVariant=Color(0xFF23303E),onBackground=Color(0xFFF1EEE7),onSurface=Color(0xFFF1EEE7),onSurfaceVariant=Color(0xFFACB9C9),outline=Color(0xFF46566B))
         else lightColorScheme(primary=Color(0xFF79551D),onPrimary=Color.White,secondary=Color(0xFF385FA6),tertiary=Color(0xFF7551AD),background=Color(0xFFF6F3EC),surface=Color(0xFFFFFDF7),surfaceVariant=Color(0xFFEAE7DF),onBackground=Color(0xFF222B35),onSurface=Color(0xFF222B35),onSurfaceVariant=Color(0xFF596573),outline=Color(0xFF9BA4AD))
     CompositionLocalProvider(LocalAppearance provides Appearance(dark,reducedMotion,minimal)) {
         MaterialTheme(colorScheme=scheme,typography=Typography(
@@ -52,14 +52,15 @@ val Muted:Color @Composable get()=MaterialTheme.colorScheme.onSurfaceVariant
 @Composable fun FormField(value:String,onChange:(String)->Unit,label:String,number:Boolean=false,multi:Boolean=false){OutlinedTextField(value,onChange,Modifier.fillMaxWidth(),label={Text(label)},singleLine=!multi,minLines=if(multi)3 else 1,keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=if(number)androidx.compose.ui.text.input.KeyboardType.Number else androidx.compose.ui.text.input.KeyboardType.Text),shape=RoundedCornerShape(12.dp))}
 @Composable fun Toggle(label:String,checked:Boolean,onChange:(Boolean)->Unit){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Text(label,Modifier.weight(1f),fontSize=14.sp);Switch(checked,onChange)}}
 @Composable fun Avatar(p:Player,s:GameState?=null,size:Dp=100.dp){
-    val color=habitColor(p.color);val Night=Night;val Gold=Gold;val Violet=Violet;val Green=Green;val Blue=Blue;val companion=s?.assets?.find{it.kind=="companion" && it.equipped};val astral=s?.assets?.any{it.id=="frame"&&it.equipped}==true
+    val color=habitColor(p.color);val Night=Night;val Gold=Gold;val Violet=Violet;val Green=Green;val Blue=Blue;val companion=s?.assets?.find{it.kind=="companion" && it.equipped};val astral=s?.assets?.any{it.kind=="frame"&&it.equipped}==true
     val outfit=s?.assets?.find{it.kind=="outfit"&&it.equipped}?.id
     Canvas(Modifier.size(size).semanticsAvatar(p)){
         val w=this.size.width;val h=this.size.height
         drawCircle(Brush.radialGradient(listOf(color.copy(alpha=.24f),Night)),w*.47f)
+        if(s?.assets?.any{it.kind=="background"&&it.equipped}==true){repeat(5){i->drawLine(Gold.copy(alpha=.3f),Offset(w*(.22f+i*.14f),h*.2f),Offset(w*(.22f+i*.14f),h*.8f),w*.035f)}}
         drawCircle(if(astral) Violet else color.copy(alpha=.65f),w*.46f,style=Stroke(if(astral)4f else 2f))
         repeat(if(p.frame>0||astral)16 else 8){i->val a=i*2*PI/(if(p.frame>0||astral)16 else 8);drawCircle(Gold,w*.012f,Offset(w/2+cos(a).toFloat()*w*.46f,h/2+sin(a).toFloat()*h*.46f))}
-        val robe=when(outfit){"cloak"->Violet;"armor"->Gold;else->if(p.outfit==1)Green else if(p.outfit==2)Gold else color}
+        val robe=when(outfit){"cloak"->Violet;"armor"->Gold;"dawn-outfit"->Green;else->if(p.outfit==1)Green else if(p.outfit==2)Gold else color}
         val path=Path().apply{moveTo(w*.2f,h*.84f);quadraticTo(w*.22f,h*.53f,w*.43f,h*.49f);lineTo(w*.57f,h*.49f);quadraticTo(w*.78f,h*.53f,w*.8f,h*.84f);close()}
         drawPath(path,Brush.verticalGradient(listOf(robe,robe.copy(alpha=.3f))))
         drawLine(Gold,Offset(w*.5f,h*.55f),Offset(w*.5f,h*.84f),w*.018f)
@@ -69,6 +70,9 @@ val Muted:Color @Composable get()=MaterialTheme.colorScheme.onSurfaceVariant
         if(p.heroClass==1){drawLine(Gold,Offset(w*.78f,h*.75f),Offset(w*.78f,h*.3f),w*.025f);drawCircle(Blue,w*.045f,Offset(w*.78f,h*.26f))}
         else if(p.heroClass==0){drawLine(Gold,Offset(w*.78f,h*.7f),Offset(w*.78f,h*.32f),w*.035f);drawLine(Gold,Offset(w*.7f,h*.56f),Offset(w*.86f,h*.56f),w*.025f)}
         else {drawCircle(color,w*.07f,Offset(w*.75f,h*.66f),style=Stroke(w*.02f))}
+        if(s?.assets?.any{it.kind=="head"&&it.equipped}==true)drawPath(Path().apply{moveTo(w*.34f,h*.29f);lineTo(w*.32f,h*.13f);lineTo(w*.43f,h*.21f);lineTo(w*.5f,h*.08f);lineTo(w*.57f,h*.21f);lineTo(w*.68f,h*.13f);lineTo(w*.66f,h*.29f);close()},Gold)
+        if(s?.assets?.any{it.kind=="accessory"&&it.equipped}==true){drawCircle(Gold,w*.045f,Offset(w*.5f,h*.61f));drawCircle(Blue,w*.025f,Offset(w*.5f,h*.61f))}
+        if(s?.assets?.any{it.kind=="weapon"&&it.equipped}==true){drawLine(Blue,Offset(w*.23f,h*.82f),Offset(w*.27f,h*.38f),w*.035f);drawLine(Gold,Offset(w*.15f,h*.69f),Offset(w*.32f,h*.7f),w*.025f)}
         if(companion!=null){val c=if(companion.id=="lyra")Gold else if(companion.id=="corvus")Violet else Green;drawCircle(c,w*.07f,Offset(w*.25f,h*.72f));drawPath(Path().apply{moveTo(w*.18f,h*.68f);lineTo(w*.18f,h*.59f);lineTo(w*.24f,h*.66f);lineTo(w*.3f,h*.59f);lineTo(w*.32f,h*.7f);close()},c)}
     }
 }
@@ -94,6 +98,7 @@ private fun Modifier.semanticsAvatar(p:Player)=this.then(Modifier.semantics { co
             drawRect(if(stage==2)Gold else Night,Offset(x-bw*.16f,y-bh*.65f),Size(bw*.32f,bh*.3f))
             drawRect(Night,Offset(x-bw*.13f,y-bh*.28f),Size(bw*.26f,bh*.28f))
         }
+        if(s.assets.any{it.id=="lantern"&&it.equipped}){val x=w*.5f;drawLine(Gold,Offset(x,h*.96f),Offset(x,h*.7f),3f);drawCircle(Brush.radialGradient(listOf(Gold.copy(alpha=.6f),Color.Transparent),center=Offset(x,h*.7f),radius=h*.12f),h*.12f,Offset(x,h*.7f));drawCircle(Gold,h*.025f,Offset(x,h*.7f))}
         repeat(8){i->val x=w*i/7;mountain(x,h*.97f,w*.06f,h*.18f,Color(0xFF101F24))}
     }
 }

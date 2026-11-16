@@ -74,16 +74,44 @@ import java.util.Locale
 @Composable fun MissionsScreen(s:GameState,vm:GameViewModel,bosses:Boolean){
     var tab by remember{mutableIntStateOf(0)};var editor by remember{mutableStateOf(false)};var editing by remember{mutableStateOf<Quest?>(null)}
     Page{
-        Title("Contratos da jornada","Pequenas ações, histórias que permanecem.");ChipRow(listOf("Diárias","Semanais","Épicas","Chefes","Resgates"),tab,{tab=it});Action("+ Missão personalizada",{editor=true})
-        if(tab==3){Toggle("Ativar chefes opcionais",bosses,{vm.setting("bosses",it)});Text("Sem punições e sem perda de progresso. Cada desafio recomeça na segunda-feira.",color=Muted,fontSize=12.sp)}
-        if(tab==4){if(s.claims.isEmpty())Empty("As recompensas resgatadas ficam registradas aqui.");s.claims.sortedByDescending{it.date}.forEach{c->val q=s.quests.find{it.id==c.questId};Panel{Eyebrow(c.date);Text(q?.name?:"Missão");Text("Ocorrência: ${c.occurrence}",color=Muted,fontSize=12.sp)}}}
-        else if(tab!=3||bosses){s.quests.filter{it.period==tab}.forEach{q->val value=questProgress(q,s);val claimed=s.claims.any{it.id=="${q.id}@${occurrence(q)}"};Panel(accent=if(tab==3)Violet else Gold){
-            if(tab==3){Text("◈",color=Violet,fontSize=40.sp);Eyebrow("Desafio semanal · ${((1-value.toFloat()/q.target).coerceIn(0f,1f)*100).toInt()} de vida",Violet)}
-            Text(q.name,style=MaterialTheme.typography.titleLarge);Text(q.description,color=Muted,fontSize=13.sp);Meter(value.toFloat()/q.target,if(tab==3)Violet else Blue);Text("${value.coerceAtMost(q.target.toLong())}/${q.target} · +${q.xp} XP · ◈ ${q.coins}",color=Gold,fontSize=12.sp)
-            if(q.deadline.isNotBlank())Text("Prazo: ${q.deadline}",color=Muted,fontSize=12.sp)
-            Action(if(claimed)"Recompensa resgatada" else "Resgatar recompensa",{vm.run{vm.repo.claim(q)}},enabled=!claimed && value>=q.target)
-            if(tab==3&&!claimed)TextButton({editing=q;editor=true}){Text("Configurar meta e hábitos")}
-        }}}
+        Title("Contratos da jornada","O livro das ações que devolvem luz ao mundo.")
+        Manuscript{
+            Text("Liber Aetheris",fontFamily=FontFamily.Serif,fontSize=15.sp,color=Sepia)
+            Text("Livro de missões",fontFamily=FontFamily.Serif,fontSize=34.sp,color=Sepia)
+            HorizontalDivider(color=Sepia.copy(alpha=.4f))
+            Text("“Uma promessa ganha forma quando encontra seu primeiro gesto.”",fontFamily=FontFamily.Serif,fontSize=18.sp,color=Sepia)
+            Text("${s.claims.size} recompensas resgatadas",color=Sepia,fontSize=12.sp)
+        }
+        ChipRow(listOf("Diárias","Semanais","Épicas","Chefes","Resgates"),tab,{tab=it});Action("+ Missão personalizada",{editor=true})
+        if(tab==3){Toggle("Ativar chefes opcionais",bosses,{vm.setting("bosses",it)});Text("Cada hábito completo enfraquece a névoa. Sem perdas por ausência.",color=Muted,fontSize=13.sp)}
+        if(tab==4){if(s.claims.isEmpty())Empty("Seu livro ainda aguarda os primeiros resgates.");s.claims.sortedByDescending{it.date}.forEach{c->Manuscript{Text(s.quests.find{it.id==c.questId}?.name?:"Missão",fontFamily=FontFamily.Serif,fontSize=22.sp);Text("${c.date} · ${c.occurrence}",fontSize=12.sp);Text("Recompensa registrada no histórico",fontSize=12.sp)}}}
+        else if(tab!=3||bosses){s.quests.filter{it.period==tab}.forEach{q->
+            val value=questProgress(q,s);val claimed=s.claims.any{it.id=="${q.id}@${occurrence(q)}"}
+            Manuscript{
+                Text(if(claimed)"CONTRATO RESGATADO" else if(value>=q.target)"OBJETIVO ALCANÇADO" else "MISSÃO ATIVA",color=Sepia,fontSize=10.sp,letterSpacing=2.sp)
+                Text(q.name,fontFamily=FontFamily.Serif,fontSize=27.sp,color=Sepia)
+                if(tab==3){BossPortrait();Text("Vida: ${(100*(1-value.toFloat()/q.target)).coerceIn(0f,100f).toInt()} / 100",color=Sepia)}
+                Text(q.description,color=Sepia,fontSize=15.sp,lineHeight=23.sp)
+                HorizontalDivider(color=Sepia.copy(alpha=.3f))
+                Text("Objetivo",fontFamily=FontFamily.Serif,fontSize=21.sp,color=Sepia)
+                Text("${value.coerceAtMost(q.target.toLong())} de ${q.target} · ${listOf("conclusões","minutos","XP de hábitos","páginas")[q.metric]}",color=Sepia,fontSize=14.sp)
+                LinearProgressIndicator(progress={(value.toFloat()/q.target).coerceIn(0f,1f)},modifier=Modifier.fillMaxWidth().height(7.dp),color=Color(0xFF6F4825),trackColor=Sepia.copy(alpha=.12f))
+                if(q.deadline.isNotBlank())Text("Prazo: ${q.deadline}",color=Sepia,fontSize=12.sp)
+                Text("Recompensas",fontFamily=FontFamily.Serif,fontSize=21.sp,color=Sepia)
+                Row(horizontalArrangement=Arrangement.spacedBy(20.dp)){Text("✧ ${q.xp} XP",color=Sepia);Text("◈ ${q.coins}",color=Sepia)}
+                if(q.special.isNotBlank())Text("Troféu: ${q.special}",color=Sepia,fontSize=13.sp)
+                Button({vm.run{vm.repo.claim(q)}},enabled=!claimed&&value>=q.target,colors=ButtonDefaults.buttonColors(containerColor=Sepia,contentColor=Parchment,disabledContainerColor=Sepia.copy(alpha=.14f),disabledContentColor=Sepia.copy(alpha=.7f)),shape=RoundedCornerShape(4.dp)){Text(if(claimed)"Recompensa resgatada" else "Resgatar recompensa")}
+                TextButton({editing=q;editor=true},colors=ButtonDefaults.textButtonColors(contentColor=Sepia)){Text("Editar missão")}
+            }
+        }}
     }
     if(editor)QuestEditor(editing,s.habits,{editor=false;editing=null},{q->vm.run{vm.repo.quest(q);editor=false;editing=null}})
+}
+@Composable fun BossPortrait(){
+    Canvas(Modifier.fillMaxWidth().height(130.dp)){
+        val x=size.width/2;val y=size.height/2
+        drawCircle(Brush.radialGradient(listOf(Color(0xFF76527E).copy(alpha=.6f),Color.Transparent)),size.height*.5f,androidx.compose.ui.geometry.Offset(x,y))
+        val p=Path().apply{moveTo(x-50,y+50);lineTo(x-35,y-30);lineTo(x-60,y-55);lineTo(x-12,y-35);lineTo(x+12,y-35);lineTo(x+60,y-55);lineTo(x+35,y-30);lineTo(x+50,y+50);close()}
+        drawPath(p,Color(0xFF322B36));drawLine(Color(0xFFE8C38E),androidx.compose.ui.geometry.Offset(x-22,y-8),androidx.compose.ui.geometry.Offset(x-8,y-3),4f);drawLine(Color(0xFFE8C38E),androidx.compose.ui.geometry.Offset(x+22,y-8),androidx.compose.ui.geometry.Offset(x+8,y-3),4f)
+    }
 }

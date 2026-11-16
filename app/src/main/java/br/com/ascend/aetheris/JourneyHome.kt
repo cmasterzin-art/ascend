@@ -57,6 +57,7 @@ import java.util.Locale
                     Text(p.title,color=Gold,fontFamily=FontFamily.Serif,fontSize=14.sp)
                 }
             }
+            if(!appearance.minimal)Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){attributes.forEachIndexed{i,name->Column(horizontalAlignment=Alignment.CenterHorizontally){Text("${1+s.points(i)/50}",color=habitColor(i),fontSize=16.sp);Text(name.take(3).uppercase(),color=Muted,fontSize=9.sp)}}}
             Meter(xp.toFloat()/next,Blue)
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("$xp / $next XP",color=Blue,fontSize=12.sp);Text("Faltam ${next-xp} XP",color=Muted,fontSize=12.sp)}
         }

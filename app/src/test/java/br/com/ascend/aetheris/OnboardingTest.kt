@@ -108,6 +108,33 @@ class OnboardingTest {
         waitForState{repo.state.value!!.restDays.isEmpty()}
         assertEquals(1,repo.state.value!!.due().size)
     }
+    @Test fun inspectRpgScreensAndEquipPurchasedRelic(){
+        val app=RuntimeEnvironment.getApplication() as AscendApp
+        waitForState{app.repository.state.value!=null}
+        val vm=androidx.lifecycle.ViewModelProvider(compose.activity)[GameViewModel::class.java]
+        vm.run{val h=Habit(name="Estudar",coins=100);app.repository.create(Player(name="Kael"),listOf(h));app.repository.progress(h,today(),1);app.repository.buy(shopItems.first{it.id=="traveler-helm"})}
+        waitForState{app.repository.state.value!!.assets.any{it.id=="traveler-helm"}}
+        compose.onNodeWithText("Missões").performClick()
+        compose.onNodeWithText("Livro de missões").assertExists();shot("livro-missoes")
+        compose.onNodeWithText("Mundo").performClick();shot("mapa-aetheris")
+        compose.onNodeWithText("Herói").performClick()
+        compose.onNodeWithText("Inventário").performScrollTo().performClick()
+        shot("inventario")
+        compose.onNodeWithText("Elmo do Viajante").performScrollTo().performClick()
+        compose.onNodeWithText("Equipar").performClick()
+        waitForState{app.repository.state.value!!.assets.first{it.id=="traveler-helm"}.equipped}
+        compose.onNodeWithText("Habilidades").performScrollTo().performClick()
+        compose.onNodeWithText("Constelações da alma").assertExists();shot("habilidades")
+    }
+    private fun shot(name:String){
+        compose.waitForIdle();compose.runOnIdle{
+            val view=compose.activity.window.decorView
+            val bitmap=android.graphics.Bitmap.createBitmap(view.width,view.height,android.graphics.Bitmap.Config.ARGB_8888)
+            view.draw(android.graphics.Canvas(bitmap))
+            val file=java.io.File("build/reports/screenshots/$name.png");file.parentFile!!.mkdirs()
+            file.outputStream().use{bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it)}
+        }
+    }
     private fun capture(name:String){
         compose.onNodeWithText("ASCEND  /  MINHA JORNADA").performScrollTo()
         compose.waitForIdle()

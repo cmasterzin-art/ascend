@@ -1,3 +1,34 @@
+# Mudanças — 1.2.0 · O Despertar de Aetheris
+
+## Referências visuais e interação
+
+- Livro de missões com papel texturizado, bordas ornamentais, objetivos, recompensas e resgate funcional. As abas e a edição dos contratos foram preservadas.
+- Mapa vetorial em pergaminho, com rio, florestas, montanhas, trilhas, rosa dos ventos e seis regiões selecionáveis. Os bloqueios mostram o nível necessário.
+- Inventário com retrato central, espaços de cabeça, corpo/capa, acessório e arma. Coleção em duas colunas, categorias, cinco raridades, origem e data de obtenção.
+- Equipar e remover altera o retrato; fundos, molduras, companheiros e decoração continuam disponíveis. A lanterna ilumina a cena da vila.
+- Atributos na Jornada e silhueta original para os chefes opcionais.
+
+## Progressão e narrativa
+
+- Seis habilidades em três caminhos: Sabedoria, Perseverança e Criação. Um ponto a cada três níveis; cada habilidade custa um ponto, exige nível e respeita o pré-requisito.
+- Habilidades concedem seis cosméticos exclusivos, persistidos em transação; a loja não permite comprá-los diretamente. Não alteram recompensas de hábitos.
+- Elmo do Viajante, Lâmina de Prata e Amuleto de Aether disponíveis no mercador.
+- Elyra, Darian e Seren oferecem três missões com troféus; os diálogos dos moradores acompanham as três etapas da construção.
+- Cinco títulos por atributos e um título de prestígio no nível 50.
+- Habilidades conquistadas permanecem após correções de XP; novos pontos só aparecem após compensar o nível, evitando duplicação.
+
+## Compatibilidade
+
+- Mesmo applicationId e certificado do APK 1.1; versionCode 3, versionName 1.2.0.
+- Room continua em v2, sem alteração de tabelas ou migração destrutiva. Itens e habilidades usam a coleção de assets existente.
+- Backup v3, com leitura das versões 1, 2 e 3. Backups novos devem ser restaurados na 1.2.
+- Equipamento utiliza os dados atuais do banco, preservando tipo e exclusividade de espaço.
+- Sem permissão INTERNET, serviços pagos, imagens remotas ou fontes baixadas durante o uso.
+
+Este é um incremento funcional do documento de expansão. A lista de recursos entregues e pendentes está em [PROGRESSO.md](PROGRESSO.md).
+
+---
+
 # Mudanças — 1.1.0
 
 ## Jornada e apresentação
