@@ -1,13 +1,13 @@
-# Instalar ASCEND 1.5.0 no Android
+# Instalar ASCEND 1.5.1 no Android
 
 Android 8.0 (API 26) ou superior. O uso não exige internet, conta ou pagamento.
 
-## Atualizar os APKs 1.1, 1.2, 1.3, 1.3.1, 1.4 ou 1.4.5 fornecidos neste repositório
+## Atualizar os APKs 1.1, 1.2, 1.3, 1.3.1, 1.4, 1.4.5 ou 1.5.0 fornecidos neste repositório
 
 1. Em Herói → Configurações, exporte um backup de segurança.
-2. [Baixe ASCEND-1.5.0.apk](downloads/ASCEND-1.5.0.apk?raw=true) e abra o arquivo.
-3. Confirme a atualização **sem desinstalar**. O pacote e o certificado são os mesmos; o versionCode passou para 8.
-4. Abra o app e confira seu personagem. A 1.5 mantém Room v5 e reutiliza as tabelas existentes para as Expedições, sem recriar o banco. As migrações anteriores são mantidas.
+2. [Baixe ASCEND-1.5.1.apk](downloads/ASCEND-1.5.1.apk?raw=true) e abra o arquivo.
+3. Confirme a atualização **sem desinstalar**. O pacote e o certificado são os mesmos; o versionCode passou para 9.
+4. Abra o app e confira seu personagem. A 1.5.1 mantém Room v5 e backup v7 da 1.5.0, sem recriar o banco ou alterar as tabelas. As migrações anteriores são mantidas.
 
 Se o Android indicar conflito de assinatura, sua instalação foi compilada com outra chave. Não desinstale antes de exportar os dados; consulte ASSINATURA.md.
 
@@ -18,11 +18,11 @@ Se o Android indicar conflito de assinatura, sua instalação foi compilada com 
 1. Na **versão 1.0 ainda instalada**, abra **Herói → Configurações → Exportar backup**.
 2. Salve o JSON em Downloads ou outra pasta fora do aplicativo. Confirme que o arquivo foi criado e guarde uma cópia.
 3. Desinstale a 1.0. Essa ação apaga o banco do aplicativo; o backup salvo no passo anterior será usado na restauração.
-4. [Baixe ASCEND-1.5.0.apk](downloads/ASCEND-1.5.0.apk?raw=true), abra pelo gerenciador de arquivos e instale.
-5. Na tela de boas-vindas, toque em **Já tenho uma jornada · Restaurar backup**, escolha o JSON e confirme. A 1.5.0 aceita backups v1/v2/v3/v4/v5/v6/v7. Se já criou outro personagem, use **Herói → Configurações → Importar backup**; os dados atuais serão substituídos pelos do arquivo.
+4. [Baixe ASCEND-1.5.1.apk](downloads/ASCEND-1.5.1.apk?raw=true), abra pelo gerenciador de arquivos e instale.
+5. Na tela de boas-vindas, toque em **Já tenho uma jornada · Restaurar backup**, escolha o JSON e confirme. A 1.5.1 aceita backups v1/v2/v3/v4/v5/v6/v7. Se já criou outro personagem, use **Herói → Configurações → Importar backup**; os dados atuais serão substituídos pelos do arquivo.
 6. Confira nome, hábitos e XP antes de apagar qualquer cópia de segurança.
 
-Se você tem a chave original, pode compilar a 1.5.0 com ela e instalar diretamente por cima da 1.0, sem desinstalar. A migração do banco preserva os dados. Veja `ASSINATURA.md`.
+Se você tem a chave original, pode compilar a 1.5.1 com ela e instalar diretamente por cima da 1.0, sem desinstalar. A migração do banco preserva os dados. Veja `ASSINATURA.md`.
 
 ## Primeira instalação
 
@@ -31,9 +31,16 @@ Se você tem a chave original, pode compilar a 1.5.0 com ela e instalar diretame
 3. Instale e abra ASCEND; escolha personagem, classe e hábitos iniciais.
 4. Na Jornada, use **+** para criar hábitos e registrar progresso. Hábitos simples são concluídos com um toque.
 
-O APK é uma compilação pessoal de depuração assinada, distribuída fora da Play Store. O checksum está em `downloads/ASCEND-1.5.0.apk.sha256`.
+O APK é uma compilação pessoal de depuração assinada, distribuída fora da Play Store. O checksum está em `downloads/ASCEND-1.5.1.apk.sha256`.
 
-## Novidades
+## Refinamentos da 1.5.1
+
+- Widgets com hierarquia de progresso, ações distintas e apresentação ajustada à altura, largura e fonte.
+- Expedições e Guardião com fase/objetivo em destaque; Memórias com linha do tempo contínua e datas brasileiras.
+- Crônica Semanal em seções, perfil mais compacto e dias da semana com alvos de toque maiores.
+- [Capturas e limites reais](docs/VISUAL-1.5.1.md).
+
+## Recursos preservados
 
 - **Mundo → Mapa → Floresta da Persistência → Explorar região:** disponível no nível 3.
 - **Tela inicial do Android → Widgets → ASCEND:** Jornada compacta ou Próximos passos. Redimensione para mostrar mais ações.

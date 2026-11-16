@@ -1,14 +1,14 @@
 # Continuidade de assinatura
 
-Identificador estável: `br.com.ascend.aetheris`. Versão 1.5.0, versionCode 8.
+Identificador estável: `br.com.ascend.aetheris`. Versão 1.5.1, versionCode 9.
 
 ## APK fornecido nesta entrega
 
-O APK 1.5.0 reutiliza a chave privada das versões 1.1/1.2/1.3/1.3.1/1.4/1.4.5, sem regenerá-la. Certificado SHA-256 dessas versões:
+O APK 1.5.1 reutiliza a chave privada das versões 1.1/1.2/1.3/1.3.1/1.4/1.4.5/1.5.0, sem regenerá-la. Certificado SHA-256 dessas versões:
 
 `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`
 
-Instale a 1.5.0 por cima dos APKs 1.1, 1.2, 1.3, 1.3.1, 1.4 ou 1.4.5 fornecidos no repositório. A identidade de assinatura é a mesma; a migração aditiva do banco foi testada. A chave permanece fora do Git público, no arquivo privado preservado `ascend-1.1.keystore`.
+Instale a 1.5.1 por cima dos APKs 1.1, 1.2, 1.3, 1.3.1, 1.4, 1.4.5 ou 1.5.0 fornecidos no repositório. A identidade de assinatura é a mesma; a 1.5.1 não requer migração sobre a 1.5.0. As migrações anteriores continuam testadas. A atualização em telefone físico não foi executada. A chave permanece fora do Git público, no arquivo privado preservado `ascend-1.1.keystore`.
 
 A chave original da 1.0 não está disponível; seu certificado é diferente. Para sair da 1.0, exporte um backup e siga [INSTALACAO.md](INSTALACAO.md). Se possui a chave da sua instalação, pode recompilar a atualização com ela.
 
@@ -27,3 +27,5 @@ Room v5: `MIGRATION_1_2` acrescenta `rest_days`; `MIGRATION_2_3` acrescenta `tem
 Backup ASCEND v7: JSON com checksum SHA-256, validação antes da importação e substituição transacional. A leitura aceita versões 1, 2, 3, 4, 5, 6 e 7. Backups v7 devem ser importados na versão 1.5.0 ou posterior. Preferências de aparência, interesses, sugestões dispensadas, som/volume e permissões Android ficam no aparelho. O diário no backup é texto legível; guarde o arquivo privadamente.
 
 A versão 1.5 não altera o esquema Room v5. Expedições usam quests/claims e assets existentes, com identificadores estáveis. O backup v7 identifica os novos conteúdos, itens e conquista.
+
+A 1.5.1 preserva integralmente Room v5 e backup v7. Os formatos brasileiros de data são apenas de apresentação; o armazenamento permanece ISO.

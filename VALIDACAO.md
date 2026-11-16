@@ -1,43 +1,43 @@
-# Validação — ASCEND 1.5.0
+# Validação — ASCEND 1.5.1
 
-16/11/2026. Base 1.4.5: `6653cfece61581cd486cc0dd4d40cd3fbb157ccd`.
+16/11/2026. Base 1.5.0: `b539db00a355273e016c911d8a89b7c1e82dda0d`. Branch `feat/ascend-1.5.1`.
 
-- `testDebugUnitTest assembleDebug`: **BUILD SUCCESSFUL**, **90 testes aprovados**, zero falhas, erros ou ignorados.
-- APK: `downloads/ASCEND-1.5.0.apk`, 23,121,655 bytes.
-- SHA-256: `fdd78bf2934772e7e27c5a6f66ec5abecd3ab12c9b52aa9cced6da7019f8265c`.
-- Assinatura v2 válida; certificado preservado desde a 1.1: `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
-- `zipalign -c 4` e `git diff --check`: aprovados.
-- Manifesto: `br.com.ascend.aetheris`, versionName 1.5.0, versionCode 8, minSdk 26/targetSdk 35. **Sem INTERNET, VIBRATE, serviço contínuo ou permissão de alarme exato**.
-- JDK Temurin 17, SDK Android 35, Gradle 8.9; APK pessoal de depuração assinado. Chave privada fora do Git.
+- `testDebugUnitTest assembleDebug`: **BUILD SUCCESSFUL**, **97 testes aprovados**, zero falhas, erros ou ignorados. Log e XMLs em [docs/validation/](docs/validation/).
+- APK: [downloads/ASCEND-1.5.1.apk](downloads/ASCEND-1.5.1.apk?raw=true), **23.189.873 bytes** (22,12 MiB).
+- SHA-256: `f8f5e6edfbaa89a74dc129f7e1a069bf9185441430a7688ffd65b338cfd564c5`.
+- Assinatura v2 válida; certificado comparado diretamente com o APK 1.5.0: `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
+- `zipalign -c 4`: aprovado. Identificador `br.com.ascend.aetheris`, versionName **1.5.1**, versionCode **9**, minSdk 26/targetSdk 35.
+- Manifesto sem INTERNET, VIBRATE, serviço contínuo ou permissão de alarme exato. POST_NOTIFICATIONS e RECEIVE_BOOT_COMPLETED permanecem.
+- JDK Temurin 17, SDK Android 35, Gradle 8.9; APK pessoal de depuração assinado com a chave preservada fora do Git. O comando do wrapper foi executado pelo ambiente de build configurado, sem alterar dependências do projeto.
 
-## Cobertura nova
+## Regressão e testes adicionais
 
-Os 78 testes da 1.4.5 continuam aprovados, sem remoção de verificações.
+Os **90 testes da 1.5.0** permanecem e passaram. Nenhum teste foi removido. A única alteração de expectativa anterior acompanha a concordância corrigida no widget: “1 pendentes” → “1 pendente”.
 
-| Suíte | Testes | Resultado verificado |
+| Suíte adicional | Testes | Resultado verificado |
 |---|---:|---|
-| ExplorationTest | 6 | Seis regiões/níveis preservados e gate 249/250 XP; baseline inicial; oito resgates concorrentes com um sucesso; correções/zero e revalidação sem novo Claim; três aventuras/sete etapas, snapshots independentes, transformação, três fases de chefe, broche/conquista/título; persistência/reload/backup; Saga e Expedição usando o mesmo hábito sem duplicar XP; edição/arquivo de hábito; abertura real do esquema Room v5 e backup v6; oito conclusões concorrentes pelo widget com um registro; data local/descanso e rejeição de hábito complexo |
-| ExplorationUiTest | 2 | Atlas → região → local → expedição pela interface; seleção de cinco hábitos e início; registros reais e resgate; três estados do santuário, três fases do Guardião e final 100%; Memórias; retorno Android; 320 dp/fonte 130%/claro/minimalista/redução de movimento e lugares velados |
-| WidgetTest | 4 | RemoteViews compacto/expandido/sem personagem; PendingIntent de hábito complexo abre o app sem completar; PendingIntent real de simples executa receiver/repositório e não duplica XP; host simulado recebe alteração/correção e agenda atualização; estado noturno, ações reduzidas conforme altura e intenção do cabeçalho para Jornada |
+| PolishTest | 2 | Datas brasileiras, dia bissexto, fallback para texto inválido e independência do locale/fuso do aparelho; capacidade do widget conforme altura, largura, fonte e modo compacto |
+| PolishUiTest | 3 | Atalhos de widget entregues à Activity abrem Jornada/registro, retiram extras consumidos e preservam retorno ao Herói sem criar registros; formulário real salva dia desmarcado em 320 dp/130%, com alvo medido de pelo menos 48 × 48 dp; Crônica e Memórias exibem datas formatadas, filtros e estado vazio |
+| WidgetPolishTest | 2 | RemoteViews em 220 × 110 dp/fonte 130% sem personagem ou rituais, sem conteúdo excedendo a altura; tema noturno em 220 × 320 dp/130%, nome longo com descrição acessível completa, conclusão de hábito de 17 XP refletida em 50% e próximo botão Registrar |
 
-A regressão cobre Grimório/rotinas, XP, snapshots, moedas, missões, Sagas, chefes antigos, inventário, árvore, reconstrução, Crônicas, memórias, sons, descanso, lembretes e migrações/backups anteriores.
+A regressão conserva os fluxos Atlas → Região → Local → Expedição, seleção de hábitos, início, marcos, resgate, três fases do Guardião, retorno Android, transformações e Memórias. Continua exercitando 320 dp/130%/claro/minimalista/redução de movimento, os widgets anteriores, PendingIntents, host simulado, correções e idempotência.
 
-## Persistência e economia
+Também passaram catálogo/rotinas, criação/edição de hábitos, XP personalizado, persistência, missões, Sagas, inventário, conquistas, reconstrução, Crônicas, sons, descanso, lembretes e migrações/backups anteriores. Capturas são produzidas pelos testes reais, sem progresso fictício incluído no app.
 
-Room **permanece v5**. Não houve alteração de tabelas, novo esquema ou migração destrutiva. As Expedições reutilizam Quest/Claim/ledger/assets e o cálculo por fotografia das Sagas. O teste abre um banco construído do esquema v5 exportado, compara o GameState e confirma exploração em zero. Migrações explícitas 1 → 2 → 3 → 4 → 5 permanecem testadas.
+## Dados, compatibilidade e funcionamento offline
 
-Backup **v7** guarda os novos conteúdos e lê v1–v7. O teste restaura um envelope v6 sem inventar expedições. A suíte completa também verifica backups antigos e as outras migrações.
+**Room v5 e backup v7 permanecem sem alteração.** Não foi criado esquema, tabela ou migração nova. `applicationId`, regras de exploração, snapshots, ledger, XP, moedas e recompensas foram preservados. O diff não modifica repositório, modelos persistidos ou arquivos de esquema. Os testes anteriores de migração explícita 1 → 2 → 3 → 4 → 5, abertura do esquema v5, persistência e leitura de backups v1–v7 continuam aprovados. Sem fallback destrutivo.
 
-Cada fase tem Quest/Claim determinísticos. As três etapas do santuário e as três do Guardião exigem novas atividades; somente o último marco de cada aventura paga o prêmio definido. O teste de integração realiza cinco hábitos de 10 XP, cada registro repetido, e confere apenas 50 XP de hábitos; os resgates independentes da Saga e da Expedição acrescentam seus 20/40 XP uma vez. Correções invalidam a cadeia e o ledger econômico; restaurar progresso revalida os mesmos Claims. Cosméticos e conquistas conquistados seguem a política de preservação existente.
+As datas são transformadas apenas para apresentação; armazenamento, importação/exportação, programação e chaves continuam ISO. Não há conversão de fuso sobre datas civis salvas. Não foi acrescentado serviço remoto, backend ou dependência de conexão; recursos e fontes continuam embutidos no APK.
 
-## Evidências e limites
+Pacote e certificado iguais, minSdk compatível e versionCode maior conferem os requisitos de atualização sobre o APK 1.5.0 fornecido. A instalação sobre um telefone físico **não foi executada**. Os APKs 1.1–1.4.5 fornecidos também usam esse certificado; a primeira 1.0 usa outra assinatura. Instale sem desinstalar e exporte um backup conforme [INSTALACAO.md](INSTALACAO.md).
 
-[Capturas e comparação](docs/VISUAL-1.5.md) · [Arquitetura/regras/widget](docs/EXPLORACAO-1.5.md) · [JUnit e certificado](docs/validation/).
+## Revisão visual e limites
 
-Renderização nativa Robolectric API 28 em 411 × 891 dp e 320 × 740 dp, tema claro/escuro, fonte 130%, redução de movimento e modo minimalista. As capturas de widgets são RemoteViews Android reais desenhadas no ambiente de testes, não uma instalação em launcher físico. O fluxo de conclusão executou o PendingIntent/receiver real e observou o repositório; o host é simulado.
+[Comparações reais 1.5.0 → 1.5.1](docs/VISUAL-1.5.1.md) · [Exploração preservada](docs/EXPLORACAO-1.5.md) · [Detalhes do APK](docs/validation/APK-1.5.1.txt).
 
-Não houve instalação em telefone/emulador completo, benchmark físico, Android Lint, audição em aparelho ou teste físico de reboot, bateria, meia-noite/fuso e insets do fabricante. Atualizações de widget usam recursos aproximados e podem atrasar sob restrições do Android; a conclusão sempre revalida data/programação. Permissão de notificações e alarmes de lembrete continuam sujeitas ao fabricante.
+Capturas nativas Robolectric API 28, 411 × 891 e 320 × 740 dp. Os cenários incluem claro/escuro, fonte 130%, redução de movimento, vazio e telas reais. Widgets são RemoteViews reais desenhadas em ambiente de teste; o host é simulado. Capturas anteriores foram congeladas em `docs/screenshots/v1.5/` para comparação.
 
-Apenas a Floresta recebeu expedições. Não há novos retratos alternativos, combate ou edição/abandono de uma Expedição após iniciar. As Sagas mantêm suas próprias funções de abandono/arquivo/reinício. Nenhum recurso depende de conta, servidor ou serviço pago.
+Não houve instalação em telefone/launcher físico ou emulador completo, benchmark, Android Lint, audição em aparelho, rotação física, nem teste físico de reboot, bateria, meia-noite/fuso e insets de fabricante. O teste novo de intenções verifica consumo e navegação; não é um teste de recriação física da Activity. Atualizações de widget podem atrasar sob restrições do Android; ações continuam revalidando data/programação e rejeitando conclusão direta de hábitos complexos.
 
-Package/certificado iguais e versionCode maior permitem atualizar os APKs 1.1–1.4.5 fornecidos sem desinstalar; atualização sobre uma instalação física não foi executada. A 1.0 usa outra assinatura. Exporte um backup antes, conforme [INSTALACAO.md](INSTALACAO.md).
+Sons, retratos e pinturas foram preservados. Não há novas fases, regiões ou sistemas, nem redesenho integral da grade do inventário. O polimento se concentra em composição, leitura, controles e estados; detalhes remanescentes estão na revisão visual.

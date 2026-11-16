@@ -33,7 +33,7 @@ val Ember=Color(0xFF8D4B43)
         .drawWithCache {
             val grain=Path().apply{repeat(if(minimal)0 else 110){i->val x=(i*137%991)/991f*size.width;val y=(i*73%983)/983f*size.height;moveTo(x,y);lineTo(x+if(leather)13f else 3f,y+1f)}}
             onDrawBehind {
-                drawPath(grain,if(dark)Color.White.copy(alpha=.018f) else Color.Black.copy(alpha=.045f),style=Stroke(1f))
+                drawPath(grain,if(dark)Color.White.copy(alpha=.010f) else Color.Black.copy(alpha=.022f),style=Stroke(1f))
                 drawLine(accent.copy(alpha=.48f),Offset(10.dp.toPx(),0f),Offset(size.width-10.dp.toPx(),0f),1.dp.toPx())
                 drawLine(Color.Black.copy(alpha=.22f),Offset(0f,size.height-2f),Offset(size.width,size.height-2f),2f)
                 listOf(Offset(7.dp.toPx(),7.dp.toPx()),Offset(size.width-7.dp.toPx(),7.dp.toPx())).forEach{p->drawCircle(ColdIron.copy(alpha=.7f),1.6.dp.toPx(),p);drawCircle(Color.White.copy(alpha=.2f),.6.dp.toPx(),p-Offset(.5f,.5f))}

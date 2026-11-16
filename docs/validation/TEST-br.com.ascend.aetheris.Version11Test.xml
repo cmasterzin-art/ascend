@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.Version11Test" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-16T20:33:59" hostname="da0963ce0ccf" time="0.258">
+<testsuite name="br.com.ascend.aetheris.Version11Test" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-16T21:08:32" hostname="da0963ce0ccf" time="0.268">
   <properties/>
-  <testcase name="archivePauseDuplicateAndHistoricalScheduleRemainConsistent" classname="br.com.ascend.aetheris.Version11Test" time="0.058"/>
-  <testcase name="restDaysArePersistentReversibleAndDoNotAlterRewards" classname="br.com.ascend.aetheris.Version11Test" time="0.037"/>
-  <testcase name="restDayBackupAndInvalidRestoreAreAtomic" classname="br.com.ascend.aetheris.Version11Test" time="0.049"/>
-  <testcase name="migrateVersionOneDatabasePreservesCharacterAndLedger" classname="br.com.ascend.aetheris.Version11Test" time="0.05"/>
-  <testcase name="versionOneBackupWithoutNewFieldsRemainsReadable" classname="br.com.ascend.aetheris.Version11Test" time="0.062"/>
+  <testcase name="archivePauseDuplicateAndHistoricalScheduleRemainConsistent" classname="br.com.ascend.aetheris.Version11Test" time="0.05"/>
+  <testcase name="restDaysArePersistentReversibleAndDoNotAlterRewards" classname="br.com.ascend.aetheris.Version11Test" time="0.04"/>
+  <testcase name="restDayBackupAndInvalidRestoreAreAtomic" classname="br.com.ascend.aetheris.Version11Test" time="0.04"/>
+  <testcase name="migrateVersionOneDatabasePreservesCharacterAndLedger" classname="br.com.ascend.aetheris.Version11Test" time="0.099"/>
+  <testcase name="versionOneBackupWithoutNewFieldsRemainsReadable" classname="br.com.ascend.aetheris.Version11Test" time="0.038"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

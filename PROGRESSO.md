@@ -1,6 +1,15 @@
-# ASCEND — progresso da versão 1.5.0
+# ASCEND — progresso da versão 1.5.1
 
 Implementação nativa em Kotlin, Compose, Material 3, Navigation, Room, DataStore, ViewModel, Coroutines e StateFlow. Sem permissão INTERNET, contas, anúncios ou backend.
+
+## Refinado na 1.5.1
+
+- Widgets com moldura discreta, símbolo próprio, progresso em destaque e botões diferentes para Concluir/Registrar/Abrir Jornada. Conteúdo se adapta à altura, largura e fonte; estados sem personagem e sem rituais têm mensagens curtas.
+- Floresta e locais com seções mais legíveis; Expedições priorizam fase e objetivo, agrupam os espólios e preservam todas as etapas e regras. Guardião mantém a pintura e recebe hierarquia cerimonial.
+- Memórias em lista eficiente com linha do tempo proporcional ao cartão, datas brasileiras, filtros e destaque discreto para Sagas/conclusões de Expedição.
+- Crônica Semanal com números em duas colunas, narrativa em fonte de leitura e acontecimentos agrupados. Perfil com identificação antes do retrato e controles ajustados.
+- Dias da semana em duas linhas com alvos confortáveis, inclusive em 320 dp/fonte 130%. Intenções consumidas do widget são retiradas da Activity para evitar reabertura indevida.
+- Room v5, backup v7, applicationId, certificado e economia preservados. versionName 1.5.1 / versionCode 9. [Comparações e limites](docs/VISUAL-1.5.1.md).
 
 ## Adicionado na 1.5
 

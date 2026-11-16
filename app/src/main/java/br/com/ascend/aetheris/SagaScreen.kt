@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.*
  Text(q.description,color=Muted);Text("${value.coerceAtMost(q.target.toLong())} / ${q.target} ${sagaUnit(q.metric)}",color=Blue);Meter(value.toFloat()/q.target,Blue)
  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){(1..4).forEach{i->Text("${i*25}% ${if(milestone>=i)"◆" else "◇"}",color=if(milestone>=i)Blue else Muted,fontSize=12.sp)}}
  Text(sagaMilestoneTexts[milestone],fontFamily=SagaFont,fontSize=16.sp)
- Text("Desde ${q.sagaStart}${if(q.deadline.isNotBlank())" · até ${q.deadline}" else " · sem prazo"}",color=Muted,fontSize=12.sp)
+ Text("Desde ${displayDate(q.sagaStart)}${if(q.deadline.isNotBlank())" · até ${displayDate(q.deadline)}" else " · sem prazo"}",color=Muted,fontSize=12.sp)
  Text("Recompensa final · ${q.xp} XP · ◈ ${q.coins}",color=Gold)
  Text("Hábitos: "+s.habits.filter{it.id in q.habitIds.split(',')}.joinToString{it.name},color=Muted,fontSize=12.sp)
  Action(if(claimed)"Recompensa resgatada" else "Resgatar juramento",{vm.run{vm.repo.claim(q)}},enabled=!claimed&&q.sagaState==0&&value>=q.target,completed=claimed)
@@ -57,7 +57,7 @@ fun sagaUnit(metric:Int)=when(metric){1->"minutos";3->"páginas";else->"conclus�
 @Composable fun DeadlinePicker(value:String,onChange:(String)->Unit){
  val context=LocalContext.current
  Text("Prazo opcional",color=Muted,fontSize=12.sp)
- SagaButton(if(value.isBlank())"Escolher data" else "Até $value",{
+ SagaButton(if(value.isBlank())"Escolher data" else "Até ${displayDate(value)}",{
   val date=runCatching{LocalDate.parse(value)}.getOrDefault(LocalDate.now())
   android.app.DatePickerDialog(context,{_,year,month,day->onChange(LocalDate.of(year,month+1,day).toString())},date.year,date.monthValue-1,date.dayOfMonth).show()
  },secondary=true)

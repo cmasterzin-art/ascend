@@ -2,10 +2,14 @@ package br.com.ascend.aetheris
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.*
 import java.time.LocalDate
 
@@ -13,34 +17,53 @@ import java.time.LocalDate
  val firstWeek=weekOf((listOfNotNull(s.player?.created)+s.habits.map{it.created}+s.records.map{it.date}+s.ledger.map{it.date}).minOrNull()?:today())
  var week by rememberSaveable{mutableStateOf(weekOf(today()))};val c=weeklyChronicle(s,week)
  Page{Title("Crônica da Semana","As marcas permanecem abertas a correções.")
- Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){SagaButton("Anterior",{week=LocalDate.parse(week).minusWeeks(1).toString()},Modifier.weight(1f),enabled=week>firstWeek,secondary=true);SagaButton("Seguinte",{week=LocalDate.parse(week).plusWeeks(1).toString()},Modifier.weight(1f),enabled=week<weekOf(today()),secondary=true)}
- Manuscript{Eyebrow("${c.start} a ${c.end}",Sepia);RuneSeal(2,Sepia,Modifier.size(40.dp));Text(c.narrative,color=Sepia,fontSize=18.sp,lineHeight=28.sp)
- SagaDivider(color=Sepia)
- Text("${c.summary.completed} hábitos concluídos\n${c.summary.planned} programados · ${c.summary.rate?.let{"$it% de conclusão"}?:"sem metas previstas"}",color=Sepia)
- Text("${c.summary.xp} XP · ${c.coins} Fragmentos conquistados",color=Sepia,fontFamily=SagaFont,fontSize=20.sp)
- Text("O percentual considera apenas conclusões programadas; atividades extras continuam nos totais. Semana atual até hoje.",color=Sepia,fontSize=12.sp)
- Text("Atributos",color=Sepia,fontFamily=SagaFont,fontSize=20.sp);c.points.forEachIndexed{i,v->Text("${attributes[i]} · $v pontos",color=Sepia,fontSize=14.sp)}
- listOf("Missões resgatadas" to c.missions,"Sagas avançadas" to c.sagasAdvanced,"Sagas resgatadas" to c.sagasCompleted,"Conquistas" to c.achievements,"Reconstrução" to c.restored).forEach{(label,items)->SagaDivider(color=Sepia);Text(label,color=Sepia,fontFamily=SagaFont,fontSize=19.sp);Text(items.joinToString("\n").ifBlank{"Nenhum registro neste período."},color=Sepia,fontSize=14.sp)}
+ Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)){SagaButton("Anterior",{week=LocalDate.parse(week).minusWeeks(1).toString()},Modifier.weight(1f),enabled=week>firstWeek,secondary=true);SagaButton("Seguinte",{week=LocalDate.parse(week).plusWeeks(1).toString()},Modifier.weight(1f),enabled=week<weekOf(today()),secondary=true)}
+ Manuscript{
+  Eyebrow("${displayDate(c.start)} a ${displayDate(c.end)}",Sepia)
+  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(18.dp)){Box(Modifier.weight(1f)){ChronicleNumber(c.summary.completed.toString(),if(c.summary.completed==1)"ritual concluído" else "rituais concluídos")};Box(Modifier.weight(1f)){ChronicleNumber(c.summary.rate?.let{"$it%"}?:"—","conclusão prevista")}}
+  Text("${c.summary.planned} ${if(c.summary.planned==1)"hábito programado" else "hábitos programados"} · ${if(c.start==weekOf(today()))"semana atual até hoje" else "semana encerrada"}",color=Sepia,fontSize=12.sp,lineHeight=20.sp)
+  SagaDivider(color=Sepia)
+  ReadingBlock(c.narrative,color=Sepia)
+  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(18.dp)){Box(Modifier.weight(1f)){ChronicleNumber(c.summary.xp.toString(),"XP conquistado")};Box(Modifier.weight(1f)){ChronicleNumber(c.coins.toString(),"Fragmentos")}}
+  Text("O percentual considera conclusões programadas. Atividades extras continuam nos totais.",color=Sepia,fontSize=12.sp,lineHeight=20.sp)
+  SagaDivider(color=Sepia);Text("Atributos desenvolvidos",color=Sepia,fontFamily=SagaFont,fontSize=20.sp)
+  c.points.forEachIndexed{i,v->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(attributes[i],color=Sepia,fontSize=14.sp);Text("$v ${if(v==1L)"ponto" else "pontos"}",color=Sepia,fontSize=14.sp)}}
+  val groups=listOf("Contratos e expedições" to c.missions,"Sagas avançadas" to c.sagasAdvanced,"Sagas resgatadas" to c.sagasCompleted,"Conquistas" to c.achievements,"Reconstrução" to c.restored)
+  SagaDivider(color=Sepia);Eyebrow("Acontecimentos registrados · ${groups.sumOf{it.second.size}}",Sepia)
+  if(groups.all{it.second.isEmpty()})Text("Nenhum acontecimento registrado nesta semana. A página permanece aberta para os próximos caminhos.",color=Sepia,fontSize=14.sp,lineHeight=24.sp)
+  groups.filter{it.second.isNotEmpty()}.forEach{(label,items)->Text(label,color=Sepia,fontFamily=SagaFont,fontSize=19.sp);items.forEach{Text("· $it",color=Sepia,fontSize=14.sp,lineHeight=23.sp)}}
  }
  }
 }
 @Composable fun MemoryHall(s:GameState){
- var filter by rememberSaveable{mutableIntStateOf(0)};val categories=listOf("Todas","Conquistas","Sagas","Mundo","Personagem","História");val memories=hallMemories(s).filter{filter==0||it.category==categories[filter]}
- Page{Title("Salão das Memórias","${s.player?.name} · inscrições de uma jornada real")
- AetherisTabs(categories,filter,{filter=it})
- if(memories.isEmpty())Empty(if(filter==5)"As vozes ainda aguardam uma conversa. Memórias reconhecidas aparecerão aqui." else "Ainda não há inscrições nesta parte do salão. O lugar permanece reservado.")
- memories.forEach{m->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp)){
- Column(horizontalAlignment=Alignment.CenterHorizontally){RuneSeal(m.symbol,Blue,Modifier.size(36.dp));Box(Modifier.width(1.dp).height(50.dp).background(ColdIron.copy(alpha=.4f)))}
- Column(Modifier.weight(1f).materialSurface(accent=ColdIron,leather=m.category=="História").padding(16.dp),verticalArrangement=Arrangement.spacedBy(8.dp)){Eyebrow(m.category,Blue);Text(m.title,style=MaterialTheme.typography.titleLarge);Text(m.date?.let{if(m.id.startsWith("memory:"))"Conversa guardada em $it" else it}?:"Data não disponível",color=Muted,fontSize=12.sp);Text(m.detail,color=Ink,fontSize=14.sp,lineHeight=23.sp)}
- }}
+ var filter by rememberSaveable{mutableIntStateOf(0)};val categories=listOf("Todas","Conquistas","Sagas","Mundo","Personagem","História");val memories=remember(s,filter){hallMemories(s).filter{filter==0||it.category==categories[filter]}}
+ LazyColumn(Modifier.fillMaxSize().testTag("memory_list"),contentPadding=PaddingValues(horizontal=20.dp,vertical=24.dp),verticalArrangement=Arrangement.spacedBy(18.dp)){
+  item{Title("Salão das Memórias","${s.player?.name} · inscrições de uma jornada real")}
+  item{AetherisTabs(categories,filter,{filter=it})}
+  item{Eyebrow("${memories.size} ${if(memories.size==1)"inscrição" else "inscrições"} · ${categories[filter]}",Muted)}
+  if(memories.isEmpty())item{Empty(if(filter==5)"As vozes ainda aguardam uma conversa. Memórias reconhecidas aparecerão aqui." else "Ainda não há inscrições nesta parte do salão. O lugar permanece reservado.")}
+  items(memories,key={it.id}){m->
+   val expedition=if(m.id.startsWith("claim:"))expeditionRef(m.id.removePrefix("claim:").substringBefore('@')) else null
+   val important=expedition?.let{it.second==it.first.phases.lastIndex}==true||m.category=="Sagas"
+   val accent=if(important)Gold else if(m.category=="História")Blue else ColdIron
+   Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min),horizontalArrangement=Arrangement.spacedBy(12.dp)){
+    Column(Modifier.width(34.dp).fillMaxHeight().drawWithCache{onDrawBehind{drawLine(ColdIron.copy(alpha=.35f),Offset(size.width/2,44.dp.toPx()),Offset(size.width/2,size.height),1.dp.toPx())}},horizontalAlignment=Alignment.CenterHorizontally){RuneSeal(if(important)4 else m.symbol,accent,Modifier.size(34.dp))}
+    Column(Modifier.weight(1f).materialSurface(accent=accent,leather=m.category=="História").padding(18.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
+     Eyebrow(if(important)"${m.category} · marca de jornada" else m.category,if(important)Gold else Blue)
+     Text(m.title,style=MaterialTheme.typography.titleLarge)
+     Text(m.date?.let{if(m.id.startsWith("memory:"))"Conversa guardada em ${displayDate(it)}" else displayDate(it)}?:"Data não disponível",color=Muted,fontSize=13.sp,lineHeight=21.sp)
+     if(important)SagaDivider(color=accent)
+     ReadingBlock(m.detail)
+    }
+   }
+  }
  }
 }
-
 @Composable fun PortraitScreen(s:GameState){
  Page{Title(s.player!!.name,"${classes[s.player.heroClass]} · ${s.player.title} · nível ${s.level}")
- ClassEmblem(s.player.heroClass,Modifier.size(44.dp))
- BoxWithConstraints(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){Avatar(s.player,s,(maxWidth-24.dp).coerceAtMost(320.dp))}
+ Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){ClassEmblem(s.player.heroClass,Modifier.size(38.dp))}
+ BoxWithConstraints(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){Avatar(s.player,s,(maxWidth-32.dp).coerceAtMost(300.dp))}
  val frame=s.assets.firstOrNull{it.kind=="frame"&&it.equipped}?.let{a->shopItems.find{it.id==a.id}?.name}?:listOf("Simples","Solar","Estrelada")[s.player.frame]
- Text("Moldura · $frame",color=Muted);Text(classDescriptions[s.player.heroClass],color=Ink)
+ StatusSeal("Moldura · $frame",Blue);ReadingBlock(classDescriptions[s.player.heroClass])
  }
 }

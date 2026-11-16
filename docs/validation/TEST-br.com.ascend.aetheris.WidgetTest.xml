@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.WidgetTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-16T20:33:12" hostname="da0963ce0ccf" time="6.816">
+<testsuite name="br.com.ascend.aetheris.WidgetTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-16T21:08:40" hostname="da0963ce0ccf" time="0.761">
   <properties/>
-  <testcase name="darkWidgetAndResizingKeepActionsWithinSpace" classname="br.com.ascend.aetheris.WidgetTest" time="6.001"/>
-  <testcase name="remoteViewsHaveCompactExpandedAndUnconfiguredStates" classname="br.com.ascend.aetheris.WidgetTest" time="0.232"/>
-  <testcase name="actualPendingIntentCompletesSimpleHabitAndViewsUpdate" classname="br.com.ascend.aetheris.WidgetTest" time="0.349"/>
-  <testcase name="installedWidgetReceivesRepositoryChangesAndSchedulesDayRefresh" classname="br.com.ascend.aetheris.WidgetTest" time="0.234"/>
+  <testcase name="darkWidgetAndResizingKeepActionsWithinSpace" classname="br.com.ascend.aetheris.WidgetTest" time="0.173"/>
+  <testcase name="remoteViewsHaveCompactExpandedAndUnconfiguredStates" classname="br.com.ascend.aetheris.WidgetTest" time="0.308"/>
+  <testcase name="actualPendingIntentCompletesSimpleHabitAndViewsUpdate" classname="br.com.ascend.aetheris.WidgetTest" time="0.173"/>
+  <testcase name="installedWidgetReceivesRepositoryChangesAndSchedulesDayRefresh" classname="br.com.ascend.aetheris.WidgetTest" time="0.106"/>
   <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[Intent = Intent { act=br.com.ascend.WIDGET_COMPLETE dat=ascend://widget/baf66981-1c19-4b2f-b0c0-58a047237a13/2026-11-16 cmp=br.com.ascend.aetheris/.HabitWidget (has extras) }; Matching wrappers: [Wrapper[receiver=[br.com.ascend.aetheris.HabitWidget@37bf24dc], context=[android.app.ContextImpl@465d171], intentFilter=[android.content.IntentFilter@6e46151]]]
-Intent = Intent { act=br.com.ascend.WIDGET_COMPLETE dat=ascend://widget/baf66981-1c19-4b2f-b0c0-58a047237a13/2026-11-16 cmp=br.com.ascend.aetheris/.HabitWidget (has extras) }; Matching wrappers: [Wrapper[receiver=[br.com.ascend.aetheris.HabitWidget@37bf24dc], context=[android.app.ContextImpl@465d171], intentFilter=[android.content.IntentFilter@6e46151]]]
+  <system-err><![CDATA[Intent = Intent { act=br.com.ascend.WIDGET_COMPLETE dat=ascend://widget/4fdd09db-4c40-4ca3-8d4d-7f9735e3c3ba/2026-11-16 cmp=br.com.ascend.aetheris/.HabitWidget (has extras) }; Matching wrappers: [Wrapper[receiver=[br.com.ascend.aetheris.HabitWidget@671c40a2], context=[android.app.ContextImpl@2b533e3b], intentFilter=[android.content.IntentFilter@d0a70ed]]]
+Intent = Intent { act=br.com.ascend.WIDGET_COMPLETE dat=ascend://widget/4fdd09db-4c40-4ca3-8d4d-7f9735e3c3ba/2026-11-16 cmp=br.com.ascend.aetheris/.HabitWidget (has extras) }; Matching wrappers: [Wrapper[receiver=[br.com.ascend.aetheris.HabitWidget@671c40a2], context=[android.app.ContextImpl@2b533e3b], intentFilter=[android.content.IntentFilter@d0a70ed]]]
 ]]></system-err>
 </testsuite>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.CatalogTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-16T20:33:22" hostname="da0963ce0ccf" time="0.124">
+<testsuite name="br.com.ascend.aetheris.CatalogTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-16T21:07:50" hostname="da0963ce0ccf" time="0.109">
   <properties/>
-  <testcase name="everyFilterAndOrderIsApplied" classname="br.com.ascend.aetheris.CatalogTest" time="0.057"/>
-  <testcase name="catalogHasCompleteStableIndependentModels" classname="br.com.ascend.aetheris.CatalogTest" time="0.022"/>
+  <testcase name="everyFilterAndOrderIsApplied" classname="br.com.ascend.aetheris.CatalogTest" time="0.073"/>
+  <testcase name="catalogHasCompleteStableIndependentModels" classname="br.com.ascend.aetheris.CatalogTest" time="0.019"/>
   <testcase name="routineDefinitionsAndRestModelsAreValid" classname="br.com.ascend.aetheris.CatalogTest" time="0.001"/>
   <testcase name="recommendationsAreLocalExplicitAndDismissible" classname="br.com.ascend.aetheris.CatalogTest" time="0.001"/>
-  <testcase name="searchUnderstandsNarrativeNamesAccentsAndTags" classname="br.com.ascend.aetheris.CatalogTest" time="0.017"/>
+  <testcase name="searchUnderstandsNarrativeNamesAccentsAndTags" classname="br.com.ascend.aetheris.CatalogTest" time="0.015"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

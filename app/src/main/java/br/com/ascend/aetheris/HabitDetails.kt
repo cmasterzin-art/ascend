@@ -28,7 +28,7 @@ import java.time.LocalDate
         days.chunked(7).forEach{week->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(5.dp)){week.forEach{date->val r=s.record(h.id,date);val label=when{date in rests->"☽";r?.complete==true->"✓";!scheduled(h,date,rests)->"—";else->"·"};Box(Modifier.weight(1f).background(CardColor,RoundedCornerShape(10.dp)).padding(vertical=10.dp),contentAlignment=Alignment.Center){Text("${date.takeLast(2)}\n$label",color=if(r?.complete==true)Green else Muted,fontSize=12.sp,textAlign=androidx.compose.ui.text.style.TextAlign.Center)}}}}
         Eyebrow("Registros e recompensas",Blue)
         if(records.isEmpty())Empty("O histórico começa com a sua primeira ação.")
-        records.take(30).forEach{r->Panel(accent=Blue){Text(r.date,color=Muted,fontSize=12.sp);Text("${r.progress}/${r.target} ${r.unit}",fontFamily=FontFamily.Serif,fontSize=21.sp);Text("${Progression.reward(r.xp,r.progress,r.target,r.proportional)} XP · recompensa original ${r.xp} XP",color=Blue,fontSize=12.sp);TextButton({onRecord(r)}){Text("Editar ou desfazer registro")}}}
+        records.take(30).forEach{r->Panel(accent=Blue){Text(displayDate(r.date),color=Muted,fontSize=12.sp);Text("${r.progress}/${r.target} ${r.unit}",fontFamily=FontFamily.Serif,fontSize=21.sp);Text("${Progression.reward(r.xp,r.progress,r.target,r.proportional)} XP · recompensa original ${r.xp} XP",color=Blue,fontSize=12.sp);TextButton({onRecord(r)}){Text("Editar ou desfazer registro")}}}
         if(records.size>30)Text("Mostrando os 30 registros mais recentes. Consulte todos no Histórico.",color=Muted,fontSize=12.sp)
         actions()
     }

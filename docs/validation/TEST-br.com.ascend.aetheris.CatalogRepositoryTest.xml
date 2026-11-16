@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.CatalogRepositoryTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-16T20:33:19" hostname="da0963ce0ccf" time="3.664">
+<testsuite name="br.com.ascend.aetheris.CatalogRepositoryTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-16T21:07:45" hostname="da0963ce0ccf" time="5.468">
   <properties/>
-  <testcase name="migrateActualV2PreservesAllProgressAndAllowsCatalog" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="3.096"/>
-  <testcase name="oldBackupWithoutMetadataUsesSafeDefaults" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.117"/>
-  <testcase name="manualHabitsAreReusedAndRoutinesAreAtomicAndIdempotent" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.159"/>
-  <testcase name="addCustomizeEditRewardSnapshotAndReload" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.109"/>
-  <testcase name="concurrentAddsAndRenamingCannotDuplicateTemplate" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.096"/>
-  <testcase name="disabledStreakDoesNotRemoveHabitRewards" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.081"/>
+  <testcase name="migrateActualV2PreservesAllProgressAndAllowsCatalog" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="4.864"/>
+  <testcase name="oldBackupWithoutMetadataUsesSafeDefaults" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.127"/>
+  <testcase name="manualHabitsAreReusedAndRoutinesAreAtomicAndIdempotent" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.16"/>
+  <testcase name="addCustomizeEditRewardSnapshotAndReload" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.126"/>
+  <testcase name="concurrentAddsAndRenamingCannotDuplicateTemplate" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.112"/>
+  <testcase name="disabledStreakDoesNotRemoveHabitRewards" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.076"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

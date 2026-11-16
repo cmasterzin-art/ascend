@@ -40,7 +40,11 @@ import androidx.compose.ui.semantics.*
         Text("A recompensa é sua escolha. Sugestões: 15, 30 ou 50 XP.",color=Muted,fontSize=12.sp)
         Text("Atributo associado",color=Muted);ChipRow(attributes,attr,{attr=it})
         Eyebrow("Dias programados")
-        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(3.dp)){weekdays.forEachIndexed{i,d->val day=i+1;FilterChip(day in days,{days=if(day in days) days-day else days+day},label={Text(d)},modifier=Modifier.weight(1f).heightIn(min=48.dp).semantics{contentDescription=listOf("Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo")[i]},shape=androidx.compose.foundation.shape.CutCornerShape(3.dp))}}
+        Column(verticalArrangement=Arrangement.spacedBy(4.dp)){
+            (1..7).toList().chunked(4).forEach{row->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)){
+                row.forEach{day->FilterChip(day in days,{days=if(day in days)days-day else days+day},label={Text(listOf("Seg","Ter","Qua","Qui","Sex","Sáb","Dom")[day-1])},modifier=Modifier.weight(1f).heightIn(min=48.dp).semantics{contentDescription=listOf("Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo")[day-1]},shape=androidx.compose.foundation.shape.CutCornerShape(3.dp))};repeat(4-row.size){Spacer(Modifier.weight(1f))}
+            }}
+        }
         Text("Dias sem seleção são descanso. Não quebram sua sequência.",color=Muted,fontSize=12.sp)
         if(type in 1..2)Toggle("Recompensa proporcional ao progresso",proportional,{proportional=it})
         Toggle("Mais opções de personalização",advanced,{advanced=it})

@@ -1,3 +1,13 @@
+# Mudanças — 1.5.1 · O Polimento de Aetheris
+
+- Widgets: moldura em ferro/bronze, símbolo próprio, percentual, data e botões com hierarquia; densidade conforme espaço/fonte; estados vazios intencionais.
+- Floresta, locais e Expedições: respiros, seções de leitura, estados visíveis, objetivo antes da premissa e recompensa final agrupada. Fases e lógica do Guardião preservadas.
+- Salão das Memórias: lista eficiente, eixo contínuo por inscrição, datas brasileiras, filtros e ênfase para marcos importantes.
+- Crônica Semanal: estatísticas em pares, narrativa legível, acontecimentos agrupados e período brasileiro. Perfil mais compacto, detalhes de artefatos e aquisição mais claros.
+- Botões com bronze mais sóbrio, textura menos ruidosa, campos em fonte funcional e dias da semana com pelo menos 48 dp no cenário 320 dp/130%.
+- Correção de extras já consumidos nos atalhos de widget. Nenhuma alteração de cálculo de XP, banco, backup ou conteúdo de progressão.
+- Room v5 / backup v7; versionCode 9, applicationId e certificado preservados. 97 testes aprovados, incluindo os 90 anteriores; APK assinado e capturas reais.
+
 # Mudanças — 1.5.0 · O Despertar dos Reinos
 
 - Floresta da Persistência explorável no nível 3, mantendo as seis regiões, ordem e requisitos anteriores. Fluxo Atlas → Região → Local → Expedição.

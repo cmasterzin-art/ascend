@@ -39,7 +39,7 @@ class WidgetTest{
  val manager=AppWidgetManager.getInstance(app);val shadow=Shadows.shadowOf(manager);val info=AppWidgetProviderInfo().apply{provider=ComponentName(app,HabitWidget::class.java);initialLayout=R.layout.habit_widget}
  shadow.addBoundWidget(81,info);HabitWidget.refresh(app,repo.state.value!!)
  val h=Habit(name="Novo ritual",xp=10);repo.habit(h)
- val updated=shadow.getViewFor(81);assertTrue(updated.findViewById<TextView>(R.id.widget_summary).text.contains("1 pendentes"))
+ val updated=shadow.getViewFor(81);assertTrue(updated.findViewById<TextView>(R.id.widget_summary).text.contains("1 pendente"))
  repo.widgetComplete(h.id,today());assertTrue(shadow.getViewFor(81).findViewById<TextView>(R.id.widget_summary).text.contains("1/1"))
  repo.progress(h,today(),0);assertTrue(shadow.getViewFor(81).findViewById<TextView>(R.id.widget_summary).text.contains("0/1"))
  val alarms=Shadows.shadowOf(app.getSystemService(android.app.AlarmManager::class.java)).scheduledAlarms;assertTrue(alarms.isNotEmpty())
