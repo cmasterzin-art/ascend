@@ -1,14 +1,14 @@
 # Continuidade de assinatura
 
-Identificador estável: `br.com.ascend.aetheris`. Versão 1.2.0, versionCode 3.
+Identificador estável: `br.com.ascend.aetheris`. Versão 1.3.0, versionCode 4.
 
 ## APK fornecido nesta entrega
 
-O APK 1.2 reutiliza a chave privada da 1.1, sem regenerá-la. Certificado SHA-256 de ambos:
+O APK 1.3 reutiliza a chave privada das versões 1.1/1.2, sem regenerá-la. Certificado SHA-256 das três versões:
 
 `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`
 
-Instale a 1.2 por cima do APK 1.1 fornecido no repositório. A identidade de assinatura é a mesma e o banco não mudou de versão. A chave permanece fora do Git público, no arquivo privado preservado `ascend-1.1.keystore`.
+Instale a 1.3 por cima dos APKs 1.1 ou 1.2 fornecidos no repositório. A identidade de assinatura é a mesma e o banco não mudou de versão. A chave permanece fora do Git público, no arquivo privado preservado `ascend-1.1.keystore`.
 
 A chave original da 1.0 não está disponível; seu certificado é diferente. Para sair da 1.0, exporte um backup e siga [INSTALACAO.md](INSTALACAO.md). Se possui a chave da sua instalação, pode recompilar a atualização com ela.
 

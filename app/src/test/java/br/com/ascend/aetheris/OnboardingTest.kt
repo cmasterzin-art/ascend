@@ -1,6 +1,10 @@
 package br.com.ascend.aetheris
 
 import androidx.compose.ui.test.*
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.flow.first
@@ -18,6 +22,10 @@ import org.robolectric.annotation.*
 class OnboardingTest {
     @get:Rule val compose=createAndroidComposeRule<MainActivity>()
     @Before fun resetAppearance(){runBlocking{(RuntimeEnvironment.getApplication() as AscendApp).preferences.edit{it.clear()}}}
+    @After fun closeUiDatabase(){
+        compose.activityRule.scenario.close()
+        (RuntimeEnvironment.getApplication() as AscendApp).database.close()
+    }
     @Test fun createMageAndRecordStudyThroughInterface(){
         val repo=(RuntimeEnvironment.getApplication() as AscendApp).repository
         compose.waitForIdle()
@@ -124,26 +132,88 @@ class OnboardingTest {
         compose.onNodeWithText("Equipar").performClick()
         waitForState{app.repository.state.value!!.assets.first{it.id=="traveler-helm"}.equipped}
         compose.onNodeWithText("Habilidades").performScrollTo().performClick()
-        compose.onNodeWithText("Constelações da alma").assertExists();shot("habilidades")
+        shot("habilidades");compose.onNodeWithText("Constelações da alma").assertExists()
+    }
+    @Test fun inspectNordicEquipmentVillageBossAndChronicle(){
+        val app=RuntimeEnvironment.getApplication() as AscendApp
+        waitForState{app.repository.state.value!=null}
+        val vm=androidx.lifecycle.ViewModelProvider(compose.activity)[GameViewModel::class.java]
+        vm.run{
+            val h=Habit(name="Caminhar entre os pinheiros",xp=2000,coins=1000)
+            app.repository.create(Player(name="Eira",face=1,heroClass=0),listOf(h))
+            app.repository.progress(h,today(),1)
+            listOf("traveler-helm","armor","aether-amulet","silver-blade","frame","night","corvus","lantern").forEach{id->
+                app.repository.buy(shopItems.first{it.id==id});app.repository.equip(app.repository.state.value!!.assets.first{it.id==id})
+            }
+            app.repository.restore(0);app.repository.restore(0)
+            vm.setting("bosses",true);vm.setting("reducedMotion",true)
+        }
+        waitForState{app.repository.state.value!!.assets.any{it.id=="building:0"&&it.stage==2}}
+        compose.onNodeWithText("Continuar a jornada").performClick()
+        waitForState{vm.reducedMotion.value}
+        capture("jornada-equipada")
+        compose.onNodeWithText("Herói").performClick();shot("perfil")
+        compose.onNodeWithText("Inventário").performScrollTo().performClick();shot("inventario-equipado")
+        compose.onNodeWithContentDescription("Cabeça: Elmo do Viajante").performScrollTo().performClick()
+        compose.onNodeWithText("Desequipar").performClick()
+        waitForState{app.repository.state.value!!.assets.none{it.kind=="head"&&it.equipped}}
+        assertEquals(7,app.repository.state.value!!.assets.count{it.equipped})
+        compose.onNodeWithText("Loja").performScrollTo().performClick();shot("loja")
+        compose.onNodeWithText("Mundo").performClick();shot("mapa-revelado")
+        compose.onNodeWithText("Vila").performClick();shot("vila")
+        compose.onNodeWithText("Crônicas").performScrollTo().performClick()
+        compose.onAllNodesWithText("Abrir capítulo").onFirst().performScrollTo().performClick();compose.onNodeWithText(chapterTexts[0]).assertExists();shot("cronicas")
+        compose.onNodeWithText("Fechar").performClick()
+        compose.onNodeWithText("Missões").performClick()
+        compose.onNodeWithText("Chefes").performScrollTo().performClick()
+        compose.onAllNodesWithText("Vida:",substring=true).onFirst().performScrollTo();shot("chefe")
+    }
+    @Test @Config(qualifiers="w320dp-h740dp-mdpi")
+    fun narrowScreenWithLargeTextKeepsNavigationAndEquipmentUsable(){
+        val app=RuntimeEnvironment.getApplication() as AscendApp
+        waitForState{app.repository.state.value!=null}
+        val vm=androidx.lifecycle.ViewModelProvider(compose.activity)[GameViewModel::class.java]
+        vm.run{app.repository.create(Player(name="Astrid",face=2),listOf(Habit(name="Ler uma saga")));vm.setting("reducedMotion",true)}
+        waitForState{app.repository.state.value!!.player!=null}
+        compose.runOnIdle{compose.activity.setContent{
+            val density=LocalDensity.current
+            CompositionLocalProvider(LocalDensity provides Density(density.density,1.3f)){Ascend()}
+        }}
+        compose.waitForIdle();capture("jornada-320-texto130")
+        compose.onNodeWithText("Herói").performClick()
+        compose.onNodeWithText("Inventário").performScrollTo().performClick();shot("inventario-320-texto130")
+        compose.onNodeWithText("Habilidades").performScrollTo().performClick()
+        compose.onNodeWithText("Constelações da alma").assertExists()
+        compose.onNodeWithContentDescription("Configurações").performClick()
+        compose.onNodeWithText("Modo minimalista").performScrollTo()
+        compose.onNodeWithContentDescription("Modo minimalista").performClick()
+        waitForState{vm.minimal.value}
+        compose.onNodeWithText("Jornada").performClick();capture("jornada-minimalista")
+        compose.onNodeWithContentDescription("Registrar progresso").performScrollTo().performClick()
+        waitForState{app.repository.state.value!!.records.any{it.complete}}
     }
     private fun shot(name:String){
         compose.waitForIdle();compose.runOnIdle{
-            val view=compose.activity.window.decorView
+            val dialog=org.robolectric.shadows.ShadowDialog.getLatestDialog()
+            val view=if(dialog?.isShowing==true)dialog.window!!.decorView else compose.activity.window.decorView
             val bitmap=android.graphics.Bitmap.createBitmap(view.width,view.height,android.graphics.Bitmap.Config.ARGB_8888)
             view.draw(android.graphics.Canvas(bitmap))
             val file=java.io.File("build/reports/screenshots/$name.png");file.parentFile!!.mkdirs()
             file.outputStream().use{bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it)}
+            bitmap.recycle()
         }
     }
     private fun capture(name:String){
         compose.onNodeWithText("ASCEND  /  MINHA JORNADA").performScrollTo()
         compose.waitForIdle()
         compose.runOnIdle {
-            val view=compose.activity.window.decorView
+            val dialog=org.robolectric.shadows.ShadowDialog.getLatestDialog()
+            val view=if(dialog?.isShowing==true)dialog.window!!.decorView else compose.activity.window.decorView
             val image=android.graphics.Bitmap.createBitmap(view.width,view.height,android.graphics.Bitmap.Config.ARGB_8888)
             view.draw(android.graphics.Canvas(image))
             val path=java.io.File("build/reports/screenshots/$name.png");path.parentFile!!.mkdirs()
             path.outputStream().use{image.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it)}
+            image.recycle()
         }
     }
     private fun createHabit(name:String,xp:String){

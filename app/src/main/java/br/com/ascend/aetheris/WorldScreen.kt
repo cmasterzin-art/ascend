@@ -14,7 +14,7 @@ import androidx.compose.ui.unit.*
     var tab by remember{mutableIntStateOf(0)};var region by remember{mutableIntStateOf(0)};var chapter by remember{mutableStateOf<Int?>(null)};var restore by remember{mutableStateOf<Int?>(null)}
     val Gold=Gold;val Green=Green
     Page{
-        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Title("Atlas de Aetheris","O mundo recorda cada retorno.");Text("◈ ${s.coins}",color=Gold,modifier=Modifier.padding(top=14.dp))}
+        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Title("Atlas de Aetheris","Entre fiordes, ruínas e caminhos velados.")};Text("◈ ${s.coins}",color=Gold,modifier=Modifier.padding(top=14.dp))}
         ChipRow(listOf("Mapa","Vila","Crônicas"),tab,{tab=it})
         when(tab){
             0->{
@@ -25,6 +25,6 @@ import androidx.compose.ui.unit.*
             2->{Panel{Eyebrow("O Cronista");Text("“Registrei o que caiu. Agora registro aquilo que se levanta.”",style=MaterialTheme.typography.titleLarge)};chapterNames.forEachIndexed{i,name->val open=chapterUnlocked(i,s);Panel(accent=if(open)Gold else Muted){Text(name,style=MaterialTheme.typography.titleLarge);Text(when(i){0->"O encontro que inicia sua jornada.";1->"Liberado ao concluir seu primeiro hábito.";2->"Liberado ao restaurar a primeira etapa de uma construção.";3->"Liberado no nível 3.";4->"Liberado no nível 5.";5->"Liberado no nível 10.";6->"Liberado no nível 15.";7->"Liberado no nível 20.";else->"Liberado no nível 30."},color=Muted,fontSize=12.sp);Action(if(open)"Abrir capítulo" else "Ainda sob a névoa",{chapter=i},enabled=open)}}}
         }
     }
-    chapter?.let{i->FullForm(chapterNames[i],{chapter=null},{chapter=null},"Fechar"){Eyebrow("Crônicas da Ascensão");Text(chapterTexts[i],fontFamily=androidx.compose.ui.text.font.FontFamily.Serif,fontSize=20.sp,lineHeight=32.sp)}}
+    chapter?.let{i->FullForm(chapterNames[i],{chapter=null},{chapter=null},"Fechar"){Eyebrow("Crônicas da Ascensão");Manuscript{RuneSeal(3,Sepia,Modifier.size(44.dp));Text(chapterTexts[i],fontFamily=androidx.compose.ui.text.font.FontFamily.Serif,fontSize=19.sp,lineHeight=31.sp)}}}
     restore?.let{i->AlertDialog(onDismissRequest={restore=null},title={Text("Restaurar ${buildings[i]}?")},text={val stage=s.assets.find{it.id=="building:$i"}?.stage?:0;Text("Esta etapa custa ${(stage+1)*30} Fragmentos de Aether. A vila mudará com a restauração.")},confirmButton={TextButton({vm.run{vm.repo.restore(i)};restore=null}){Text("Restaurar")}},dismissButton={TextButton({restore=null}){Text("Voltar")}})}
 }

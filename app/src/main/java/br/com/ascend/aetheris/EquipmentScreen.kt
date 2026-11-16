@@ -6,41 +6,65 @@ import androidx.compose.foundation.shape.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.*
 import androidx.compose.ui.unit.*
+import androidx.compose.ui.semantics.*
 
 @Composable fun Equipment(s:GameState,vm:GameViewModel,store:Boolean=false){
     var selected by remember{mutableStateOf<String?>(null)};var filter by remember{mutableIntStateOf(0)}
-    Eyebrow(if(store)"Mercador de relíquias" else "Câmara dos equipamentos")
-    if(!store)Panel{
-        BoxWithConstraints(Modifier.fillMaxWidth()) {
-        val portraitSize=(maxWidth-150.dp).coerceAtMost(128.dp)
-        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceEvenly){
-            Column{equipmentSlots.take(2).forEach{(kind,label)->EquipmentSlot(kind,label,s){selected=it}}}
-            Avatar(s.player!!,s,portraitSize)
-            Column{equipmentSlots.drop(2).take(2).forEach{(kind,label)->EquipmentSlot(kind,label,s){selected=it}}}
+    if(!store){
+        Column(Modifier.fillMaxWidth().materialSurface(accent=OldBronze,leather=true).padding(12.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
+            Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Eyebrow("Câmara dos equipamentos")};RuneSeal(3,Gold,Modifier.size(28.dp))}
+            BoxWithConstraints(Modifier.fillMaxWidth()){
+                val portraitSize=(maxWidth-132.dp).coerceAtMost(190.dp)
+                Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){
+                    Column(verticalArrangement=Arrangement.spacedBy(22.dp)){equipmentSlots.take(2).forEach{(kind,label)->EquipmentSlot(kind,label,s){selected=it}}}
+                    Avatar(s.player!!,s,portraitSize)
+                    Column(verticalArrangement=Arrangement.spacedBy(22.dp)){equipmentSlots.drop(2).take(2).forEach{(kind,label)->EquipmentSlot(kind,label,s){selected=it}}}
+                }
+            }
+            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceEvenly){equipmentSlots.drop(4).forEach{(kind,label)->EquipmentSlot(kind,label,s){selected=it}}}
+            SagaDivider(color=OldBronze)
+            Text("${s.assets.count{it.equipped}} equipados · ${s.assets.count{a->shopItems.any{it.id==a.id}}} artefatos na coleção",color=Muted,fontSize=11.sp)
         }
+    }else{
+        Column(Modifier.fillMaxWidth().materialSurface(accent=OldBronze,leather=true).padding(18.dp),verticalArrangement=Arrangement.spacedBy(8.dp)){
+            Eyebrow("O ARSENAL · MERCADOR DE RELÍQUIAS")
+            Row(verticalAlignment=Alignment.CenterVertically){RelicArt("weapon",Gold,Modifier.size(76.dp));Column(Modifier.weight(1f)){Text("Entre couro e ferro",style=MaterialTheme.typography.titleLarge);Text("Artefatos para carregar a sua história.",color=Muted,fontSize=13.sp)}}
         }
-        Text("${s.assets.count{it.equipped}} itens equipados · ${s.assets.count{a->shopItems.any{it.id==a.id}}} relíquias",color=Gold,fontSize=12.sp)
     }
-    Text("◈ ${s.coins} Fragmentos de Aether",color=Gold)
+    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Eyebrow(if(store)"Espólios do mercador" else "Sua coleção");Text("◈ ${s.coins}",color=Gold,fontFamily=SagaFont,fontSize=20.sp)}
     ChipRow(listOf("Todos","Trajes","Relíquias","Companheiros"),filter,{filter=it})
     val items=shopItems.filter{item->(if(store)skillDefs.none{it.item==item.id} else s.assets.any{it.id==item.id})&&when(filter){1->item.kind in listOf("head","outfit");2->item.kind !in listOf("head","outfit","companion");3->item.kind=="companion";else->true}}
     if(items.isEmpty())Empty("Nenhuma relíquia nesta seleção. Conquiste fragmentos ou desperte uma habilidade para ampliar sua coleção.")
     items.chunked(2).forEach{row->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp)){
         row.forEach{item->val r=rarity(item);val color=rarityColor(r);val owned=s.assets.find{it.id==item.id}
-            Column(Modifier.weight(1f).border(1.dp,color.copy(alpha=.6f),RoundedCornerShape(8.dp)).background(color.copy(alpha=.06f),RoundedCornerShape(8.dp)).clickable{selected=item.id}.padding(14.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(7.dp)){
-                RelicArt(item.kind,color);Eyebrow(rarityNames[r],color);Text(item.name,style=MaterialTheme.typography.titleMedium);Text(if(owned?.equipped==true)"Equipado" else if(owned!=null)"Na coleção" else "◈ ${item.cost}",color=color,fontSize=12.sp)
+            Column(Modifier.weight(1f).materialSurface(accent=color).clickable{selected=item.id}.padding(12.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(8.dp)){
+                Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){RuneSeal(r,color,Modifier.size(22.dp));Text(rarityNames[r].uppercase(),Modifier.weight(1f),color=color,fontSize=9.sp,letterSpacing=.7.sp)}
+                RelicArt(item.kind,color,Modifier.size(86.dp),item.id)
+                SagaDivider(color=color)
+                Text(item.name,style=MaterialTheme.typography.titleMedium)
+                Text(if(owned?.equipped==true)"◆ Equipado" else if(owned!=null)"Na coleção" else "◈ ${item.cost} fragmentos",color=color,fontSize=11.sp)
             }
         };if(row.size==1)Spacer(Modifier.weight(1f))
     }}
-    if(!store)s.assets.filter{it.kind=="trophy"}.forEach{a->Panel{Eyebrow("Troféu de missão");Text(s.quests.find{q->s.claims.any{it.questId==q.id&&"quest:${it.id}"==a.id}}?.special?:"Memória da jornada")}}
+    if(!store)s.assets.filter{it.kind=="trophy"}.forEach{a->Panel{RuneSeal(4,Gold,Modifier.size(36.dp));Eyebrow("Troféu de missão");Text(s.quests.find{q->s.claims.any{it.questId==q.id&&"quest:${it.id}"==a.id}}?.special?:"Memória da jornada")}}
     selected?.let{id->val item=shopItems.first{it.id==id};val owned=s.assets.find{it.id==id};val color=rarityColor(rarity(item))
-        AlertDialog(onDismissRequest={selected=null},title={Text(item.name)},text={Column(verticalArrangement=Arrangement.spacedBy(14.dp)){RelicArt(item.kind,color,Modifier.size(90.dp));Eyebrow(rarityNames[rarity(item)],color);Text(item.description);Text(itemOrigin(item),color=Muted);if(owned!=null)Text("Obtido em ${owned.date}",color=Muted,fontSize=12.sp)}},confirmButton={TextButton({vm.run{if(owned!=null)vm.repo.equip(owned) else vm.repo.buy(item);selected=null}},enabled=owned!=null||s.coins>=item.cost){Text(if(owned!=null)if(owned.equipped)"Desequipar" else "Equipar" else "Adquirir · ${item.cost}")}},dismissButton={TextButton({selected=null}){Text("Fechar")}})
+        AlertDialog(onDismissRequest={selected=null},title={Text(item.name,fontFamily=SagaFont)},text={Column(verticalArrangement=Arrangement.spacedBy(12.dp)){
+            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center){RelicArt(item.kind,color,Modifier.size(120.dp),item.id)}
+            Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){RuneSeal(rarity(item),color,Modifier.size(28.dp));Eyebrow(rarityNames[rarity(item)],color)}
+            Text(item.description);SagaDivider(color=color);Eyebrow("Procedência",color);Text(itemOrigin(item),color=Muted,fontSize=13.sp);if(owned!=null)Text("Guardado na coleção em ${owned.date}",color=Muted,fontSize=12.sp)
+        }},confirmButton={TextButton({vm.run{if(owned!=null)vm.repo.equip(owned) else vm.repo.buy(item);selected=null}},enabled=owned!=null||s.coins>=item.cost){Text(if(owned!=null)if(owned.equipped)"Desequipar" else "Equipar" else "Adquirir · ${item.cost}")}},dismissButton={TextButton({selected=null}){Text("Fechar")}})
     }
 }
 @Composable private fun EquipmentSlot(kind:String,label:String,s:GameState,select:(String)->Unit){
     val a=s.assets.find{it.kind==kind&&it.equipped};val item=shopItems.find{it.id==a?.id};val color=if(item!=null)rarityColor(rarity(item)) else Muted
-    Column(Modifier.width(75.dp).padding(vertical=6.dp).border(1.dp,color.copy(alpha=.5f),RoundedCornerShape(8.dp)).clickable(enabled=item!=null){select(item!!.id)}.padding(6.dp),horizontalAlignment=Alignment.CenterHorizontally){RelicArt(kind,color,Modifier.size(38.dp));Text(label,color=color,fontSize=10.sp);Text(if(a==null)"Vazio" else "Equipado",color=Muted,fontSize=9.sp)}
+    Column(Modifier.width(62.dp).heightIn(min=72.dp).clip(CutCornerShape(5.dp)).background(color.copy(alpha=.08f)).border(if(item!=null)1.5.dp else 1.dp,color.copy(alpha=if(item!=null).65f else .3f),CutCornerShape(5.dp)).clickable(enabled=item!=null,onClickLabel="Detalhes de ${item?.name?:label}"){select(item!!.id)}.padding(5.dp).semantics(mergeDescendants=true){contentDescription="$label: ${item?.name?:"vazio"}"},horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(3.dp)){
+        RelicArt(kind,color.copy(alpha=if(item==null).55f else 1f),Modifier.size(42.dp),item?.id)
+        Text(when(kind){"companion"->"Aliado";"weapon"->"Arma";"outfit"->"Traje";else->label},color=color,fontSize=9.sp,lineHeight=12.sp)
+        Text(if(a==null)"Vazio" else "◆",color=color,fontSize=9.sp)
+    }
 }
 @Composable fun SkillTree(s:GameState,vm:GameViewModel){
     Title("Constelações da alma","Escolhas cosméticas que acompanham sua jornada.")

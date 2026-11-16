@@ -1,6 +1,8 @@
 package br.com.ascend.aetheris
 
 import androidx.compose.foundation.*
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -16,19 +18,24 @@ import java.time.*
 
 @Composable fun CharacterScreen(s:GameState,vm:GameViewModel,onSettings:()->Unit,onJournal:()->Unit){
     var tab by remember{mutableIntStateOf(0)};var playerEdit by remember{mutableStateOf(false)}
-    Page{
-        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Title("Seu aventureiro","O que você faz encontra forma aqui.");IconButton(onSettings){Icon(Icons.Default.Settings,"Configurações",tint=Gold)}}
+    Column(Modifier.fillMaxSize()){
+        Column(Modifier.padding(horizontal=20.dp).padding(top=14.dp)){
+        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Title("Seu aventureiro","O que você faz encontra forma aqui.")};IconButton(onSettings){Icon(Icons.Default.Settings,"Configurações",tint=Gold)}}
         ChipRow(listOf("Perfil","Atributos","Inventário","Loja","Conquistas","Estatísticas","Habilidades"),tab,{tab=it})
-        when(tab){
-            0->{Panel{Box(Modifier.fillMaxWidth().background(if(s.assets.any{it.id=="night"&&it.equipped})Violet.copy(alpha=.12f) else Color.Transparent),contentAlignment=Alignment.Center){Avatar(s.player!!,s,160.dp)};Text(s.player!!.name,style=MaterialTheme.typography.headlineMedium);Eyebrow("${classes[s.player.heroClass]} · ${s.player.title}");Text(s.player.goals,color=Muted);Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Stat("${s.level}","NÍVEL");Stat("${s.xp}","XP TOTAL",Blue);Stat("${s.coins}","FRAGMENTOS")};Action("Personalizar personagem",{playerEdit=true})};s.assets.find{it.kind=="companion"&&it.equipped}?.let{a->Panel(accent=Violet){val item=shopItems.find{it.id==a.id};Eyebrow("Companheiro",Violet);Text(item?.name?:"Companheiro",style=MaterialTheme.typography.titleLarge);Text(when(a.id){"lyra"->"Lyra se acomoda ao lado do seu caderno. Parece aprovar a página de hoje.";"corvus"->"Corvus observa o horizonte. Há sempre outra trilha entre as árvores.";else->"Ignis protege uma pequena brasa sob as asas. Por enquanto, isso basta."},color=Muted)}};Action("Abrir diário do aventureiro",onJournal,Modifier.fillMaxWidth());Panel{Eyebrow("Títulos conquistados");val titles=listOf(1 to "O Desperto",5 to "Aprendiz Errante",10 to "Aventureiro",15 to "Guardião do Conhecimento",20 to "Mestre da Vontade",30 to "Herói de Aetheris",50 to "Lenda Ascendente");(titles+specializationTitles(s).map{1 to it}).filter{it.first<=s.level}.forEach{(_,title)->TextButton({vm.run{vm.repo.player(s.player!!.copy(title=title))}}){Text(if(s.player!!.title==title)"✦ $title" else title)}}}}
-            1->{attributes.forEachIndexed{i,a->val pts=s.points(i);Panel(accent=Color(palette[i])){Eyebrow("Atributo · nível ${1+pts/50}",Color(palette[i]));Text(a,style=MaterialTheme.typography.titleLarge);Meter((pts%50)/50f,Color(palette[i]));Text("${pts%50}/50 pontos neste nível · $pts acumulados",color=Muted,fontSize=12.sp);s.ledger.filter{it.attribute==i && it.points!=0L}.sortedByDescending{it.date}.take(8).forEach{Text("${it.date} · ${it.label.removePrefix("Hábito · ")} · +${it.points}",color=Muted,fontSize=11.sp)}}}}
+        }
+        val reduce=LocalAppearance.current.reducedMotion
+        Crossfade(targetState=tab,modifier=Modifier.weight(1f),animationSpec=tween(if(reduce)0 else 220),label="abas do herói"){visible->key(visible){Page{
+        when(visible){
+            0->{Panel{Box(Modifier.fillMaxWidth().background(if(s.assets.any{it.id=="night"&&it.equipped})Violet.copy(alpha=.12f) else Color.Transparent),contentAlignment=Alignment.Center){Avatar(s.player!!,s,210.dp)};Text(s.player!!.name,style=MaterialTheme.typography.headlineMedium);Eyebrow("${classes[s.player.heroClass]} · ${s.player.title}");Text(s.player.goals,color=Muted);Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Stat("${s.level}","NÍVEL");Stat("${s.xp}","XP TOTAL",Blue);Stat("${s.coins}","FRAGMENTOS")};Action("Personalizar personagem",{playerEdit=true})};s.assets.find{it.kind=="companion"&&it.equipped}?.let{a->Panel(accent=Violet){val item=shopItems.find{it.id==a.id};Eyebrow("Companheiro",Violet);Text(item?.name?:"Companheiro",style=MaterialTheme.typography.titleLarge);Text(when(a.id){"lyra"->"Lyra se acomoda ao lado do seu caderno. Parece aprovar a página de hoje.";"corvus"->"Corvus observa o horizonte. Há sempre outra trilha entre as árvores.";else->"Ignis protege uma pequena brasa sob as asas. Por enquanto, isso basta."},color=Muted)}};Action("Abrir diário do aventureiro",onJournal,Modifier.fillMaxWidth());Panel{Eyebrow("Títulos conquistados");val titles=listOf(1 to "O Desperto",5 to "Aprendiz Errante",10 to "Aventureiro",15 to "Guardião do Conhecimento",20 to "Mestre da Vontade",30 to "Herói de Aetheris",50 to "Lenda Ascendente");(titles+specializationTitles(s).map{1 to it}).filter{it.first<=s.level}.forEach{(_,title)->TextButton({vm.run{vm.repo.player(s.player!!.copy(title=title))}}){Text(if(s.player!!.title==title)"✦ $title" else title)}}}}
+            1->{attributes.forEachIndexed{i,a->val pts=s.points(i);Panel(accent=habitColor(i)){Eyebrow("Atributo · nível ${1+pts/50}",habitColor(i));Text(a,style=MaterialTheme.typography.titleLarge);Meter((pts%50)/50f,habitColor(i));Text("${pts%50}/50 pontos neste nível · $pts acumulados",color=Muted,fontSize=12.sp);s.ledger.filter{it.attribute==i && it.points!=0L}.sortedByDescending{it.date}.take(8).forEach{Text("${it.date} · ${it.label.removePrefix("Hábito · ")} · +${it.points}",color=Muted,fontSize=11.sp)}}}}
             2->Equipment(s,vm)
             3->Equipment(s,vm,store=true)
-            4->{achievementDefs.forEach{a->val unlocked=s.achievements.find{it.id==a.id};val value=achievementProgress(a,s);val color=when(a.rarity){"Lendária"->Gold;"Épica"->Violet;"Rara"->Blue;else->Muted};Panel(accent=color){Eyebrow("${a.rarity} · ${if(unlocked!=null)"Conquistada" else "Em busca"}",color);Text("${a.icon} ${a.name}",style=MaterialTheme.typography.titleLarge);Text(a.description,color=Muted,fontSize=13.sp);Meter(value.toFloat()/a.target,color);Text(unlocked?.let{"Registrada em ${it.date} · ◈ 5"}?:"${value.coerceAtMost(a.target)}/${a.target}",color=color,fontSize=12.sp)}}}
+            4->{achievementDefs.forEach{a->val unlocked=s.achievements.find{it.id==a.id};val value=achievementProgress(a,s);val color=when(a.rarity){"Lendária"->Gold;"Épica"->Violet;"Rara"->Blue;else->Muted};Panel(accent=color){Eyebrow("${a.rarity} · ${if(unlocked!=null)"Conquistada" else "Em busca"}",color);Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){RuneSeal(if(unlocked!=null)4 else 1,color,Modifier.size(40.dp));Text("${a.icon} ${a.name}",Modifier.weight(1f),style=MaterialTheme.typography.titleLarge)};Text(a.description,color=Muted,fontSize=13.sp);Meter(value.toFloat()/a.target,color);Text(unlocked?.let{"Registrada em ${it.date} · ◈ 5"}?:"${value.coerceAtMost(a.target)}/${a.target}",color=color,fontSize=12.sp)}}}
             5->Statistics(s)
             6->SkillTree(s,vm)
         }
     }
+    }}}
     if(playerEdit)PlayerEditor(s.player!!,{playerEdit=false},{p->vm.run{vm.repo.player(p);playerEdit=false}})
 }
 @Composable fun PlayerEditor(p:Player,onDismiss:()->Unit,onSave:(Player)->Unit){

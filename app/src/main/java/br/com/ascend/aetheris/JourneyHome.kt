@@ -35,32 +35,10 @@ import java.util.Locale
     var detail by remember{mutableStateOf<Habit?>(null)}
     Page {
         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
-            Column { Eyebrow("ASCEND  /  MINHA JORNADA");Text(date.format(DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM",Locale.forLanguageTag("pt-BR"))),color=Muted,fontSize=12.sp) }
-            Surface(shape=RoundedCornerShape(50),color=Gold.copy(alpha=.1f)){Text("◈ ${s.coins}",Modifier.padding(horizontal=14.dp,vertical=10.dp),color=Gold,fontWeight=FontWeight.SemiBold,fontSize=13.sp)}
+            Column(Modifier.weight(1f)) { Eyebrow("ASCEND  /  MINHA JORNADA");Text(date.format(DateTimeFormatter.ofPattern("EEEE, d 'de' MMMM",Locale.forLanguageTag("pt-BR"))),color=Muted,fontSize=12.sp) }
+            Surface(shape=CutCornerShape(5.dp),color=Gold.copy(alpha=.1f)){Text("◈ ${s.coins}",Modifier.padding(horizontal=14.dp,vertical=10.dp),color=Gold,fontWeight=FontWeight.SemiBold,fontSize=13.sp)}
         }
-        if(!appearance.minimal) {
-            Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp))) {
-                Landscape(s,Modifier.height(180.dp),large=true)
-                Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent,Color(0xFF0D131B).copy(alpha=.97f)))))
-                Column(Modifier.align(Alignment.BottomStart).padding(20.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){
-                    Text("CAPÍTULO ${chapterNames.indices.count{chapterUnlocked(it,s)}} · AETHERIS",color=Color(0xFFE1BC79),fontSize=10.sp,letterSpacing=2.sp)
-                    Text(when{rested->"Até a chama descansa.";done>0&&done==due.size->"Hoje, a luz foi mais longe.";else->"Pequenos passos.\nUm mundo que desperta."},fontFamily=FontFamily.Serif,fontSize=29.sp,lineHeight=34.sp,color=Color(0xFFF1EEE7))
-                }
-            }
-        }
-        Panel(accent=Blue) {
-            Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)) {
-                Avatar(p,s,76.dp)
-                Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(3.dp)) {
-                    Eyebrow("NÍVEL ${s.level}  ·  ${classes[p.heroClass]}",Blue)
-                    Text(p.name,style=MaterialTheme.typography.headlineMedium)
-                    Text(p.title,color=Gold,fontFamily=FontFamily.Serif,fontSize=14.sp)
-                }
-            }
-            if(!appearance.minimal)Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){attributes.forEachIndexed{i,name->Column(horizontalAlignment=Alignment.CenterHorizontally){Text("${1+s.points(i)/50}",color=habitColor(i),fontSize=16.sp);Text(name.take(3).uppercase(),color=Muted,fontSize=9.sp)}}}
-            Meter(xp.toFloat()/next,Blue)
-            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("$xp / $next XP",color=Blue,fontSize=12.sp);Text("Faltam ${next-xp} XP",color=Muted,fontSize=12.sp)}
-        }
+        HeroSaga(s)
         Panel(accent=Green){
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
                 Column{Eyebrow("Hábitos de hoje",Green);Text(if(rested)"Descanso" else "$done de ${due.size}",fontSize=26.sp,fontFamily=FontFamily.Serif,color=Ink)}
@@ -71,7 +49,7 @@ import java.util.Locale
         s.focus?.let{FocusCard(it,s,vm)}
         Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){
             Column(Modifier.weight(1f)){Text("Seus próximos passos",style=MaterialTheme.typography.titleLarge);Text(if(rested)"Há espaço para recuperar o fôlego." else "Um hábito de cada vez.",fontSize=12.sp,color=Muted)}
-            FilledTonalIconButton(onAdd){Icon(Icons.Default.Add,"Criar hábito")}
+            IconButton(onAdd,Modifier.size(48.dp).clip(CutCornerShape(5.dp)).background(Gold.copy(alpha=.12f)).border(1.dp,Gold.copy(alpha=.5f),CutCornerShape(5.dp))){Icon(Icons.Default.Add,"Criar hábito")}
         }
         if(due.size>1||done>0)ChipRow(listOf("Todos (${due.size})","Pendentes (${due.size-done})"),if(pendingOnly)1 else 0,{pendingOnly=it==1})
         val visible=due.filter{!pendingOnly||s.record(it.id,day)?.complete!=true}
@@ -83,6 +61,11 @@ import java.util.Locale
         WeekStrip(s,day)
         if(!appearance.minimal)s.quests.filter{it.period==0}.firstOrNull{q->s.claims.none{it.id=="${q.id}@${occurrence(q,day)}"}}?.let{q->
             val n=questProgress(q,s,occurrence(q,day));Panel(accent=Violet){Eyebrow("Contrato do dia",Violet);Text(q.name,style=MaterialTheme.typography.titleLarge);Text(q.description,color=Muted,fontSize=13.sp);Meter(n.toFloat()/q.target,Violet);Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("${n.coerceAtMost(q.target.toLong())}/${q.target}",color=Muted,fontSize=12.sp);Text("+${q.xp} XP · ◈ ${q.coins}",color=Violet,fontSize=12.sp)};if(n>=q.target)Action("Resgatar recompensa",{vm.run{vm.repo.claim(q)}})}
+        }
+        if(!appearance.minimal){
+            Eyebrow("ALÉM DA NÉVOA",Blue)
+            Landscape(s)
+            Text("Capítulo ${chapterNames.indices.count{chapterUnlocked(it,s)}} · ${regions[regionLevels.indexOfLast{it<=s.level}.coerceAtLeast(0)]}",color=Muted,fontSize=12.sp)
         }
         Panel {
             Eyebrow(if(appearance.minimal)"Uma pausa para refletir" else "Palavras do Cronista")

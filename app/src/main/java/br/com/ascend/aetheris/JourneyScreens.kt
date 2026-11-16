@@ -9,6 +9,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.*
 import kotlinx.coroutines.delay
@@ -18,16 +21,17 @@ import java.util.Locale
 
 @Composable fun HabitCard(h:Habit,r:HabitRecord?,onProgress:()->Unit,onDetail:()->Unit,onFocus:()->Unit){
     val complete=r?.complete==true;val progress=r?.progress?:0;val target=r?.target?:h.target;val color=habitColor(h.color)
-    Row(Modifier.fillMaxWidth().border(1.dp,if(complete)Green.copy(alpha=.4f) else color.copy(alpha=.18f),RoundedCornerShape(14.dp)).background(if(complete)Green.copy(alpha=.06f) else Surface,RoundedCornerShape(14.dp)).padding(12.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){
-        Box(Modifier.size(44.dp).background(color.copy(alpha=.12f),RoundedCornerShape(12.dp)),contentAlignment=Alignment.Center){Text(glyphs[h.icon],color=color,fontSize=24.sp)}
+    Row(Modifier.fillMaxWidth().border(1.dp,if(complete)Green.copy(alpha=.4f) else color.copy(alpha=.18f),CutCornerShape(5.dp)).materialSurface(accent=if(complete)Green else color,leather=true).padding(12.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){
+        Box(Modifier.size(48.dp).background(color.copy(alpha=.1f),CutCornerShape(7.dp)).border(1.dp,color.copy(alpha=.35f),CutCornerShape(7.dp)),contentAlignment=Alignment.Center){Text(glyphs[h.icon],color=color,fontSize=24.sp)}
         Column(Modifier.weight(1f).clickable(onClickLabel="Ver detalhes de ${h.name}",onClick=onDetail),verticalArrangement=Arrangement.spacedBy(4.dp)){
-            Text(h.name,color=Ink,fontSize=15.sp)
+            Text(h.name,color=Ink,fontSize=16.sp,fontFamily=SagaFont)
             Text("${attributes[h.attribute]} · +${r?.xp?:h.xp} XP",color=color,fontSize=11.sp)
             if(h.type!=0){Meter(progress.toFloat()/target,color);Text("$progress / $target ${r?.unit?:h.unit}",color=Muted,fontSize=11.sp)}
+            Text(if(complete)"✓ Juramento cumprido" else if(progress>0)"Ritual em andamento" else "Ritual pendente",color=if(complete)Green else Muted,fontSize=10.sp)
             if(h.paused||h.archived)Text(if(h.archived)"Arquivado" else "Em pausa",color=Gold,fontSize=11.sp)
         }
-        if(h.type==2 && !complete)IconButton(onFocus,Modifier.size(40.dp)){Icon(Icons.Default.PlayArrow,"Iniciar foco",tint=color)}
-        IconButton(onProgress,Modifier.size(44.dp).background(if(complete)Green.copy(alpha=.18f) else CardColor,CircleShape)){Icon(if(complete)Icons.Default.Check else Icons.Default.Add,if(complete)"Editar conclusão" else "Registrar progresso",tint=if(complete)Green else Ink)}
+        if(h.type==2 && !complete)IconButton(onFocus,Modifier.size(48.dp)){Icon(Icons.Default.PlayArrow,"Iniciar foco",tint=color)}
+        IconButton(onProgress,Modifier.size(48.dp).background(if(complete)Green.copy(alpha=.18f) else CardColor,CircleShape)){Icon(if(complete)Icons.Default.Check else Icons.Default.Add,if(complete)"Editar conclusão" else "Registrar progresso",tint=if(complete)Green else Ink)}
     }
 }
 @Composable fun FocusCard(f:Focus,s:GameState,vm:GameViewModel){
@@ -75,13 +79,7 @@ import java.util.Locale
     var tab by remember{mutableIntStateOf(0)};var editor by remember{mutableStateOf(false)};var editing by remember{mutableStateOf<Quest?>(null)}
     Page{
         Title("Contratos da jornada","O livro das ações que devolvem luz ao mundo.")
-        Manuscript{
-            Text("Liber Aetheris",fontFamily=FontFamily.Serif,fontSize=15.sp,color=Sepia)
-            Text("Livro de missões",fontFamily=FontFamily.Serif,fontSize=34.sp,color=Sepia)
-            HorizontalDivider(color=Sepia.copy(alpha=.4f))
-            Text("“Uma promessa ganha forma quando encontra seu primeiro gesto.”",fontFamily=FontFamily.Serif,fontSize=18.sp,color=Sepia)
-            Text("${s.claims.size} recompensas resgatadas",color=Sepia,fontSize=12.sp)
-        }
+        SagaCover(s.claims.size)
         ChipRow(listOf("Diárias","Semanais","Épicas","Chefes","Resgates"),tab,{tab=it});Action("+ Missão personalizada",{editor=true})
         if(tab==3){Toggle("Ativar chefes opcionais",bosses,{vm.setting("bosses",it)});Text("Cada hábito completo enfraquece a névoa. Sem perdas por ausência.",color=Muted,fontSize=13.sp)}
         if(tab==4){if(s.claims.isEmpty())Empty("Seu livro ainda aguarda os primeiros resgates.");s.claims.sortedByDescending{it.date}.forEach{c->Manuscript{Text(s.quests.find{it.id==c.questId}?.name?:"Missão",fontFamily=FontFamily.Serif,fontSize=22.sp);Text("${c.date} · ${c.occurrence}",fontSize=12.sp);Text("Recompensa registrada no histórico",fontSize=12.sp)}}}
@@ -89,16 +87,16 @@ import java.util.Locale
             val value=questProgress(q,s);val claimed=s.claims.any{it.id=="${q.id}@${occurrence(q)}"}
             Manuscript{
                 Text(if(claimed)"CONTRATO RESGATADO" else if(value>=q.target)"OBJETIVO ALCANÇADO" else "MISSÃO ATIVA",color=Sepia,fontSize=10.sp,letterSpacing=2.sp)
-                Text(q.name,fontFamily=FontFamily.Serif,fontSize=27.sp,color=Sepia)
+                Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){RuneSeal(if(claimed)4 else tab,Sepia,Modifier.size(36.dp));Text(q.name,Modifier.weight(1f),fontFamily=SagaFont,fontSize=23.sp,lineHeight=30.sp,color=Sepia)}
                 if(tab==3){BossPortrait();Text("Vida: ${(100*(1-value.toFloat()/q.target)).coerceIn(0f,100f).toInt()} / 100",color=Sepia)}
                 Text(q.description,color=Sepia,fontSize=15.sp,lineHeight=23.sp)
                 HorizontalDivider(color=Sepia.copy(alpha=.3f))
                 Text("Objetivo",fontFamily=FontFamily.Serif,fontSize=21.sp,color=Sepia)
                 Text("${value.coerceAtMost(q.target.toLong())} de ${q.target} · ${listOf("conclusões","minutos","XP de hábitos","páginas")[q.metric]}",color=Sepia,fontSize=14.sp)
-                LinearProgressIndicator(progress={(value.toFloat()/q.target).coerceIn(0f,1f)},modifier=Modifier.fillMaxWidth().height(7.dp),color=Color(0xFF6F4825),trackColor=Sepia.copy(alpha=.12f))
+                Meter(value.toFloat()/q.target,Color(0xFF4E4937),trackColor=Sepia.copy(alpha=.16f))
                 if(q.deadline.isNotBlank())Text("Prazo: ${q.deadline}",color=Sepia,fontSize=12.sp)
                 Text("Recompensas",fontFamily=FontFamily.Serif,fontSize=21.sp,color=Sepia)
-                Row(horizontalArrangement=Arrangement.spacedBy(20.dp)){Text("✧ ${q.xp} XP",color=Sepia);Text("◈ ${q.coins}",color=Sepia)}
+                Row(Modifier.fillMaxWidth().border(1.dp,Sepia.copy(alpha=.3f),CutCornerShape(4.dp)).padding(12.dp),horizontalArrangement=Arrangement.spacedBy(18.dp),verticalAlignment=Alignment.CenterVertically){RuneSeal(2,Sepia,Modifier.size(32.dp));Column{Text("${q.xp} XP",color=Sepia,fontFamily=SagaFont,fontSize=20.sp);Text("◈ ${q.coins} fragmentos",color=Sepia,fontSize=12.sp)}}
                 if(q.special.isNotBlank())Text("Troféu: ${q.special}",color=Sepia,fontSize=13.sp)
                 Button({vm.run{vm.repo.claim(q)}},enabled=!claimed&&value>=q.target,colors=ButtonDefaults.buttonColors(containerColor=Sepia,contentColor=Parchment,disabledContainerColor=Sepia.copy(alpha=.14f),disabledContentColor=Sepia.copy(alpha=.7f)),shape=RoundedCornerShape(4.dp)){Text(if(claimed)"Recompensa resgatada" else "Resgatar recompensa")}
                 TextButton({editing=q;editor=true},colors=ButtonDefaults.textButtonColors(contentColor=Sepia)){Text("Editar missão")}
@@ -108,10 +106,9 @@ import java.util.Locale
     if(editor)QuestEditor(editing,s.habits,{editor=false;editing=null},{q->vm.run{vm.repo.quest(q);editor=false;editing=null}})
 }
 @Composable fun BossPortrait(){
-    Canvas(Modifier.fillMaxWidth().height(130.dp)){
-        val x=size.width/2;val y=size.height/2
-        drawCircle(Brush.radialGradient(listOf(Color(0xFF76527E).copy(alpha=.6f),Color.Transparent)),size.height*.5f,androidx.compose.ui.geometry.Offset(x,y))
-        val p=Path().apply{moveTo(x-50,y+50);lineTo(x-35,y-30);lineTo(x-60,y-55);lineTo(x-12,y-35);lineTo(x+12,y-35);lineTo(x+60,y-55);lineTo(x+35,y-30);lineTo(x+50,y+50);close()}
-        drawPath(p,Color(0xFF322B36));drawLine(Color(0xFFE8C38E),androidx.compose.ui.geometry.Offset(x-22,y-8),androidx.compose.ui.geometry.Offset(x-8,y-3),4f);drawLine(Color(0xFFE8C38E),androidx.compose.ui.geometry.Offset(x+22,y-8),androidx.compose.ui.geometry.Offset(x+8,y-3),4f)
+    Box(Modifier.fillMaxWidth().height(190.dp).background(Brush.radialGradient(listOf(Color(0xFF49302F),Color(0xFF10151C)))).border(1.dp,Ember,CutCornerShape(6.dp))){
+        Image(painterResource(R.drawable.nordic_wraith),null,Modifier.matchParentSize().clip(CutCornerShape(6.dp)),contentScale=ContentScale.Crop)
+        Box(Modifier.matchParentSize().background(Brush.verticalGradient(listOf(Color.Transparent,Color(0xFF080C12).copy(alpha=.65f)))))
+        Text("PRESENÇA SOB A NÉVOA",Modifier.align(Alignment.BottomCenter).padding(12.dp),color=WornIvory,fontSize=9.sp,letterSpacing=2.sp)
     }
 }

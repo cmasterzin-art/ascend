@@ -1,6 +1,16 @@
-# ASCEND — progresso da versão 1.2
+# ASCEND — progresso da versão 1.3
 
 Implementação nativa em Kotlin, Compose, Material 3, Navigation, Room, DataStore, ViewModel, Coroutines e StateFlow. Sem permissão INTERNET, contas, anúncios ou backend.
+
+## Redesenhado na 1.3
+
+- Jornada com painel heroico e cenário de fiorde; personagem adulto ilustrado, com três tons de pele e equipamentos sobrepostos.
+- Inventário/loja em couro e ferro, sete espaços, ícones de artefatos, símbolos de raridade e abas fixas.
+- Atlas com geografia ilustrada e marcadores funcionais, mantendo os seis desbloqueios originais.
+- Livro de missões, chefe mítico, vila e páginas de crônicas com nova direção de arte.
+- Materiais, tipografia Cinzel local, paleta nórdica, selos, divisórias e medidores entalhados. Transição entre abas e feedback de equipamento respeitam redução de movimento.
+- Temas claro/escuro/sistema e modo minimalista preservados. Validação de navegação em 320 dp e texto ampliado para 130%.
+- Nenhuma nova regra econômica ou mudança no armazenamento. [Revisão e comparação visual](docs/VISUAL-1.3.md).
 
 ## Adicionado na 1.2
 
@@ -45,12 +55,13 @@ Implementação nativa em Kotlin, Compose, Material 3, Navigation, Room, DataSto
 - O ledger continua transacional, mas não é um log imutável de todas as edições. Metas quantitativas usam valores absolutos por dia e têm teto de 1.000.000.
 - A árvore tem três caminhos e seis habilidades; a especialização é representada por títulos. Não há todas as árvores/classes avançadas propostas no documento.
 - Corpo e capa compartilham o espaço de traje para preservar os itens antigos. Raridades são cosméticas; não há durabilidade ou poder de combate. Chefes usam as metas configuradas e recompensas de missões existentes.
+- Cenários e retratos são pinturas estáticas locais; o mapa não possui zoom/pan e usa os marcadores da progressão existente. A vila combina a pintura com telhados/luzes de restauração, sem renderização 3D.
 - As missões dos moradores contam também as conclusões anteriores ao aceite, filtradas pelo atributo; ficam na aba Épicas. A reconstrução continua custando 30 e 60 fragmentos por construção, sem novos requisitos de atributos.
 
 
 - Regiões além da vila são revelações de mapa e narrativa; a reconstrução interativa está concentrada na Vila do Despertar.
 - Dias globais de descanso podem ser planejados ou corrigidos pelo calendário. Não há Cristais da Perseverança ou economia de cristais. A árvore de habilidades atual tem seis escolhas cosméticas; não concede multiplicadores de XP ou automações. A ausência não retira XP ou conquistas.
-- Avatar é um retrato vetorial com equipamentos sobrepostos, roupas, pele e moldura. Não há animação de corpo inteiro ou combate.
+- Avatar é um retrato ilustrado com três tons de pele e equipamentos vetoriais sobrepostos. As classes compartilham a mesma base de retrato; a classe selecionada e seus dados são preservados. Não há animação de corpo inteiro ou combate.
 - Gráficos de linha para XP diário, distribuição por atributo e calendário de consistência. Períodos de 7, 30 e 90 dias; comparação de XP com o período anterior.
 - Lembretes são aproximados e sujeitos às restrições de bateria do Android. O cronômetro usa horário persistido, não requer serviço contínuo e não toca alarme de foco em segundo plano.
 - Calendário, sequências e estatísticas usam o histórico de programação registrado pelo aplicativo. Alterações feitas no mesmo dia substituem a programação desse dia. Não é possível reconstruir uma programação que nunca foi registrada.
