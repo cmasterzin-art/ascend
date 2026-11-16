@@ -17,16 +17,34 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.semantics.*
 import kotlin.math.*
 
-val Night=Color(0xFF10141C);val Surface=Color(0xFF1B2330);val CardColor=Color(0xFF242D3B)
-val Gold=Color(0xFFD9AD61);val Blue=Color(0xFF7299F4);val Violet=Color(0xFFA084E8);val Green=Color(0xFF67BE92);val Ink=Color(0xFFF0EDE5);val Muted=Color(0xFFAEB6C3)
-@Composable fun AscendTheme(content:@Composable ()->Unit){
-    MaterialTheme(colorScheme=darkColorScheme(primary=Gold,onPrimary=Night,secondary=Blue,tertiary=Violet,background=Night,surface=Surface,surfaceVariant=CardColor,onBackground=Ink,onSurface=Ink,onSurfaceVariant=Muted,outline=Color(0xFF465064)),typography=Typography(headlineLarge=androidx.compose.ui.text.TextStyle(fontFamily=FontFamily.Serif,fontSize=32.sp,color=Ink),headlineMedium=androidx.compose.ui.text.TextStyle(fontFamily=FontFamily.Serif,fontSize=27.sp,color=Ink),titleLarge=androidx.compose.ui.text.TextStyle(fontFamily=FontFamily.Serif,fontSize=22.sp,color=Ink)),content=content)
+data class Appearance(val dark:Boolean=true,val reducedMotion:Boolean=false,val minimal:Boolean=false)
+val LocalAppearance=staticCompositionLocalOf { Appearance() }
+val Night:Color @Composable get()=MaterialTheme.colorScheme.background
+val Surface:Color @Composable get()=MaterialTheme.colorScheme.surface
+val CardColor:Color @Composable get()=MaterialTheme.colorScheme.surfaceVariant
+val Gold:Color @Composable get()=MaterialTheme.colorScheme.primary
+val Blue:Color @Composable get()=MaterialTheme.colorScheme.secondary
+val Violet:Color @Composable get()=MaterialTheme.colorScheme.tertiary
+val Green:Color @Composable get()=if(LocalAppearance.current.dark)Color(0xFF79CBA4) else Color(0xFF236848)
+val Ink:Color @Composable get()=MaterialTheme.colorScheme.onSurface
+val Muted:Color @Composable get()=MaterialTheme.colorScheme.onSurfaceVariant
+@Composable fun habitColor(index:Int):Color=if(LocalAppearance.current.dark)Color(palette[index]) else listOf(Color(0xFF866023),Color(0xFF385FA6),Color(0xFF7551AD),Color(0xFF236848),Color(0xFFA44936))[index]
+@Composable fun AscendTheme(mode:String="dark",reducedMotion:Boolean=false,minimal:Boolean=false,content:@Composable ()->Unit){
+    val dark=when(mode){"light"->false;"system"->isSystemInDarkTheme();else->true}
+    val scheme=if(dark)darkColorScheme(primary=Color(0xFFE1BC79),onPrimary=Color(0xFF201B12),secondary=Color(0xFF94AFF2),tertiary=Color(0xFFB6A0EA),background=Color(0xFF0D131B),surface=Color(0xFF17212C),surfaceVariant=Color(0xFF23303E),onBackground=Color(0xFFF1EEE7),onSurface=Color(0xFFF1EEE7),onSurfaceVariant=Color(0xFFACB9C9),outline=Color(0xFF46566B))
+        else lightColorScheme(primary=Color(0xFF79551D),onPrimary=Color.White,secondary=Color(0xFF385FA6),tertiary=Color(0xFF7551AD),background=Color(0xFFF6F3EC),surface=Color(0xFFFFFDF7),surfaceVariant=Color(0xFFEAE7DF),onBackground=Color(0xFF222B35),onSurface=Color(0xFF222B35),onSurfaceVariant=Color(0xFF596573),outline=Color(0xFF9BA4AD))
+    CompositionLocalProvider(LocalAppearance provides Appearance(dark,reducedMotion,minimal)) {
+        MaterialTheme(colorScheme=scheme,typography=Typography(
+            headlineLarge=androidx.compose.ui.text.TextStyle(fontFamily=FontFamily.Serif,fontSize=34.sp,fontWeight=FontWeight.Medium),
+            headlineMedium=androidx.compose.ui.text.TextStyle(fontFamily=FontFamily.Serif,fontSize=28.sp,fontWeight=FontWeight.Medium),
+            titleLarge=androidx.compose.ui.text.TextStyle(fontFamily=FontFamily.Serif,fontSize=22.sp,fontWeight=FontWeight.Medium)),content=content)
+    }
 }
 @Composable fun Eyebrow(text:String,color:Color=Gold){Text(text.uppercase(),color=color,fontSize=10.sp,letterSpacing=2.sp,fontWeight=FontWeight.Bold)}
 @Composable fun Title(text:String,sub:String="") {Column(Modifier.padding(vertical=6.dp)){Text(text,style=MaterialTheme.typography.headlineMedium);if(sub.isNotEmpty())Text(sub,color=Muted,fontSize=13.sp)}}
 @Composable fun Panel(modifier:Modifier=Modifier,accent:Color=Gold,content:@Composable ColumnScope.()->Unit){Column(modifier.fillMaxWidth().border(1.dp,accent.copy(alpha=.18f),RoundedCornerShape(18.dp)).background(Surface,RoundedCornerShape(18.dp)).padding(18.dp),verticalArrangement=Arrangement.spacedBy(10.dp),content=content)}
 @Composable fun Page(content:@Composable ColumnScope.()->Unit){Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal=20.dp).padding(top=14.dp,bottom=24.dp),verticalArrangement=Arrangement.spacedBy(16.dp),content=content)}
-@Composable fun Meter(value:Float,color:Color=Blue,modifier:Modifier=Modifier){val fraction by animateFloatAsState(value.coerceIn(0f,1f),tween(650),label="progresso");LinearProgressIndicator(progress={fraction},modifier=modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(4.dp)),color=color,trackColor=CardColor)}
+@Composable fun Meter(value:Float,color:Color=Blue,modifier:Modifier=Modifier){val fraction by animateFloatAsState(value.coerceIn(0f,1f),tween(if(LocalAppearance.current.reducedMotion)0 else 650),label="progresso");LinearProgressIndicator(progress={fraction},modifier=modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(4.dp)),color=color,trackColor=CardColor)}
 @Composable fun Stat(value:String,label:String,color:Color=Gold){Column{Text(value,color=color,fontSize=24.sp,fontFamily=FontFamily.Serif);Text(label,color=Muted,fontSize=11.sp)}}
 @Composable fun Action(text:String,onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boolean=true){Button(onClick,modifier.heightIn(min=48.dp),enabled=enabled,shape=RoundedCornerShape(12.dp)){Text(text)}}
 @Composable fun Empty(text:String){Panel(accent=Muted){Text("✧",color=Gold,fontSize=26.sp);Text(text,color=Muted,fontSize=14.sp)}}
@@ -34,7 +52,7 @@ val Gold=Color(0xFFD9AD61);val Blue=Color(0xFF7299F4);val Violet=Color(0xFFA084E
 @Composable fun FormField(value:String,onChange:(String)->Unit,label:String,number:Boolean=false,multi:Boolean=false){OutlinedTextField(value,onChange,Modifier.fillMaxWidth(),label={Text(label)},singleLine=!multi,minLines=if(multi)3 else 1,keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=if(number)androidx.compose.ui.text.input.KeyboardType.Number else androidx.compose.ui.text.input.KeyboardType.Text),shape=RoundedCornerShape(12.dp))}
 @Composable fun Toggle(label:String,checked:Boolean,onChange:(Boolean)->Unit){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Text(label,Modifier.weight(1f),fontSize=14.sp);Switch(checked,onChange)}}
 @Composable fun Avatar(p:Player,s:GameState?=null,size:Dp=100.dp){
-    val color=Color(palette[p.color]);val companion=s?.assets?.find{it.kind=="companion" && it.equipped};val astral=s?.assets?.any{it.id=="frame"&&it.equipped}==true
+    val color=habitColor(p.color);val Night=Night;val Gold=Gold;val Violet=Violet;val Green=Green;val Blue=Blue;val companion=s?.assets?.find{it.kind=="companion" && it.equipped};val astral=s?.assets?.any{it.id=="frame"&&it.equipped}==true
     val outfit=s?.assets?.find{it.kind=="outfit"&&it.equipped}?.id
     Canvas(Modifier.size(size).semanticsAvatar(p)){
         val w=this.size.width;val h=this.size.height
@@ -56,6 +74,7 @@ val Gold=Color(0xFFD9AD61);val Blue=Color(0xFF7299F4);val Violet=Color(0xFFA084E
 }
 private fun Modifier.semanticsAvatar(p:Player)=this.then(Modifier.semantics { contentDescription="Avatar de ${p.name}, ${classes[p.heroClass]}" })
 @Composable fun Landscape(s:GameState,modifier:Modifier=Modifier,large:Boolean=false){
+    val Night=Color(0xFF0D131B);val Gold=Color(0xFFE1BC79);val Ink=Color(0xFFF1EEE7)
     Canvas(modifier.fillMaxWidth().height(if(large)240.dp else 150.dp).clip(RoundedCornerShape(16.dp))){
         val w=size.width;val h=size.height
         drawRect(Brush.verticalGradient(listOf(Color(0xFF1B2440),Color(0xFF111D29))))
@@ -71,6 +90,7 @@ private fun Modifier.semanticsAvatar(p:Player)=this.then(Modifier.semantics { co
             drawRect(stone,Offset(x-bw/2,y-bh),Size(bw,bh))
             if(stage>0)mountain(x,y-bh,bw*1.35f,bh*.4f,if(stage==2)Gold.copy(alpha=.65f) else Color(0xFF4A5670))
             else {drawRect(Color(0xFF1B2440),Offset(x,y-bh),Size(bw*.3f,bh*.3f))}
+            if(stage==2)drawCircle(Brush.radialGradient(listOf(Gold.copy(alpha=.25f),Color.Transparent),center=Offset(x,y-bh*.5f),radius=bw*.8f),bw*.8f,Offset(x,y-bh*.5f))
             drawRect(if(stage==2)Gold else Night,Offset(x-bw*.16f,y-bh*.65f),Size(bw*.32f,bh*.3f))
             drawRect(Night,Offset(x-bw*.13f,y-bh*.28f),Size(bw*.26f,bh*.28f))
         }

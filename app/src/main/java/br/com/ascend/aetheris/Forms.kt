@@ -15,7 +15,7 @@ import androidx.compose.ui.window.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun FullForm(title:String,onDismiss:()->Unit,onSave:()->Unit,saveLabel:String="Salvar",content:@Composable ColumnScope.()->Unit){
     Dialog(onDismiss,properties=DialogProperties(usePlatformDefaultWidth=false,decorFitsSystemWindows=false)){
-        AscendTheme {Scaffold(topBar={TopAppBar(title={Text(title)},navigationIcon={IconButton(onDismiss){Icon(Icons.AutoMirrored.Filled.ArrowBack,"Voltar")}},actions={TextButton(onSave){Text(saveLabel)}})}){padding->Box(Modifier.padding(padding).imePadding()){Page(content)}}}
+        Scaffold(topBar={TopAppBar(title={Text(title)},navigationIcon={IconButton(onDismiss){Icon(Icons.AutoMirrored.Filled.ArrowBack,"Voltar")}},actions={TextButton(onSave){Text(saveLabel)}})}){padding->Box(Modifier.padding(padding).imePadding()){Page(content)}}
     }
 }
 @Composable fun HabitEditor(h:Habit,onDismiss:()->Unit,onSave:(Habit)->Unit){
@@ -24,25 +24,32 @@ import androidx.compose.ui.window.*
     FullForm(if(h.name.isBlank())"Novo hábito" else "Editar hábito",onDismiss,{
         onSave(h.copy(name=name.trim(),description=desc,category=category,attribute=attr,type=type,target=if(type==0)1 else target.toIntOrNull()?:0,unit=if(type==2)"minutos" else if(type==0)"vez" else unit,xp=xp.toIntOrNull()?:-1,coins=coins.toIntOrNull()?:-1,points=points.toIntOrNull()?:-1,days=days.sorted().joinToString(","),time=time,proportional=proportional && type in 1..2,reminder=reminder,difficulty=difficulty,icon=icon,color=color))
     }){
-        Eyebrow("Cada ação deixa uma marca")
+        var advanced by remember{mutableStateOf(false)}
+        Panel(accent=habitColor(color)){
+            Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){
+                Text(glyphs[icon],color=habitColor(color),fontSize=36.sp)
+                Column{Text(name.ifBlank{"Seu próximo passo"},style=MaterialTheme.typography.titleLarge);Text("+$xp XP · ${attributes[attr]}",color=habitColor(color),fontSize=13.sp)}
+            }
+        }
         FormField(name,{name=it},"Nome do hábito")
-        FormField(desc,{desc=it},"Descrição",multi=true)
-        Eyebrow("Identidade")
-        ChipRow(glyphs,icon,{icon=it});ChipRow(listOf("Ouro","Azul","Violeta","Verde","Coral"),color,{color=it})
-        FormField(category,{category=it},"Categoria")
-        Text("Atributo associado",color=Muted);ChipRow(attributes,attr,{attr=it})
-        Text("Dificuldade narrativa",color=Muted);ChipRow(listOf("Leve","Moderada","Desafiadora"),difficulty,{difficulty=it})
-        Eyebrow("Como você vai registrar?")
-        ChipRow(listOf("Simples","Quantidade","Tempo","Repetições"),type,{type=it;if(it==2){unit="minutos";if(target=="1")target="60"}})
+        Text("Como registrar?",color=Muted);ChipRow(listOf("Simples","Quantidade","Tempo","Repetições"),type,{type=it;if(it==2){unit="minutos";if(target=="1")target="60"}})
         if(type!=0){FormField(target,{target=it},if(type==2)"Meta em minutos" else "Meta",number=true);if(type!=2)FormField(unit,{unit=it},"Unidade (páginas, copos, sessões…)")}
+        FormField(xp,{xp=it},"XP ao atingir a meta",number=true)
+        Text("A recompensa é sua escolha. Sugestões: 15, 30 ou 50 XP.",color=Muted,fontSize=12.sp)
+        Text("Atributo associado",color=Muted);ChipRow(attributes,attr,{attr=it})
         Eyebrow("Dias programados")
-        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){weekdays.forEachIndexed{i,d->val day=i+1;FilterChip(day in days,{days=if(day in days) days-day else days+day},label={Text(d)},modifier=Modifier.widthIn(min=36.dp),shape=androidx.compose.foundation.shape.CircleShape)}}
+        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(3.dp)){weekdays.forEachIndexed{i,d->val day=i+1;FilterChip(day in days,{days=if(day in days) days-day else days+day},label={Text(d)},modifier=Modifier.weight(1f),shape=androidx.compose.foundation.shape.CircleShape)}}
         Text("Dias sem seleção são descanso. Não quebram sua sequência.",color=Muted,fontSize=12.sp)
-        FormField(time,{time=it},"Horário · HH:mm")
-        Toggle("Lembrete local opcional",reminder,{reminder=it})
-        Eyebrow("Recompensas livres")
-        FormField(xp,{xp=it},"XP ao atingir a meta",number=true);FormField(coins,{coins=it},"Fragmentos de Aether",number=true);FormField(points,{points=it},"Pontos de ${attributes[attr]}",number=true)
         if(type in 1..2)Toggle("Recompensa proporcional ao progresso",proportional,{proportional=it})
+        Toggle("Mais opções de personalização",advanced,{advanced=it})
+        if(advanced){
+            FormField(desc,{desc=it},"Descrição",multi=true)
+            Eyebrow("Identidade visual");ChipRow(glyphs,icon,{icon=it});ChipRow(listOf("Ouro","Azul","Violeta","Verde","Coral"),color,{color=it})
+            FormField(category,{category=it},"Categoria")
+            Text("Dificuldade narrativa",color=Muted);ChipRow(listOf("Leve","Moderada","Desafiadora"),difficulty,{difficulty=it})
+            FormField(time,{time=it},"Horário · HH:mm");Toggle("Lembrete local opcional",reminder,{reminder=it})
+            FormField(coins,{coins=it},"Fragmentos de Aether",number=true);FormField(points,{points=it},"Pontos de ${attributes[attr]}",number=true)
+        }
         Panel(accent=Blue){Text("Alterar recompensas afeta apenas novos registros. O histórico preserva os valores originais. Use a correção de registro no histórico quando necessário.",color=Muted,fontSize=13.sp)}
     }
 }
@@ -55,13 +62,16 @@ import androidx.compose.ui.window.*
         FormField(date,{date=it},"Data · AAAA-MM-DD")
         Text("Meta deste registro: ${r?.target?:h.target} ${r?.unit?:h.unit}",color=Gold)
         FormField(amount,{amount=it},"Progresso total nesta data",number=true)
+        if(h.type!=0)Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
+            (if(h.type==2)listOf(5,15,25) else listOf(1,5,10)).forEach{step->OutlinedButton({amount=((amount.toIntOrNull()?:0).coerceAtLeast(0).toLong()+step).coerceAtMost((r?.target?:h.target).toLong()).toString()}){Text("+$step")}}
+        }
         Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){OutlinedButton({amount="0"}){Text("Desfazer")};Action("Atingir meta",{amount=(r?.target?:h.target).toString()})}
         Text("Informe o total realizado no dia. O aplicativo concede apenas a diferença de recompensa.",color=Muted,fontSize=13.sp)
         if(r!=null){Toggle("Corrigir recompensas deste registro",correct,{correct=it});if(correct){FormField(xp,{xp=it},"XP da meta",true);FormField(coins,{coins=it},"Fragmentos da meta",true);FormField(points,{points=it},"Pontos da meta",true)}}
         Text("Se fragmentos de um registro desfeito já tiverem sido gastos, a diferença será compensada pelos próximos ganhos. O saldo disponível permanece em zero até a compensação.",color=Muted,fontSize=12.sp)
     }
 }
-@Composable fun Onboarding(onCreate:(Player,List<Habit>)->Unit){
+@Composable fun Onboarding(onRestore:(()->Unit)?=null,onCreate:(Player,List<Habit>)->Unit){
     var step by remember{mutableIntStateOf(0)};var name by remember{mutableStateOf("")};var cls by remember{mutableIntStateOf(1)};var color by remember{mutableIntStateOf(1)};var face by remember{mutableIntStateOf(0)};var outfit by remember{mutableIntStateOf(0)};var frame by remember{mutableIntStateOf(0)};var title by remember{mutableIntStateOf(0)};var goals by remember{mutableStateOf(setOf("Aprender"))};var starters by remember{mutableStateOf(setOf(0))}
     val titles=listOf("O Desperto","Viajante da Névoa","Portador da Brasa")
     val p=Player(name=name,heroClass=cls,color=color,face=face,outfit=outfit,frame=frame,title=titles[title],goals=goals.joinToString(", "))
@@ -76,6 +86,7 @@ import androidx.compose.ui.window.*
                 onCreate(p,hs.filterIndexed{i,_->i in starters}.mapIndexed{i,h->h.copy(position=i)})
             },Modifier.fillMaxWidth())}
         }
+        if(step==0&&onRestore!=null)OutlinedButton(onRestore,Modifier.fillMaxWidth()){Text("Já tenho uma jornada · Restaurar backup")}
         if(step>0)TextButton({step--}){Text("Voltar")}
     }
 }

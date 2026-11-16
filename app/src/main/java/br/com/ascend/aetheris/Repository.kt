@@ -16,7 +16,7 @@ import java.security.MessageDigest
 
 val Context.preferences by preferencesDataStore("ascend_settings")
 class AscendApp:Application(){
-    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").build() }
+    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2).build() }
     val repository by lazy { GameRepository(database) }
 }
 data class GameEvent(val message:String,val level:Int=0,val xp:Long=0)
@@ -24,7 +24,7 @@ class GameRepository(private val db:GameDatabase){
     private val d=db.dao(); private val lock=Mutex()
     val state=MutableStateFlow<GameState?>(null)
     val events=MutableSharedFlow<GameEvent>(extraBufferCapacity=10)
-    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus())
+    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus(),d.restDays())
     suspend fun refresh()=lock.withLock { state.value=read() }
     private suspend fun change(message:String="Salvo",block:suspend ()->Unit){
         lock.withLock {
@@ -87,7 +87,7 @@ class GameRepository(private val db:GameDatabase){
     suspend fun progress(h:Habit,date:String,amount:Int,correction:HabitRecord?=null)=change(if(amount>=h.target) "A chama ganhou força" else "Progresso registrado"){
         require(date<=today() && date>=h.created){"Escolha uma data entre a criação do hábito e hoje."}
         val existing=d.records().find{it.habitId==h.id && it.date==date}
-        var r=existing?:HabitRecord("${h.id}@$date",h.id,date,0,h.target,h.xp,h.coins,h.points,h.attribute,h.proportional,h.type,h.category,h.unit,h.name,scheduled(h,date))
+        var r=existing?:HabitRecord("${h.id}@$date",h.id,date,0,h.target,h.xp,h.coins,h.points,h.attribute,h.proportional,h.type,h.category,h.unit,h.name,scheduled(h,date,d.restDays().map{it.date}.toSet()))
         if(correction!=null) {
             require(correction.id==r.id && correction.target>0 && correction.xp in 0..1000000 && correction.coins in 0..1000000 && correction.points in 0..1000000){"Correção inválida."}
             r=r.copy(xp=correction.xp,coins=correction.coins,points=correction.points)
@@ -124,6 +124,11 @@ class GameRepository(private val db:GameDatabase){
     suspend fun deleteJournal(id:String)=change("Página excluída"){d.deleteJournal(id)}
     suspend fun routine(r:Routine)=change("Rotina salva"){require(runCatching{LocalTime.parse(r.time)}.isSuccess && r.name.isNotBlank() && r.habitIds.isNotBlank()){"Defina um nome e selecione hábitos."};d.routine(r)}
     suspend fun deleteRoutine(id:String)=change("Rotina excluída"){d.deleteRoutine(id)}
+    suspend fun rest(date:String,enabled:Boolean)=change(if(enabled) "Descanso planejado" else "Programação retomada") {
+        LocalDate.parse(date)
+        require(date >= (d.player()?.created ?: today())) { "Escolha uma data a partir do início da sua jornada." }
+        if(enabled) d.restDay(RestDay(date)) else d.deleteRestDay(date)
+    }
     suspend fun startFocus(h:Habit,minutes:Int)=change("Sessão iniciada"){
         require(h.type==2 && minutes in 1..1440){"O foco precisa de um hábito cronometrado e duração de 1 a 1440 minutos."}
         require(d.focus()==null){"Encerre a sessão atual antes de iniciar outra."}
@@ -146,11 +151,12 @@ class GameRepository(private val db:GameDatabase){
     }
     suspend fun importState(s:GameState)=change("Backup restaurado"){
         validateState(s)
-        d.clearFocus();d.clearRecords();d.clearHabits();d.clearLedger();d.clearQuests();d.clearClaims();d.clearAssets();d.clearAchievements();d.clearJournal();d.clearRoutines();d.clearPlayer()
+        d.clearRestDays();d.clearFocus();d.clearRecords();d.clearHabits();d.clearLedger();d.clearQuests();d.clearClaims();d.clearAssets();d.clearAchievements();d.clearJournal();d.clearRoutines();d.clearPlayer()
+        s.restDays.forEach{d.restDay(it)}
         s.player?.let{d.player(it)};s.habits.forEach{d.habit(it)};s.records.forEach{d.record(it)};s.ledger.forEach{d.reward(it)};s.quests.forEach{d.quest(it)};s.claims.forEach{d.claim(it)};s.assets.forEach{d.asset(it)};s.achievements.forEach{d.unlock(it)};s.journal.forEach{d.journal(it)};s.routines.forEach{d.routine(it)};s.focus?.let{d.focus(it.copy(elapsed=it.seconds(),startedAt=0))}
     }
 }
-data class BackupEnvelope(val format:String="ASCEND",val version:Int=1,val sha256:String,val payload:String)
+data class BackupEnvelope(val format:String="ASCEND",val version:Int=2,val sha256:String,val payload:String)
 object Backup {
     private val gson=Gson()
     private fun digest(s:String)=MessageDigest.getInstance("SHA-256").digest(s.toByteArray(Charsets.UTF_8)).joinToString(""){"%02x".format(it)}
@@ -158,7 +164,7 @@ object Backup {
     fun decode(text:String):GameState {
         require(text.length<=20_000_000){"Backup muito grande (máximo 20 MB)."}
         val b=gson.fromJson(text,BackupEnvelope::class.java)
-        require(b.format=="ASCEND" && b.version==1 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
+        require(b.format=="ASCEND" && b.version in 1..2 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
         val s=gson.fromJson(b.payload,GameState::class.java);validateState(s);return s
     }
 }
@@ -167,6 +173,8 @@ fun validateState(s:GameState){
     require(s.habits.size<=10000 && s.records.size<=200000 && s.ledger.size<=300000)
     fun distinct(ids:List<String>)=require(ids.all{it.isNotBlank()} && ids.distinct().size==ids.size)
     distinct(s.habits.map{it.id});distinct(s.records.map{it.id});distinct(s.ledger.map{it.id});distinct(s.quests.map{it.id});distinct(s.claims.map{it.id});distinct(s.assets.map{it.id});distinct(s.achievements.map{it.id});distinct(s.journal.map{it.id});distinct(s.routines.map{it.id})
+    require(s.restDays.size<=36600)
+    distinct(s.restDays.map{it.date});s.restDays.forEach{LocalDate.parse(it.date)}
     s.habits.forEach{h->require(h.name.isNotBlank() && h.target in 1..1000000 && h.attribute in 0..4 && h.color in 0..4 && h.icon in glyphs.indices && h.type in 0..3 && h.xp in 0..1000000 && h.coins in 0..1000000 && h.points in 0..1000000 && h.days.split(',').all{it.toIntOrNull() in 1..7});LocalDate.parse(h.created);LocalTime.parse(h.time)
         if(h.scheduleHistory.isNotBlank())h.scheduleHistory.split(';').forEach{entry->val parts=entry.split('|');require(parts.size==3 && parts[1].split(',').all{it.toIntOrNull() in 1..7} && parts[2].toBooleanStrictOrNull()!=null);LocalDate.parse(parts[0])}
     }
@@ -192,6 +200,9 @@ class GameViewModel(app:Application):AndroidViewModel(app){
     val error=MutableStateFlow<String?>(null)
     val relaxed=app.preferences.data.map{it[booleanPreferencesKey("relaxed")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
     val bosses=app.preferences.data.map{it[booleanPreferencesKey("bosses")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
+    val appearance=app.preferences.data.map{it[stringPreferencesKey("theme")]?:"dark"}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),"dark")
+    val reducedMotion=app.preferences.data.map{it[booleanPreferencesKey("reducedMotion")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
+    val minimal=app.preferences.data.map{it[booleanPreferencesKey("minimal")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
     init{run{repo.refresh()}}
     fun run(block:suspend ()->Unit){viewModelScope.launch{try{block()}catch(e:CancellationException){throw e}catch(e:Exception){error.value=when(e){
             is java.time.format.DateTimeParseException -> "Informe uma data no formato AAAA-MM-DD ou um horário no formato HH:mm."
@@ -202,4 +213,5 @@ class GameViewModel(app:Application):AndroidViewModel(app){
             else -> "Não foi possível salvar. Tente novamente."
         }}}}
     fun setting(key:String,value:Boolean)=run{getApplication<Application>().preferences.edit{it[booleanPreferencesKey(key)]=value}}
+    fun theme(value:String)=run{getApplication<Application>().preferences.edit{it[stringPreferencesKey("theme")]=value}}
 }
