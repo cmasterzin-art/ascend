@@ -1,50 +1,49 @@
-# Validação — ASCEND 1.1.0
+# Validação — ASCEND 1.2.0
 
-Data: 16/11/2026. Base: `989eb19458c02773caca5db885807367ab21f286` (versão 1.0), com as alterações da versão 1.1 nesta branch.
+Data: 16/11/2026. Base: `0d30503180f43500112ffac9ffc91617c6998b0c` (versão 1.1).
 
 ## Resultado
 
-- Tarefas Gradle **testDebugUnitTest** e **assembleDebug**: **BUILD SUCCESSFUL**.
-- **36 testes aprovados, zero falhas e zero erros**.
-- Ambiente: JDK Temurin 17 completo, SDK Android 35 e Gradle 8.9, mesma versão declarada no wrapper.
-- APK gerado: `app/build/outputs/apk/debug/app-debug.apk`.
-- Cópia para distribuição: `downloads/ASCEND-1.1.0.apk`, 18.460.249 bytes (aproximadamente 17,60 MiB).
-- SHA-256: `528dd5c2669c1ac4fb030be9519a787985c70d36f9135e1c0125d040eff4486b`.
-- Assinatura conferida com `apksigner verify --verbose --print-certs`: v2, um assinante RSA de 2048 bits.
-- Alinhamento conferido com `zipalign -c 4`.
-- Manifesto inspecionado: `br.com.ascend.aetheris`, versionCode 2, versionName 1.1.0, minSdk 26, targetSdk 35; **sem permissão INTERNET**.
-- `git diff --check`: sem problemas de whitespace.
+- `testDebugUnitTest assembleDebug`: **BUILD SUCCESSFUL**.
+- **42 testes aprovados, zero falhas, erros ou testes ignorados**.
+- JDK Temurin 17, SDK Android 35 e Gradle 8.9.
+- APK distribuído: `downloads/ASCEND-1.2.0.apk`, 18,556,554 bytes.
+- SHA-256: `37278902d029c9ed87b5e37238df746aeaef39432addf5fe8b2f1c593b027243`.
+- `apksigner verify --verbose --print-certs`: assinatura v2 válida, um assinante RSA de 2048 bits. Certificado idêntico ao APK 1.1 fornecido.
+- `zipalign -c 4`: aprovado.
+- Manifesto: `br.com.ascend.aetheris`, versionCode 3, versionName 1.2.0, minSdk 26, targetSdk 35; **sem permissão INTERNET**.
+- `git diff --check`: aprovado.
 
 ## Cobertura
 
 | Suíte | Testes | Verificação |
 |---|---:|---|
-| ProgressionTest | 6 | Níveis, múltiplos avanços, proporcionalidade, calendários, missões e moedas |
+| ProgressionTest | 6 | Níveis, proporcionalidade, calendários, missões e moedas |
 | RepositoryTest | 12 | Snapshots, reversão, compras concorrentes, foco, missões, backup e banco em disco |
-| InsightsTest | 5 | Descansos nas sequências, recorde histórico, taxa de cumprimento, arquivo e fuso na virada do dia |
-| Version11Test | 5 | Persistência de descanso, backup v2, leitura de v1, migração 1 → 2 e programação após arquivar |
-| RemindersTest | 4 | Descanso, retomada após semanas, horário de verão e lembretes desativados |
-| OnboardingTest | 4 | Criação de personagem, hábitos/XP/edição/desfazer, tema claro e descanso pelo calendário |
+| InsightsTest | 5 | Descansos, sequências, taxa, arquivo e virada de dia |
+| Version11Test | 5 | Descansos, backup, leitura de v1, migração 1 → 2 e programação histórica |
+| RemindersTest | 4 | Descanso, retomada, horário de verão e lembretes desativados |
+| OnboardingTest | 5 | Personagem, hábitos/XP, edição/desfazer, tema, calendário e novas telas RPG |
+| RpgTest | 5 | Custo/pré-requisito de habilidades, exclusividade de equipamentos, correção de XP, reconstrução e backup v2 |
 
-O fluxo de interface cria Kael/Mago, cria Estudar com 50 XP e Ler com 30 XP, conclui ambos e confere 80 XP; muda a recompensa futura de Ler para 40 XP, confere que o registro antigo continua com 30 XP e desfaz a conclusão, voltando a 50 XP.
+O novo teste de interface cria personagem e hábito, registra progresso, compra um elmo, visita livro/mapa/inventário/habilidades, equipa o elmo pela interface e verifica a persistência. As capturas não incluem dados reais do usuário.
 
-O teste original de personagem registra a meta de 60 minutos, confere 60 XP e os pontos de atributo, e visita Mundo, Vila, Missões, Personagem, Conquistas e Histórico. O teste de tema seleciona Claro pelas configurações e confere a preferência local. O teste de calendário ativa e remove descanso sem gerar XP.
+Os testes de habilidades verificam concessão e persistência da relíquia, rejeição de desbloqueio duplicado, rejeição de compra direta de relíquias exclusivas, rejeição de preço adulterado e compensação de pontos após desfazer XP. O teste de backup v2 preserva hábitos, recompensa, descanso e traje antigo, depois libera uma habilidade. A restauração da biblioteca é reaberta por outro repositório e muda o diálogo e o capítulo disponível.
 
-Resultados JUnit completos estão em [docs/validation/](docs/validation/). Capturas da renderização nativa dos testes, inspecionadas visualmente:
+JUnit: [docs/validation/](docs/validation/). Capturas inspecionadas:
 
-- [Jornada escura](docs/screenshots/jornada-escuro.png)
-- [Jornada clara](docs/screenshots/jornada-claro.png)
+- [Livro de missões](docs/screenshots/livro-missoes.png)
+- [Mapa](docs/screenshots/mapa-aetheris.png)
+- [Inventário](docs/screenshots/inventario.png)
+- [Habilidades](docs/screenshots/habilidades.png)
+- [Jornada escura](docs/screenshots/jornada-escuro.png) e [clara](docs/screenshots/jornada-claro.png)
 
-## Compatibilidade e assinatura
+## Compatibilidade e alcance
 
-A migração é testada com um banco em disco marcado como v1, com a identidade Room original, personagem e recompensa gravados. A abertura na v2 preserva nome, histórico e XP e permite criar descansos. As tabelas v1 exportadas são idênticas às correspondentes v2; a única adição é `rest_days`.
+Room permanece em v2. Não houve alteração de esquema nesta versão; a migração 1 → 2 continua testada. Backups v1, v2 e v3 são aceitos, com validação antes da substituição transacional.
 
-O teste de backup v1 remove o campo novo, recalcula o checksum no envelope original e restaura os dados. Backups v2 incluem descansos. Importações inválidas são rejeitadas sem alterar o estado atual.
+O certificado SHA-256 conferido nos APKs 1.1 e 1.2 é `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`. A chave privada não está incluída no Git ou nos artefatos. A assinatura da antiga 1.0 é diferente.
 
-O certificado da versão 1.0 é diferente do APK 1.1 fornecido. A chave original não está neste ambiente, e o acesso a secrets do GitHub retornou HTTP 403. Nenhum secret foi modificado. A nova chave permanece fora do Git público. O procedimento de exportar/reinstalar/importar está em [INSTALACAO.md](INSTALACAO.md).
+Interface executada em Robolectric API 28 com renderização nativa, em 411 × 891 dp. Não houve teste em aparelho físico nem emulador completo; instalação por cima da 1.1 não foi executada em um telefone. A compatibilidade foi verificada pelo pacote, versionCode, certificado e testes de dados. O seletor de arquivos e permissões do fabricante precisam ser conferidos no aparelho. Android Lint não foi executado.
 
-## Alcance
-
-As verificações de interface usam Robolectric Android API 28, Compose UI Test e renderização nativa em viewport de 411 × 891 dp. Não houve teste em aparelho físico ou emulador com sistema operacional completo. Permissões de notificação e o seletor de documentos do fabricante precisam de verificação no telefone. Não foi executado Android Lint nesta sessão.
-
-A compilação baixou ferramentas e dependências de desenvolvimento gratuitas. TLS permaneceu habilitado, usando os certificados do ambiente. O aplicativo instalado usa somente recursos locais e não depende desse ambiente de desenvolvimento.
+O APK é uma compilação pessoal de depuração assinada. O uso é offline; baixar e preparar as ferramentas de desenvolvimento exige conexão. Consulte [PROGRESSO.md](PROGRESSO.md) para recursos ainda não implementados do documento de expansão.

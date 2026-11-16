@@ -107,13 +107,22 @@ class GameRepository(private val db:GameDatabase){
         if(q.deadline.isNotEmpty()) LocalDate.parse(q.deadline)
         d.quest(q)
     }
+    suspend fun unlockSkill(id:String)=change("Habilidade despertada"){
+        val skill=skillDefs.firstOrNull{it.id==id}?:error("Habilidade desconhecida")
+        val s=read()
+        require(s.assets.none{it.id=="skill:$id"}){"Habilidade já desbloqueada."}
+        require(s.level>=skill.level && skillPoints(s)>0 && (skill.parent==null || s.assets.any{it.id=="skill:${skill.parent}"})){"Faltam pontos, nível ou habilidade anterior."}
+        val item=shopItems.first{it.id==skill.item}
+        d.asset(Asset("skill:$id","skill"));d.asset(Asset(item.id,item.kind))
+    }
     suspend fun buy(item:ShopItem)=change("${item.name} chegou ao inventário"){
-        val s=read();require(s.assets.none{it.id==item.id}){"Você já possui este item."};require(s.rawCoins>=item.cost){"Fragmentos insuficientes."}
+        require(shopItems.any{it==item} && skillDefs.none{it.item==item.id}){"Este item é obtido por habilidade."};val s=read();require(s.assets.none{it.id==item.id}){"Você já possui este item."};require(s.rawCoins>=item.cost){"Fragmentos insuficientes."}
         d.reward(Reward("buy:${item.id}",coins=-item.cost.toLong(),label="Compra · ${item.name}"));d.asset(Asset(item.id,item.kind))
     }
     suspend fun equip(a:Asset)=change(if(a.equipped) "Item removido" else "Item equipado"){
-        val s=read();require(s.assets.any{it.id==a.id})
-        s.assets.filter{it.kind==a.kind}.forEach{d.asset(it.copy(equipped=false))};d.asset(a.copy(equipped=!a.equipped))
+        val s=read();val owned=requireNotNull(s.assets.find{it.id==a.id})
+        require(shopItems.any{it.id==owned.id && it.kind==owned.kind}){"Este item não é um equipamento."}
+        s.assets.filter{it.kind==owned.kind}.forEach{d.asset(it.copy(equipped=false))};d.asset(owned.copy(equipped=!owned.equipped))
     }
     suspend fun restore(index:Int)=change("Entre as ruínas, a vida voltou a florescer"){
         require(index in buildings.indices);val s=read();val key="building:$index";val stage=s.assets.find{it.id==key}?.stage?:0
@@ -156,7 +165,7 @@ class GameRepository(private val db:GameDatabase){
         s.player?.let{d.player(it)};s.habits.forEach{d.habit(it)};s.records.forEach{d.record(it)};s.ledger.forEach{d.reward(it)};s.quests.forEach{d.quest(it)};s.claims.forEach{d.claim(it)};s.assets.forEach{d.asset(it)};s.achievements.forEach{d.unlock(it)};s.journal.forEach{d.journal(it)};s.routines.forEach{d.routine(it)};s.focus?.let{d.focus(it.copy(elapsed=it.seconds(),startedAt=0))}
     }
 }
-data class BackupEnvelope(val format:String="ASCEND",val version:Int=2,val sha256:String,val payload:String)
+data class BackupEnvelope(val format:String="ASCEND",val version:Int=3,val sha256:String,val payload:String)
 object Backup {
     private val gson=Gson()
     private fun digest(s:String)=MessageDigest.getInstance("SHA-256").digest(s.toByteArray(Charsets.UTF_8)).joinToString(""){"%02x".format(it)}
@@ -164,7 +173,7 @@ object Backup {
     fun decode(text:String):GameState {
         require(text.length<=20_000_000){"Backup muito grande (máximo 20 MB)."}
         val b=gson.fromJson(text,BackupEnvelope::class.java)
-        require(b.format=="ASCEND" && b.version in 1..2 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
+        require(b.format=="ASCEND" && b.version in 1..3 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
         val s=gson.fromJson(b.payload,GameState::class.java);validateState(s);return s
     }
 }
@@ -182,8 +191,9 @@ fun validateState(s:GameState){
     s.ledger.forEach{require(kotlin.math.abs(it.xp)<=1000000000L && kotlin.math.abs(it.coins)<=1000000000L && kotlin.math.abs(it.points)<=1000000000L && it.attribute in -1..4);LocalDate.parse(it.date)}
     s.quests.forEach{require(it.attribute in -1..4 && it.name.isNotBlank() && it.target in 1..1000000 && it.xp in 0..1000000 && it.coins in 0..1000000 && it.period in 0..3 && it.metric in 0..3);if(it.deadline.isNotEmpty())LocalDate.parse(it.deadline)}
     s.assets.forEach{a->
-        require(a.kind in setOf("building","outfit","frame","background","companion","decoration","trophy"))
+        require(a.kind in setOf("building","outfit","frame","background","companion","decoration","trophy","head","accessory","weapon","skill"))
         if(a.kind=="building") require(a.id.removePrefix("building:").toIntOrNull() in buildings.indices && a.stage in 1..2)
+        else if(a.kind=="skill") require(skillDefs.any{"skill:${it.id}"==a.id})
         else if(a.kind!="trophy") require(shopItems.any{it.id==a.id && it.kind==a.kind})
         LocalDate.parse(a.date)
     }

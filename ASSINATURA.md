@@ -1,14 +1,16 @@
 # Continuidade de assinatura
 
-Identificador estável: `br.com.ascend.aetheris`. Versão 1.1.0, versionCode 2.
+Identificador estável: `br.com.ascend.aetheris`. Versão 1.2.0, versionCode 3.
 
 ## APK fornecido nesta entrega
 
-A chave original da 1.0 não existe no ambiente desta sessão. Não é possível recuperá-la a partir de um APK assinado. Por isso, o APK 1.1 fornecido usa uma **nova chave**, preservada privadamente em `/workspace/work/signing/ascend-1.1.keystore`, fora do repositório e dos downloads.
+O APK 1.2 reutiliza a chave privada da 1.1, sem regenerá-la. Certificado SHA-256 de ambos:
 
-Este APK não instala por cima do APK 1.0 de assinatura diferente. Primeiro exporte um backup dentro da 1.0 e guarde-o fora da pasta do aplicativo. Só então desinstale, instale a 1.1 e importe o backup. Desinstalar sem backup apaga os dados locais.
+`e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`
 
-Se você possui a chave original da 1.0, compile o código 1.1 com essa chave para uma atualização direta que preserve os dados. O banco possui migração explícita 1 → 2.
+Instale a 1.2 por cima do APK 1.1 fornecido no repositório. A identidade de assinatura é a mesma e o banco não mudou de versão. A chave permanece fora do Git público, no arquivo privado preservado `ascend-1.1.keystore`.
+
+A chave original da 1.0 não está disponível; seu certificado é diferente. Para sair da 1.0, exporte um backup e siga [INSTALACAO.md](INSTALACAO.md). Se possui a chave da sua instalação, pode recompilar a atualização com ela.
 
 ## Compilações seguintes
 
@@ -22,4 +24,4 @@ No GitHub Actions, o secret opcional `ASCEND_KEYSTORE_BASE64` deve conter a chav
 
 Room v2: migration `MIGRATION_1_2` acrescenta somente `rest_days`. As tabelas da 1.0 são preservadas. Os dois esquemas estão em `app/schemas/`.
 
-Backup ASCEND v2: JSON com checksum SHA-256, validação antes da importação e substituição transacional. A leitura aceita versões 1 e 2. Backups v2 não são compatíveis com o leitor antigo da versão 1.0. Preferências de aparência e permissões Android ficam no aparelho. O diário no backup é texto legível; guarde o arquivo privadamente.
+Backup ASCEND v3: JSON com checksum SHA-256, validação antes da importação e substituição transacional. A leitura aceita versões 1, 2 e 3. Backups v3 devem ser importados na versão 1.2 ou posterior. Preferências de aparência e permissões Android ficam no aparelho. O diário no backup é texto legível; guarde o arquivo privadamente.

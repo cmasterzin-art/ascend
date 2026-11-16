@@ -104,6 +104,15 @@ fun achievementProgress(a: AchievementDef,s: GameState): Long = when(a.id){
 }
 data class ShopItem(val id:String,val name:String,val kind:String,val cost:Int,val description:String,val symbol:String)
 val shopItems=listOf(
+    ShopItem("scholar-bg","Biblioteca Interior","background",0,"Estantes e luz arcana no fundo do retrato.","▤"),
+    ShopItem("rune-frame","Círculo das Runas","frame",0,"Uma moldura de runas para quem retorna aos livros.","◈"),
+    ShopItem("ember-amulet","Brasa Persistente","accessory",0,"Um cristal de âmbar junto ao coração.","◈"),
+    ShopItem("will-helm","Coroa da Vontade","head",0,"Três pontas de ouro honram seus retornos.","♜"),
+    ShopItem("craft-blade","Lâmina do Artífice","weapon",0,"Espada cerimonial de luz azul. Inteiramente cosmética.","◆"),
+    ShopItem("dawn-outfit","Vestes da Aurora","outfit",0,"Um manto verde com acabamentos solares.","✧"),
+    ShopItem("traveler-helm","Elmo do Viajante","head",40,"Um elmo de cobre para os caminhos de Aetheris.","♜"),
+    ShopItem("silver-blade","Lâmina do Regresso","weapon",55,"Uma lâmina prateada, sem bônus de combate.","◆"),
+    ShopItem("aether-amulet","Gota de Aether","accessory",35,"Um cristal azul preso ao manto.","◈"),
     ShopItem("cloak","Manto das Eras","outfit",60,"Um manto violeta tecido com histórias recuperadas.","✧"),
     ShopItem("armor","Armadura da Aurora","outfit",100,"O cobre da aurora acompanha cada novo começo.","◆"),
     ShopItem("frame","Círculo Astral","frame",45,"Uma moldura marcada pelas constelações de Aetheris.","◈"),
