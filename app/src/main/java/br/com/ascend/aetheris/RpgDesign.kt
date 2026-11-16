@@ -62,7 +62,7 @@ val Sepia=Color(0xFF29251E)
     val index=when(kind){"head"->0;"outfit"->1;"accessory"->2;"weapon"->3;"companion"->when(itemId){"lyra"->5;"ignis"->6;else->4};"frame"->7;else->8}
     val variant=when(itemId){"will-helm"->0;"armor"->1;"ember-amulet"->2;"dawn-outfit"->3;"rune-frame"->4;"night"->5;"lantern"->6;"craft-blade"->7;"traveler-helm"->8;else->null}
     Box(modifier.size(70.dp).clip(CutCornerShape(3.dp))){
-        ArtTile(if(variant!=null)R.drawable.relic_variants else R.drawable.relic_atlas,variant?:index,3,Modifier.matchParentSize())
+        if(itemId=="mist-clasp")ArtTile(R.drawable.forest_atlas,8,3,Modifier.matchParentSize()) else ArtTile(if(variant!=null)R.drawable.relic_variants else R.drawable.relic_atlas,variant?:index,3,Modifier.matchParentSize())
         Canvas(Modifier.matchParentSize()){drawRect(Brush.verticalGradient(listOf(Color.Transparent,Color.Black.copy(alpha=.24f))));drawLine(color.copy(alpha=.3f),Offset(0f,size.height),Offset(size.width,size.height),1f)}
     }
 }
@@ -102,6 +102,7 @@ val Sepia=Color(0xFF29251E)
         regions.forEachIndexed{i,name->val open=s.level>=regionLevels[i];val chosen=selected==i
             Column(Modifier.offset(x=mapWidth*xs[i]-42.dp,y=mapHeight*ys[i]-28.dp).width(84.dp).heightIn(min=56.dp).clickable(onClickLabel="Explorar $name"){onSelect(i)}.semantics(mergeDescendants=true){contentDescription="$name, ${if(open)"revelada" else "nível ${regionLevels[i]}"}"},horizontalAlignment=Alignment.CenterHorizontally){
                 RegionStone(i,open,chosen)
+                if(i==1&&forestProgress(s)>0)Text("${forestProgress(s)}% · trilha",color=WornIvory,fontSize=9.sp)
                 Text(if(open)labels[i] else "Nível ${regionLevels[i]}",Modifier.background(Color(0xFF0A1019).copy(alpha=.91f),CutCornerShape(2.dp)).padding(horizontal=6.dp,vertical=3.dp),color=if(open)WornIvory else Color(0xFFBDC7D3),fontSize=10.sp)
             }
         }

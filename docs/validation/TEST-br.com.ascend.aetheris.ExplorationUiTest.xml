@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.ExplorationUiTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-16T20:33:24" hostname="da0963ce0ccf" time="14.267">
+  <properties/>
+  <testcase name="narrowLightRegionAndLockedPlace" classname="br.com.ascend.aetheris.ExplorationUiTest" time="4.365"/>
+  <testcase name="forestExpeditionsBossAndMemoriesArePlayable" classname="br.com.ascend.aetheris.ExplorationUiTest" time="9.902"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

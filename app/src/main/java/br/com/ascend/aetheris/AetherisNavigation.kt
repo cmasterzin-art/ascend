@@ -30,7 +30,7 @@ val mainNames=listOf("Jornada","Hábitos","Missões","Mundo","Herói")
  }
 }}
 @Composable fun AetherisNavigation(route:String,onSelect:(String)->Unit){
- val selected=when(route){"grimoire"->"habits";"settings","journal","memories","portrait"->"character";"weekly"->"world";else->route}
+ val selected=if(route.startsWith("region/")||route.startsWith("location/")||route.startsWith("expedition/"))"world" else when(route){"grimoire"->"habits";"settings","journal","memories","portrait"->"character";"weekly"->"world";else->route}
  val dark=LocalAppearance.current.dark;val motion=LocalAppearance.current.reducedMotion
  Column(Modifier.fillMaxWidth().background(if(dark)Color(0xFF10161D) else Color(0xFFDED9CE)).navigationBarsPadding()){
  Canvas(Modifier.fillMaxWidth().height(5.dp)){drawRect(Brush.verticalGradient(listOf(Color(0xFF788080),Color(0xFF252D35),Color(0xFF10161D))));drawLine(OldBronze.copy(alpha=.5f),Offset(0f,0f),Offset(size.width,0f),1f)}

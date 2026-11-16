@@ -13,11 +13,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Conferir APK já compilado e testado no Cloud
         working-directory: downloads
-        run: sha256sum -c ASCEND-1.4.5.apk.sha256
+        run: sha256sum -c ASCEND-1.5.0.apk.sha256
       - uses: actions/upload-artifact@v4
         with:
           name: ASCEND-Android
-          path: downloads/ASCEND-1.4.5.apk
+          path: downloads/ASCEND-1.5.0.apk
           retention-days: 30
           if-no-files-found: error
   apk:

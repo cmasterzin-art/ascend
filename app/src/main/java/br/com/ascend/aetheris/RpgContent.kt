@@ -11,11 +11,12 @@ val skillDefs=listOf(
     SkillDef("dawn","Arquiteto da Aurora","Criação",8,"craft","dawn-outfit","Concede o traje da aurora para seu personagem.")
 )
 fun skillPoints(s:GameState)=(s.level/3-s.assets.count{it.kind=="skill"}).coerceAtLeast(0)
-fun rarity(item:ShopItem)=when(item.id){"will-helm","dawn-outfit"->4;"ignis","rune-frame","craft-blade"->3;"frame","corvus","armor","scholar-bg"->2;"cloak","lyra","ember-amulet"->1;else->0}
+fun rarity(item:ShopItem)=when(item.id){"mist-clasp"->3;"will-helm","dawn-outfit"->4;"ignis","rune-frame","craft-blade"->3;"frame","corvus","armor","scholar-bg"->2;"cloak","lyra","ember-amulet"->1;else->0}
 val rarityNames=listOf("Comum","Incomum","Raro","Épico","Lendário")
-fun itemOrigin(item:ShopItem)=skillDefs.find{it.item==item.id}?.let{"Habilidade: ${it.name}"}?:"Mercador · ${item.cost} Fragmentos"
+fun itemOrigin(item:ShopItem)=if(item.id=="mist-clasp")"Expedição: A Vigília da Floresta" else skillDefs.find{it.item==item.id}?.let{"Habilidade: ${it.name}"}?:"Mercador · ${item.cost} Fragmentos"
 val equipmentSlots=listOf("head" to "Cabeça","outfit" to "Corpo / capa","accessory" to "Acessório","weapon" to "Arma cosmética","companion" to "Companheiro","frame" to "Moldura","background" to "Fundo")
 fun specializationTitles(s:GameState):List<String> = buildList {
+    if(expeditionComplete(s,forestExpeditions.last()))add("Testemunha das Raízes")
     val names=listOf("Aprendiz das Runas","Caminhante de Ferro","Guardião dos Rituais","Voz do Santuário","Mãos da Aurora")
     names.forEachIndexed{i,n->if(1+s.points(i)/50>=10)add(n)}
     if(s.level>=50)add("Lenda do Primeiro Sol")
