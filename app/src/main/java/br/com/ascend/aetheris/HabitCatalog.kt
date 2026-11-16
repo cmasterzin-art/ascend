@@ -115,7 +115,7 @@ val catalogCategories=habitTemplates.map{it.category}.distinct()
 val difficultyNames=listOf("Leve","Moderada","Desafiadora")
 val habitTypeNames=listOf("Simples","Quantidade","Tempo","Repetições")
 fun searchKey(text:String)=Normalizer.normalize(text,Normalizer.Form.NFD).replace(Regex("\\p{M}+"),"").lowercase(Locale.ROOT).trim()
-data class CatalogFilter(val query:String="",val category:String?=null,val difficulty:Int?=null,val type:Int?=null,val attribute:Int?=null,val frequency:Int=0,val duration:Int=0,val order:Int=0)
+data class CatalogFilter(val query:String="",val category:String?=null,val difficulty:Int?=null,val type:Int?=null,val attribute:Int?=null,val frequency:Int=0,val duration:Int=0,val order:Int=0):java.io.Serializable
 fun frequencyLabel(days:String)=when(days){"1,2,3,4,5,6,7"->"Todos os dias";"1,2,3,4,5"->"Dias úteis";else->"${days.split(',').size} dia(s) por semana"}
 fun filterTemplates(filter:CatalogFilter):List<HabitTemplate>{
     val terms=searchKey(filter.query).split(' ').filter{it.isNotBlank()}

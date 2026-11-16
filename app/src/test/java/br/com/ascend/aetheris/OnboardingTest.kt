@@ -52,7 +52,7 @@ class OnboardingTest {
         compose.onNodeWithText("Contratos da jornada").assertExists()
         compose.onNodeWithText("Herói").performClick()
         compose.onNodeWithText("Seu aventureiro").assertExists()
-        compose.onNodeWithText("Conquistas").performScrollTo().performClick()
+        compose.onNodeWithText("Conquistas").performClick()
         compose.onNodeWithText("✦ O Primeiro Passo").assertExists()
         compose.onNodeWithText("Hábitos").performClick()
         compose.onNodeWithText("Histórico").performScrollTo().performClick()
@@ -126,12 +126,12 @@ class OnboardingTest {
         compose.onNodeWithText("Livro de missões").assertExists();shot("livro-missoes")
         compose.onNodeWithText("Mundo").performClick();shot("mapa-aetheris")
         compose.onNodeWithText("Herói").performClick()
-        compose.onNodeWithText("Inventário").performScrollTo().performClick()
+        compose.onNodeWithText("Inventário").performClick()
         shot("inventario")
         compose.onNodeWithText("Elmo do Viajante").performScrollTo().performClick()
         compose.onNodeWithText("Equipar").performClick()
         waitForState{app.repository.state.value!!.assets.first{it.id=="traveler-helm"}.equipped}
-        compose.onNodeWithText("Habilidades").performScrollTo().performClick()
+        compose.onNodeWithText("Habilidades").performClick()
         shot("habilidades");compose.onNodeWithText("Constelações da alma").assertExists()
     }
     @Test fun inspectNordicEquipmentVillageBossAndChronicle(){
@@ -152,12 +152,12 @@ class OnboardingTest {
         waitForState{vm.reducedMotion.value}
         capture("jornada-equipada")
         compose.onNodeWithText("Herói").performClick();shot("perfil")
-        compose.onNodeWithText("Inventário").performScrollTo().performClick();shot("inventario-equipado")
+        compose.onNodeWithText("Inventário").performClick();shot("inventario-equipado")
         compose.onNodeWithContentDescription("Cabeça: Elmo do Viajante").performScrollTo().performClick()
         compose.onNodeWithText("Desequipar").performClick()
         waitForState{app.repository.state.value!!.assets.none{it.kind=="head"&&it.equipped}}
         assertEquals(7,app.repository.state.value!!.assets.count{it.equipped})
-        compose.onNodeWithText("Loja").performScrollTo().performClick();shot("loja")
+        compose.onNodeWithText("Loja").performClick();shot("loja")
         compose.onNodeWithText("Mundo").performClick();shot("mapa-revelado")
         compose.onNodeWithText("Vila").performClick();shot("vila")
         compose.onNodeWithText("Crônicas").performScrollTo().performClick()
@@ -180,8 +180,8 @@ class OnboardingTest {
         }}
         compose.waitForIdle();capture("jornada-320-texto130")
         compose.onNodeWithText("Herói").performClick()
-        compose.onNodeWithText("Inventário").performScrollTo().performClick();shot("inventario-320-texto130")
-        compose.onNodeWithText("Habilidades").performScrollTo().performClick()
+        compose.onNodeWithText("Inventário").performClick();shot("inventario-320-texto130")
+        compose.onNodeWithText("Habilidades").performClick()
         compose.onNodeWithText("Constelações da alma").assertExists()
         compose.onNodeWithContentDescription("Configurações").performClick()
         compose.onNodeWithText("Modo minimalista").performScrollTo()

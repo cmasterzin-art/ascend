@@ -11,8 +11,8 @@ android {
         applicationId = "br.com.ascend.aetheris"
         minSdk = 26
         targetSdk = 35
-        versionCode = 6
-        versionName = "1.4.0"
+        versionCode = 7
+        versionName = "1.4.5"
     }
     // Keep signing material outside the repository. Use the original key for an in-place update.
     System.getenv("ASCEND_KEYSTORE_PATH")?.let { path ->

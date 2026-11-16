@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.res.painterResource
@@ -43,10 +44,10 @@ import java.util.Locale
     }
 }
 @Composable fun HabitsScreen(s:GameState,vm:GameViewModel,onAdd:()->Unit,onEdit:(Habit)->Unit,onProgress:(Habit,HabitRecord?)->Unit,onFocus:(Habit)->Unit,onExplore:()->Unit={}){
-    var tab by remember{mutableIntStateOf(0)};var showArchived by remember{mutableStateOf(false)};var menu by remember{mutableStateOf<Habit?>(null)};var delete by remember{mutableStateOf<Habit?>(null)};var routine by remember{mutableStateOf<Routine?>(null)};var newRoutine by remember{mutableStateOf(false)};var date by remember{mutableStateOf(today())}
+    var tab by rememberSaveable{mutableIntStateOf(0)};var showArchived by remember{mutableStateOf(false)};var menu by remember{mutableStateOf<Habit?>(null)};var delete by remember{mutableStateOf<Habit?>(null)};var routine by remember{mutableStateOf<Routine?>(null)};var newRoutine by remember{mutableStateOf(false)};var date by remember{mutableStateOf(today())}
     var search by remember{mutableStateOf("")};var status by remember{mutableIntStateOf(0)};var attr by remember{mutableIntStateOf(0)}
     Page{
-        Title("Livro de hábitos","A constância também conhece o descanso.");ChipRow(listOf("Hábitos","Calendário","Rotinas","Histórico"),tab,{tab=it})
+        Title("Livro de hábitos","A constância também conhece o descanso.");AetherisTabs(listOf("Hábitos","Calendário","Rotinas","Histórico"),tab,{tab=it})
         when(tab){
             0->{
                 Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){Action("+ Criar hábito",onAdd,Modifier.weight(1f));OutlinedButton(onExplore,Modifier.weight(1f).heightIn(min=48.dp)){Text("Explorar hábitos")}}
@@ -76,11 +77,11 @@ import java.util.Locale
     if(newRoutine||routine!=null)RoutineEditor(routine,s.habits,{newRoutine=false;routine=null},{r->vm.run{vm.repo.routine(r);newRoutine=false;routine=null}})
 }
 @Composable fun MissionsScreen(s:GameState,vm:GameViewModel,bosses:Boolean){
-    var tab by remember{mutableIntStateOf(0)};var editor by remember{mutableStateOf(false)};var editing by remember{mutableStateOf<Quest?>(null)}
+    var tab by rememberSaveable{mutableIntStateOf(0)};var editor by remember{mutableStateOf(false)};var editing by remember{mutableStateOf<Quest?>(null)}
     Page{
         Title("Contratos da jornada","O livro das ações que devolvem luz ao mundo.")
         SagaCover(s.claims.size)
-        ChipRow(listOf("Diárias","Semanais","Épicas","Chefes","Resgates","Sagas"),tab,{tab=it});if(tab!=5)Action("+ Missão personalizada",{editor=true})
+        AetherisTabs(listOf("Diárias","Semanais","Épicas","Chefes","Resgates","Sagas"),tab,{tab=it});if(tab!=5)Action("+ Missão personalizada",{editor=true})
         if(tab==5)SagaBook(s,vm)
         if(tab==3){Toggle("Ativar chefes opcionais",bosses,{vm.setting("bosses",it)});Text("Cada hábito completo enfraquece a névoa. Sem perdas por ausência.",color=Muted,fontSize=13.sp)}
         if(tab==4){if(s.claims.isEmpty())Empty("Seu livro ainda aguarda os primeiros resgates.");s.claims.sortedByDescending{it.date}.forEach{c->Manuscript{Text(s.quests.find{it.id==c.questId}?.name?:"Missão",fontFamily=FontFamily.Serif,fontSize=22.sp);Text("${c.date} · ${c.occurrence}",fontSize=12.sp);Text("Recompensa registrada no histórico",fontSize=12.sp)}}}

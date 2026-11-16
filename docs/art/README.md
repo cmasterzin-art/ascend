@@ -20,3 +20,7 @@ Todos os arquivos são distribuídos com o APK; o app não consulta servidores p
 | `relic_variants.webp` | 260,298 | `3d065608557a3fb63e1daf28a40b9c13809920b8e0795bdf584b5200f7e07ab7` |
 | `village_crafts.webp` | 512,498 | `d7aebf37b5635ba03a7adef1964bf21b29b254b8a4767bdb0f20e77bee867f6a` |
 | `village_civic.webp` | 440,130 | `0b9f91a9df32f6c552767c9b0568540a8c4144dcd1e2f177669c06939f72687b` |
+
+## 1.4.5 — áudio
+
+As pinturas foram preservadas. Cinco efeitos breves originais foram sintetizados localmente, sem amostras externas. [Origem, reprodução e limites](SOUNDS.md).

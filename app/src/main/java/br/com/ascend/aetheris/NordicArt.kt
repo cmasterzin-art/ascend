@@ -67,7 +67,7 @@ val Ember=Color(0xFF8D4B43)
 @Composable fun Avatar(p:Player,s:GameState?=null,size:Dp=100.dp){
     val assets=s?.assets.orEmpty().filter{it.equipped}
     val color=habitColor(p.color)
-    val border=when(assets.find{it.kind=="frame"}?.id){"rune-frame"->Color(0xFFB4A1C7);"frame"->WornIvory;else->if(p.frame==1)Color(0xFFB9965A) else if(p.frame==2)Color(0xFF8BA2C7) else OldBronze}
+    val border=when(assets.find{it.kind=="frame"}?.id){"rune-frame"->Color(0xFFB4A1C7);"frame"->WornIvory;else->if(p.frame==1)Color(0xFFB9965A) else if(p.frame==2)Color(0xFF8BA2C7) else listOf(Ember,Color(0xFF8BA2C7),Color(0xFF89967D),Color(0xFF92A5B7),OldBronze)[p.heroClass]}
     val portrait=when(p.face){1->R.drawable.wanderer_dark;2->R.drawable.wanderer_medium;else->R.drawable.wanderer_light}
     val appearance=LocalAppearance.current
     val signature=assets.joinToString{it.id}+"${p.color}:${p.outfit}:${p.frame}:${p.face}"

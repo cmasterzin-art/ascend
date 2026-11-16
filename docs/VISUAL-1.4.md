@@ -6,17 +6,17 @@ A direção da 1.4 conserva as pinturas e trabalha sobre os instrumentos do mund
 
 | Área | 1.3.1 | 1.4 |
 |---|---|---|
-| Jornada | <img src="screenshots/v1.3.1/jornada-escuro.png" width="230" alt="Jornada 1.3.1"> | <img src="screenshots/jornada-escuro.png" width="230" alt="Emblema de classe, região e percentual diário"> |
-| Ações no Grimório | <img src="screenshots/v1.3.1/grimoire-busca.png" width="230" alt="Botão de couro anterior"> | <img src="screenshots/grimoire-busca.png" width="230" alt="Botão de bronze com relevo"> |
-| Crônicas | <img src="screenshots/v1.3.1/cronicas.png" width="230" alt="Bloco serifado anterior"> | <img src="screenshots/cronicas.png" width="230" alt="Códice por parágrafos e diálogos separados"> |
+| Jornada | <img src="screenshots/v1.3.1/jornada-escuro.png" width="230" alt="Jornada 1.3.1"> | <img src="screenshots/v1.4/jornada-escuro.png" width="230" alt="Emblema de classe, região e percentual diário"> |
+| Ações no Grimório | <img src="screenshots/v1.3.1/grimoire-busca.png" width="230" alt="Botão de couro anterior"> | <img src="screenshots/v1.4/grimoire-busca.png" width="230" alt="Botão de bronze com relevo"> |
+| Crônicas | <img src="screenshots/v1.3.1/cronicas.png" width="230" alt="Bloco serifado anterior"> | <img src="screenshots/v1.4/cronicas.png" width="230" alt="Códice por parágrafos e diálogos separados"> |
 
 ## Juramentos e recompensas
 
 | Saga em curso | Juramento cumprido | Recompensas da mesma ação |
 |---|---|---|
-| <img src="screenshots/saga-iniciada.png" width="230" alt="Saga criada com registros reais"> | <img src="screenshots/saga-cumprida.png" width="230" alt="Progresso completo e quatro marcos"> | <img src="screenshots/recompensas-norte.png" width="230" alt="Nível e saga consolidados com valores reais"> |
+| <img src="screenshots/v1.4/saga-iniciada.png" width="230" alt="Saga criada com registros reais"> | <img src="screenshots/v1.4/saga-cumprida.png" width="230" alt="Progresso completo e quatro marcos"> | <img src="screenshots/v1.4/recompensas-norte.png" width="230" alt="Nível e saga consolidados com valores reais"> |
 
-[Formulário de saga](screenshots/saga-editor.png) · [Diálogo após o resgate](screenshots/dialogo-saga.png) · [Saga em 320 dp e texto 130%](screenshots/saga-320-texto130.png) · [Regras completas](../SAGAS.md).
+[Formulário de saga](screenshots/v1.4/saga-editor.png) · [Diálogo após o resgate](screenshots/v1.4/dialogo-saga.png) · [Saga em 320 dp e texto 130%](screenshots/v1.4/saga-320-texto130.png) · [Regras completas](../SAGAS.md).
 
 As imagens são capturas da renderização nativa Robolectric, não mockups. Personagens, moedas e progresso são fixtures de testes; não são inseridos no APK de produção.
 

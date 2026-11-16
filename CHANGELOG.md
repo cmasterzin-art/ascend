@@ -1,3 +1,15 @@
+# Mudanças — 1.4.5 · As Vozes de Aetheris
+
+- Navegação inferior própria em ferro com cinco ícones originais Canvas, seleção esculpida, resposta de 160 ms, insets do sistema e rótulos sem truncamento.
+- AetherisTabs nos menus de Herói, Missões, Mundo, Hábitos e Grimório: opções completas em duas/três colunas, sem categorias de navegação parcialmente cortadas. Abas são salvas; o Herói preserva rolagem por seção.
+- Crônica da Semana nas Crônicas: estatísticas derivadas, histórico civil de segunda a domingo, narrativa condicional local e atualização após correções.
+- Salão das Memórias pelo Perfil e Crônicas, filtros e inscrições com datas reais/disponíveis; conversas reconhecidas guardam agora uma cópia do texto.
+- Sagas: abandono confirmado com progresso congelado, arquivo e nova tentativa com UUID/linha de base próprios; histórico, seletor Android de prazo e aviso de alterações não salvas no editor.
+- Retrato ampliado, moldura base de classe, artefatos maiores nos detalhes e estado equipado explícito.
+- Novas falas locais de Cronista/Elyra/Darian/Seren, painéis com símbolos e histórico das conversas reconhecidas.
+- Cinco efeitos originais locais, opção de ativação e volume, respeitando modo silencioso e volume de mídia; sem música contínua ou vibração.
+- Room v5, migração aditiva 4 → 5 e backup v6 aceitando v1–v6; versionCode 7, assinatura preservada.
+
 # Mudanças — 1.4.0 · O Juramento do Norte
 
 - Sagas Pessoais na área de Missões, seis modelos e criação personalizada; seleção de hábitos, métrica de conclusões/minutos/páginas, meta, prazo opcional, XP/moedas editáveis, marcos narrativos de 25/50/75/100% e resgate único.

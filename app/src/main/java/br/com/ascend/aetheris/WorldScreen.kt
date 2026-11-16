@@ -6,18 +6,24 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.material3.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.unit.*
 
-@Composable fun WorldScreen(s:GameState,vm:GameViewModel){
-    var tab by remember{mutableIntStateOf(0)};var region by remember{mutableIntStateOf(0)};var chapter by remember{mutableStateOf<Int?>(null)};var restore by remember{mutableStateOf<Int?>(null)}
+@Composable fun WorldScreen(s:GameState,vm:GameViewModel,onWeekly:()->Unit={},onMemories:()->Unit={}){
+    var tab by rememberSaveable{mutableIntStateOf(0)};var region by remember{mutableIntStateOf(0)};var chapter by remember{mutableStateOf<Int?>(null)};var restore by remember{mutableStateOf<Int?>(null)}
     val Gold=Gold;val Green=Green
+    val context=androidx.compose.ui.platform.LocalContext.current
+    val effects by vm.soundEnabled.collectAsStateWithLifecycle();val volume by vm.soundVolume.collectAsStateWithLifecycle()
+    val pageAudio=remember{AetherisAudio(context)};SideEffect{pageAudio.enabled=effects;pageAudio.volume=volume};DisposableEffect(pageAudio){onDispose{pageAudio.close()}}
+    LaunchedEffect(chapter){if(chapter!=null)pageAudio.play("page")}
     Page{
         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Title("Atlas de Aetheris","Entre fiordes, ruínas e caminhos velados.")};Text("◈ ${s.coins}",color=Gold,modifier=Modifier.padding(top=14.dp))}
-        ChipRow(listOf("Mapa","Vila","Crônicas"),tab,{tab=it})
+        AetherisTabs(listOf("Mapa","Vila","Crônicas"),tab,{tab=it})
         when(tab){
             0->{
                 Text("${regionLevels.count{it<=s.level}} de ${regions.size} regiões reveladas",color=Blue,fontSize=12.sp)
@@ -25,7 +31,7 @@ import androidx.compose.ui.unit.*
                 Panel(accent=if(s.level>=regionLevels[region])Gold else Muted){Eyebrow(if(s.level>=regionLevels[region])"Região revelada" else "Na névoa · nível ${regionLevels[region]}");Text(regions[region],style=MaterialTheme.typography.titleLarge);Text(regionDescriptions[region],color=Muted,fontSize=14.sp);if(region==0){val stage=s.assets.filter{it.kind=="building"}.sumOf{it.stage};Meter(stage/10f,Green);Text("$stage de 10 etapas recuperadas",color=Green,fontSize=12.sp);Action("Visitar a vila",{tab=1})}else{val progress=(s.level.toFloat()/regionLevels[region]).coerceAtMost(1f);Meter(progress,Blue);Text(if(s.level>=regionLevels[region])"Região revelada. Seus marcos são registrados nas crônicas." else "Faltam ${(regionLevels[region]-s.level).coerceAtLeast(0)} níveis para revelar esta região.",color=Muted,fontSize=12.sp)}}
             }
             1->{Landscape(s,large=true);Eyebrow("Vila do Despertar");Text("Fragmentos restauram pedras. Seus hábitos devolvem sentido a elas.",color=Muted);buildings.forEachIndexed{i,name->val stage=s.assets.find{it.id=="building:$i"}?.stage?:0;Panel(accent=if(stage==2)Green else Gold){Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(name,style=MaterialTheme.typography.titleLarge);Text(listOf("▤","◆","♧","♜","◇")[i],color=Gold,fontSize=24.sp)};Crossfade(stage,animationSpec=tween(if(LocalAppearance.current.reducedMotion)0 else 450),label="restauração"){shown->BuildingScene(i,shown)};Text(listOf("Ruínas · portas fechadas e memórias dispersas.","Estrutura recuperada · a vida começa a voltar.","Restauração completa · uma nova luz na vila.")[stage],color=Muted,fontSize=13.sp);Meter(stage/2f,Green);val dialogue=villagerDialogue(i,stage);Text(dialogue.first,color=Gold,fontSize=12.sp);Text("“${dialogue.second}”",fontFamily=androidx.compose.ui.text.font.FontFamily.Serif,fontSize=17.sp);if(i<3){val q=narrativeQuests[i];if(s.quests.none{it.id==q.id})TextButton({vm.run{vm.repo.quest(q)}}){Text("Aceitar missão de ${dialogue.first.substringBefore(" ·")}")}else Text("Missão no livro: ${q.name}",color=Muted,fontSize=12.sp)};if(stage<2)Action("Restaurar · ◈ ${(stage+1)*30}",{restore=i},enabled=s.coins>=(stage+1)*30)else Eyebrow("Vida restaurada",Green)}}}
-            2->{NarrativePanel(s,vm);Text("${chapterNames.indices.count{chapterUnlocked(it,s)}} de 9 capítulos revelados",color=Blue);Meter(chapterNames.indices.count{chapterUnlocked(it,s)}/9f,Blue);Panel{Eyebrow("O Cronista");Text("“Registrei o que caiu. Agora registro aquilo que se levanta.”",style=MaterialTheme.typography.titleLarge)};chapterNames.forEachIndexed{i,name->val open=chapterUnlocked(i,s);Panel(accent=if(open)Gold else Muted){Text(name,style=MaterialTheme.typography.titleLarge);Text(when(i){0->"O encontro que inicia sua jornada.";1->"Liberado ao concluir seu primeiro hábito.";2->"Liberado ao restaurar a primeira etapa de uma construção.";3->"Liberado no nível 3.";4->"Liberado no nível 5.";5->"Liberado no nível 10.";6->"Liberado no nível 15.";7->"Liberado no nível 20.";else->"Liberado no nível 30."},color=Muted,fontSize=12.sp);Action(if(open)"Abrir capítulo" else "Ainda sob a névoa",{chapter=i},enabled=open)}}}
+            2->{Action("Crônica da Semana",onWeekly);SagaButton("Salão das Memórias",onMemories,secondary=true);NarrativePanel(s,vm);Text("${chapterNames.indices.count{chapterUnlocked(it,s)}} de 9 capítulos revelados",color=Blue);Meter(chapterNames.indices.count{chapterUnlocked(it,s)}/9f,Blue);Panel{Eyebrow("O Cronista");Text("“Registrei o que caiu. Agora registro aquilo que se levanta.”",style=MaterialTheme.typography.titleLarge)};chapterNames.forEachIndexed{i,name->val open=chapterUnlocked(i,s);Panel(accent=if(open)Gold else Muted){Text(name,style=MaterialTheme.typography.titleLarge);Text(when(i){0->"O encontro que inicia sua jornada.";1->"Liberado ao concluir seu primeiro hábito.";2->"Liberado ao restaurar a primeira etapa de uma construção.";3->"Liberado no nível 3.";4->"Liberado no nível 5.";5->"Liberado no nível 10.";6->"Liberado no nível 15.";7->"Liberado no nível 20.";else->"Liberado no nível 30."},color=Muted,fontSize=12.sp);Action(if(open)"Abrir capítulo" else "Ainda sob a névoa",{chapter=i},enabled=open)}}}
         }
     }
     chapter?.let{i->FullForm(chapterNames[i],{chapter=null},{chapter=null},"Fechar"){Eyebrow("Crônicas da Ascensão");Manuscript{RuneSeal(3,Sepia,Modifier.size(44.dp));Eyebrow("Capítulo ${i+1} de 9",Sepia)

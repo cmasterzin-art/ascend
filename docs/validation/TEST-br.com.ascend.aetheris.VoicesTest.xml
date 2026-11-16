@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.VoicesTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-16T19:51:16" hostname="da0963ce0ccf" time="0.412">
+  <properties/>
+  <testcase name="realV4MigrationAndLegacyBackupPreserveProgress" classname="br.com.ascend.aetheris.VoicesTest" time="0.065"/>
+  <testcase name="weeklySummaryUsesCivilWeekAndCorrections" classname="br.com.ascend.aetheris.VoicesTest" time="0.035"/>
+  <testcase name="recognizedConversationsAreSnapshotsAndMemoriesDoNotPay" classname="br.com.ascend.aetheris.VoicesTest" time="0.043"/>
+  <testcase name="soundPolicyAndLocalPreferences" classname="br.com.ascend.aetheris.VoicesTest" time="0.142"/>
+  <testcase name="completedArchiveKeepsSingleClaimAndNewAttemptExcludesOldWork" classname="br.com.ascend.aetheris.VoicesTest" time="0.053"/>
+  <testcase name="abandonedSagaFreezesAndCannotPayThenRestartsFresh" classname="br.com.ascend.aetheris.VoicesTest" time="0.044"/>
+  <testcase name="weeklySagasAndRestDaysUseRecordedDates" classname="br.com.ascend.aetheris.VoicesTest" time="0.027"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.*
@@ -19,13 +20,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
     }
 }
 @Composable fun GrimoireScreen(s:GameState,vm:GameViewModel,onAdd:(Habit)->Unit,onRemindersNeeded:()->Unit={}){
-    var filter by remember{mutableStateOf(CatalogFilter())};var tab by remember{mutableIntStateOf(0)};var expanded by remember{mutableStateOf(false)};var interestsOpen by remember{mutableStateOf(false)};var routine by remember{mutableStateOf<RoutineTemplate?>(null)}
+    var filter by rememberSaveable{mutableStateOf(CatalogFilter())};var tab by rememberSaveable{mutableIntStateOf(0)};var expanded by remember{mutableStateOf(false)};var interestsOpen by remember{mutableStateOf(false)};var routine by remember{mutableStateOf<RoutineTemplate?>(null)}
     val interests by vm.catalogInterests.collectAsStateWithLifecycle();val dismissed by vm.dismissedSuggestions.collectAsStateWithLifecycle();val narrative=LocalNarrativeNames.current
     val found=remember(filter){filterTemplates(filter)}
     LazyColumn(Modifier.fillMaxSize().testTag("catalog_list"),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){
         item(key="heading"){Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
             Title("Grimório dos Hábitos","Todo grande feito começa com um pequeno ritual.")
-            ChipRow(listOf("Hábitos","Modelos de rotina"),tab,{tab=it})
+            AetherisTabs(listOf("Hábitos","Modelos de rotina"),tab,{tab=it})
             if(tab==0)FormField(filter.query,{filter=filter.copy(query=it)},"Buscar nome ou palavra-chave")
         }}
             if(tab==0){
