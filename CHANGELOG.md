@@ -1,3 +1,14 @@
+# Mudanças — 1.5.0 · O Despertar dos Reinos
+
+- Floresta da Persistência explorável no nível 3, mantendo as seis regiões, ordem e requisitos anteriores. Fluxo Atlas → Região → Local → Expedição.
+- Marco dos Retornos, Santuário das Raízes e Coração da Névoa: locais encadeados, ocultação de conteúdo futuro e estado real persistente.
+- Três Expedições originais: Raízes sob a Névoa (5 conclusões), Santuário Esquecido (2+2+2) e Vigília da Floresta (2+3+3). Guardião da Névoa com Chamado, Resistência e Juramento.
+- Fotografia por fase e resgate transacional único. Cálculo compartilhado com Sagas; correções reavaliam a cadeia. Sem duplicar XP dos hábitos.
+- Progresso regional explícito por sete marcos; pinturas da floresta e santuário em três estágios, Guardião e novo Broche da Vigília, em atlas WebP original. Conquista e título cosmético finais.
+- Memórias com datas de resgate e diálogo do Cronista para cada aventura; relatos anteriores e nove capítulos preservados.
+- Widgets Android compacto/expandido, redimensionáveis e claro/escuro do sistema. Pendências, nível/XP, conclusão de hábito simples pelo repositório e abertura de registro complexo. Atualização por transação, host, data/fuso/reinício e alarme aproximado, sem serviço contínuo.
+- Room permanece v5, sem migração desnecessária; backup v7 aceita v1–v7. versionCode 8, mesmo certificado/applicationId.
+
 # Mudanças — 1.4.5 · As Vozes de Aetheris
 
 - Navegação inferior própria em ferro com cinco ícones originais Canvas, seleção esculpida, resposta de 160 ms, insets do sistema e rótulos sem truncamento.

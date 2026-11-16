@@ -1,8 +1,16 @@
-# ASCEND — progresso da versão 1.4.5
+# ASCEND — progresso da versão 1.5.0
 
 Implementação nativa em Kotlin, Compose, Material 3, Navigation, Room, DataStore, ViewModel, Coroutines e StateFlow. Sem permissão INTERNET, contas, anúncios ou backend.
 
-## Adicionado/refinado na 1.4.5
+## Adicionado na 1.5
+
+- Floresta explorável, três locais, três Expedições e sete marcos, incluindo as três provações do Guardião da Névoa.
+- Baselines por fase, seleção de hábitos, resgates únicos, correções integradas e percentual regional derivado.
+- Pinturas originais em nove células, transformações em três estágios, broche, conquista, título, relatos e Memórias.
+- Widgets compacto/expandido com conclusão simples segura, registro complexo e atualização local aproximada.
+- Room v5 preservada; backup v7 compatível com v1–v6. [Regras e limites](docs/EXPLORACAO-1.5.md) · [Revisão visual](docs/VISUAL-1.5.md).
+
+## Adicionado/refinado na 1.4.5 (histórico)
 
 - Navegação em ferro, ícones Canvas originais e menus responsivos sem abas cortadas.
 - Crônica Semanal derivada dos registros e Salão das Memórias pelo Perfil/Crônicas.
@@ -84,7 +92,7 @@ Implementação nativa em Kotlin, Compose, Material 3, Navigation, Room, DataSto
 - As missões dos moradores contam também as conclusões anteriores ao aceite, filtradas pelo atributo; ficam na aba Épicas. A reconstrução continua custando 30 e 60 fragmentos por construção, sem novos requisitos de atributos.
 
 
-- Regiões além da vila são revelações de mapa e narrativa; a reconstrução interativa está concentrada na Vila do Despertar.
+- Além da vila, a Floresta da Persistência recebe exploração interativa na 1.5. As outras quatro regiões são revelações de mapa/narrativa, sem expedições próprias.
 - Dias globais de descanso podem ser planejados ou corrigidos pelo calendário. Não há Cristais da Perseverança ou economia de cristais. A árvore de habilidades atual tem seis escolhas cosméticas; não concede multiplicadores de XP ou automações. A ausência não retira XP ou conquistas.
 - Avatar é um retrato ilustrado com três tons de pele; equipamentos são apresentados em nichos separados. As classes compartilham a mesma base de retrato; a classe selecionada e seus dados são preservados. Não há animação de corpo inteiro ou combate.
 - Gráficos de linha para XP diário, distribuição por atributo e calendário de consistência. Períodos de 7, 30 e 90 dias; comparação de XP com o período anterior.
@@ -93,6 +101,6 @@ Implementação nativa em Kotlin, Compose, Material 3, Navigation, Room, DataSto
 - Conquistas representam marcos atingidos e são preservadas após correções; XP, pontos, moedas e recompensas de missões são recalculados. Missões resgatadas preservam snapshots das regras e recompensas por ocorrência; edições afetam as próximas ocorrências.
 - Ao desfazer moedas já gastas, o saldo disponível fica em zero e ganhos futuros compensam a diferença. Nenhuma compra pode exceder o saldo.
 - Preferências de interface e permissões de notificações pertencem ao aparelho e não são transferidas no backup. O diário do backup é texto legível.
-- Banco Room v5 com migrações explícitas 1 → 2 → 3 → 4 → 5, sem destruição dos dados. Backups v6 incluem estado das sagas e texto das memórias narrativas; continuam lendo v1–v5. Preferências visuais, interesses e dispensas permanecem no aparelho.
+- Banco Room v5 com migrações explícitas 1 → 2 → 3 → 4 → 5, sem destruição dos dados. Backups v7 incluem conteúdo de expedições, estados das sagas e texto das memórias; continuam lendo v1–v6. Preferências visuais, interesses e dispensas permanecem no aparelho.
 
 A validação executada e os resultados de compilação constam em VALIDACAO.md.

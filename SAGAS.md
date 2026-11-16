@@ -1,4 +1,4 @@
-# Sagas Pessoais — regras da 1.4.5
+# Sagas Pessoais — regras preservadas na 1.5
 
 Abra Missões → Sagas → Iniciar saga. Escolha um modelo ou crie uma saga personalizada. Os seis modelos são Saga do Conhecimento, Caminhos do Norte, Livro das Eras, Forja da Disciplina, Juramento do Artífice e Vigília do Guardião. Nenhum hábito novo é criado automaticamente.
 
@@ -10,7 +10,7 @@ Os marcos 25/50/75/100% são derivados dos registros e revelam narrativa, sem XP
 
 O prazo usa o seletor de data do Android, com opção Sem prazo. O editor avisa antes de descartar alterações. Hábitos e métrica ficam fixados após iniciar para preservar a fotografia. Nome, descrição, meta, prazo e recompensas podem ser editados até o resgate; após resgatar, os termos ficam preservados. Não há opção de aproveitar histórico anterior nem exclusão destrutiva de sagas. Abandonar exige confirmação e congela progresso/data, preservando hábitos e XP dos hábitos. Arquivar aceita tentativas resgatadas ou abandonadas. Reiniciar cria outro UUID e fotografia atual, sem reutilizar resgate ou progresso. Só uma tentativa não resgatada com o mesmo nome pode ficar em curso. Uma saga sem prazo não expira. Com prazo, registros posteriores ficam fora da contagem; não há penalização por atraso.
 
-As sagas usam `quests` com `period=2`, resgates em `claims` e o ledger atual. Room 4 acrescentou `sagaStart` e `sagaBaseline` às duas tabelas, sem alterar tabelas antigas ou fórmulas de XP. Room 5 acrescenta estado/encerramento/progresso congelado. Backup 6 guarda esses dados, termos, fotografias e textos de conversas, lendo versões 1–6. A leitura de backups antigos preenche os campos ausentes.
+As sagas usam `quests` com `period=2`, resgates em `claims` e o ledger atual. Room 4 acrescentou `sagaStart` e `sagaBaseline` às duas tabelas, sem alterar tabelas antigas ou fórmulas de XP. Room 5 acrescenta estado/encerramento/progresso congelado. Backup 7 guarda esses dados, termos, fotografias e textos de conversas, lendo versões 1–7. A leitura de backups antigos preenche os campos ausentes.
 
 Diálogos: a Jornada e as Crônicas mostram o próximo comentário aplicável por prioridade. Saga resgatada, edifícios completos, conquistas épicas/lendárias, contrato épico, retorno já reconhecido pela conquista existente, níveis, saga iniciada e primeira conclusão. “Guardar esta memória” persiste a confirmação em um asset `memory`, incluído no backup. Até confirmar, a mensagem permanece disponível. Não se inventam eventos nem se usa IA externa.
 

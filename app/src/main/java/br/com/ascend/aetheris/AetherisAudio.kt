@@ -6,7 +6,7 @@ import android.media.*
 fun effectsAllowed(enabled:Boolean,ringer:Int,streamVolume:Int)=enabled&&ringer==AudioManager.RINGER_MODE_NORMAL&&streamVolume>0
 fun effectFor(event:GameEvent):String?=when{
  event.level>0->"bell"
- event.highlights.any{it.startsWith("Saga resgatada")||it.startsWith("Épica:")||it.startsWith("Rara:")||it.startsWith("Lendária:")}->"bell"
+ event.highlights.any{it.startsWith("Expedição resgatada")||it.startsWith("Saga resgatada")||it.startsWith("Épica:")||it.startsWith("Rara:")||it.startsWith("Lendária:")}->"bell"
  event.message.startsWith("Entre as ruínas")->"wood"
  event.message=="Item equipado"->"iron"
  event.message=="A chama ganhou força"->"mark"

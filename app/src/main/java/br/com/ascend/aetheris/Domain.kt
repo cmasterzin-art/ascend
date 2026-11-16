@@ -87,6 +87,7 @@ fun questProgress(q: Quest,s: GameState, occ: String = occurrence(q)): Long {
 }
 data class AchievementDef(val id: String, val name: String, val description: String, val rarity: String, val icon: String, val target: Long)
 val achievementDefs=listOf(
+    AchievementDef("forest","Testemunha da Floresta","Resgatar a Vigília da Floresta.","Épica","◈",1),
     AchievementDef("first","O Primeiro Passo","Concluir um hábito.","Comum","✦",1),
     AchievementDef("five","Despertar","Alcançar o nível 5.","Rara","❖",5),
     AchievementDef("study","Mente Incansável","Acumular 20 horas de foco registrado em Intelecto.","Épica","◈",1200),
@@ -96,6 +97,7 @@ val achievementDefs=listOf(
     AchievementDef("fifty","Lenda de Aetheris","Alcançar o nível 50.","Lendária","⚑",50),
     AchievementDef("restore","Pedras que Recordam","Restaurar uma construção da vila.","Rara","◇",1))
 fun achievementProgress(a: AchievementDef,s: GameState): Long = when(a.id){
+    "forest"->if(expeditionComplete(s,forestExpeditions.last()))1 else 0
     "first","hundred"->s.records.count{it.complete}.toLong()
     "five","fifty"->s.level.toLong()
     "study"->s.records.filter{it.type==2 && it.attribute==0}.sumOf{it.progress.toLong()}
@@ -122,6 +124,7 @@ val shopItems=listOf(
     ShopItem("lyra","Lyra · Raposa Espiritual","companion",80,"Conhece o cheiro dos livros que ainda não foram escritos.","♧"),
     ShopItem("corvus","Corvus · Corvo Arcano","companion",100,"Observa os caminhos que a névoa tenta esconder.","✦"),
     ShopItem("ignis","Ignis · Dragão Jovem","companion",150,"Guarda uma brasa para os dias frios.","✺"),
+    ShopItem("mist-clasp","Broche da Vigília","accessory",0,"Ferro, bronze e uma pedra azul. O fecho recebido ao atravessar as três provações do Guardião da Névoa.","◈"),
     ShopItem("lantern","Lanterna do Regresso","decoration",30,"Uma luz na praça, à espera dos viajantes.","◇"))
 val buildings=listOf("A Biblioteca","A Forja","O Jardim","A Torre do Cronista","A Praça Central")
 val regions=listOf("Vila do Despertar","Floresta da Persistência","Biblioteca das Eras","Montanhas da Disciplina","Santuário do Equilíbrio","Fortaleza da Vontade")

@@ -1,19 +1,20 @@
-# ASCEND — Crônicas da Ascensão · 1.4.5
+# ASCEND — Crônicas da Ascensão · 1.5.0
 
-[**Baixar APK Android 1.4.5**](downloads/ASCEND-1.4.5.apk?raw=true)
+[**Baixar APK Android 1.5.0**](downloads/ASCEND-1.5.0.apk?raw=true)
 
 RPG de hábitos para Android 8.0 ou superior. **Tudo funciona localmente**, sem conta, internet, anúncios, assinatura ou serviços pagos. O GitHub distribui o código e o instalador; o aplicativo não tem permissão INTERNET.
 
-A versão **1.4.5 — As Vozes de Aetheris** traz navegação própria em ferro, cinco ícones originais e menus internos com opções inteiras. As cinco áreas principais permanecem.
+A versão **1.5.0 — O Despertar dos Reinos** torna a Floresta da Persistência explorável no nível 3: três locais, três Expedições encadeadas e o Guardião da Névoa com três provações. Cada etapa usa hábitos reais e uma fotografia inicial, com resgate único e consequências no mundo.
 
-**Crônica da Semana** reúne estatísticas e narrativa locais, recalculadas após correções. **Salão das Memórias** reúne feitos e conversas guardadas, sem inventar datas. As Sagas agora podem ser abandonadas, arquivadas e reiniciadas com nova identidade e linha de base. Há calendário visual, retrato ampliado e sons originais opcionais, desligados inicialmente.
+Um atlas de nove pinturas originais mostra floresta, santuário, Guardião e broche. Descobertas aparecem nas Memórias e nos diálogos do Cronista. Há widgets compacto/expandido, conclusão segura de hábitos simples e acesso ao registro dos complexos. Tudo é local; Grimório, Sagas e sistemas anteriores foram preservados.
 
-**Atualização dos APKs 1.1, 1.2, 1.3, 1.3.1 ou 1.4 fornecidos neste repositório:** exporte um backup de segurança e instale a 1.4.5 por cima, **sem desinstalar**. O certificado é o mesmo. A antiga 1.0 possui assinatura diferente; consulte [INSTALACAO.md](INSTALACAO.md).
+**Atualização dos APKs 1.1, 1.2, 1.3, 1.3.1, 1.4 ou 1.4.5 fornecidos neste repositório:** exporte um backup de segurança e instale a 1.5.0 por cima, **sem desinstalar**. O certificado é o mesmo. A antiga 1.0 possui assinatura diferente; consulte [INSTALACAO.md](INSTALACAO.md).
 
 - [Instalação e atualização](INSTALACAO.md)
 - [Funcionalidades e limites reais](PROGRESSO.md)
 - [Assinatura e preservação de atualizações](ASSINATURA.md)
 - [Validação](VALIDACAO.md)
+- [Exploração, fases, recompensas e widgets](docs/EXPLORACAO-1.5.md)
 
 ## Visual
 
@@ -21,7 +22,7 @@ A versão **1.4.5 — As Vozes de Aetheris** traz navegação própria em ferro,
 |---|---|---|
 | <img src="docs/screenshots/jornada-escuro.png" width="240" alt="Jornada nórdica com retrato e fiorde"> | <img src="docs/screenshots/mapa-aetheris.png" width="240" alt="Atlas geográfico de Aetheris"> | <img src="docs/screenshots/inventario-equipado.png" width="240" alt="Personagem com equipamentos em nichos"> |
 
-**[Novas capturas e revisão da 1.4.5](docs/VISUAL-1.4.5.md)** · [Guia do Grimório e rotinas](docs/GRIMORIO.md) · [Comparação 1.2 → 1.3](docs/VISUAL-1.3.md) · [Missões](docs/screenshots/livro-missoes.png) · [Chefe](docs/screenshots/chefe.png) · [Crônicas](docs/screenshots/cronicas.png)
+**[Novas capturas e revisão da 1.5](docs/VISUAL-1.5.md)** · [Guia do Grimório e rotinas](docs/GRIMORIO.md) · [Comparação 1.2 → 1.3](docs/VISUAL-1.3.md) · [Missões](docs/screenshots/livro-missoes.png) · [Chefe](docs/screenshots/chefe.png) · [Crônicas](docs/screenshots/cronicas.png)
 
 Capturas dos testes de interface com personagens de teste. Nenhuma conclusão fictícia é incluída no aplicativo.
 
@@ -39,4 +40,4 @@ Para usar a chave de depuração preservada, configure `ASCEND_KEYSTORE_PATH` co
 
 O fluxo central continua: registro por hábito/dia → recompensa com chave determinística → ledger transacional → nível/atributos/moedas derivados. Recompensas são snapshots; editar um hábito não reescreve XP histórico. Reverter moedas já gastas gera compensação futura, com saldo disponível limitado a zero.
 
-Banco Room v5, com migrações explícitas 1 → 2 → 3 → 4 → 5; backups v6 leem também arquivos v1–v5. A migração 4 → 5 acrescenta estado de saga e texto de conversas reconhecidas. Nenhum fallback destrutivo é usado. Preferências de aparência, interesses e sugestões dispensadas ficam no aparelho e não são transferidas pelo backup.
+Banco Room v5, com migrações explícitas 1 → 2 → 3 → 4 → 5; backups v7 leem também arquivos v1–v6. A 1.5 reutiliza quests/claims/assets e não altera tabelas. Nenhum fallback destrutivo é usado. Preferências de aparência, interesses e sugestões dispensadas ficam no aparelho e não são transferidas pelo backup.

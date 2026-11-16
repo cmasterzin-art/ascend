@@ -6,9 +6,9 @@ A atualização troca a barra convencional por um instrumento de ferro entalhado
 
 | Área | 1.4 | 1.4.5 |
 |---|---|---|
-| Jornada e barra inferior | <img src="screenshots/v1.4/jornada-escuro.png" width="230" alt="Barra anterior com ícones convencionais"> | <img src="screenshots/jornada-145.png" width="230" alt="Barra em ferro e símbolos originais"> |
-| Menus de Missões | <img src="screenshots/v1.4/livro-missoes.png" width="230" alt="Abas horizontais anteriores"> | <img src="screenshots/menus-missoes-145.png" width="230" alt="Seis seções inteiras em duas linhas"> |
-| Herói / Inventário | <img src="screenshots/v1.4/inventario-equipado.png" width="230" alt="Menu horizontal anterior"> | <img src="screenshots/inventario-equipado.png" width="230" alt="Menu de placas com opções visíveis"> |
+| Jornada e barra inferior | <img src="screenshots/v1.4/jornada-escuro.png" width="230" alt="Barra anterior com ícones convencionais"> | <img src="screenshots/v1.4.5/jornada-145.png" width="230" alt="Barra em ferro e símbolos originais"> |
+| Menus de Missões | <img src="screenshots/v1.4/livro-missoes.png" width="230" alt="Abas horizontais anteriores"> | <img src="screenshots/v1.4.5/menus-missoes-145.png" width="230" alt="Seis seções inteiras em duas linhas"> |
+| Herói / Inventário | <img src="screenshots/v1.4/inventario-equipado.png" width="230" alt="Menu horizontal anterior"> | <img src="screenshots/v1.4.5/inventario-equipado.png" width="230" alt="Menu de placas com opções visíveis"> |
 
 **AetherisNavigation:** cinco ícones Canvas com mesma espessura: estrela-guia, códice, estandarte, bússola e elmo. Material em ferro com iluminação superior, separadores e seleção por placa/entalhe. Rótulos não usam ellipsis ou largura forçada; podem crescer verticalmente com a fonte. Área mínima de 64 dp, semântica de aba selecionada, animação de 160 ms e `navigationBarsPadding`. Rotas existentes e retorno do Android são preservados. A seleção acompanha a área de origem do Salão (Perfil ou Crônicas), do Grimório e da Crônica semanal.
 
@@ -18,7 +18,7 @@ A atualização troca a barra convencional por um instrumento de ferro entalhado
 
 | Crônica com atividade registrada | Salão dos feitos | Conversas guardadas |
 |---|---|---|
-| <img src="screenshots/cronica-ativa-145.png" width="230" alt="Resumo semanal real em pergaminho"> | <img src="screenshots/salao-feitos-145.png" width="230" alt="Inscrições por acontecimentos"> | <img src="screenshots/conversas-145.png" width="230" alt="Conversa reconhecida revisitada"> |
+| <img src="screenshots/v1.4.5/cronica-ativa-145.png" width="230" alt="Resumo semanal real em pergaminho"> | <img src="screenshots/v1.4.5/salao-feitos-145.png" width="230" alt="Inscrições por acontecimentos"> | <img src="screenshots/v1.4.5/conversas-145.png" width="230" alt="Conversa reconhecida revisitada"> |
 
 A Crônica da Semana abre em Mundo → Crônicas. Anterior/Seguinte navegam semanas civis, segunda a domingo; a semana corrente vai até hoje. Estatísticas, atributos, contratos resgatados, sagas avançadas/resgatadas, conquistas e reconstrução são derivados dos registros atuais. Não se grava um resumo duplicado. Correções mudam os totais. Textos locais variam por fatos, com linguagem neutra em semanas silenciosas. O percentual exclui atividades extras/descansos do denominador, conforme a regra existente; os totais de atividades ainda incluem extras.
 
@@ -26,7 +26,7 @@ O Salão abre pelo Perfil e pelas Crônicas. As inscrições têm emblema, categ
 
 ## Sagas e Herói
 
-[Histórico de saga](screenshots/saga-historico-145.png) · [Retrato ampliado](screenshots/retrato-ampliado-145.png) · [Inventário](screenshots/inventario-145.png).
+[Histórico de saga](screenshots/v1.4.5/saga-historico-145.png) · [Retrato ampliado](screenshots/v1.4.5/retrato-ampliado-145.png) · [Inventário](screenshots/v1.4.5/inventario-145.png).
 
 - Sagas em curso ficam separadas do histórico. Abandonar exige confirmação, congela data/progresso e não paga recompensa. Arquivar organiza tentativas encerradas. Reiniciar gera novo UUID e fotografia atual, sem importar o progresso da tentativa anterior.
 - O prazo usa calendário nativo Android, com opção Sem prazo. O formulário avisa antes de descartar mudanças. Nome/meta/recompensas continuam editáveis até o resgate; seleção de hábitos e métrica conservam os termos originais depois do início.
@@ -38,7 +38,7 @@ O Salão abre pelo Perfil e pelas Crônicas. As inscrições têm emblema, categ
 
 | 320 dp, fonte 130%, claro | Sagas na mesma configuração | Crônica na mesma configuração |
 |---|---|---|
-| <img src="screenshots/menus-320-claro-145.png" width="220" alt="Todas as opções do Herói sem corte horizontal"> | <img src="screenshots/sagas-320-claro-145.png" width="220" alt="Sagas com menus responsivos"> | <img src="screenshots/cronica-320-claro-145.png" width="220" alt="Crônica legível com texto ampliado"> |
+| <img src="screenshots/v1.4.5/menus-320-claro-145.png" width="220" alt="Todas as opções do Herói sem corte horizontal"> | <img src="screenshots/v1.4.5/sagas-320-claro-145.png" width="220" alt="Sagas com menus responsivos"> | <img src="screenshots/v1.4.5/cronica-320-claro-145.png" width="220" alt="Crônica legível com texto ampliado"> |
 
 Vazios de saga, histórico, memória, conversas e semana sem atividade têm textos próprios; buscas e coleção preservam seus vazios anteriores. Nenhum dado fictício é adicionado ao APK. Capturas vêm dos testes com renderização nativa Robolectric e fixtures locais.
 

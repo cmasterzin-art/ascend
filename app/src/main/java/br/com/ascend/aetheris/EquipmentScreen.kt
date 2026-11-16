@@ -38,7 +38,7 @@ import androidx.compose.ui.semantics.*
     }
     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Eyebrow(if(store)"Espólios do mercador" else "Sua coleção");Text("◈ ${s.coins}",color=Gold,fontFamily=SagaFont,fontSize=20.sp)}
     ChipRow(listOf("Todos","Trajes","Relíquias","Companheiros"),filter,{filter=it})
-    val items=shopItems.filter{item->(if(store)skillDefs.none{it.item==item.id} else s.assets.any{it.id==item.id})&&when(filter){1->item.kind in listOf("head","outfit");2->item.kind !in listOf("head","outfit","companion");3->item.kind=="companion";else->true}}
+    val items=shopItems.filter{item->(if(store)skillDefs.none{it.item==item.id}&&item.id!="mist-clasp" else s.assets.any{it.id==item.id})&&when(filter){1->item.kind in listOf("head","outfit");2->item.kind !in listOf("head","outfit","companion");3->item.kind=="companion";else->true}}
     if(items.isEmpty())Empty("Nenhuma relíquia nesta seleção. Conquiste fragmentos ou desperte uma habilidade para ampliar sua coleção.")
     items.chunked(2).forEach{row->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp)){
         row.forEach{item->val r=rarity(item);val color=rarityColor(r);val owned=s.assets.find{it.id==item.id}

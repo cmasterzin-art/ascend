@@ -17,10 +17,10 @@ import java.security.MessageDigest
 val Context.preferences by preferencesDataStore("ascend_settings")
 class AscendApp:Application(){
     val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5).build() }
-    val repository by lazy { GameRepository(database) }
+    val repository by lazy { GameRepository(database){s->HabitWidget.refresh(this,s)} }
 }
 data class GameEvent(val message:String,val level:Int=0,val xp:Long=0,val coins:Long=0,val points:List<Long> = emptyList(),val highlights:List<String> = emptyList())
-class GameRepository(private val db:GameDatabase){
+class GameRepository(private val db:GameDatabase,private val onChanged:(GameState)->Unit={}){
     private val d=db.dao(); private val lock=Mutex()
     val state=MutableStateFlow<GameState?>(null)
     val events=MutableSharedFlow<GameEvent>(extraBufferCapacity=10)
@@ -31,6 +31,7 @@ class GameRepository(private val db:GameDatabase){
             val old=state.value?:read()
             db.withTransaction { block(); reconcile() }
             val next=read(); state.value=next
+            runCatching{onChanged(next)}
             events.emit(rewardEvent(message,old,next))
         }
     }
@@ -39,8 +40,7 @@ class GameRepository(private val db:GameDatabase){
         // Claims are re-evaluated against habit records, never against their own rewards.
         s.claims.forEach { claim ->
             val q=s.quests.find{it.id==claim.questId}?:return@forEach
-            val historical=q.copy(xp=claim.xp,coins=claim.coins,target=claim.target,metric=claim.metric,habitIds=claim.habitIds,period=claim.period,attribute=claim.attribute,deadline=claim.deadline,sagaStart=claim.sagaStart,sagaBaseline=claim.sagaBaseline)
-            val valid=questProgress(historical,s,claim.occurrence)>=historical.target
+            val valid=validClaim(claim,s)
             d.reward(Reward("quest:${claim.id}",if(valid) claim.xp.toLong() else 0,if(valid) claim.coins.toLong() else 0,date=claim.date,label="Missão · ${q.name}"))
         }
         s=read()
@@ -117,6 +117,7 @@ class GameRepository(private val db:GameDatabase){
         d.reward(Reward("habit:${r.id}",Progression.reward(r.xp,r.progress,r.target,r.proportional),Progression.reward(r.coins,r.progress,r.target,r.proportional),Progression.reward(r.points,r.progress,r.target,r.proportional),r.attribute,date,"Hábito · ${r.name}"))
     }
     suspend fun claim(q:Quest)=change("Recompensa resgatada"){
+        require(!isExpedition(q)){"Avance pela tela da Expedição."}
         val s=read();require(s.quests.any{it==q}){"Missão desatualizada. Abra novamente."};val occ=occurrence(q);val id="${q.id}@$occ"
         require(s.claims.none{it.id==id}){"Esta recompensa já foi resgatada."}
         require(q.sagaState !in listOf(1,3)){"Esta saga foi abandonada."}
@@ -125,6 +126,7 @@ class GameRepository(private val db:GameDatabase){
         if(q.special.isNotBlank()) d.asset(Asset("quest:$id","trophy"))
     }
     suspend fun quest(q:Quest)=change("Missão salva"){
+        require(!q.id.startsWith("exp:")){"Identificador reservado à exploração."}
         require(q.name.isNotBlank() && q.target in 1..1000000 && q.xp in 0..1000000 && q.coins in 0..1000000){"Revise os valores da missão."}
         if(q.deadline.isNotEmpty()) LocalDate.parse(q.deadline)
         require(d.quests().none{it.id==q.id&&it.sagaStart.isNotBlank()}){"Use o editor de sagas."}
@@ -132,6 +134,7 @@ class GameRepository(private val db:GameDatabase){
         d.quest(q)
     }
     suspend fun saga(q:Quest)=change("Juramento inscrito"){
+        require(!q.id.startsWith("exp:")){"Use a tela de Expedições."}
         val s=read();val old=s.quests.find{it.id==q.id}
         require(old==null || old.sagaStart.isNotBlank())
         require(s.claims.none{it.questId==q.id}){"Uma saga resgatada preserva seus termos."}
@@ -143,21 +146,46 @@ class GameRepository(private val db:GameDatabase){
         d.quest(q.copy(period=2,attribute=-1,sagaStart=old?.sagaStart?:today(),sagaBaseline=baseline,sagaState=0,sagaEnd="",sagaStopped=0))
     }
     suspend fun abandonSaga(id:String)=change("Saga abandonada · seus hábitos permanecem"){
-        val s=read();val q=requireNotNull(s.quests.find{it.id==id&&it.sagaStart.isNotBlank()})
+        val s=read();val q=requireNotNull(s.quests.find{it.id==id&&isPersonalSaga(it)})
         require(q.sagaState==0 && s.claims.none{it.questId==id}){"Somente sagas não resgatadas podem ser abandonadas."}
         d.quest(q.copy(sagaState=1,sagaEnd=today(),sagaStopped=questProgress(q,s)))
     }
     suspend fun archiveSaga(id:String)=change("Saga arquivada"){
-        val s=read();val q=requireNotNull(s.quests.find{it.id==id&&it.sagaStart.isNotBlank()})
+        val s=read();val q=requireNotNull(s.quests.find{it.id==id&&isPersonalSaga(it)})
         require(q.sagaState in 0..1 && (q.sagaState==1||s.claims.any{it.questId==id})){"Conclua ou abandone a saga antes de arquivar."}
         d.quest(q.copy(sagaState=if(q.sagaState==1)3 else 2))
     }
     suspend fun restartSaga(id:String)=change("Nova tentativa iniciada"){
-        val s=read();val q=requireNotNull(s.quests.find{it.id==id&&it.sagaStart.isNotBlank()})
+        val s=read();val q=requireNotNull(s.quests.find{it.id==id&&isPersonalSaga(it)})
         require(q.sagaState!=0 || s.claims.any{it.questId==id}){"Encerre a tentativa atual primeiro."}
         require(s.quests.none{it.name==q.name&&it.sagaStart.isNotBlank()&&it.sagaState==0&&s.claims.none{c->c.questId==it.id}}){"Já existe uma tentativa em curso."}
         val baseline=s.records.filter{it.habitId in q.habitIds.split(',')}.joinToString(";"){"${it.id}=${it.progress}"}
         d.quest(q.copy(id=uid(),sagaStart=today(),sagaBaseline=baseline,sagaState=0,sagaEnd="",sagaStopped=0))
+    }
+    suspend fun startExpedition(id:String,habitIds:List<String>)=change("Expedição iniciada"){
+        val s=read();val e=forestExpeditions.firstOrNull{it.id==id}?:error("Expedição desconhecida")
+        require(expeditionAvailable(s,e)){"Revele a região e conclua a aventura anterior."}
+        require(s.quests.none{it.id==expeditionQuestId(e,0)}){"Esta expedição já foi iniciada."}
+        require(habitIds.isNotEmpty()&&habitIds.distinct().size==habitIds.size&&habitIds.all{id->s.habits.any{it.id==id&&!it.deleted&&!it.archived&&!it.paused}}){"Selecione hábitos ativos."}
+        d.quest(expeditionPhaseQuest(e,0,habitIds,s))
+    }
+    suspend fun advanceExpedition(id:String)=change("Marco da floresta reconhecido"){
+        val s=read();val e=forestExpeditions.firstOrNull{it.id==id}?:error("Expedição desconhecida")
+        require(expeditionAvailable(s,e)){"Uma etapa anterior precisa ser confirmada novamente pelo progresso real."}
+        require(!expeditionComplete(s,e)){"A recompensa já foi resgatada."}
+        val phase=expeditionPhaseIndex(s,e);val q=requireNotNull(s.quests.find{it.id==expeditionQuestId(e,phase)})
+        require(questProgress(q,s)>=q.target){"A etapa ainda está em andamento."}
+        val claimId="${q.id}@once"
+        if(s.claims.none{it.id==claimId})d.claim(Claim(claimId,q.id,"once",xp=q.xp,coins=q.coins,target=q.target,metric=q.metric,habitIds=q.habitIds,period=2,sagaStart=q.sagaStart,sagaBaseline=q.sagaBaseline))
+        if(phase<e.phases.lastIndex){if(s.quests.none{it.id==expeditionQuestId(e,phase+1)})d.quest(expeditionPhaseQuest(e,phase+1,q.habitIds.split(','),s))}
+        else if(e.item.isNotBlank()){val item=shopItems.first{it.id==e.item};if(s.assets.none{it.id==item.id})d.asset(Asset(item.id,item.kind))}
+    }
+    suspend fun widgetComplete(habitId:String,date:String)=change("A chama ganhou força"){
+        val s=read();require(date==today()){"O dia mudou. Atualize o widget."}
+        val h=requireNotNull(s.habits.find{it.id==habitId});require(h.type==0&&!h.paused&&!h.archived&&!h.deleted&&scheduled(h,date,s.restDates)){"Registre este hábito no aplicativo."}
+        val old=s.record(h.id,date)
+        if(old?.complete!=true){val r=old?:HabitRecord("${h.id}@$date",h.id,date,0,h.target,h.xp,h.coins,h.points,h.attribute,h.proportional,h.type,h.category,h.unit,h.name,true)
+            val complete=r.copy(progress=r.target);d.record(complete);d.reward(Reward("habit:${r.id}",Progression.reward(r.xp,complete.progress,r.target,r.proportional),Progression.reward(r.coins,complete.progress,r.target,r.proportional),Progression.reward(r.points,complete.progress,r.target,r.proportional),r.attribute,date,"Hábito · ${r.name}"))}
     }
     suspend fun rememberNarrative(id:String)=change("Memória guardada"){
         require(narrativeCandidates(read()).any{it.id==id})
@@ -173,7 +201,7 @@ class GameRepository(private val db:GameDatabase){
         d.asset(Asset("skill:$id","skill"));d.asset(Asset(item.id,item.kind))
     }
     suspend fun buy(item:ShopItem)=change("${item.name} chegou ao inventário"){
-        require(shopItems.any{it==item} && skillDefs.none{it.item==item.id}){"Este item é obtido por habilidade."};val s=read();require(s.assets.none{it.id==item.id}){"Você já possui este item."};require(s.rawCoins>=item.cost){"Fragmentos insuficientes."}
+        require(shopItems.any{it==item} && item.id!="mist-clasp" && skillDefs.none{it.item==item.id}){"Este item é obtido por habilidade."};val s=read();require(s.assets.none{it.id==item.id}){"Você já possui este item."};require(s.rawCoins>=item.cost){"Fragmentos insuficientes."}
         d.reward(Reward("buy:${item.id}",coins=-item.cost.toLong(),label="Compra · ${item.name}"));d.asset(Asset(item.id,item.kind))
     }
     suspend fun equip(a:Asset)=change(if(a.equipped) "Item removido" else "Item equipado"){
@@ -229,7 +257,7 @@ fun validateHabitInput(h:Habit){
     require(h.difficulty in 0..2 && h.icon in glyphs.indices && h.color in palette.indices){"Revise a dificuldade, o ícone e a cor."}
     require(h.templateId.length<=100 && h.narrativeName.length<=200){"Nome narrativo muito longo."}
 }
-data class BackupEnvelope(val format:String="ASCEND",val version:Int=6,val sha256:String,val payload:String)
+data class BackupEnvelope(val format:String="ASCEND",val version:Int=7,val sha256:String,val payload:String)
 object Backup {
     private val gson=Gson()
     private fun digest(s:String)=MessageDigest.getInstance("SHA-256").digest(s.toByteArray(Charsets.UTF_8)).joinToString(""){"%02x".format(it)}
@@ -237,7 +265,7 @@ object Backup {
     fun decode(text:String):GameState {
         require(text.length<=20_000_000){"Backup muito grande (máximo 20 MB)."}
         val b=gson.fromJson(text,BackupEnvelope::class.java)
-        require(b.format=="ASCEND" && b.version in 1..6 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
+        require(b.format=="ASCEND" && b.version in 1..7 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
         val json=com.google.gson.JsonParser.parseString(b.payload).asJsonObject
         listOf("quests","claims").forEach{table->json.getAsJsonArray(table)?.forEach{row->listOf("sagaStart","sagaBaseline").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}}
         json.getAsJsonArray("quests")?.forEach{row->val obj=row.asJsonObject;if(!obj.has("sagaState"))obj.addProperty("sagaState",0);if(!obj.has("sagaEnd"))obj.addProperty("sagaEnd","");if(!obj.has("sagaStopped"))obj.addProperty("sagaStopped",0)}

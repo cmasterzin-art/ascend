@@ -24,3 +24,9 @@ Todos os arquivos são distribuídos com o APK; o app não consulta servidores p
 ## 1.4.5 — áudio
 
 As pinturas foram preservadas. Cinco efeitos breves originais foram sintetizados localmente, sem amostras externas. [Origem, reprodução e limites](SOUNDS.md).
+
+## 1.5 — Floresta da Persistência
+
+`forest_atlas.webp` é uma pintura original nova em grade 3 × 3: três estados da floresta, três estados do santuário, Marco dos Retornos, Guardião da Névoa e Broche da Vigília. A direção pediu universo e criatura originais, coerentes com a pintura local do fiorde; nenhum recurso oficial de outra franquia foi utilizado. A imagem original foi convertida para WebP sem edição do conteúdo por scripts. Células são amostradas na renderização por ArtTile, preservando o arquivo completo. Não são simples filtros de cor ou vetores apresentados como pintura.
+
+Bytes: 449,560. SHA-256: `7882d1a03a3687695364d32b941e1060e79bc17dfcba83ccc2a221dbfbe95343`.
