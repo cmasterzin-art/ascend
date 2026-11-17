@@ -65,11 +65,13 @@ import androidx.compose.ui.semantics.*
 }
 
 /** A recessed dial for the existing daily ratio; has no independent progress logic. */
-@Composable fun DayDial(value:Float,label:String){val color=Gold
- Box(Modifier.size(84.dp).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)},contentAlignment=Alignment.Center){if(!LocalAppearance.current.minimal)Image(painterResource(R.drawable.forge_brooch),null,Modifier.matchParentSize());Canvas(Modifier.matchParentSize()){
+@Composable fun DayDial(value:Float,label:String,diameter:Dp=84.dp){val color=Gold
+ Box(Modifier.size(diameter).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)},contentAlignment=Alignment.Center){if(!LocalAppearance.current.minimal)Image(painterResource(R.drawable.forge_brooch),null,Modifier.matchParentSize());Canvas(Modifier.matchParentSize()){
   val inset=5.dp.toPx();val bounds=Size(size.width-2*inset,size.height-2*inset)
   drawArc(Color.Black.copy(alpha=.6f),0f,360f,false,Offset(inset,inset),bounds,style=Stroke(5.dp.toPx()))
   drawArc(color.copy(alpha=.25f),-90f,360f,false,Offset(inset,inset),bounds,style=Stroke(1.dp.toPx()))
   drawArc(color,-90f,value.coerceIn(0f,1f)*360f,false,Offset(inset,inset),bounds,style=Stroke(3.dp.toPx(),cap=StrokeCap.Round))
- };Text(label,color=color,fontSize=17.sp,fontFamily=SagaFont)}
+ };Text(label,color=color,fontSize=if(diameter>100.dp)30.sp else 17.sp,fontFamily=SagaFont)}
 }
+
+@Composable fun NorthDivider(){if(!LocalAppearance.current.minimal)Image(painterResource(R.drawable.north_divider),null,Modifier.fillMaxWidth().height(28.dp),contentScale=ContentScale.Fit)}

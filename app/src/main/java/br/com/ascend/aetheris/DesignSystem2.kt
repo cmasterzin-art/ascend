@@ -47,7 +47,7 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
     }
     ForgeMedallion(s.level)
    }
-   Column(Modifier.fillMaxWidth().background(Surface.copy(alpha=.8f)).padding(10.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){
+   Column(Modifier.fillMaxWidth().padding(10.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){
     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("${Progression.current(s.xp)}/${Progression.requirement(s.level)} XP",color=Blue,fontSize=11.sp);Text("${s.coins} fragmentos",fontSize=11.sp,color=Muted)}
     Meter(Progression.current(s.xp).toFloat()/Progression.requirement(s.level),Blue)
    }
@@ -60,6 +60,7 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
  AetherSurface(if(category>=1)SurfaceKind.Ceremonial else SurfaceKind.Parchment){
   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Eyebrow(listOf("CONTRATO DIÁRIO","JURAMENTO SEMANAL","CONTRATO ÉPICO","DESAFIO RITUAL")[category],if(category==0)Sepia else Gold);RuneSeal(if(claimed)4 else category,if(category==0)Sepia else if(claimed)Green else Gold,Modifier.size(32.dp))}
   Text(q.name,color=contractInk,style=MaterialTheme.typography.titleLarge)
+  NorthDivider()
   StatusSeal(if(claimed)"Resgatado" else if(value>=q.target)"Recompensa disponível" else "Em andamento",if(category==0)Sepia else if(claimed)Green else Blue)
   if(category==3){BossPortrait();Text("Vida: ${(100*(1-value.toFloat()/q.target)).coerceIn(0f,100f).toInt()} / 100",color=contractMuted)}
   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.Bottom){Text("${value.coerceAtMost(q.target.toLong())} / ${q.target}",fontSize=26.sp,fontFamily=SagaFont);Text(listOf("conclusões","minutos","XP de hábitos","páginas")[q.metric],color=contractMuted,fontSize=12.sp)}

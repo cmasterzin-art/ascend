@@ -38,7 +38,7 @@ import java.util.Locale
 @Composable fun FocusCard(f:Focus,s:GameState,vm:GameViewModel){
     var now by remember{mutableLongStateOf(System.currentTimeMillis())};LaunchedEffect(f){while(f.startedAt>0){now=System.currentTimeMillis();delay(1000)}}
     val seconds=f.seconds(now);val remaining=(f.duration*60L-seconds).coerceAtLeast(0)
-    Panel(accent=Violet){Eyebrow("Foco · ${s.habits.find{it.id==f.habitId}?.name?:"Sessão"}",Violet);Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){DayDial(seconds.toFloat()/(f.duration*60),"%02d:%02d".format(remaining/60,remaining%60))};Meter(seconds.toFloat()/(f.duration*60),Violet);Text("${seconds/60} minutos efetivos · sessão de ${displayDate(f.date)}",color=Muted,fontSize=12.sp)
+    Panel(accent=Violet){Eyebrow("Foco · ${s.habits.find{it.id==f.habitId}?.name?:"Sessão"}",Violet);Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){DayDial(seconds.toFloat()/(f.duration*60),"%02d:%02d".format(remaining/60,remaining%60),168.dp)};Meter(seconds.toFloat()/(f.duration*60),Violet);Text("${seconds/60} minutos efetivos · sessão de ${displayDate(f.date)}",color=Muted,fontSize=12.sp)
         Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){OutlinedButton({vm.run{vm.repo.pauseFocus()}}){Text(if(f.startedAt>0)"Pausar" else "Retomar")};Action("Registrar",{vm.run{vm.repo.endFocus(true)}})};TextButton({vm.run{vm.repo.endFocus(false)}}){Text("Descartar sessão",color=Muted)}
         Text("O tempo continua fora desta tela. Ao registrar, conta apenas minutos completos e preserva o progresso manual já registrado.",color=Muted,fontSize=11.sp)
     }
@@ -47,14 +47,13 @@ import java.util.Locale
     var tab by rememberSaveable{mutableIntStateOf(0)};var showArchived by remember{mutableStateOf(false)};var menu by remember{mutableStateOf<Habit?>(null)};var delete by remember{mutableStateOf<Habit?>(null)};var routine by remember{mutableStateOf<Routine?>(null)};var newRoutine by remember{mutableStateOf(false)};var date by remember{mutableStateOf(today())}
     var search by rememberSaveable{mutableStateOf("")};var status by rememberSaveable{mutableIntStateOf(0)};var attr by rememberSaveable{mutableIntStateOf(0)};var order by rememberSaveable{mutableIntStateOf(0)}
     Page{
-        Title("Livro de hábitos","Organize rituais. Preserve espaço para o descanso.");Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){SagaButton("Planejador",onPlanner,Modifier.weight(1f),secondary=true);SagaButton("Análises",onAnalysis,Modifier.weight(1f),secondary=true);SagaButton("Foco",onHistory,Modifier.weight(1f),secondary=true)};AetherisTabs(listOf("Hábitos","Calendário","Rotinas","Histórico"),tab,{tab=it})
+        Title("Livro de hábitos");Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){SagaButton("Planejador",onPlanner,Modifier.weight(1f),secondary=true);SagaButton("Análises",onAnalysis,Modifier.weight(1f),secondary=true);SagaButton("Foco",onHistory,Modifier.weight(1f),secondary=true)};AetherisTabs(listOf("Hábitos","Calendário","Rotinas","Histórico"),tab,{tab=it})
         when(tab){
             0->{
                 Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){Action("+ Criar hábito",onAdd,Modifier.weight(1f));OutlinedButton(onExplore,Modifier.weight(1f).heightIn(min=48.dp)){Text("Explorar hábitos")}}
                 FormField(search,{search=it},"Buscar por nome ou categoria")
                 ChipRow(listOf("Todos","Pendentes","Concluídos","Em pausa"),status,{status=it})
-                ChipRow(listOf("Todos os atributos")+attributes,attr,{attr=it})
-                ChipRow(listOf("Minha ordem","Nome","Horário"),order,{order=it})
+                Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(8.dp)){Column(Modifier.width(230.dp)){ChipRow(listOf("Todos os atributos")+attributes,attr,{attr=it})};Column(Modifier.width(230.dp)){ChipRow(listOf("Minha ordem","Nome","Horário"),order,{order=it})}}
                 Toggle("Mostrar arquivados",showArchived,{showArchived=it})
                 val hs=s.habits.filter{h->!h.deleted&&(showArchived||!h.archived)&&(search.isBlank()||h.name.contains(search,true)||h.category.contains(search,true))&&(attr==0||h.attribute==attr-1)&&when(status){1->!h.paused&&s.record(h.id)?.complete!=true;2->s.record(h.id)?.complete==true;3->h.paused;else->true}}.let{rows->when(order){1->rows.sortedBy{it.name.lowercase()};2->rows.sortedBy{it.time.ifBlank{"99:99"}};else->rows.sortedBy{it.position}}}
                 Text("${hs.size} hábitos encontrados",color=Muted,fontSize=12.sp)

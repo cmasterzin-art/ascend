@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.StabilityTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-11-17T12:00:08" hostname="da0963ce0ccf" time="0.437">
+<testsuite name="br.com.ascend.aetheris.StabilityTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-11-17T17:10:27" hostname="da0963ce0ccf" time="0.32">
   <properties/>
-  <testcase name="pendingRecordUsesCurrentHabitButPreservesExistingSnapshots" classname="br.com.ascend.aetheris.StabilityTest" time="0.071"/>
-  <testcase name="focusStartRejectsAStaleHabitChangedToSimple" classname="br.com.ascend.aetheris.StabilityTest" time="0.045"/>
-  <testcase name="singleDayPeriodsAreBrazilianWithoutRepeatingTheDate" classname="br.com.ascend.aetheris.StabilityTest" time="0.074"/>
-  <testcase name="invalidFocusBackupIsRejectedBeforeReplacingProgress" classname="br.com.ascend.aetheris.StabilityTest" time="0.028"/>
-  <testcase name="invalidAmountCannotEraseAnExistingRecord" classname="br.com.ascend.aetheris.StabilityTest" time="0.037"/>
-  <testcase name="focusRespectsRestDayInItsHistoricalSnapshot" classname="br.com.ascend.aetheris.StabilityTest" time="0.026"/>
+  <testcase name="pendingRecordUsesCurrentHabitButPreservesExistingSnapshots" classname="br.com.ascend.aetheris.StabilityTest" time="0.033"/>
+  <testcase name="focusStartRejectsAStaleHabitChangedToSimple" classname="br.com.ascend.aetheris.StabilityTest" time="0.022"/>
+  <testcase name="singleDayPeriodsAreBrazilianWithoutRepeatingTheDate" classname="br.com.ascend.aetheris.StabilityTest" time="0.027"/>
+  <testcase name="invalidFocusBackupIsRejectedBeforeReplacingProgress" classname="br.com.ascend.aetheris.StabilityTest" time="0.025"/>
+  <testcase name="invalidAmountCannotEraseAnExistingRecord" classname="br.com.ascend.aetheris.StabilityTest" time="0.029"/>
+  <testcase name="focusRespectsRestDayInItsHistoricalSnapshot" classname="br.com.ascend.aetheris.StabilityTest" time="0.031"/>
   <testcase name="runningAndPausedFocusSurviveReloadWithoutDoublePayment" classname="br.com.ascend.aetheris.StabilityTest" time="0.035"/>
-  <testcase name="restoreFailureRollsBackDeletedTablesAndAValidBackupStillRestores" classname="br.com.ascend.aetheris.StabilityTest" time="0.034"/>
-  <testcase name="deletedHabitCannotStartANewFocusFromAnOldScreen" classname="br.com.ascend.aetheris.StabilityTest" time="0.022"/>
-  <testcase name="invalidCharacterDateIsRejectedByBackupValidation" classname="br.com.ascend.aetheris.StabilityTest" time="0.022"/>
-  <testcase name="complexWidgetRequestsRecheckDateTypeAndAvailability" classname="br.com.ascend.aetheris.StabilityTest" time="0.042"/>
+  <testcase name="restoreFailureRollsBackDeletedTablesAndAValidBackupStillRestores" classname="br.com.ascend.aetheris.StabilityTest" time="0.035"/>
+  <testcase name="deletedHabitCannotStartANewFocusFromAnOldScreen" classname="br.com.ascend.aetheris.StabilityTest" time="0.019"/>
+  <testcase name="invalidCharacterDateIsRejectedByBackupValidation" classname="br.com.ascend.aetheris.StabilityTest" time="0.03"/>
+  <testcase name="complexWidgetRequestsRecheckDateTypeAndAvailability" classname="br.com.ascend.aetheris.StabilityTest" time="0.032"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

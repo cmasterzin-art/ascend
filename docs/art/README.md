@@ -42,3 +42,7 @@ Quatro recursos gerados nesta execução com a ferramenta de geração de imagen
 ## 1.6.5
 
 Conceito original de três telas em `concepts/north-165.webp`; apenas direção artística. `north_frame.webp` e `north_stone.webp` foram gerados nesta execução e otimizados em WebP para uso local real. Recursos anteriores preservados. Sem cópia de assets comerciais.
+
+## 1.6.8
+
+`north_divider.webp`: divisor original gerado com transparência, bronze oxidado e relevo orgânico, otimizado em WebP. Uso seletivo em composição Compose; sem texto incorporado. Novo símbolo vetorial de montanhas para Jornada.
