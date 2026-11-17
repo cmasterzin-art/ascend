@@ -32,8 +32,15 @@ import java.util.Locale
  androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxSize().testTag("journey_list").semantics{contentDescription="Central da Jornada"},contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
   item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Eyebrow("ASCEND  /  MINHA JORNADA");Text(displayDate(day),color=Muted,fontSize=12.sp)};ClassEmblem(s.player!!.heroClass,Modifier.size(28.dp))}}
   item{CompactHero(s,onPortrait)}
-  item{AetherSurface{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(if(rested)"Dia de descanso" else "Hoje",style=MaterialTheme.typography.titleMedium);Text(if(due.isEmpty())"—" else "${done*100/due.size}%",color=Green,fontSize=25.sp,fontFamily=SagaFont)};Text("$done de ${due.size} · ${due.size-done} pendentes",fontSize=14.sp);Meter(if(due.isEmpty())0f else done.toFloat()/due.size,Green);if(relaxed)Text("Modo livre · o widget mantém a agenda programada.",fontSize=11.sp,color=Muted)}}
-  item{Row(Modifier.fillMaxWidth().background(Surface,RoundedCornerShape(8.dp)),horizontalArrangement=Arrangement.spacedBy(4.dp)){listOf("Planejador" to onPlanner,"Análises" to onAnalysis,"Foco" to onHistory).forEach{(label,action)->TextButton(action,Modifier.weight(1f).heightIn(min=48.dp),contentPadding=PaddingValues(6.dp)){Text(label,fontSize=12.sp)}}}}
+  item{AetherSurface{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(16.dp)){
+   DayDial(if(due.isEmpty())0f else done.toFloat()/due.size,if(due.isEmpty())"—" else "${done*100/due.size}%")
+   Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(5.dp)){Eyebrow(if(rested)"Dia de descanso" else "Jornada de hoje",Green);Text("$done de ${due.size}",style=MaterialTheme.typography.titleLarge);Text("${due.size-done} pendentes",fontSize=12.sp,color=Muted)}
+  };if(relaxed)Text("Modo livre · o widget mantém a agenda programada.",fontSize=11.sp,color=Muted)}}
+  item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){listOf("Planejador" to onPlanner,"Análises" to onAnalysis,"Foco" to onHistory).forEachIndexed{i,(label,action)->
+   Column(Modifier.weight(1f).clip(CutCornerShape(3.dp)).background(Surface).forgeMaterial().clickable(onClick=action).padding(vertical=10.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(6.dp)){
+    Icon(listOf(Icons.Default.DateRange,Icons.Default.BarChart,Icons.Default.Timer)[i],null,Modifier.size(18.dp),tint=Gold);Text(label,color=Ink,fontSize=11.sp)
+   }
+  }}}
   s.focus?.let{f->item{FocusCard(f,s,vm)}}
   item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){SectionHeader("Seus próximos passos","Conclua com um toque; detalhes ao selecionar o nome.")};IconButton(onAdd){Icon(Icons.Default.Add,"Criar hábito")}};if(due.size>1||done>0)ChipRow(listOf("Todos (${due.size})","Pendentes (${due.size-done})"),if(pendingOnly)1 else 0,{pendingOnly=it==1})}
   val visible=due.filter{!pendingOnly||s.record(it.id,day)?.complete!=true}.sortedBy{s.record(it.id,day)?.complete==true}

@@ -20,7 +20,7 @@ import kotlin.math.*
 val Parchment=Color(0xFFBDB196)
 val Sepia=Color(0xFF29251E)
 @Composable fun Manuscript(content:@Composable ColumnScope.()->Unit){AetherSurface(SurfaceKind.Parchment){content()}}
-@Composable fun SagaCover(count:Int){AetherSurface(SurfaceKind.Ceremonial){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){RuneSeal(4,Gold,Modifier.size(44.dp));Column(Modifier.weight(1f)){Text("Livro de missões",style=MaterialTheme.typography.titleLarge);Text("$count recompensas resgatadas · contratos e sagas",color=Muted,fontSize=12.sp)}}}}
+@Composable fun SagaCover(count:Int){AetherSurface(SurfaceKind.Ceremonial){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){Box(Modifier.size(62.dp),contentAlignment=Alignment.Center){Image(painterResource(R.drawable.forge_brooch),null,Modifier.matchParentSize());RuneSeal(4,Gold,Modifier.size(30.dp))};Column(Modifier.weight(1f)){Text("Livro de missões",style=MaterialTheme.typography.titleLarge);Text("$count recompensas resgatadas · contratos e sagas",color=Muted,fontSize=12.sp)}}}}
 @Composable fun rarityColor(n:Int)=listOf(Muted,Green,Blue,Violet,Gold)[n]
 /** A sprite atlas is sampled at draw time; original image files remain intact. */
 @Composable fun ArtTile(resource:Int,index:Int,rows:Int,modifier:Modifier=Modifier){
