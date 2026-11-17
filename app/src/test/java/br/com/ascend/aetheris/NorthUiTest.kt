@@ -42,7 +42,7 @@ class NorthUiTest{
         compose.onNodeWithText("Resgatar juramento").performClick();wait{app.repository.state.value!!.claims.any{it.sagaStart.isNotBlank()}}
         compose.onNodeWithText("O juramento foi cumprido",substring=true,ignoreCase=true).assertExists();shot("recompensas-norte")
         compose.onNodeWithText("Continuar a jornada").performClick();compose.onNodeWithText("Jornada").performClick()
-        compose.onNodeWithText("Guardar esta memória").performScrollTo();shot("dialogo-saga")
+        compose.onNodeWithTag("journey_list").performScrollToNode(hasText("Guardar esta memória"));compose.onNodeWithText("Guardar esta memória").performScrollTo();shot("dialogo-saga")
     }
     @Test @Config(qualifiers="w320dp-h740dp-mdpi") fun sagaWithLargeTextAndReducedMotion(){
         compose.runOnIdle{compose.activity.setContent{val density=LocalDensity.current;CompositionLocalProvider(LocalDensity provides Density(density.density,1.3f)){Ascend()}}};compose.waitForIdle()

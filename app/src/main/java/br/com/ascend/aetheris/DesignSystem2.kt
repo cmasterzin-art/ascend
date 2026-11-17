@@ -21,8 +21,9 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
  val dark=LocalAppearance.current.dark
  val accent=when(kind){SurfaceKind.Heroic->Blue;SurfaceKind.Ceremonial->Gold;SurfaceKind.Parchment->Sepia;SurfaceKind.Artifact->Violet;else->ColdIron}
  val base=when(kind){SurfaceKind.Parchment->if(dark)Color(0xFFD0C3A5) else Color(0xFFF2E5C7);SurfaceKind.Artifact->if(dark)Color(0xFF211D25) else Color(0xFFE8E0D5);else->Surface}
+ val shades=if(kind==SurfaceKind.Parchment)listOf(if(dark)Color(0xFFB7AA8D) else Color(0xFFE0CDA6),base,if(dark)Color(0xFFDBCEB0) else Color(0xFFF2E5C7)) else listOf(base,base.copy(alpha=.7f))
  val shape=if(kind==SurfaceKind.Operational)RoundedCornerShape(10.dp) else AetherTokens.shape
- Column(modifier.fillMaxWidth().clip(shape).background(Brush.linearGradient(listOf(base,if(kind==SurfaceKind.Parchment)base else base.copy(alpha=.7f)))).border(1.dp,accent.copy(alpha=.19f),shape).padding(AetherTokens.inset),verticalArrangement=Arrangement.spacedBy(12.dp)){
+ Column(modifier.fillMaxWidth().clip(shape).background(Brush.linearGradient(shades)).border(1.dp,accent.copy(alpha=.19f),shape).padding(AetherTokens.inset),verticalArrangement=Arrangement.spacedBy(12.dp)){
   if(kind!=SurfaceKind.Operational)Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){Box(Modifier.width(26.dp).height(2.dp).background(accent));Text(when(kind){SurfaceKind.Heroic->"SAGA PESSOAL";SurfaceKind.Ceremonial->"MARCA DE AETHERIS";SurfaceKind.Parchment->"ARQUIVO DO CRONISTA";else->"COLEÇÃO DE ARTEFATOS"},color=accent,fontSize=10.sp,letterSpacing=1.5.sp)}
   CompositionLocalProvider(LocalContentColor provides if(kind==SurfaceKind.Parchment)Sepia else Ink){content()}
  }

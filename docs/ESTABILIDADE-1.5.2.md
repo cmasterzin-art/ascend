@@ -90,6 +90,6 @@ Widgets seguem o tema do sistema; a atualização pelo launcher/Android continua
 
 | Validação recuperável do registro | Widget sem atividades, sem barra fictícia |
 |---|---|
-| <img src="screenshots/registro-validacao-152.png" width="260" alt="Campo inválido mantido, mensagem específica e salvar acessível"> | <img src="screenshots/widget-sem-rituais-152.png" width="220" alt="Widget compacto sem barra quando não há rituais"> |
+| <img src="screenshots/v1.5.2/registro-validacao-152.png" width="260" alt="Campo inválido mantido, mensagem específica e salvar acessível"> | <img src="screenshots/v1.5.2/widget-sem-rituais-152.png" width="220" alt="Widget compacto sem barra quando não há rituais"> |
 
 Capturas reais dos testes, com dados de teste. Não são mockups. A direção de arte da 1.5.1 foi mantida.

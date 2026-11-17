@@ -15,10 +15,10 @@ fun periodSummary(s:GameState,start:String,end:String):PeriodSummary {
     val records=s.records.filter{it.date in start..end}
     var planned=0
     var date=from
-    while(!date.isAfter(to)) { planned+=s.habits.count{scheduled(it,date.toString(),rests,s.plans)};date=date.plusDays(1) }
+    while(!date.isAfter(to)) { planned+=s.habits.count{s.planned(it,date.toString())};date=date.plusDays(1) }
     val complete=records.filter{it.complete}
     return PeriodSummary(s.ledger.filter{it.date in start..end}.sumOf{it.xp},complete.size,planned,
-        complete.count{r->habits[r.habitId]?.let{scheduled(it,r.date,rests,s.plans)}==true},
+        complete.count{r->habits[r.habitId]?.let{s.planned(it,r.date)}==true},
         records.filter{it.type==2}.sumOf{it.progress.toLong()})
 }
 fun bestStreak(h:Habit,records:List<HabitRecord>,end:String=today(),restDates:Set<String> = emptySet(),plans:List<PlanException> = emptyList()):Int {

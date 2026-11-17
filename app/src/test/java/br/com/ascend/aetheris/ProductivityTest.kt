@@ -82,4 +82,11 @@ class ProductivityTest{
   val p=analysisPeriod(0);assertEquals(7,p.days);assertEquals(7,p.previous.days);assertEquals(weekOf(today()),analysisPeriod(3).start);assertEquals(LocalDate.now().withDayOfMonth(1).toString(),analysisPeriod(4).start);assertTrue(localInsights(s(),p).single().contains("Ainda não"))
   repo.progress(h,today(),60);assertEquals(1,analyzeHabit(s(),h,p).complete);repo.progress(h,today(),30);assertEquals(0,analyzeHabit(s(),h,p).complete);assertEquals(30L,analyzeHabit(s(),h,p).xp);assertTrue(localInsights(s(),p).isNotEmpty())
  }
+ @Test fun newPlanningAndSessionTablesSurviveClosingAndReopeningTheDatabaseFile()=runBlocking{
+  val name="productivity-disk.db";context.deleteDatabase(name);var disk=Room.databaseBuilder(context,GameDatabase::class.java,name).build()
+  try{val r=GameRepository(disk);r.refresh();r.create(Player(name="Persistente",created=h.created),listOf(h));r.plan(h.id,today(),2);r.startFocus(h,25);disk.dao().focus(r.state.value!!.focus!!.copy(elapsed=60,startedAt=0));r.endFocus(true);val before=r.state.value!!;disk.close()
+   disk=Room.databaseBuilder(context,GameDatabase::class.java,name).build();val reload=GameRepository(disk);reload.refresh();assertEquals(before,reload.state.value);assertEquals(1,reload.state.value!!.plans.size);assertEquals(1,reload.state.value!!.focusSessions.size)
+  }finally{disk.close();context.deleteDatabase(name)}
+ }
+
 }

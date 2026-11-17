@@ -1,51 +1,69 @@
-# Validação — ASCEND 1.5.2
+# Validação — ASCEND 1.6.0
 
-16/11/2026. Base: `feat/ascend-1.5.1`, commit `2ab6c47a0abafb26d6094d80f14f5c2651ee8dbe`. Publicação em `feat/ascend-1.5.2`.
+16/11/2026. Base `feat/ascend-1.5.2`, commit `67c3bd1cc0309ee262538d7343a4f9015e09d4d6`. Desenvolvimento em `feat/ascend-1.6`, com marcos publicados sem modificar a principal.
 
 - `testDebugUnitTest assembleDebug lintDebug`: **BUILD SUCCESSFUL**.
-- **116 testes aprovados**: 97 anteriores + 19 novos, zero falhas, erros ou ignorados. Nenhum teste anterior foi removido.
-- Android Lint: **zero erros, 21 avisos**, revisados e documentados. Relatórios sem supressão em [docs/validation/](docs/validation/).
-- APK: [downloads/ASCEND-1.5.2.apk](downloads/ASCEND-1.5.2.apk?raw=true), **23220921 bytes**.
-- SHA-256: `b1bcbb6b2f004e90a8e471e38f7c9ea66f8419350af366aa5bbd165d4b1df739`.
-- `zipalign -c 4`: aprovado; assinatura v2 válida.
-- Certificado comparado diretamente com o APK 1.5.1: `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
-- Manifesto: `br.com.ascend.aetheris`, versionName **1.5.2**, versionCode **10**, minSdk **26**, targetSdk **35**. Sem INTERNET, VIBRATE, serviço contínuo ou alarme exato. Permissões anteriores preservadas.
-- APK pessoal de depuração; chave privada preservada fora do Git. JDK Temurin 17, SDK 35, Gradle 8.9.
+- **135 testes aprovados**, zero falhas, erros ou ignorados: **116 anteriores + 19 novos**.
+- Android Lint: **zero erros, 20 avisos** documentados, sem supressão.
+- APK: [downloads/ASCEND-1.6.0.apk](downloads/ASCEND-1.6.0.apk?raw=true), **23.345.281 bytes**.
+- SHA-256: `27f8047d59ed4e8e71ef5b46da553e419aa9923e5c60c49ec3492c6d6a80eced`.
+- `zipalign -c 4`: aprovado. Assinatura v2 válida; certificado igual ao APK 1.5.2: `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
+- Manifesto: `br.com.ascend.aetheris`, versionName **1.6.0**, versionCode **11**, minSdk **26**, targetSdk **35**. Sem INTERNET, serviço contínuo, VIBRATE ou alarme exato.
+- JDK Temurin 17, SDK Android 35, Gradle 8.9. APK pessoal de depuração; chave preservada fora do Git.
 
-## Defeitos e evidência de regressão
+[Log, XMLs, Lint e verificação do APK](docs/validation/).
 
-[Relatório da auditoria e gravidades](docs/ESTABILIDADE-1.5.2.md).
+## Cobertura nova
 
-Foram reproduzidos: progresso inválido sendo convertido em zero, snapshot novo com hábito desatualizado, início de foco com referência incompatível/excluída, descanso omitido do snapshot de foco, aceitação de datas inválidas em campos de backup, perda de rascunho ao restaurar estado, recusa silenciosa de ação antiga do widget e barra sem atividades. O manipulador de atalhos complexos também foi auditado e passou a revalidar agenda/tipo/estado/data.
-
-| Suíte nova | Quantidade | Evidência |
+| Suíte | Testes | Resultado executado |
 |---|---:|---|
-| StabilityTest | 11 | Snapshot atual e histórico preservado, rejeição de quantidade negativa, foco com referência antiga, descanso, tempo/reload/encerramento repetido, datas inválidas em backup, rollback com falha de inserção injetada, resolução de atalhos e período de um dia |
-| WidgetStabilityTest | 5 | Widget mínimo em 180 dp/130%, ação real do dia anterior com mensagem, agenda e estados alterados com concorrência, host após correção/backup e fallback sem botões antigos diante de falha de leitura injetada |
-| StabilityUiTest | 3 | Entrada inválida recuperável sem apagar registro; rascunho de hábito via estado salvo com descarte confirmado; Activity recriada duas vezes após registro de widget, preservando quantidade e sem reabrir atalho consumido |
+| ProductivityTest | 15 | Incluir/dispensar/remover exceção, data futura, rejeição de passado, descanso/inatividade/histórico, widget e lembrete com a mesma programação, métricas/snapshots sem XP de planejamento, foco concorrente com pagamento único, cancelamento/conclusão, reload/arquivo/exclusão, backup v8/antigo v7, importação inválida preservada, esquema v5 real → v6 com foco legado, períodos/correções/insights e fechamento/reabertura do arquivo com novas tabelas preenchidas |
+| ProductivityUiTest | 3 | Jornada → Planejador → dispensa → widget/métricas → Análises → detalhe de hábito; iniciar foco pelo formulário, encerrar, consultar histórico/detalhes e retornar sem duplicação; Activity recriada com sessão pausada preservando ID/tempo; 320 dp/130%/claro/minimalista/redução de movimento, semana futura e estados vazios |
+| ProductVisualTourTest | 1 | Jornada, Hábitos, Missões, Sagas, Herói, Inventário, Atlas, Crônica, Memórias e widget com a mesma fixture real; também executado no código 1.5.2 em worktree isolado para capturas anteriores |
 
-Na reprodução inicial, sete testes do núcleo falharam, assim como os cenários de widget e formulário relacionados. Após a correção, a suíte completa final passou. Ajustes nos testes anteriores limitam-se ao período de data única da Crônica; verificações econômicas não foram reduzidas.
+A suíte anterior foi preservada. Testes de migração passaram a incluir o trecho 5 → 6 sem remover esquemas, dados ou verificações. Seletores de UI foram adaptados para rolar a LazyColumn até o item desejado; todas as asserções econômicas anteriores permanecem.
 
-A regressão inclui catálogo/rotinas, criação/edição, pausa/arquivo/programação, histórico/correção, XP proporcional/personalizado, compensação, missões, Sagas, resgates concorrentes, três Expedições/sete marcos/três fases do Guardião, transformações, Memórias, inventário, reconstrução, estatísticas, preferências sonoras, migrações e backups antigos.
+A regressão cobre Grimório/rotinas, registros/correções, XP proporcional e personalizado, ledger, compras, missões, Sagas, Expedições/sete marcos/três fases do Guardião, transformações, reconstrução, inventário, Memórias, sons, widget/receiver/PendingIntent/host, datas, descanso e backups/migrações anteriores.
 
-## Dados, compatibilidade e offline
+## Persistência, migração e economia
 
-Room **v5** e backup **v7** foram mantidos, sem alteração de tabelas/migração nova ou fallback destrutivo. Migrações 1 → 2 → 3 → 4 → 5 e formatos de backup v1–v7 continuam cobertos pelos testes anteriores. Novas validações são anteriores à substituição transacional. A injeção de falha durante a importação comprovou rollback e preservação do estado no banco recarregado; depois, o backup válido foi restaurado.
+Room **v6**: `MIGRATION_5_6` cria `plan_exceptions` e `focus_sessions`, acrescentando `sessionId` e `beganAt` ao slot de foco. Não há reconstrução/destruição das tabelas existentes. Os esquemas 1–6 estão exportados; foram exercitados bancos reais produzidos dos esquemas anteriores, incluindo v5 com dados e foco legado.
 
-Datas brasileiras são apenas apresentação; datas civis persistidas permanecem ISO sem conversão de fuso. A fórmula de XP, recompensas, snapshots históricos e economia não foram alterados. Pinturas/fontes/sons locais foram preservados e comparados nos APKs. Nenhum recurso depende de conta, servidor ou serviço pago.
+Backup **v8** mantém checksum e importação transacional, lendo v1–v7 e acrescentando os novos conjuntos. Restaurar v7 inicia planejamento/sessões vazios; não inventa histórico. O teste fecha e reabre um arquivo de banco com planejamento, sessão e registro preenchidos e compara o estado integral. As validações e o rollback de importação anteriores continuam passando.
 
-Pacote, certificado, minSdk compatível e versionCode maior atendem aos requisitos de atualização sobre a 1.5.1 fornecida. **Instalação/atualização física não foi executada.** A primeira 1.0 usa outro certificado. Exporte um backup e siga [INSTALACAO.md](INSTALACAO.md), sem desinstalar a 1.5.1.
+Planejamento e análises não concedem XP. O histórico de foco é escrito junto do registro/ledger e limpeza do slot ativo; não há recompensa paralela. Sessões concluídas são fatos históricos e não reescrevem snapshots de recompensa. Alterações/correções dos registros continuam atualizando o ledger e os indicadores derivados.
 
-## Lint e manutenção
+Programação é resolvida centralmente para Jornada, widget, Planejador, estatísticas, sequências e lembretes. Descanso/inatividade prevalecem sobre inclusão pontual; alterações pontuais só são permitidas de hoje em diante. Datas civis permanecem ISO no armazenamento e brasileiras na apresentação. [Regras completas](docs/PRODUTIVIDADE-1.6.md).
 
-Os 21 avisos incluem atualização de dependências, atributos de widget para API 31 com fallback de dimensões mínimas, textos XML fixos, texto de 10 sp, offset por lambda e simetria RTL. Não foram ocultados; não justificaram atualização ampla de dependências ou redesenho nesta versão. [Relatório](docs/validation/LINT-1.5.2.txt).
+## Revisão visual
 
-## Ambiente e limites reais
+[Dez comparações antes/depois e novos fluxos](docs/VISUAL-1.6.md) · [Design System 2.0](docs/DESIGN-SYSTEM-2.0.md).
 
-SDK, build-tools, platform-tools e ADB foram verificados. `adb devices -l`: nenhum dispositivo. Emulador, system-images e AVD não disponíveis; não foi montada infraestrutura adicional.
+Capturas reais de Compose/Views/RemoteViews no Robolectric API 28. As imagens anteriores do tour foram geradas na base 1.5.2 em worktree isolado, com teste/fixture iguais. Não são mockups. As pinturas/fontes/sons compartilhados foram comparados byte a byte nos APKs e preservados. Dados de teste não entram no APK.
 
-Robolectric API 28: UI nativa em 411/320 dp, claro/escuro, 130%, modo minimalista e redução de movimento nas suítes de regressão. As duas recriações de Activity foram executadas nesse ambiente; restauração de estado Compose também foi exercitada. RemoteViews/PendingIntents/receivers são reais; o host do launcher é simulado. Falhas de escrita/leitura foram injetadas em bancos de teste, sem alegar defeito físico real de armazenamento.
+Foram exercitados 411 × 891 e 320 × 740 dp, fonte 130%, claro/escuro, minimalista e redução de movimento. O teste de sessão usa tempo controlado no banco de teste; não é prova de um minuto físico em aparelho. Os indicadores e telas usam o repositório e as tabelas reais.
 
-Não foram executados instalação em telefone, launcher físico, bloqueio/encerramento físico do processo, bateria/reboot, meia-noite/fuso reais, audição, benchmark de FPS/RAM ou insets/teclado/leitor de tela físicos. `adjustResize` e `imePadding` foram preservados; o teste de digitação não substitui teclado Android completo. Atualizações do widget e lembretes continuam aproximadas e sujeitas ao fabricante.
+## Lint
 
-O [checklist físico](docs/ESTABILIDADE-1.5.2.md#checklist-físico-pendente--nada-abaixo-foi-marcado-como-aprovado) está integralmente pendente. Limites anteriores, como ausência de edição/abandono de Expedições após início e leitura de backup até 20 MB, permanecem documentados. Não houve expansão de conteúdo.
+20 avisos: oito de versões de dependências, seis de textos XML fixos, quatro de atributos de widget usados a partir da API 31 com dimensões mínimas de fallback, um de convenção da posição do parâmetro Modifier e um de simetria RTL. Não foram suprimidos nem usados como justificativa para atualizar todas as dependências. O erro encontrado no produtor assíncrono foi resolvido substituindo-o por estado explícito/LaunchedEffect, mantendo cálculo em dispatcher de trabalho.
+
+## Compatibilidade e limites físicos
+
+SDK, build-tools, platform-tools e ADB disponíveis. `adb devices -l` não encontrou dispositivo; emulador/system-images/AVD não estavam disponíveis. Não foi configurada infraestrutura adicional.
+
+Recriação de Activity e reabertura de banco foram executadas no ambiente de testes. Não houve instalação/atualização física, launcher real, morte física de processo, bloqueio de tela, reboot, meia-noite/fuso reais, bateria, teclado/gestos/leitor de tela físicos ou benchmark de FPS/RAM. Sons opcionais preservados; audição física pendente.
+
+Package/certificado iguais e versionCode 11 atendem aos requisitos de atualização sobre a 1.5.2. Isso não substitui instalar em aparelho. A 1.0 usa outro certificado; siga [INSTALACAO.md](INSTALACAO.md). O APK anterior não foi substituído.
+
+### Checklist físico pendente
+
+- [ ] Exportar backup na 1.5.2, instalar 1.6 por cima sem desinstalar e conferir todos os dados/preferências.
+- [ ] Planejar inclusão/dispensa/descanso; conferir Jornada, widget, lembretes e métricas no aparelho.
+- [ ] Foco com pausas, bloqueio, troca de app, morte de processo, retomada e encerramento único.
+- [ ] Widgets compacto/expandido, redimensionamento, fonte ampliada, tema, ação antiga e virada do dia.
+- [ ] Teclado, navegação por gestos, leitor de tela e insets do fabricante em 320/411 dp.
+- [ ] Sagas/Expedições, correções, transformações, Memórias e inventário após atualizar.
+- [ ] Exportar/restaurar backup v8 e importar backup v7 via provedor de arquivos Android.
+- [ ] Uso em modo avião, reinício, lembretes e sons sob restrições reais de bateria.
+
+Limites funcionais: sem novas regiões, serviço permanente, alarme de fim de foco ou edição de sessão concluída; sessões anteriores não são fabricadas. Ranking mostra dez maiores taxas; análise individual tem até 30 registros recentes do período. Algumas telas legadas mantêm rolagem em Column. Fonte acima de 130% e medições físicas adicionais não foram validadas nesta entrega.

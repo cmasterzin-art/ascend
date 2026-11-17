@@ -49,8 +49,10 @@ data class GameState(val player: Player? = null, val habits: List<Habit> = empty
     val debt get() = (-rawCoins).coerceAtLeast(0)
     fun points(attr: Int) = ledger.filter{it.attribute==attr}.sumOf{it.points}.coerceAtLeast(0)
     fun record(habitId: String, date: String = today()) = records.find{it.habitId==habitId && it.date==date}
-    val restDates get() = restDays.map { it.date }.toSet()
-    fun due(date: String = today()) = habits.filter{scheduled(it,date,restDates,plans)}.sortedBy{it.position}
+    @delegate:Transient val restDates by lazy { restDays.map{it.date}.toSet() }
+    @delegate:Transient val planIndex by lazy { plans.associateBy{it.id} }
+    fun planned(h:Habit,date:String)=scheduled(h,date,restDates,plans,planIndex)
+    fun due(date: String = today()) = habits.filter{planned(it,date)}.sortedBy{it.position}
 }
 object Progression {
     fun threshold(level: Int): Long = 25L*(level-1)*(level+2)
@@ -59,13 +61,13 @@ object Progression {
     fun current(xp: Long) = xp-threshold(level(xp))
     fun reward(max: Int, progress: Int, target: Int, proportional: Boolean): Long = if(proportional) max.toLong()*progress.coerceIn(0,target)/target.coerceAtLeast(1) else if(progress>=target) max.toLong() else 0L
 }
-fun scheduled(h: Habit, date: String, restDates: Set<String> = emptySet(), plans:List<PlanException> = emptyList()): Boolean {
+fun scheduled(h: Habit, date: String, restDates: Set<String> = emptySet(), plans:List<PlanException> = emptyList(), index:Map<String,PlanException>?=null): Boolean {
     if(date<h.created || date in restDates) return false
     val entry=h.scheduleHistory.split(';').map{it.split('|')}.filter{it.size==3 && it[0]<=date}.maxByOrNull{it[0]}
     val days=entry?.get(1)?:h.days
     val paused=entry?.get(2)?.toBooleanStrictOrNull()?:(h.paused||h.archived||h.deleted)
     if(paused || date>=today()&&(h.paused||h.archived||h.deleted))return false
-    return plans.find{it.habitId==h.id&&it.date==date}?.include ?: (LocalDate.parse(date).dayOfWeek.value.toString() in days.split(','))
+    return (if(index==null)plans.find{it.habitId==h.id&&it.date==date} else index["${h.id}@$date"])?.include ?: (LocalDate.parse(date).dayOfWeek.value.toString() in days.split(','))
 }
 fun streak(h: Habit, records: List<HabitRecord>, end: String=today(), restDates: Set<String> = emptySet(), plans:List<PlanException> = emptyList()): Int {
     if(!h.trackStreak) return 0

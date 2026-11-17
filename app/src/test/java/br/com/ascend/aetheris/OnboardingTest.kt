@@ -72,7 +72,7 @@ class OnboardingTest {
         createHabit("Ler","30")
         registerNamed("Ler",false)
         waitForState{repo.state.value!!.xp==80L}
-        compose.onNodeWithText("Ler").performScrollTo().performClick()
+        compose.onNodeWithTag("journey_list").performScrollToNode(hasText("Ler"));compose.onNodeWithText("Ler").performScrollTo().performClick()
         compose.onNodeWithText("Editar",useUnmergedTree=true).performClick()
         compose.onNodeWithText("XP ao atingir a meta").performScrollTo().performTextReplacement("40")
         compose.onNodeWithText("Salvar").performClick()

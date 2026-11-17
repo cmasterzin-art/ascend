@@ -59,7 +59,7 @@ val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
     }
 }
 @Composable fun Meter(value:Float,color:Color=Blue,modifier:Modifier=Modifier,trackColor:Color=CardColor){
-    val fraction by animateFloatAsState(value.coerceIn(0f,1f),tween(if(LocalAppearance.current.reducedMotion)0 else 550),label="progresso")
+    val fraction by animateFloatAsState(value.coerceIn(0f,1f),tween(if(LocalAppearance.current.reducedMotion)0 else AetherTokens.scene),label="progresso")
     val track=trackColor
     Canvas(modifier.fillMaxWidth().height(11.dp).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)}){
         drawRect(Brush.verticalGradient(listOf(Color.Black.copy(alpha=.5f),track,Color.Black.copy(alpha=.2f))));drawRect(color.copy(alpha=.3f),style=Stroke(1.dp.toPx()))

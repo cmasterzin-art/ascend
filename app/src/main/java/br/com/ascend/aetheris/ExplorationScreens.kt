@@ -17,7 +17,7 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.*
 
 @Composable fun ForestPainting(tile:Int,label:String,modifier:Modifier=Modifier,aspect:Float=1.25f){
- Crossfade(tile,modifier.fillMaxWidth(),animationSpec=tween(if(LocalAppearance.current.reducedMotion)0 else 260),label="névoa"){index->ArtTile(R.drawable.forest_atlas,index,3,Modifier.fillMaxWidth().aspectRatio(aspect).clip(CutCornerShape(7.dp)).border(1.dp,ColdIron.copy(alpha=.3f),CutCornerShape(7.dp)).semantics{contentDescription=label})}
+ Crossfade(tile,modifier.fillMaxWidth(),animationSpec=tween(if(LocalAppearance.current.reducedMotion)0 else AetherTokens.scene),label="névoa"){index->ArtTile(R.drawable.forest_atlas,index,3,Modifier.fillMaxWidth().aspectRatio(aspect).clip(CutCornerShape(7.dp)).border(1.dp,ColdIron.copy(alpha=.3f),CutCornerShape(7.dp)).semantics{contentDescription=label})}
 }
 @Composable fun RegionScreen(index:Int,s:GameState,onLocation:(String)->Unit){
  LazyColumn(Modifier.fillMaxSize().testTag("exploration_list"),contentPadding=PaddingValues(horizontal=20.dp,vertical=24.dp),verticalArrangement=Arrangement.spacedBy(20.dp)){

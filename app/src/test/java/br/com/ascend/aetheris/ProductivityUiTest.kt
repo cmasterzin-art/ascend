@@ -37,13 +37,16 @@ class ProductivityUiTest{
         compose.onNodeWithTag("planner_list").performScrollToNode(hasText("Ajustar Caminhar"));compose.onNodeWithText("Ajustar Caminhar").performClick();shot("planejador-ajuste-160");compose.onNodeWithText("Dispensar nesta data").performClick();wait{app.repository.state.value!!.plans.size==1}
         assertEquals(2,widgetDay(app.repository.state.value!!).due);assertEquals(59L,app.repository.state.value!!.xp)
         compose.onNodeWithTag("planner_list").performScrollToIndex(0);shot("planejador-dia-160");back()
-        compose.onNodeWithText("Análises").performScrollTo().performClick();compose.onNodeWithText("Central de Análises").assertExists();shot("analises-160")
-        compose.onNodeWithText("Leitura diária").performScrollTo().performClick();compose.onNodeWithText("Análise · Leitura diária").assertExists();shot("analise-habito-160")
+        compose.onNodeWithText("Análises").performScrollTo().performClick();compose.onNodeWithText("Central de Análises").assertExists();compose.waitUntil(10000){compose.onAllNodesWithText("Evolução de XP",ignoreCase=true).fetchSemanticsNodes().isNotEmpty()};shot("analises-160")
+        compose.onNodeWithText("Leitura diária").performScrollTo().performClick();compose.onNodeWithText("Análise · Leitura diária").assertExists();compose.waitUntil(10000){compose.onAllNodesWithText("Evolução de XP",ignoreCase=true).fetchSemanticsNodes().isNotEmpty()};shot("analise-habito-160")
     }
     @Test fun actualFocusControlsCreateAPersistentSessionWithoutExtraXp(){
         seeds();compose.onNodeWithTag("journey_list").performScrollToNode(hasContentDescription("Iniciar foco em Estudo sereno"));compose.onNodeWithContentDescription("Iniciar foco em Estudo sereno").performScrollTo().performClick();compose.onNodeWithText("Duração em minutos").performTextReplacement("1");compose.onNodeWithText("Iniciar").performClick()
         runBlocking{kotlinx.coroutines.withTimeout(10000){while(app.repository.state.value!!.focus==null){Shadows.shadowOf(android.os.Looper.getMainLooper()).idle();kotlinx.coroutines.delay(10)}};val f=app.repository.state.value!!.focus!!;app.database.dao().focus(f.copy(elapsed=60,startedAt=0));app.repository.refresh()}
         wait{app.repository.state.value!!.focus?.elapsed==60L}
+        val sessionId=app.repository.state.value!!.focus!!.sessionId
+        compose.activityRule.scenario.recreate();wait{app.repository.state.value!!.focus?.sessionId==sessionId}
+        assertEquals(60L,app.repository.state.value!!.focus!!.seconds())
         compose.onNodeWithTag("journey_list").performScrollToNode(hasText("Registrar"));compose.onNodeWithText("Registrar").performScrollTo().performClick();wait{app.repository.state.value!!.focusSessions.size==1};assertEquals(60L,app.repository.state.value!!.xp)
         compose.onNodeWithTag("journey_list").performScrollToIndex(0);compose.onAllNodesWithText("Foco").onFirst().performScrollTo().performClick();compose.onNodeWithText("Histórico de Foco").assertExists();shot("foco-historico-160")
         compose.onNodeWithTag("focus_history_list").performScrollToNode(hasText("Detalhes da sessão"));compose.onNodeWithText("Detalhes da sessão").performClick();shot("foco-sessao-160");compose.onNodeWithText("Fechar").performClick();back()
@@ -54,7 +57,7 @@ class ProductivityUiTest{
         compose.runOnIdle{compose.activity.setContent{val density=LocalDensity.current;CompositionLocalProvider(LocalDensity provides Density(density.density,1.3f)){Ascend()}}};compose.waitForIdle()
         compose.onNodeWithText("Planejador").performScrollTo().performClick();compose.onNodeWithText("Próxima").performScrollTo().assertIsDisplayed().performClick();shot("planejador-320-160")
         compose.onNodeWithTag("planner_list").performScrollToNode(hasText("Nenhuma atividade prevista. Você pode incluir um hábito ativo ou reservar este dia para descanso."));back()
-        compose.onNodeWithText("Análises").performScrollTo().performClick();compose.onNodeWithText("Central de Análises").assertExists();shot("analises-320-160");compose.onNodeWithText("30 dias").performScrollTo().performClick();back()
+        compose.onNodeWithText("Análises").performScrollTo().performClick();compose.onNodeWithText("Central de Análises").assertExists();compose.waitUntil(10000){compose.onAllNodesWithText("Evolução de XP",ignoreCase=true).fetchSemanticsNodes().isNotEmpty()};shot("analises-320-160");compose.onNodeWithText("30 dias").performScrollTo().performClick();back()
         compose.onNodeWithText("Foco").performScrollTo().performClick();compose.onNodeWithTag("focus_history_list").performScrollToNode(hasText("Nenhuma sessão detalhada neste período. Seus registros antigos de minutos continuam nas análises de hábitos."));shot("foco-vazio-320-160")
     }
 }

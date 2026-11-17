@@ -13,6 +13,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.*
 import java.time.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.format.DateTimeFormatter
 
 @Composable fun PlannerScreen(s:GameState,vm:GameViewModel,onRecord:(Habit,HabitRecord?)->Unit){
@@ -26,28 +28,38 @@ import java.time.format.DateTimeFormatter
   item{SectionHeader("Agenda do dia",if(selected<today())"Histórico de programação · sem ajustes retroativos" else "Horários do hábito · ajustes válidos só nesta data")}
   if(due.isEmpty())item{Empty("Nenhuma atividade prevista. Você pode incluir um hábito ativo ou reservar este dia para descanso.")}
   items(due,key={it.id}){h->AetherSurface{Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){Text(h.time.ifBlank{"Sem horário"},color=Blue,fontSize=12.sp);Column(Modifier.weight(1f)){Text(h.name,style=MaterialTheme.typography.titleMedium);Text(if(s.record(h.id,selected)?.complete==true)"Concluído" else "${h.target} ${h.unit} · ${h.xp} XP",fontSize=12.sp,color=Muted)}};Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){if(selected<=today())SagaButton("Registrar",{onRecord(h,s.record(h.id,selected)?:HabitRecord("${h.id}@$selected",h.id,selected,0,h.target,h.xp,h.coins,h.points,h.attribute,h.proportional,h.type,h.category,h.unit,h.name))},Modifier.weight(1f));if(selected>=today())SagaButton("Ajustar",{editing=h},Modifier.weight(1f),secondary=true)}}}
-  if(selected>=today())item{SectionHeader("Ajustes pontuais","Incluir, dispensar ou voltar à programação normal. Não concede XP.");s.habits.filter{!it.paused&&!it.archived&&!it.deleted&&it.created<=selected}.forEach{h->val exception=s.plans.find{it.habitId==h.id&&it.date==selected};Row(Modifier.fillMaxWidth().heightIn(min=56.dp).clickable{editing=h},verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(h.name,fontSize=14.sp);Text(when(exception?.include){true->"Incluído nesta data";false->"Dispensado nesta data";null->"Programação normal"},color=Muted,fontSize=12.sp)};TextButton({editing=h}){Text("Ajustar ${h.name}")}}}}
+  if(selected>=today()){
+   item{SectionHeader("Ajustes pontuais","Incluir, dispensar ou voltar à programação normal. Não concede XP.")}
+   items(s.habits.filter{!it.paused&&!it.archived&&!it.deleted&&it.created<=selected},key={"adjust:${it.id}"}){h->val exception=s.plans.find{it.habitId==h.id&&it.date==selected};Row(Modifier.fillMaxWidth().heightIn(min=56.dp).clickable{editing=h},verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(h.name,fontSize=14.sp);Text(when(exception?.include){true->"Incluído nesta data";false->"Dispensado nesta data";null->"Programação normal"},color=Muted,fontSize=12.sp)};TextButton({editing=h}){Text("Ajustar ${h.name}")}}}
+  }
  }
  editing?.let{h->AlertDialog(onDismissRequest={editing=null},title={Text(h.name)},text={Column(verticalArrangement=Arrangement.spacedBy(12.dp)){Text("Somente ${displayDate(selected)}. Pausa, arquivo, exclusão e descanso continuam com prioridade.",color=Muted);listOf("Programação normal","Incluir nesta data","Dispensar nesta data").forEachIndexed{i,label->SagaButton(label,{vm.run{vm.repo.plan(h.id,selected,i);editing=null}},Modifier.fillMaxWidth(),secondary=i==0)}}},confirmButton={TextButton({editing=null}){Text("Cancelar")}})}
 }
 
-@Composable fun AnalysisContent(s:GameState,habit:Habit?=null,onHabit:(Habit)->Unit={}){
+@Composable fun AnalysisContent(s:GameState,requested:Habit?=null,onHabit:(Habit)->Unit={}){
+ val habit=requested?.let{h->s.habits.find{it.id==h.id}?:h}
  var choice by rememberSaveable{mutableIntStateOf(0)};val day=currentDay();val p=remember(choice,day){analysisPeriod(choice,day)}
  val scoped=remember(s,habit?.id){if(habit==null)s else s.copy(habits=listOf(habit),records=s.records.filter{it.habitId==habit.id},ledger=s.ledger.filter{it.id.startsWith("habit:${habit.id}@")})}
- val summary=remember(scoped,p){periodSummary(scoped,p.start,p.end)};val previous=remember(scoped,p){periodSummary(scoped,p.previous.start,p.previous.end)}
+ var snapshot by remember{mutableStateOf<AnalyticsSnapshot?>(null)}
+ LaunchedEffect(scoped,p){snapshot=null;snapshot=withContext(Dispatchers.Default){analyticsSnapshot(scoped,p)}}
+
  Title(if(habit==null)"Central de Análises" else "Análise · ${habit.name}","Informações reais, sem previsões ou julgamentos.")
  AetherisTabs(listOf("7 dias","30 dias","90 dias","Semana civil","Mês civil"),choice,{choice=it})
  Text("${p.label} · ${displayPeriod(p.start,p.end)}",color=Blue,fontSize=12.sp)
- AetherSurface{MetricPair("${summary.completed}","atividades concluídas",summary.rate?.let{"$it%"}?:"—","taxa das previstas");Text("${summary.scheduledCompleted}/${summary.planned} previstas · extras: ${summary.completed-summary.scheduledCompleted}",color=Muted,fontSize=12.sp);Text("${(0 until p.days).count{scoped.due(LocalDate.parse(p.start).plusDays(it.toLong()).toString()).isNotEmpty()}} dias com atividades previstas",color=Muted,fontSize=12.sp);MetricPair("${summary.xp}","XP no período","${summary.minutes}","minutos em hábitos");Text("${previous.completed} conclusões no período anterior de ${p.days} dias · ${summary.completed-previous.completed} de diferença",color=Muted,fontSize=13.sp)}
- val daily=remember(scoped,p){(0 until p.days).map{n->val date=LocalDate.parse(p.start).plusDays(n.toLong()).toString();scoped.ledger.filter{it.date==date}.sumOf{it.xp}.toFloat()}}
+ val data=snapshot?.takeIf{it.source===scoped&&it.period==p}
+ if(data==null){LinearProgressIndicator(Modifier.fillMaxWidth());Text("Reunindo os registros do período…",color=Muted);return}
+ val summary=data.summary;val previous=data.previous
+
+ AetherSurface{MetricPair("${summary.completed}","atividades concluídas",summary.rate?.let{"$it%"}?:"—","taxa das previstas");Text("${summary.scheduledCompleted}/${summary.planned} previstas · extras: ${summary.completed-summary.scheduledCompleted}",color=Muted,fontSize=12.sp);Text("${data.plannedDays} dias com atividades previstas",color=Muted,fontSize=12.sp);MetricPair("${summary.xp}","XP no período","${summary.minutes}","minutos em hábitos");Text("${previous.completed} conclusões no período anterior de ${p.days} dias · ${summary.completed-previous.completed} de diferença",color=Muted,fontSize=13.sp)}
+ val daily=data.daily
  AetherSurface{SectionHeader("Evolução de XP","${displayDate(p.start)} → ${displayDate(p.end)} · saldo diário real");XpChart(daily);Text("Escala: 0 a ${(daily.maxOrNull()?:0f).toLong().coerceAtLeast(1)} XP",color=Muted,fontSize=12.sp);var table by remember{mutableStateOf(false)};TextButton({table=!table}){Text(if(table)"Ocultar valores" else "Consultar valores por data")};if(table)daily.forEachIndexed{i,v->Text("${displayDate(LocalDate.parse(p.start).plusDays(i.toLong()).toString())} · ${v.toLong()} XP",fontSize=12.sp)}}
- if(habit!=null){val a=analyzeHabit(s,habit,p);AetherSurface{SectionHeader("Consistência do hábito");MetricPair("${streak(habit,s.records,restDates=s.restDates,plans=s.plans)}","sequência atual","${bestStreak(habit,s.records,restDates=s.restDates,plans=s.plans)}","melhor sequência");Text("${habit.days.split(',').size} dias recorrentes por semana; exceções e descansos entram na taxa do período.",color=Muted,fontSize=13.sp);Text("${a.minutes} minutos registrados · ${a.xp} XP do hábito",color=Blue);SectionHeader("Progresso recente");s.records.filter{it.habitId==habit.id&&it.date in p.start..p.end}.take(30).forEach{r->Text("${displayDate(r.date)} · ${r.progress}/${r.target} ${r.unit}",fontSize=13.sp)}}}
+ if(habit!=null){val a=data.habits.first{it.habit.id==habit.id};AetherSurface{SectionHeader("Consistência do hábito");MetricPair("${streak(habit,s.records,restDates=s.restDates,plans=s.plans)}","sequência atual","${bestStreak(habit,s.records,restDates=s.restDates,plans=s.plans)}","melhor sequência");Text("${habit.days.split(',').size} dias recorrentes por semana; exceções e descansos entram na taxa do período.",color=Muted,fontSize=13.sp);Text("${a.minutes} minutos registrados · ${a.xp} XP do hábito",color=Blue);SectionHeader("Progresso recente");s.records.filter{it.habitId==habit.id&&it.date in p.start..p.end}.take(30).forEach{r->Text("${displayDate(r.date)} · ${r.progress}/${r.target} ${r.unit}",fontSize=13.sp)}}}
  else{
   AetherSurface{SectionHeader("Distribuição por atributo");attributes.forEachIndexed{i,name->val n=scoped.records.count{it.complete&&it.attribute==i&&it.date in p.start..p.end};Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(name,color=habitColor(i));Text("$n",color=Muted)};Meter(n.toFloat()/summary.completed.coerceAtLeast(1),habitColor(i))}}
-  val rows=remember(s,p){s.habits.map{analyzeHabit(s,it,p)}.filter{it.planned>0}.sortedByDescending{it.rate}}
+  val rows=data.habits.filter{it.planned>0}.sortedByDescending{it.rate}
   AetherSurface{SectionHeader("Cumprimento por hábito","As dez maiores taxas. Toque para consultar o histórico individual.");if(rows.isEmpty())Empty("Nenhuma atividade prevista neste período.");rows.take(10).forEach{a->Column(Modifier.fillMaxWidth().clickable{onHabit(a.habit)}.padding(vertical=10.dp)){Text(a.habit.name,style=MaterialTheme.typography.titleMedium);Text("${a.scheduledComplete}/${a.planned} previstas · ${a.rate}%",color=Muted,fontSize=12.sp);Meter((a.rate?:0)/100f,Blue)}};rows.lastOrNull()?.let{Text("Menor taxa no período: ${it.habit.name} (${it.rate}%). Esse indicador é descritivo, sem penalidade.",color=Muted,fontSize=12.sp)}}
  }
- AetherSurface{SectionHeader("Leitura dos seus dados");remember(scoped,p){localInsights(scoped,p)}.forEach{ReadingBlock(it)};Text("Dias dispensados e descansos ficam fora da taxa. Atividades extras conservam recompensas e aparecem nos totais.",color=Muted,fontSize=12.sp)}
+ AetherSurface{SectionHeader("Leitura dos seus dados");data.insights.forEach{ReadingBlock(it)};Text("Dias dispensados e descansos ficam fora da taxa. Atividades extras conservam recompensas e aparecem nos totais.",color=Muted,fontSize=12.sp)}
 }
 @Composable fun AnalysisScreen(s:GameState){var selected by remember{mutableStateOf<Habit?>(null)};Page{AnalysisContent(s,onHabit={selected=it})};selected?.let{h->FullForm("Análise do hábito",{selected=null},{selected=null},"Fechar"){AnalysisContent(s,h)}}}
 @Composable fun FocusHistoryScreen(s:GameState){

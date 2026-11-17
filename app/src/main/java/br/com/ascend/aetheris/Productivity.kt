@@ -17,12 +17,12 @@ fun analysisPeriod(choice:Int,day:String=today()):AnalysisPeriod{
  return AnalysisPeriod(start.toString(),day,listOf("Últimos 7 dias","Últimos 30 dias","Últimos 90 dias","Semana civil até hoje","Mês civil até hoje")[choice.coerceIn(0,4)])
 }
 data class HabitAnalysis(val habit:Habit,val planned:Int,val complete:Int,val scheduledComplete:Int,val minutes:Long,val xp:Long){val rate:Int? get()=if(planned==0)null else 100*scheduledComplete/planned}
-fun analyzeHabit(s:GameState,h:Habit,p:AnalysisPeriod):HabitAnalysis{
- val start=LocalDate.parse(p.start);val dates=(0 until p.days).map{start.plusDays(it.toLong()).toString()};val rows=s.records.filter{it.habitId==h.id&&it.date in p.start..p.end}
- return HabitAnalysis(h,dates.count{scheduled(h,it,s.restDates,s.plans)},rows.count{it.complete},rows.count{it.complete&&scheduled(h,it.date,s.restDates,s.plans)},rows.filter{it.type==2}.sumOf{it.progress.toLong()},rows.sumOf{Progression.reward(it.xp,it.progress,it.target,it.proportional)})
+fun analyzeHabit(s:GameState,h:Habit,p:AnalysisPeriod,records:List<HabitRecord> = s.records):HabitAnalysis{
+ val start=LocalDate.parse(p.start);val dates=(0 until p.days).map{start.plusDays(it.toLong()).toString()};val rows=records.filter{it.habitId==h.id&&it.date in p.start..p.end}
+ return HabitAnalysis(h,dates.count{s.planned(h,it)},rows.count{it.complete},rows.count{it.complete&&s.planned(h,it.date)},rows.filter{it.type==2}.sumOf{it.progress.toLong()},rows.sumOf{Progression.reward(it.xp,it.progress,it.target,it.proportional)})
 }
-fun localInsights(s:GameState,p:AnalysisPeriod):List<String>{
- val rows=s.habits.map{analyzeHabit(s,it,p)};val best=rows.filter{it.planned>0}.maxByOrNull{it.rate?:0}
+fun localInsights(s:GameState,p:AnalysisPeriod,rows:List<HabitAnalysis> = analyzeHabits(s,p)):List<String>{
+ val best=rows.filter{it.planned>0}.maxByOrNull{it.rate?:0}
  val current=periodSummary(s,p.start,p.end);val previous=periodSummary(s,p.previous.start,p.previous.end)
  return buildList{
   if(s.records.none{it.date in p.start..p.end&&it.progress>0}){add("Ainda não há registros neste período. As análises aparecerão após suas atividades.");return@buildList}
@@ -33,4 +33,11 @@ fun localInsights(s:GameState,p:AnalysisPeriod):List<String>{
   val categories=s.records.filter{it.type==2&&it.date in p.start..p.end}.groupBy{it.category}.mapValues{it.value.sumOf{r->r.progress.toLong()}}
   categories.maxByOrNull{it.value}?.let{add("Tempo registrado em ${it.key}: ${it.value} minutos. Esse total usa registros de hábitos, sem somar sessões novamente.")}
  }
+}
+
+fun analyzeHabits(s:GameState,p:AnalysisPeriod):List<HabitAnalysis>{val records=s.records.groupBy{it.habitId};return s.habits.map{analyzeHabit(s,it,p,records[it.id].orEmpty())}}
+data class AnalyticsSnapshot(val source:GameState,val period:AnalysisPeriod,val summary:PeriodSummary,val previous:PeriodSummary,val daily:List<Float>,val habits:List<HabitAnalysis>,val insights:List<String>,val plannedDays:Int)
+fun analyticsSnapshot(s:GameState,p:AnalysisPeriod):AnalyticsSnapshot{
+ val totals=s.ledger.filter{it.date in p.start..p.end}.groupBy{it.date}.mapValues{it.value.sumOf{r->r.xp}.toFloat()};val dates=(0 until p.days).map{LocalDate.parse(p.start).plusDays(it.toLong()).toString()};val rows=analyzeHabits(s,p)
+ return AnalyticsSnapshot(s,p,periodSummary(s,p.start,p.end),periodSummary(s,p.previous.start,p.previous.end),dates.map{totals[it]?:0f},rows,localInsights(s,p,rows),dates.count{s.due(it).isNotEmpty()})
 }

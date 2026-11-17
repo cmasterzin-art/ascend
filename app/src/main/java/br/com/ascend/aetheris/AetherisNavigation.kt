@@ -36,7 +36,7 @@ val mainNames=listOf("Jornada","Hábitos","Missões","Mundo","Herói")
  Column(Modifier.fillMaxWidth().background(if(dark)Color(0xFF10161D) else Color(0xFFDED9CE)).navigationBarsPadding()){
  Canvas(Modifier.fillMaxWidth().height(1.dp)){drawRect(Brush.verticalGradient(listOf(Color(0xFF788080),Color(0xFF252D35),Color(0xFF10161D))));drawLine(OldBronze.copy(alpha=.5f),Offset(0f,0f),Offset(size.width,0f),1f)}
  Row(Modifier.fillMaxWidth().padding(horizontal=4.dp,vertical=5.dp)){
- mainRoutes.forEachIndexed{i,r->val active=selected==r;val light by animateFloatAsState(if(active)1f else 0f,tween(if(motion)0 else 160),label="aba")
+ mainRoutes.forEachIndexed{i,r->val active=selected==r;val light by animateFloatAsState(if(active)1f else 0f,tween(if(motion)0 else AetherTokens.quick),label="aba")
  Column(Modifier.weight(1f).testTag("nav:$r").heightIn(min=60.dp).selectable(active,onClick={onSelect(r)},role=Role.Tab).background(if(active)Gold.copy(alpha=.1f*light) else Color.Transparent,RoundedCornerShape(12.dp)).padding(horizontal=1.dp,vertical=6.dp).semantics(mergeDescendants=true){},horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(5.dp)){
  NavigationSigil(i,if(active)Gold else Muted)
  Text(mainNames[i],color=if(active)Gold else Ink,fontSize=10.sp,lineHeight=14.sp,textAlign=androidx.compose.ui.text.style.TextAlign.Center)
