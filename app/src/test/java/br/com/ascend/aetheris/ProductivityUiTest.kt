@@ -55,7 +55,7 @@ class ProductivityUiTest{
     @Test @Config(qualifiers="w320dp-h740dp-mdpi") fun narrowPlannerAndAnalyticsUseTheRealLightThemeWithLargeText(){
         vm.theme("light");vm.setting("minimal",true);wait{vm.appearance.value=="light"&&vm.minimal.value}
         compose.runOnIdle{compose.activity.setContent{val density=LocalDensity.current;CompositionLocalProvider(LocalDensity provides Density(density.density,1.3f)){Ascend()}}};compose.waitForIdle()
-        compose.onNodeWithText("Planejador").performScrollTo().performClick();compose.onNodeWithText("Próxima").performScrollTo().assertIsDisplayed().performClick();shot("planejador-320-160")
+        compose.onNodeWithText("Planejador").performScrollTo().performClick();compose.onNodeWithContentDescription("Próxima semana").performScrollTo().assertIsDisplayed().performClick();shot("planejador-320-160")
         compose.onNodeWithTag("planner_list").performScrollToNode(hasText("Nenhuma atividade prevista. Você pode incluir um hábito ativo ou reservar este dia para descanso."));back()
         compose.onNodeWithText("Análises").performScrollTo().performClick();compose.onNodeWithText("Central de Análises").assertExists();compose.waitUntil(10000){compose.onAllNodesWithText("Evolução de XP",ignoreCase=true).fetchSemanticsNodes().isNotEmpty()};shot("analises-320-160");compose.onNodeWithText("30 dias").performScrollTo().performClick();back()
         compose.onNodeWithText("Foco").performScrollTo().performClick();compose.onNodeWithTag("focus_history_list").performScrollToNode(hasText("Nenhuma sessão detalhada neste período. Seus registros antigos de minutos continuam nas análises de hábitos."));shot("foco-vazio-320-160")

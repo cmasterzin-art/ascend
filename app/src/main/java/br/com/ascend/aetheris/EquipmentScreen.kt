@@ -64,7 +64,7 @@ import androidx.compose.ui.semantics.*
 }
 @Composable private fun EquipmentSlot(kind:String,label:String,s:GameState,select:(String)->Unit){
     val a=s.assets.find{it.kind==kind&&it.equipped};val item=shopItems.find{it.id==a?.id};val color=if(item!=null)rarityColor(rarity(item)) else Muted
-    Column(Modifier.width(62.dp).heightIn(min=72.dp).clip(CutCornerShape(5.dp)).background(color.copy(alpha=.08f)).border(if(item!=null)1.5.dp else 1.dp,color.copy(alpha=if(item!=null).65f else .3f),CutCornerShape(5.dp)).clickable(enabled=item!=null,onClickLabel="Detalhes de ${item?.name?:label}"){select(item!!.id)}.padding(5.dp).semantics(mergeDescendants=true){contentDescription="$label: ${item?.name?:"vazio"}"},horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(3.dp)){
+    Column(Modifier.width(62.dp).heightIn(min=72.dp).clip(CutCornerShape(5.dp)).background(color.copy(alpha=.08f)).forgeMaterial(SurfaceKind.Artifact).border(if(item!=null)1.5.dp else 1.dp,color.copy(alpha=if(item!=null).65f else .3f),CutCornerShape(5.dp)).clickable(enabled=item!=null,onClickLabel="Detalhes de ${item?.name?:label}"){select(item!!.id)}.padding(5.dp).semantics(mergeDescendants=true){contentDescription="$label: ${item?.name?:"vazio"}"},horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(3.dp)){
         RelicArt(kind,color.copy(alpha=if(item==null).55f else 1f),Modifier.size(42.dp).alpha(if(item==null).22f else 1f),item?.id)
         Text(when(kind){"companion"->"Aliado";"weapon"->"Arma";"outfit"->"Traje";else->label},color=color,fontSize=9.sp,lineHeight=12.sp)
         Text(if(a==null)"Vazio" else "Equipado",color=color,fontSize=9.sp)
