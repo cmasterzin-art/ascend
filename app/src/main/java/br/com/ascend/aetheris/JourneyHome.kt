@@ -31,11 +31,10 @@ import java.util.Locale
  val done=due.count{s.record(it.id,day)?.complete==true};var pendingOnly by remember{mutableStateOf(false)};var detail by remember{mutableStateOf<Habit?>(null)}
  androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxSize().testTag("journey_list").semantics{contentDescription="Central da Jornada"},contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
   item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Eyebrow("ASCEND  /  MINHA JORNADA");Text(displayDate(day),color=Muted,fontSize=12.sp)};ClassEmblem(s.player!!.heroClass,Modifier.size(28.dp))}}
-  item{CompactHero(s,onPortrait)}
-  item{AetherSurface{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(16.dp)){
+  item{Column(Modifier.fillMaxWidth()){CompactHero(s,onPortrait);NorthDivider();Column(Modifier.fillMaxWidth().padding(top=4.dp,bottom=12.dp)){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(16.dp)){
    DayDial(if(due.isEmpty())0f else done.toFloat()/due.size,if(due.isEmpty())"—" else "${done*100/due.size}%")
    Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(5.dp)){Eyebrow(if(rested)"Dia de descanso" else "Jornada de hoje",Green);Text("$done de ${due.size}",style=MaterialTheme.typography.titleLarge);Text("${due.size-done} pendentes",fontSize=12.sp,color=Muted)}
-  };if(relaxed)Text("Modo livre · o widget mantém a agenda programada.",fontSize=11.sp,color=Muted)}}
+  };if(relaxed)Text("Modo livre · o widget mantém a agenda programada.",fontSize=11.sp,color=Muted)}}}
   item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){listOf("Planejador" to onPlanner,"Análises" to onAnalysis,"Foco" to onHistory).forEachIndexed{i,(label,action)->
    Column(Modifier.weight(1f).clip(CutCornerShape(3.dp)).background(Surface).forgeMaterial().clickable(onClick=action).padding(vertical=10.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(6.dp)){
     Icon(listOf(Icons.Default.DateRange,Icons.Default.BarChart,Icons.Default.Timer)[i],null,Modifier.size(18.dp),tint=Gold);Text(label,color=Ink,fontSize=11.sp)
