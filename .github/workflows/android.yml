@@ -31,28 +31,48 @@ jobs:
         run: |
           python3 -c "import PIL" 2>/dev/null || pip install --break-system-packages -q pillow || { sudo apt-get update -qq && sudo apt-get install -y -qq python3-pil; }
           python3 - <<'PY'
-          import os, glob, json, base64
-          from PIL import Image
-          for bfile in sorted(glob.glob('build_assets*.b64')):
-              with open(bfile) as f:
-                  data = json.load(f)
-              for path, b64 in data.items():
-                  os.makedirs(os.path.dirname(path), exist_ok=True)
-                  with open(path, 'wb') as out:
-                      out.write(base64.b64decode(b64))
-              os.remove(bfile)
-              print('Unpacked', bfile, len(data))
-          res = 'app/src/main/res/drawable-nodpi'
-          names = ['carved_emblems', 'carved_seals', 'plate_iron', 'plate_bronze', 'artifact_frame', 'widget_slate']
-          if all(os.path.exists(f'{res}/{n}.webp') for n in names):
-              os.makedirs('docs/screenshots/v1.6.9', exist_ok=True)
-              ims = [Image.open(f'{res}/{n}.webp').convert('RGBA') for n in names]
-              W = 760; y = 16; board = Image.new('RGBA', (W, 1200), (18, 19, 18, 255))
-              for im in ims:
-                  sc = min(2.0, (W - 32) / im.width, 260 / im.height)
-                  t = im.resize((int(im.width * sc), int(im.height * sc)), Image.LANCZOS)
-                  board.paste(t, (16, y), t); y += t.height + 16
-              board.crop((0, 0, W, y)).convert('RGB').save('docs/screenshots/v1.6.9/prancha-recursos-169.png', 'PNG', optimize=True)
+          import base64, glob, json, pathlib
+          from PIL import Image, ImageDraw
+          chunks = sorted(glob.glob('assets_chunk_*.txt'))
+          if chunks:
+              raw = ''.join(
+                  pathlib.Path(c).read_text(encoding='utf-8').replace('\n', '').replace('\r', '')
+                  for c in chunks
+              )
+              data = json.loads(raw)
+              for rel, b64 in data.items():
+                  out = pathlib.Path(rel)
+                  out.parent.mkdir(parents=True, exist_ok=True)
+                  out.write_bytes(base64.b64decode(b64))
+              for c in chunks:
+                  pathlib.Path(c).unlink(missing_ok=True)
+              print('Unpacked chunks:', len(chunks), 'files:', len(data))
+          for old in glob.glob('build_assets*.b64'):
+              pathlib.Path(old).unlink(missing_ok=True)
+          res = pathlib.Path('app/src/main/res/drawable-nodpi')
+          if (res / 'carved_emblems.webp').exists():
+              pathlib.Path('docs/screenshots/v1.6.9').mkdir(parents=True, exist_ok=True)
+              board = Image.new('RGBA', (1200, 820), (12, 16, 20, 255))
+              draw = ImageDraw.Draw(board)
+              draw.text((36, 16), 'ASCEND 1.6.9 — PRANCHA DE RECURSOS (Nordic Cinematic UI)', fill=(214, 186, 132, 255))
+              slots = [
+                  ('carved_emblems.webp', 'carved_emblems (5 classes + 5 atributos)', 36, 44, 558, 223),
+                  ('carved_seals.webp', 'carved_seals (6 selos cerimoniais)', 36, 304, 468, 312),
+                  ('plate_iron.webp', 'plate_iron (ferro forjado)', 36, 654, 540, 108),
+                  ('artifact_frame.webp', 'artifact_frame (nicho Urnes)', 628, 44, 224, 224),
+                  ('widget_slate.webp', 'widget_slate (ardosia vulcanica)', 628, 304, 536, 301),
+                  ('plate_bronze.webp', 'plate_bronze (bronze oxidado)', 628, 654, 536, 108),
+              ]
+              for fname, label, x, y, tw, th in slots:
+                  p = res / fname
+                  if not p.exists():
+                      continue
+                  im = Image.open(p).convert('RGBA').resize((tw, th), getattr(Image, 'Resampling', Image).LANCZOS)
+                  draw.rectangle([x - 2, y - 2, x + tw + 1, y + th + 1], outline=(46, 54, 62, 255), width=1)
+                  board.paste(im, (x, y), im)
+                  draw.text((x, y + th + 6), label, fill=(176, 184, 192, 255))
+              board.convert('RGB').save('docs/screenshots/v1.6.9/prancha-recursos-169.png', 'PNG', optimize=True)
+              print('Saved prancha-recursos-169.png')
           PY
       - uses: actions/setup-java@v4
         with:
@@ -146,7 +166,7 @@ jobs:
           rm -f build_log.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm -f --ignore-unmatch build_assets*.b64
+          git rm -f --ignore-unmatch assets_chunk_*.txt build_assets*.b64
           git add app/src/main/res/drawable-nodpi docs/art/concepts docs/validation docs/screenshots/v1.6.9
           if [ "${{ steps.verify.outputs.compatible }}" = "true" ]; then
             git add downloads/ASCEND-1.6.9.apk downloads/ASCEND-1.6.9.apk.sha256
