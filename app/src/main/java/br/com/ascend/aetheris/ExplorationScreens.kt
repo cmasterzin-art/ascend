@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.*
 @Composable private fun ExpeditionObjective(e:ExpeditionDef,phase:Int,q:Quest,s:GameState,vm:GameViewModel){
  val color=if(e.id=="vigil")MaterialTheme.colorScheme.error else Blue
  Panel(accent=color){Eyebrow("Objetivo desta etapa",color);val progress=questProgress(q,s)
- Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(e.phases[phase].name,style=MaterialTheme.typography.titleLarge);Text("${progress.coerceAtMost(q.target.toLong())} / ${q.target} conclusões",color=color,fontSize=14.sp)};RuneSeal(phase,color,Modifier.size(38.dp))}
+ Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(e.phases[phase].name,style=MaterialTheme.typography.titleLarge);Text("${progress.coerceAtMost(q.target.toLong())} / ${q.target} conclusões",color=color,fontSize=14.sp)};CeremonialSeal(SealKind.Expedition,progress>=q.target,Modifier.size(38.dp))}
  Meter(progress.toFloat()/q.target,color)
  ReadingBlock(e.phases[phase].text)
  Text("Contribuem: "+s.habits.filter{it.id in q.habitIds.split(',')}.joinToString{it.name},color=Muted,fontSize=12.sp,lineHeight=20.sp)
@@ -85,7 +85,7 @@ import androidx.compose.ui.unit.*
  item{Eyebrow("Marcos da expedição",Muted)}
  items(e.phases.indices.toList(),key={"phase:$it"}){n->val reached=expeditionClaimValid(s,e,n);val revealed=n<=phase||complete
   Row(Modifier.fillMaxWidth().padding(vertical=6.dp),horizontalArrangement=Arrangement.spacedBy(14.dp)){
-   RuneSeal(n,if(reached)Green else ColdIron,Modifier.size(34.dp));Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(6.dp)){Eyebrow(if(reached)"Marco confirmado" else if(n==phase)"Marco atual" else "Sob a névoa",if(reached)Green else Muted);Text(if(revealed)e.phases[n].name else "Marco velado",style=MaterialTheme.typography.titleMedium);Text(if(reached)e.phases[n].text else "${e.phases[n].target} conclusões após o início desta etapa.",color=Muted,fontSize=13.sp,lineHeight=22.sp)}
+   CeremonialSeal(SealKind.Expedition,reached,Modifier.size(34.dp));Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(6.dp)){Eyebrow(if(reached)"Marco confirmado" else if(n==phase)"Marco atual" else "Sob a névoa",if(reached)Green else Muted);Text(if(revealed)e.phases[n].name else "Marco velado",style=MaterialTheme.typography.titleMedium);Text(if(reached)e.phases[n].text else "${e.phases[n].target} conclusões após o início desta etapa.",color=Muted,fontSize=13.sp,lineHeight=22.sp)}
   }
  }
  }

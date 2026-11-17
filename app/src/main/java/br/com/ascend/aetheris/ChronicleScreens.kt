@@ -46,12 +46,14 @@ import java.time.LocalDate
    val expedition=if(m.id.startsWith("claim:"))expeditionRef(m.id.removePrefix("claim:").substringBefore('@')) else null
    val important=expedition?.let{it.second==it.first.phases.lastIndex}==true||m.category=="Sagas"
    val accent=if(important)Gold else if(m.category=="História")Blue else ColdIron
-   Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min),horizontalArrangement=Arrangement.spacedBy(10.dp)){Column(Modifier.width(24.dp).fillMaxHeight().background(ColdIron.copy(alpha=.15f)),horizontalAlignment=Alignment.CenterHorizontally){RuneSeal(if(important)4 else m.symbol,if(important)Gold else Blue,Modifier.size(24.dp));Box(Modifier.width(1.dp).weight(1f).background(OldBronze))};AetherSurface(SurfaceKind.Parchment,Modifier.weight(1f)){
-    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp),verticalAlignment=Alignment.CenterVertically){RuneSeal(if(important)4 else m.symbol,Sepia,Modifier.size(38.dp));Column(Modifier.weight(1f)){Eyebrow(m.category,Sepia);Text(m.date?.let{displayDate(it)}?:"Data não disponível",color=Sepia,fontSize=12.sp)}}
-    Text(m.title,color=Sepia,style=MaterialTheme.typography.titleLarge)
-    if(m.id.startsWith("memory:")&&m.date!=null)Text("Conversa guardada em ${displayDate(m.date)}",color=Sepia,fontSize=12.sp)
-    if(important)SagaDivider(color=Sepia)
-    ReadingBlock(m.detail,color=Sepia)
+   val textInk=if(important)Ink else Sepia
+   val textMuted=if(important)Muted else Sepia.copy(alpha=.8f)
+   Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min),horizontalArrangement=Arrangement.spacedBy(10.dp)){Column(Modifier.width(24.dp).fillMaxHeight().background(ColdIron.copy(alpha=.15f)),horizontalAlignment=Alignment.CenterHorizontally){RuneSeal(if(important)4 else m.symbol,if(important)Gold else Blue,Modifier.size(24.dp));Box(Modifier.width(1.dp).weight(1f).background(OldBronze))};AetherSurface(if(important)SurfaceKind.Ceremonial else SurfaceKind.Parchment,Modifier.weight(1f)){
+    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp),verticalAlignment=Alignment.CenterVertically){CeremonialSeal(if(important)SealKind.Reward else SealKind.Saga,true,Modifier.size(38.dp));Column(Modifier.weight(1f)){Eyebrow(m.category,if(important)Gold else Sepia);Text(m.date?.let{displayDate(it)}?:"Data não disponível",color=textMuted,fontSize=12.sp)}}
+    Text(m.title,color=textInk,style=MaterialTheme.typography.titleLarge)
+    if(m.id.startsWith("memory:")&&m.date!=null)Text("Conversa guardada em ${displayDate(m.date)}",color=textMuted,fontSize=12.sp)
+    if(important)NorthDivider()
+    ReadingBlock(m.detail,color=textInk)
    }}
   }
  }

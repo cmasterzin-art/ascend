@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.semantics.*
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import kotlinx.coroutines.delay
 import java.time.*
@@ -31,13 +32,14 @@ import java.util.Locale
  val done=due.count{s.record(it.id,day)?.complete==true};var pendingOnly by remember{mutableStateOf(false)};var detail by remember{mutableStateOf<Habit?>(null)}
  androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxSize().testTag("journey_list").semantics{contentDescription="Central da Jornada"},contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
   item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Eyebrow("ASCEND  /  MINHA JORNADA");Text(displayDate(day),color=Muted,fontSize=12.sp)};ClassEmblem(s.player!!.heroClass,Modifier.size(28.dp))}}
-  item{Column(Modifier.fillMaxWidth()){CompactHero(s,onPortrait);NorthDivider();Column(Modifier.fillMaxWidth().padding(top=4.dp,bottom=12.dp)){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(16.dp)){
-   DayDial(if(due.isEmpty())0f else done.toFloat()/due.size,if(due.isEmpty())"—" else "${done*100/due.size}%")
-   Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(5.dp)){Eyebrow(if(rested)"Dia de descanso" else "Jornada de hoje",Green);Text("$done de ${due.size}",style=MaterialTheme.typography.titleLarge);Text("${due.size-done} pendentes",fontSize=12.sp,color=Muted)}
+  val dialSize=if(LocalConfiguration.current.screenWidthDp<=340)68.dp else 78.dp
+  item{Column(Modifier.fillMaxWidth()){CompactHero(s,onPortrait);NorthDivider();Column(Modifier.fillMaxWidth().padding(top=2.dp,bottom=6.dp)){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){
+   DayDial(if(due.isEmpty())0f else done.toFloat()/due.size,if(due.isEmpty())"—" else "${done*100/due.size}%",dialSize)
+   Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)){Eyebrow(if(rested)"Dia de descanso" else "Jornada de hoje",Green);Text("$done de ${due.size}",style=MaterialTheme.typography.titleLarge);Text("${due.size-done} pendentes",fontSize=12.sp,color=Muted)}
   };if(relaxed)Text("Modo livre · o widget mantém a agenda programada.",fontSize=11.sp,color=Muted)}}}
   item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){listOf("Planejador" to onPlanner,"Análises" to onAnalysis,"Foco" to onHistory).forEachIndexed{i,(label,action)->
-   Column(Modifier.weight(1f).clip(CutCornerShape(3.dp)).background(Surface).forgeMaterial().clickable(onClick=action).padding(vertical=10.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(6.dp)){
-    Icon(listOf(Icons.Default.DateRange,Icons.Default.BarChart,Icons.Default.Timer)[i],null,Modifier.size(18.dp),tint=Gold);Text(label,color=Ink,fontSize=11.sp)
+   Column(Modifier.weight(1f).heightIn(min=48.dp).clip(CutCornerShape(4.dp)).background(if(LocalAppearance.current.dark)Color(0xFF151716) else Surface).forgeMaterial().border(1.dp,ColdIron.copy(alpha=.22f),CutCornerShape(4.dp)).clickable(onClick=action).padding(vertical=7.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(4.dp)){
+    CarvedGlyph(listOf(Glyph.Planner,Glyph.Analysis,Glyph.Focus)[i],Gold,size=18.dp);Text(label,color=Ink,fontSize=11.sp,letterSpacing=.3.sp)
    }
   }}}
   s.focus?.let{f->item{FocusCard(f,s,vm)}}
