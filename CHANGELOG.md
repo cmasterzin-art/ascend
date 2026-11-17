@@ -1,3 +1,26 @@
+# 1.6.9 — O Último Entalhe
+
+Consolidação artística definitiva (*Nordic Cinematic UI*) preservando integralmente regras, banco Room v6, backup v8, economia, narrativas e os 135 testes existentes. [Escopo e limites](docs/VISUAL-1.6.9.md).
+
+## Direção artística, iconografia e recursos originais
+
+- Biblioteca `CarvedArt.kt` com 25 símbolos vetoriais originais (`Glyph` / `CarvedGlyph`), emblemas das cinco classes (`ClassEmblem` em `NorthComponents.kt`) e dos cinco atributos (`AttributeEmblem`), além de selos cerimoniais (`CeremonialSeal` / `SealKind`).
+- Seis folhas e texturas `.webp` originais geradas com `image-generator` em `app/src/main/res/drawable-nodpi/` (`carved_emblems.webp`, `carved_seals.webp`, `plate_iron.webp`, `plate_bronze.webp`, `artifact_frame.webp`, `widget_slate.webp`) e conceito `docs/art/concepts/entalhe-169.webp`, inventariados em `docs/art/README.md`.
+
+## Componentes, telas e widgets
+
+- Navegação inferior e abas superiores (`AetherisNavigation.kt`) em superfície contínua discreta com traço `NavigationSigil` próprio.
+- Botões `SagaButton` (`NorthComponents.kt`) com acabamento de placa de bronze (primário) e ferro (`plateMaterial`), e refinamento de `Meter`, `ChipRow`, `FormField`, `Action` e `Empty` em `Design.kt`.
+- Jornada (`DesignSystem2.kt` / `JourneyHome.kt`) com `CompactHero` integrado ao fiorde, `dialSize` responsivo e atalhos compactos (`Planejador`, `Análises`, `Foco`).
+- Herói e Inventário (`CharacterScreen.kt`, `EquipmentScreen.kt`) com faixa superior compacta, cinco `AttributeEmblem` no perfil, `ArtifactFrame` ao redor de `RelicArt` e nichos vazios preservados (`dim`).
+- Missões, Hábitos, Sagas e Conquistas (`MissionCard2`, `HabitCard`, `SagaCover`, `SealKind.Reward`, `SealKind.Saga`) com diferenciação clara e leitura preservada em `320 dp` / fonte `130%`.
+- Widget Android (`app/src/main/res/drawable/widget_surface.xml`) com `widget_slate.webp` (`alpha="0.18"`) e moldura de dupla borda fina sem faixas esticadas.
+
+## Compatibilidade e validação
+
+- `versionCode 16`, `versionName 1.6.9`, `applicationId br.com.ascend.aetheris`, sem permissão `INTERNET`.
+- GitHub Actions execução `44190969728` (`b6bacbb` / `bd58ab3`): `testDebugUnitTest assembleDebug lintDebug` aprovado com **135 testes** e **0 erros** no Lint (`22` avisos). APK de CI assinado com chave temporária do runner aguardando publicação oficial após configuração de `ASCEND_KEYSTORE_BASE64`; detalhes em `ASSINATURA.md` e `VALIDACAO.md`.
+
 # 1.6.8 — O Véu do Norte
 
 Composição da Jornada, ficha vertical do Herói, cronômetro ampliado e organização dos filtros. [Escopo e limites](docs/VISUAL-1.6.8.md).
