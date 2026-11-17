@@ -46,3 +46,20 @@ Conceito original de três telas em `concepts/north-165.webp`; apenas direção 
 ## 1.6.8
 
 `north_divider.webp`: divisor original gerado com transparência, bronze oxidado e relevo orgânico, otimizado em WebP. Uso seletivo em composição Compose; sem texto incorporado. Novo símbolo vetorial de montanhas para Jornada.
+
+## 1.6.9 — O Último Entalhe
+
+Consolidação artística definitiva (*Nordic Cinematic UI*). Todas as pinturas anteriores (`nordic_*`, `wanderer_*`, `relic_*`, `village_*`, `forest_atlas`, `forge_*`, `north_*`) foram integralmente preservadas. Novos recursos originais gerados via `image-generator` sem texto dinâmico e otimizados em WebP, além da família completa de 25 ícones vetoriais entalhados em `CarvedArt.kt` (`CarvedGlyph`):
+
+- `concepts/entalhe-169.webp`: conceito visual de direção de arte para Jornada, Herói e Missões.
+- Prancha de aplicação e comparativos em [VISUAL-1.6.9.md](../VISUAL-1.6.9.md).
+
+| Arquivo WebP (1.6.9) | Bytes | SHA-256 |
+|---|---:|---|
+| `carved_emblems.webp` | 20,496 | `6718dbfad9411ad33c43ed10b1c8c9415d4479e488f2750f825543cfa00e476d` |
+| `carved_seals.webp` | 15,060 | `2d5eea8417cda4f96b6dbb304e01aec657b69c2193db012dcd6d06e01cf999ae` |
+| `plate_iron.webp` | 194 | `9f2f46d38f033dcc4f74ee0be8e0e4158700dcf1cff9738b41d645fcc4a33f79` |
+| `plate_bronze.webp` | 212 | `0a6fc49a945013f910477fc7eaec298e7b3b48b86f9b794c557e940c6a0a02f3` |
+| `artifact_frame.webp` | 3,400 | `f4bdcba57d9988e9e66cba116bb16404f45ab11d683bb8a1f92e029fd7a697b` |
+| `widget_slate.webp` | 1,320 | `93a0c75e431e21310ab5a71db26e9f87a821a2173f1fc5457102015cfeb15080` |
+| `concepts/entalhe-169.webp` | 12,750 | `588eef4706674952d295dcd03f8ffae769e2e764b88cb4792ee27ef89112bbdb` |
