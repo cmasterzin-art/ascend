@@ -1,0 +1,26 @@
+package: name='br.com.ascend.aetheris' versionCode='16' versionName='1.6.9' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'
+Bytes: 22847882
+SHA256: d4a8433867f019fc46c0e1d541bc878106f001218e2b556239ba09d3eab087fe
+Zipalign OK
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: C=US, O=Android, CN=Android Debug
+Signer #1 certificate SHA-256 digest: c2caaa84d41771f29ff3ef889b31d8e03ca20f0f8a5ae72330d740f07a35e343
+Signer #1 certificate SHA-1 digest: 99b06c1c9d4e6d3506d951239a159eb18974bfa2
+Signer #1 certificate MD5 digest: 2c95c10fe9258790b25509696af0c8c1
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: 7a4b9b159722e16b69f1b75eaeb94ed6067f6376313fc7db94e8b286943b1064
+Signer #1 public key SHA-1 digest: ed75b0989e675bdd3a94f97084b50fa464824f78
+Signer #1 public key MD5 digest: a5cb5380383f9ee5788fe59d20e5692f
+package: br.com.ascend.aetheris
+uses-permission: name='android.permission.POST_NOTIFICATIONS'
+uses-permission: name='android.permission.RECEIVE_BOOT_COMPLETED'
+permission: br.com.ascend.aetheris.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+uses-permission: name='br.com.ascend.aetheris.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION'

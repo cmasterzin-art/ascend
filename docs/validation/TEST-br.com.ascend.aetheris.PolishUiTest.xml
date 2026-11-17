@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.PolishUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-17T17:10:14" hostname="da0963ce0ccf" time="2.675">
+<testsuite name="br.com.ascend.aetheris.PolishUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-17T22:26:27" hostname="runnervmccnms" time="3.315">
   <properties/>
-  <testcase name="widgetLinksAreConsumedAndReturningToHeroKeepsTheRoute" classname="br.com.ascend.aetheris.PolishUiTest" time="0.755"/>
-  <testcase name="dayTargetsAndHeroAreUsableWithLargeText" classname="br.com.ascend.aetheris.PolishUiTest" time="0.913"/>
-  <testcase name="memoryAndWeekUseReadableDatesAndEmptyFilters" classname="br.com.ascend.aetheris.PolishUiTest" time="1.006"/>
+  <testcase name="widgetLinksAreConsumedAndReturningToHeroKeepsTheRoute" classname="br.com.ascend.aetheris.PolishUiTest" time="0.821"/>
+  <testcase name="dayTargetsAndHeroAreUsableWithLargeText" classname="br.com.ascend.aetheris.PolishUiTest" time="1.08"/>
+  <testcase name="memoryAndWeekUseReadableDatesAndEmptyFilters" classname="br.com.ascend.aetheris.PolishUiTest" time="1.414"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

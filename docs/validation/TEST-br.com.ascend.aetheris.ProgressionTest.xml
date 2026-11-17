@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.ProgressionTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-17T17:10:25" hostname="da0963ce0ccf" time="0.002">
+<testsuite name="br.com.ascend.aetheris.ProgressionTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-17T22:26:40" hostname="runnervmccnms" time="0.003">
   <properties/>
   <testcase name="questOccurrencesFilterRealRecords" classname="br.com.ascend.aetheris.ProgressionTest" time="0.001"/>
   <testcase name="proportionalRewardsAreAbsoluteAndOverflowSafe" classname="br.com.ascend.aetheris.ProgressionTest" time="0.0"/>
-  <testcase name="levelBoundariesAndMultipleLevels" classname="br.com.ascend.aetheris.ProgressionTest" time="0.0"/>
+  <testcase name="levelBoundariesAndMultipleLevels" classname="br.com.ascend.aetheris.ProgressionTest" time="0.001"/>
   <testcase name="streakIgnoresUnscheduledDays" classname="br.com.ascend.aetheris.ProgressionTest" time="0.001"/>
   <testcase name="availableCoinsNeverNegativeAfterReversal" classname="br.com.ascend.aetheris.ProgressionTest" time="0.0"/>
   <testcase name="pausesAndScheduleChangesPreserveHistory" classname="br.com.ascend.aetheris.ProgressionTest" time="0.0"/>
