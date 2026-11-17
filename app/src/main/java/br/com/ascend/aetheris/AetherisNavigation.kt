@@ -55,7 +55,7 @@ val mainNames=listOf("Jornada","Hábitos","Missões","Mundo","Herói")
 /** Compact carved strip: whole options wrap in rows of one continuous surface; nothing is clipped or hidden. */
 @Composable fun AetherisTabs(values:List<String>,selected:Int,onSelect:(Int)->Unit){
  val glyphs=values.map{glyphForLabel(it)};val carved=glyphs.all{it!=null}
- val dark=LocalAppearance.current.dark
+ val dark=LocalAppearance.current.dark;val gold=Gold
  BoxWithConstraints(Modifier.fillMaxWidth()){
   val n=values.size.coerceAtLeast(1)
   val perRow=(if(n<=4&&maxWidth/n>=78.dp)n else if(maxWidth>=380.dp)4 else if(maxWidth>=300.dp)3 else 2).coerceAtMost(n)
@@ -69,12 +69,12 @@ val mainNames=listOf("Jornada","Hábitos","Missões","Mundo","Herói")
       if(col>0)Box(Modifier.fillMaxHeight().width(1.dp).background(seam))
       Box(Modifier.weight(1f).heightIn(min=48.dp).selectable(active,onClick={onSelect(index)},role=Role.Tab).drawBehind{
         if(active){val d=1.dp.toPx()
-         drawRect(Brush.verticalGradient(listOf(Color.Transparent,Gold.copy(alpha=.13f))))
-         drawLine(Gold.copy(alpha=.9f),Offset(size.width*.22f,size.height-1.5f*d),Offset(size.width*.78f,size.height-1.5f*d),2*d)}
+         drawRect(Brush.verticalGradient(listOf(Color.Transparent,gold.copy(alpha=.13f))))
+         drawLine(gold.copy(alpha=.9f),Offset(size.width*.22f,size.height-1.5f*d),Offset(size.width*.78f,size.height-1.5f*d),2*d)}
        }.padding(horizontal=4.dp,vertical=6.dp),contentAlignment=Alignment.Center){
        Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(5.dp,Alignment.CenterHorizontally)){
-        if(showGlyph)CarvedGlyph(glyphs[index]!!,if(active)Gold else Muted,size=15.dp)
-        Text(label,Modifier.weight(1f,fill=false),color=if(active)Gold else Ink,fontSize=12.sp,lineHeight=16.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis,textAlign=androidx.compose.ui.text.style.TextAlign.Center)
+        if(showGlyph)CarvedGlyph(glyphs[index]!!,if(active)gold else Muted,size=15.dp)
+        Text(label,Modifier.weight(1f,fill=false),color=if(active)gold else Ink,fontSize=12.sp,lineHeight=16.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis,textAlign=androidx.compose.ui.text.style.TextAlign.Center)
        }
       }
      }

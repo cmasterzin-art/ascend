@@ -30,9 +30,9 @@ import java.util.Locale
  val day=currentDay();val rested=day in s.restDates
  val due=if(relaxed&&!rested)s.habits.filter{!it.deleted&&!it.archived&&!it.paused}.sortedBy{it.position} else s.due(day)
  val done=due.count{s.record(it.id,day)?.complete==true};var pendingOnly by remember{mutableStateOf(false)};var detail by remember{mutableStateOf<Habit?>(null)}
+ val dialSize=if(LocalConfiguration.current.screenWidthDp<=340)68.dp else 78.dp
  androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxSize().testTag("journey_list").semantics{contentDescription="Central da Jornada"},contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
   item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Eyebrow("ASCEND  /  MINHA JORNADA");Text(displayDate(day),color=Muted,fontSize=12.sp)};ClassEmblem(s.player!!.heroClass,Modifier.size(28.dp))}}
-  val dialSize=if(LocalConfiguration.current.screenWidthDp<=340)68.dp else 78.dp
   item{Column(Modifier.fillMaxWidth()){CompactHero(s,onPortrait);NorthDivider();Column(Modifier.fillMaxWidth().padding(top=2.dp,bottom=6.dp)){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){
    DayDial(if(due.isEmpty())0f else done.toFloat()/due.size,if(due.isEmpty())"—" else "${done*100/due.size}%",dialSize)
    Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)){Eyebrow(if(rested)"Dia de descanso" else "Jornada de hoje",Green);Text("$done de ${due.size}",style=MaterialTheme.typography.titleLarge);Text("${due.size-done} pendentes",fontSize=12.sp,color=Muted)}

@@ -54,7 +54,7 @@ jobs:
               pathlib.Path('docs/screenshots/v1.6.9').mkdir(parents=True, exist_ok=True)
               board = Image.new('RGBA', (1200, 820), (12, 16, 20, 255))
               draw = ImageDraw.Draw(board)
-              draw.text((36, 16), 'ASCEND 1.6.9 — PRANCHA DE RECURSOS (Nordic Cinematic UI)', fill=(214, 186, 132, 255))
+              draw.text((36, 16), 'ASCEND 1.6.9 - PRANCHA DE RECURSOS (Nordic Cinematic UI)', fill=(214, 186, 132, 255))
               slots = [
                   ('carved_emblems.webp', 'carved_emblems (5 classes + 5 atributos)', 36, 44, 558, 223),
                   ('carved_seals.webp', 'carved_seals (6 selos cerimoniais)', 36, 304, 468, 312),
