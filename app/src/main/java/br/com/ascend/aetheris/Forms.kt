@@ -58,7 +58,7 @@ import androidx.compose.ui.semantics.*
             Eyebrow("Identidade visual");ChipRow(glyphs,icon,{icon=it});ChipRow(listOf("Ouro","Azul","Violeta","Verde","Coral"),color,{color=it})
             FormField(category,{category=it},"Categoria")
             Text("Dificuldade narrativa",color=Muted);ChipRow(listOf("Leve","Moderada","Desafiadora"),difficulty,{difficulty=it})
-            FormField(time,{time=it},"Horário · HH:mm");Toggle("Lembrete local opcional",reminder,{reminder=it})
+            FormField(time,{time=it},"Horário · HH:mm");Text("Opcional quando não há lembrete. Deixe vazio para atividades sem horário.",color=Muted,fontSize=12.sp);Toggle("Lembrete local opcional",reminder,{reminder=it})
             FormField(coins,{coins=it},"Fragmentos de Aether",number=true);FormField(points,{points=it},"Pontos de ${attributes[attr]}",number=true)
         }
         Panel(accent=Blue){Text("Alterar recompensas afeta apenas novos registros. O histórico preserva os valores originais. Use a correção de registro no histórico quando necessário.",color=Muted,fontSize=13.sp)}

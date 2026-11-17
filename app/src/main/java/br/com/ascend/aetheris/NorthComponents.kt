@@ -19,8 +19,8 @@ import androidx.compose.ui.unit.*
  val interaction=remember{MutableInteractionSource()};val pressed by interaction.collectIsPressedAsState();val reduced=LocalAppearance.current.reducedMotion
  val depth by animateFloatAsState(if(pressed).6f else 0f,tween(if(reduced)0 else 90),label="pressão")
  val dark=LocalAppearance.current.dark;val accent=if(destructive)MaterialTheme.colorScheme.error else if(completed)Green else if(secondary)ColdIron else Gold
- val tones=if(destructive)listOf(Color(0xFF603D39),Color(0xFF302021)) else if(secondary)listOf(Color(0xFF303944),Color(0xFF151C25)) else if(dark)listOf(Color(0xFF806B48),Color(0xFF59492F),Color(0xFF3C3224)) else listOf(Color(0xFFD5C39E),Color(0xFFB49A6A),Color(0xFFCFBB92))
- Button(onClick,modifier.heightIn(min=48.dp).offset(y=depth.dp).clip(CutCornerShape(8.dp)).background(Brush.verticalGradient(if(enabled)tones else listOf(Color(0xFF34383D),Color(0xFF25292E)))).drawWithCache{onDrawBehind{drawLine(Color.White.copy(alpha=if(pressed).06f else .18f),Offset(10.dp.toPx(),2.dp.toPx()),Offset(size.width-10.dp.toPx(),2.dp.toPx()),1.dp.toPx());drawLine(Color.Black.copy(alpha=.5f),Offset(8.dp.toPx(),size.height-3.dp.toPx()),Offset(size.width-8.dp.toPx(),size.height-3.dp.toPx()),2.dp.toPx());drawRect(accent.copy(alpha=.30f),style=Stroke(.7.dp.toPx()))}},enabled=enabled&&!loading,shape=CutCornerShape(8.dp),interactionSource=interaction,colors=ButtonDefaults.buttonColors(containerColor=Color.Transparent,contentColor=if(secondary||destructive)Color(0xFFE7DECB) else if(dark)Color(0xFFFFEACA) else Color(0xFF201B12),disabledContainerColor=Color.Transparent,disabledContentColor=Color(0xFFA4ABB5))){
+ val tones=if(destructive)listOf(Color(0xFF603D39),Color(0xFF302021)) else if(secondary)listOf(Color(0xFF303944),Color(0xFF151C25)) else if(dark)listOf(Color(0xFFA68B59),Color(0xFF7A623E),Color(0xFF665134)) else listOf(Color(0xFFD5C39E),Color(0xFFB49A6A),Color(0xFFCFBB92))
+ Button(onClick,modifier.heightIn(min=48.dp).offset{IntOffset(0,depth.dp.roundToPx())}.clip(RoundedCornerShape(6.dp)).background(Brush.verticalGradient(if(enabled)tones else listOf(Color(0xFF34383D),Color(0xFF25292E)))).drawWithCache{onDrawBehind{drawLine(Color.White.copy(alpha=if(pressed).06f else .18f),Offset(10.dp.toPx(),2.dp.toPx()),Offset(size.width-10.dp.toPx(),2.dp.toPx()),1.dp.toPx());drawLine(Color.Black.copy(alpha=.5f),Offset(8.dp.toPx(),size.height-3.dp.toPx()),Offset(size.width-8.dp.toPx(),size.height-3.dp.toPx()),2.dp.toPx());drawRect(accent.copy(alpha=.30f),style=Stroke(.7.dp.toPx()))}},enabled=enabled&&!loading,shape=RoundedCornerShape(6.dp),interactionSource=interaction,colors=ButtonDefaults.buttonColors(containerColor=Color.Transparent,contentColor=if(secondary||destructive)Color(0xFFE7DECB) else if(dark)Color(0xFFFFEACA) else Color(0xFF201B12),disabledContainerColor=Color.Transparent,disabledContentColor=Color(0xFFA4ABB5))){
  if(loading){CircularProgressIndicator(Modifier.size(16.dp),strokeWidth=2.dp);Spacer(Modifier.width(8.dp))};Text(if(completed)"◆ $text" else text,fontSize=14.sp)
  }
 }
@@ -36,12 +36,12 @@ import androidx.compose.ui.unit.*
  drawPath(p,color.copy(alpha=.12f));drawPath(p,color,style=Stroke(1.5.dp.toPx()));if(index==0||index==1||index==2)drawLine(color,Offset(w*.5f,h*.34f),Offset(w*.5f,h*.7f),1.4.dp.toPx())
  }
 }
-@Composable fun NarrativePanel(s:GameState,vm:GameViewModel){nextNarrative(s)?.let{line->Panel(accent=Blue){
+@Composable fun NarrativePanel(s:GameState,vm:GameViewModel){nextNarrative(s)?.let{line->AetherSurface(SurfaceKind.Parchment){
  Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){
-  when{line.speaker.startsWith("Elyra")->NavigationSigil(1,Blue,Modifier.size(36.dp));line.speaker.startsWith("Darian")->ClassEmblem(4);line.speaker.startsWith("Seren")->ClassEmblem(2);else->RuneSeal(3,Blue,Modifier.size(36.dp))}
-  Column(Modifier.weight(1f)){Eyebrow("Uma voz de Aetheris",Blue);Text(line.speaker,style=MaterialTheme.typography.titleMedium)}
+  when{line.speaker.startsWith("Elyra")->NavigationSigil(1,Sepia,Modifier.size(36.dp));line.speaker.startsWith("Darian")->ClassEmblem(4);line.speaker.startsWith("Seren")->ClassEmblem(2);else->RuneSeal(3,Sepia,Modifier.size(36.dp))}
+  Column(Modifier.weight(1f)){Eyebrow("Uma voz de Aetheris",Sepia);Text(line.speaker,style=MaterialTheme.typography.titleMedium)}
  }
  SagaDivider(color=ColdIron)
- Text("“${line.text}”",fontFamily=SagaFont,fontSize=17.sp,lineHeight=26.sp)
+ Text("“${line.text}”",color=Sepia,fontSize=15.sp,lineHeight=25.sp)
  SagaButton("Guardar esta memória",{vm.run{vm.repo.rememberNarrative(line.id)}},secondary=true)
 }}}

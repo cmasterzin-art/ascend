@@ -1,3 +1,14 @@
+# Mudanças — 1.6.0 · O Renascimento de Aetheris
+
+- Design System 2.0 aplicado a Jornada, hábitos, contratos, Sagas, Perfil, inventário, leitura, controles e widgets; cinco contextos de superfície, cabeçalhos e métricas compartilhados.
+- Jornada com retrato compacto, painel do dia, pendências prioritárias, LazyColumn e acessos a Planejador/Análises/Foco.
+- Planejamento semanal persistido: incluir/dispensar/retornar à regra normal por data, sem modificar registros ou pagar XP. Programação integrada a widgets, descansos, estatísticas, sequências e lembretes.
+- Central de Análises com períodos móveis/civis, comparação, gráfico com eixo/valores, detalhes por hábito, ranking e insights locais; cálculo em dispatcher de trabalho e índices transitórios.
+- Sessões detalhadas de foco com identificação estável, timestamps, tempo efetivo, estado, registro ou cancelamento, histórico/totais/detalhes. Encerramento transacional e pagamento único existentes preservados.
+- Foco configurado em formulário completo com proteção de pedido/rascunho; sessões antigas não são convertidas artificialmente em histórico detalhado.
+- Room v6 com migração 5 → 6; backup v8 lê v1–v7 e inclui os novos dados. Mesmo pacote/certificado, versionCode 11.
+- Capturas reais comparadas à base 1.5.2 com a mesma fixture em worktree isolado. Resultados finais em VALIDACAO.md.
+
 # Mudanças — 1.5.2 · A Forja da Estabilidade
 
 - Correção de progresso inválido sendo convertido em zero, snapshot novo usando hábito desatualizado e início de foco com referência incompatível/excluída.

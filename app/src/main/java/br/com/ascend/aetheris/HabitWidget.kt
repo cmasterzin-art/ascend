@@ -13,7 +13,7 @@ import java.time.*
 
 data class WidgetDay(val due:Int,val complete:Int,val pending:List<Habit>)
 fun widgetDay(s:GameState,date:String=today()):WidgetDay{val due=s.due(date).filter{!it.paused&&!it.archived&&!it.deleted};return WidgetDay(due.size,due.count{s.record(it.id,date)?.complete==true},due.filter{s.record(it.id,date)?.complete!=true}.take(3))}
-fun widgetRegistrationHabit(s:GameState,id:String,date:String?):Habit?=if(date!=null&&date!=today())null else s.habits.find{it.id==id&&it.type!=0&&!it.paused&&!it.archived&&!it.deleted&&scheduled(it,today(),s.restDates)}
+fun widgetRegistrationHabit(s:GameState,id:String,date:String?):Habit?=if(date!=null&&date!=today())null else s.habits.find{it.id==id&&it.type!=0&&!it.paused&&!it.archived&&!it.deleted&&scheduled(it,today(),s.restDates,s.plans)}
 data class WidgetSpace(val numbers:Boolean,val slots:Int)
 fun widgetSpace(height:Int,width:Int,fontScale:Float,expanded:Boolean):WidgetSpace{
  val scale=fontScale.coerceAtLeast(1f);val numbers=height>=if(expanded)(148*scale).toInt() else (164*scale).toInt()
@@ -56,6 +56,7 @@ open class HabitWidget:AppWidgetProvider(){
    val open=PendingIntent.getActivity(c,500,Intent(c,MainActivity::class.java).putExtra("widget_journey",true).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP),PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
    v.setViewVisibility(R.id.widget_sigil,if(width<210)View.GONE else View.VISIBLE)
    v.setOnClickPendingIntent(R.id.widget_header,open);v.setOnClickPendingIntent(R.id.widget_open,open)
+   v.setInt(R.id.widget_summary,"setMaxLines",if(height<150)1 else 2)
    v.setTextViewText(R.id.widget_percent,if(day.due==0)"—" else "${day.complete*100/day.due}%")
    v.setTextViewText(R.id.widget_period,"Agenda de hoje\n${widgetDate(date)}")
    v.setViewVisibility(R.id.widget_numbers,if(space.numbers&&s.player!=null)View.VISIBLE else View.GONE)

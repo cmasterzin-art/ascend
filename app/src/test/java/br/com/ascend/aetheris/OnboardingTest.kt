@@ -67,19 +67,19 @@ class OnboardingTest {
         compose.onNodeWithText("Entrar em Aetheris").performScrollTo().performClick()
         waitForState{repo.state.value?.player!=null}
         createHabit("Estudar","50")
-        compose.onAllNodesWithContentDescription("Registrar progresso").onLast().performScrollTo().performClick()
+        registerNamed("Estudar",false)
         waitForState{repo.state.value!!.xp==50L}
         createHabit("Ler","30")
-        compose.onAllNodesWithContentDescription("Registrar progresso").onLast().performScrollTo().performClick()
+        registerNamed("Ler",false)
         waitForState{repo.state.value!!.xp==80L}
-        compose.onNodeWithText("Ler").performScrollTo().performClick()
+        compose.onNodeWithTag("journey_list").performScrollToNode(hasText("Ler"));compose.onNodeWithText("Ler").performScrollTo().performClick()
         compose.onNodeWithText("Editar",useUnmergedTree=true).performClick()
         compose.onNodeWithText("XP ao atingir a meta").performScrollTo().performTextReplacement("40")
         compose.onNodeWithText("Salvar").performClick()
         waitForState{repo.state.value!!.habits.first{it.name=="Ler"}.xp==40}
         assertEquals(30,repo.state.value!!.records.first{it.name=="Ler"}.xp)
         assertEquals(80L,repo.state.value!!.xp)
-        compose.onAllNodesWithContentDescription("Editar conclusão").onLast().performScrollTo().performClick()
+        registerNamed("Ler",true)
         compose.onNodeWithText("Desfazer").performScrollTo().performClick()
         compose.onNodeWithText("Salvar").performClick()
         waitForState{repo.state.value!!.xp==50L}
@@ -188,6 +188,7 @@ class OnboardingTest {
         compose.onNodeWithContentDescription("Modo minimalista").performClick()
         waitForState{vm.minimal.value}
         compose.onNodeWithText("Jornada").performClick();capture("jornada-minimalista")
+        compose.onNodeWithTag("journey_list").performScrollToNode(hasContentDescription("Registrar progresso"))
         compose.onNodeWithContentDescription("Registrar progresso").performScrollTo().performClick()
         waitForState{app.repository.state.value!!.records.any{it.complete}}
     }
@@ -214,6 +215,11 @@ class OnboardingTest {
             path.outputStream().use{image.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it)}
             image.recycle()
         }
+    }
+    private fun registerNamed(name:String,complete:Boolean){
+        val id=(RuntimeEnvironment.getApplication() as AscendApp).repository.state.value!!.habits.first{it.name==name}.id
+        compose.onNodeWithTag("journey_list").performScrollToNode(hasTestTag("habit:$id"))
+        compose.onNode(hasContentDescription(if(complete)"Editar conclusão" else "Registrar progresso") and hasAnyAncestor(hasTestTag("habit:$id"))).performScrollTo().performClick()
     }
     private fun createHabit(name:String,xp:String){
         compose.onNodeWithContentDescription("Criar hábito").performScrollTo().performClick()

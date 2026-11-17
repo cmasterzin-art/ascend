@@ -37,11 +37,11 @@ data class Routine(@PrimaryKey val id: String = uid(), val name: String, val hab
 @Entity(tableName="rest_days")
 data class RestDay(@PrimaryKey val date: String)
 @Entity(tableName="focus", foreignKeys=[ForeignKey(entity=Habit::class,parentColumns=["id"],childColumns=["habitId"],onDelete=ForeignKey.RESTRICT)],indices=[Index("habitId")])
-data class Focus(@PrimaryKey val id: Int = 1, val habitId: String, val date: String = today(), val duration: Int = 25, val elapsed: Long = 0, val startedAt: Long = 0, val baseline: Int = 0) {
+data class Focus(@PrimaryKey val id: Int = 1, val habitId: String, val date: String = today(), val duration: Int = 25, val elapsed: Long = 0, val startedAt: Long = 0, val baseline: Int = 0, @ColumnInfo(defaultValue="''") val sessionId:String="", @ColumnInfo(defaultValue="0") val beganAt:Long=0) {
     fun seconds(now: Long = System.currentTimeMillis()) = (elapsed + if(startedAt>0) max(0L,(now-startedAt)/1000) else 0).coerceAtMost(duration*60L)
 }
 
-data class GameState(val player: Player? = null, val habits: List<Habit> = emptyList(), val records: List<HabitRecord> = emptyList(), val ledger: List<Reward> = emptyList(), val quests: List<Quest> = emptyList(), val claims: List<Claim> = emptyList(), val assets: List<Asset> = emptyList(), val achievements: List<Unlocked> = emptyList(), val journal: List<Journal> = emptyList(), val routines: List<Routine> = emptyList(), val focus: Focus? = null, val restDays: List<RestDay> = emptyList()) {
+data class GameState(val player: Player? = null, val habits: List<Habit> = emptyList(), val records: List<HabitRecord> = emptyList(), val ledger: List<Reward> = emptyList(), val quests: List<Quest> = emptyList(), val claims: List<Claim> = emptyList(), val assets: List<Asset> = emptyList(), val achievements: List<Unlocked> = emptyList(), val journal: List<Journal> = emptyList(), val routines: List<Routine> = emptyList(), val focus: Focus? = null, val restDays: List<RestDay> = emptyList(), val plans:List<PlanException> = emptyList(), val focusSessions:List<FocusSession> = emptyList()) {
     val xp get() = ledger.sumOf{it.xp}.coerceAtLeast(0)
     val level get() = Progression.level(xp)
     val rawCoins get() = ledger.sumOf{it.coins}
@@ -49,8 +49,10 @@ data class GameState(val player: Player? = null, val habits: List<Habit> = empty
     val debt get() = (-rawCoins).coerceAtLeast(0)
     fun points(attr: Int) = ledger.filter{it.attribute==attr}.sumOf{it.points}.coerceAtLeast(0)
     fun record(habitId: String, date: String = today()) = records.find{it.habitId==habitId && it.date==date}
-    val restDates get() = restDays.map { it.date }.toSet()
-    fun due(date: String = today()) = habits.filter{scheduled(it,date,restDates)}.sortedBy{it.position}
+    @delegate:Transient val restDates by lazy { restDays.map{it.date}.toSet() }
+    @delegate:Transient val planIndex by lazy { plans.associateBy{it.id} }
+    fun planned(h:Habit,date:String)=scheduled(h,date,restDates,plans,planIndex)
+    fun due(date: String = today()) = habits.filter{planned(it,date)}.sortedBy{it.position}
 }
 object Progression {
     fun threshold(level: Int): Long = 25L*(level-1)*(level+2)
@@ -59,20 +61,21 @@ object Progression {
     fun current(xp: Long) = xp-threshold(level(xp))
     fun reward(max: Int, progress: Int, target: Int, proportional: Boolean): Long = if(proportional) max.toLong()*progress.coerceIn(0,target)/target.coerceAtLeast(1) else if(progress>=target) max.toLong() else 0L
 }
-fun scheduled(h: Habit, date: String, restDates: Set<String> = emptySet()): Boolean {
+fun scheduled(h: Habit, date: String, restDates: Set<String> = emptySet(), plans:List<PlanException> = emptyList(), index:Map<String,PlanException>?=null): Boolean {
     if(date<h.created || date in restDates) return false
     val entry=h.scheduleHistory.split(';').map{it.split('|')}.filter{it.size==3 && it[0]<=date}.maxByOrNull{it[0]}
     val days=entry?.get(1)?:h.days
     val paused=entry?.get(2)?.toBooleanStrictOrNull()?:(h.paused||h.archived||h.deleted)
-    return !paused && LocalDate.parse(date).dayOfWeek.value.toString() in days.split(',')
+    if(paused || date>=today()&&(h.paused||h.archived||h.deleted))return false
+    return (if(index==null)plans.find{it.habitId==h.id&&it.date==date} else index["${h.id}@$date"])?.include ?: (LocalDate.parse(date).dayOfWeek.value.toString() in days.split(','))
 }
-fun streak(h: Habit, records: List<HabitRecord>, end: String=today(), restDates: Set<String> = emptySet()): Int {
+fun streak(h: Habit, records: List<HabitRecord>, end: String=today(), restDates: Set<String> = emptySet(), plans:List<PlanException> = emptyList()): Int {
     if(!h.trackStreak) return 0
     val dates=records.filter{it.habitId==h.id && it.complete}.map{it.date}.toSet()
     var day=LocalDate.parse(end); var count=0; var skippedToday=false
     repeat(36600) {
         if(day.toString()<h.created) return count
-        if(scheduled(h,day.toString(),restDates)) {
+        if(scheduled(h,day.toString(),restDates,plans)) {
             if(day.toString() in dates) count++ else if(day.toString()==end && !skippedToday) skippedToday=true else return count
         }
         day=day.minusDays(1)
@@ -101,7 +104,7 @@ fun achievementProgress(a: AchievementDef,s: GameState): Long = when(a.id){
     "first","hundred"->s.records.count{it.complete}.toLong()
     "five","fifty"->s.level.toLong()
     "study"->s.records.filter{it.type==2 && it.attribute==0}.sumOf{it.progress.toLong()}
-    "streak"->s.habits.maxOfOrNull{streak(it,s.records,restDates=s.restDates)}?.toLong()?:0
+    "streak"->s.habits.maxOfOrNull{streak(it,s.records,restDates=s.restDates,plans=s.plans)}?.toLong()?:0
     "return"->{val ds=s.records.filter{it.complete}.map{LocalDate.parse(it.date)}.distinct().sorted(); if(ds.zipWithNext().any{(x,y)->java.time.temporal.ChronoUnit.DAYS.between(x,y)>=7}) 1 else 0}
     "restore"->s.assets.count{it.kind=="building"}.toLong()
     else->0

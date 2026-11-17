@@ -35,7 +35,7 @@ val Muted:Color @Composable get()=MaterialTheme.colorScheme.onSurfaceVariant
 @Composable fun habitColor(index:Int):Color=if(LocalAppearance.current.dark)listOf(Color(0xFFB9965A),Color(0xFF8BA2C7),Color(0xFFB4A1C7),Color(0xFFA8B69A),Color(0xFFD09385))[index] else listOf(Color(0xFF866023),Color(0xFF385FA6),Color(0xFF7551AD),Color(0xFF236848),Color(0xFFA44936))[index]
 @Composable fun AscendTheme(mode:String="dark",reducedMotion:Boolean=false,minimal:Boolean=false,content:@Composable ()->Unit){
     val dark=when(mode){"light"->false;"system"->isSystemInDarkTheme();else->true}
-    val scheme=if(dark)darkColorScheme(primary=Color(0xFFC4A36A),onPrimary=Color(0xFF17140E),secondary=Color(0xFF9EB4D3),tertiary=Color(0xFFB4A1C7),background=Color(0xFF0A0D12),surface=Color(0xFF101723),surfaceVariant=Color(0xFF232934),onBackground=Color(0xFFE7DECB),onSurface=Color(0xFFE7DECB),onSurfaceVariant=Color(0xFFAEB5BF),outline=Color(0xFF68717D),error=Color(0xFFD6978D))
+    val scheme=if(dark)darkColorScheme(primary=Color(0xFFC4A36A),onPrimary=Color(0xFF17140E),secondary=Color(0xFF9EB4D3),tertiary=Color(0xFFB4A1C7),background=Color(0xFF090E14),surface=Color(0xFF151E27),surfaceVariant=Color(0xFF24303A),onBackground=Color(0xFFE7DECB),onSurface=Color(0xFFE7DECB),onSurfaceVariant=Color(0xFFAEB5BF),outline=Color(0xFF68717D),error=Color(0xFFD6978D))
         else lightColorScheme(primary=Color(0xFF73501F),onPrimary=Color.White,secondary=Color(0xFF375575),tertiary=Color(0xFF655173),background=Color(0xFFE5E1D8),surface=Color(0xFFF1EDE3),surfaceVariant=Color(0xFFD8D3C7),onBackground=Color(0xFF20252D),onSurface=Color(0xFF20252D),onSurfaceVariant=Color(0xFF515B66),outline=Color(0xFF7C817F))
     CompositionLocalProvider(LocalAppearance provides Appearance(dark,reducedMotion,minimal)) {
         MaterialTheme(colorScheme=scheme,shapes=Shapes(extraSmall=CutCornerShape(3.dp),small=CutCornerShape(5.dp),medium=CutCornerShape(8.dp),large=CutCornerShape(12.dp),extraLarge=CutCornerShape(14.dp)),typography=Typography(
@@ -47,10 +47,10 @@ val Muted:Color @Composable get()=MaterialTheme.colorScheme.onSurfaceVariant
     }
 }
 val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
-@Composable fun Eyebrow(text:String,color:Color=Gold){Text(text.uppercase(),color=color,fontSize=10.sp,lineHeight=16.sp,letterSpacing=1.7.sp,fontWeight=FontWeight.SemiBold)}
-@Composable fun Title(text:String,sub:String="") {Column(Modifier.padding(top=10.dp,bottom=6.dp),verticalArrangement=Arrangement.spacedBy(8.dp)){Text(text,style=MaterialTheme.typography.headlineMedium);if(sub.isNotEmpty())Text(sub,color=Muted,fontSize=13.sp);SagaDivider(Modifier.width(72.dp))}}
+@Composable fun Eyebrow(text:String,color:Color=Gold){Text(text.uppercase(),color=color,fontSize=11.sp,lineHeight=17.sp,letterSpacing=1.3.sp,fontWeight=FontWeight.SemiBold)}
+@Composable fun Title(text:String,sub:String="") {Column(Modifier.padding(top=8.dp,bottom=8.dp),verticalArrangement=Arrangement.spacedBy(7.dp)){Row(horizontalArrangement=Arrangement.spacedBy(10.dp),verticalAlignment=Alignment.CenterVertically){Box(Modifier.width(3.dp).height(24.dp).background(Gold));Text(text,style=MaterialTheme.typography.headlineMedium)};if(sub.isNotEmpty())Text(sub,color=Muted,fontSize=13.sp,lineHeight=21.sp)}}
 @Composable fun Panel(modifier:Modifier=Modifier,accent:Color=Gold,content:@Composable ColumnScope.()->Unit){
-    Column(modifier.fillMaxWidth().materialSurface(accent=accent).padding(18.dp),verticalArrangement=Arrangement.spacedBy(10.dp),content=content)
+ AetherSurface(modifier=modifier){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Box(Modifier.width(22.dp).height(2.dp).background(accent.copy(alpha=.6f)));Spacer(Modifier.weight(1f))};content()}
 }
 @Composable fun Page(content:@Composable ColumnScope.()->Unit){
     val dark=LocalAppearance.current.dark
@@ -59,7 +59,7 @@ val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
     }
 }
 @Composable fun Meter(value:Float,color:Color=Blue,modifier:Modifier=Modifier,trackColor:Color=CardColor){
-    val fraction by animateFloatAsState(value.coerceIn(0f,1f),tween(if(LocalAppearance.current.reducedMotion)0 else 550),label="progresso")
+    val fraction by animateFloatAsState(value.coerceIn(0f,1f),tween(if(LocalAppearance.current.reducedMotion)0 else AetherTokens.scene),label="progresso")
     val track=trackColor
     Canvas(modifier.fillMaxWidth().height(11.dp).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)}){
         drawRect(Brush.verticalGradient(listOf(Color.Black.copy(alpha=.5f),track,Color.Black.copy(alpha=.2f))));drawRect(color.copy(alpha=.3f),style=Stroke(1.dp.toPx()))

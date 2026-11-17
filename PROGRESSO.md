@@ -1,6 +1,17 @@
-# ASCEND — progresso da versão 1.5.2
+# ASCEND — progresso da versão 1.6.0
 
 Implementação nativa em Kotlin, Compose, Material 3, Navigation, Room, DataStore, ViewModel, Coroutines e StateFlow. Sem permissão INTERNET, contas, anúncios ou backend.
+
+## Entregue na 1.6
+
+- Design System 2.0 com superfícies operacional, heroica, cerimonial, pergaminho e artefato; componentes compartilhados e tokens. Jornada nova com retrato compacto, resumo diário, pendências primeiro, lista virtualizada e acessos diretos.
+- Planejador Semanal com navegação por dia/semana, horários reais, descanso e inclusão/dispensa/reset por data. Fonte única da programação para Jornada, widgets, análises, sequências e lembretes.
+- Central de Análises: 7/30/90 dias, semana/mês civis até hoje, comparação de mesma duração, gráficos com eixo/tabela, taxa, XP, minutos, atributos, ranking e insights determinísticos. Detalhes individuais pelos hábitos.
+- Histórico de Foco persistido com ID/início/término/tempo/estado, cancelamento explícito, consulta, totais e comparação. Sem inventar sessões antigas ou pagar XP extra.
+- Perfil em ficha lateral, inventário em superfície de coleção mantendo nichos, contratos operacionais/cerimoniais, páginas de Crônicas e Memórias, controles e widgets refinados. Pinturas mantidas.
+- 135 testes aprovados (116 anteriores + 19 novos), Lint sem erros/20 avisos.
+- Room v6 / backup v8, migração aditiva 5 → 6 e leitura v1–v7. Android/applicationId/certificado preservados; versionCode 11.
+- [Regras e limites](docs/PRODUTIVIDADE-1.6.md) · [Antes/depois reais](docs/VISUAL-1.6.md) · [Sistema visual](docs/DESIGN-SYSTEM-2.0.md).
 
 ## Estabilizado na 1.5.2
 
