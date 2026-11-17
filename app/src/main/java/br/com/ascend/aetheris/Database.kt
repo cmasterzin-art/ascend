@@ -4,6 +4,14 @@ import androidx.room.*
 
 @Dao
 interface GameDao {
+    @Query("SELECT * FROM plan_exceptions ORDER BY date") suspend fun plans():List<PlanException>
+    @Query("SELECT * FROM focus_sessions ORDER BY endedAt DESC") suspend fun focusSessions():List<FocusSession>
+    @Upsert suspend fun plan(v:PlanException)
+    @Upsert suspend fun focusSession(v:FocusSession)
+    @Query("DELETE FROM plan_exceptions WHERE id=:id") suspend fun deletePlan(id:String)
+    @Query("DELETE FROM plan_exceptions") suspend fun clearPlans()
+    @Query("DELETE FROM focus_sessions") suspend fun clearFocusSessions()
+
     @Query("SELECT * FROM rest_days ORDER BY date") suspend fun restDays():List<RestDay>
     @Upsert suspend fun restDay(v:RestDay)
     @Query("DELETE FROM rest_days WHERE date=:date") suspend fun deleteRestDay(date:String)
@@ -56,7 +64,7 @@ val MIGRATION_2_3 = object : androidx.room.migration.Migration(2,3) {
         db.execSQL("ALTER TABLE habits ADD COLUMN trackStreak INTEGER NOT NULL DEFAULT 1")
     }
 }
-@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class],version=5,exportSchema=true)
+@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class,PlanException::class,FocusSession::class],version=6,exportSchema=true)
 abstract class GameDatabase:RoomDatabase(){abstract fun dao():GameDao}
 
 val MIGRATION_3_4 = object : androidx.room.migration.Migration(3,4) {
@@ -75,5 +83,16 @@ val MIGRATION_4_5 = object : androidx.room.migration.Migration(4,5) {
   db.execSQL("ALTER TABLE quests ADD COLUMN sagaStopped INTEGER NOT NULL DEFAULT 0")
   db.execSQL("ALTER TABLE assets ADD COLUMN memorySpeaker TEXT NOT NULL DEFAULT ''")
   db.execSQL("ALTER TABLE assets ADD COLUMN memoryText TEXT NOT NULL DEFAULT ''")
+ }
+}
+
+val MIGRATION_5_6=object:androidx.room.migration.Migration(5,6){
+ override fun migrate(db:androidx.sqlite.db.SupportSQLiteDatabase){
+  db.execSQL("ALTER TABLE focus ADD COLUMN sessionId TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE focus ADD COLUMN beganAt INTEGER NOT NULL DEFAULT 0")
+  db.execSQL("CREATE TABLE IF NOT EXISTS plan_exceptions (id TEXT NOT NULL, habitId TEXT NOT NULL, date TEXT NOT NULL, include INTEGER NOT NULL, PRIMARY KEY(id), FOREIGN KEY(habitId) REFERENCES habits(id) ON UPDATE NO ACTION ON DELETE RESTRICT)")
+  db.execSQL("CREATE INDEX IF NOT EXISTS index_plan_exceptions_habitId ON plan_exceptions(habitId)")
+  db.execSQL("CREATE TABLE IF NOT EXISTS focus_sessions (id TEXT NOT NULL, habitId TEXT NOT NULL, habitName TEXT NOT NULL, date TEXT NOT NULL, startedAt INTEGER NOT NULL, endedAt INTEGER NOT NULL, elapsedSeconds INTEGER NOT NULL, plannedMinutes INTEGER NOT NULL, status TEXT NOT NULL, registered INTEGER NOT NULL, PRIMARY KEY(id), FOREIGN KEY(habitId) REFERENCES habits(id) ON UPDATE NO ACTION ON DELETE RESTRICT)")
+  db.execSQL("CREATE INDEX IF NOT EXISTS index_focus_sessions_habitId ON focus_sessions(habitId)")
  }
 }

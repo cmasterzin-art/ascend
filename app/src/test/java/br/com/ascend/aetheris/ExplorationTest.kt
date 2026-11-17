@@ -45,7 +45,7 @@ class ExplorationTest{
  }
  @Test fun v5DatabaseAndV6BackupDoNotInventExploration()=runBlocking{
  val old=repo.state.value!!;val ctx=RuntimeEnvironment.getApplication() as AscendApp;val name="exp-existing.db";legacyDatabase(ctx,name,5,old)
- val disk=Room.databaseBuilder(ctx,GameDatabase::class.java,name).build();try{val r=GameRepository(disk);r.refresh();assertEquals(old,r.state.value);assertEquals(0,forestProgress(r.state.value!!))}finally{disk.close();ctx.deleteDatabase(name)}
+ val disk=Room.databaseBuilder(ctx,GameDatabase::class.java,name).addMigrations(MIGRATION_5_6).build();try{val r=GameRepository(disk);r.refresh();assertEquals(old,r.state.value);assertEquals(0,forestProgress(r.state.value!!))}finally{disk.close();ctx.deleteDatabase(name)}
  val gson=com.google.gson.Gson();val payload=gson.toJson(old);val digest=java.security.MessageDigest.getInstance("SHA-256").digest(payload.toByteArray()).joinToString(""){"%02x".format(it)};assertEquals(old,Backup.decode(gson.toJson(BackupEnvelope(version=6,sha256=digest,payload=payload))))
  }
  @Test fun widgetSimpleCompletionIsScheduledLocalAndIdempotent()=runBlocking{

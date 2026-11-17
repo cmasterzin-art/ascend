@@ -15,7 +15,7 @@ import androidx.compose.ui.semantics.*
 @Composable fun Equipment(s:GameState,vm:GameViewModel,store:Boolean=false){
     var selected by remember{mutableStateOf<String?>(null)};var filter by remember{mutableIntStateOf(0)}
     if(!store){
-        Column(Modifier.fillMaxWidth().materialSurface(accent=OldBronze,leather=true).padding(12.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
+        AetherSurface(SurfaceKind.Artifact){
             Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Eyebrow("Câmara dos equipamentos")};RuneSeal(3,Gold,Modifier.size(28.dp))}
             BoxWithConstraints(Modifier.fillMaxWidth()){
                 val portraitSize=(maxWidth-132.dp).coerceAtMost(190.dp)
@@ -26,6 +26,7 @@ import androidx.compose.ui.semantics.*
                 }
             }
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceEvenly){equipmentSlots.drop(4).forEach{(kind,label)->EquipmentSlot(kind,label,s){selected=it}}}
+            MetricPair("${s.assets.count{it.equipped}}","equipados","${s.assets.count{a->shopItems.any{it.id==a.id}}}","na coleção")
             SagaDivider(color=OldBronze)
             Text("${s.assets.count{it.equipped}} equipados · ${s.assets.count{a->shopItems.any{it.id==a.id}}} artefatos na coleção",color=Muted,fontSize=11.sp)
             Text("Seus artefatos ocupam nichos ao redor do retrato. Toque em um item equipado para inspecionar.",color=Muted,fontSize=11.sp)
@@ -42,9 +43,9 @@ import androidx.compose.ui.semantics.*
     if(items.isEmpty())Empty("Nenhuma relíquia nesta seleção. Conquiste fragmentos ou desperte uma habilidade para ampliar sua coleção.")
     items.chunked(2).forEach{row->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp)){
         row.forEach{item->val r=rarity(item);val color=rarityColor(r);val owned=s.assets.find{it.id==item.id}
-            Column(Modifier.weight(1f).materialSurface(accent=color).clickable{selected=item.id}.padding(12.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(8.dp)){
-                Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){RuneSeal(r,color,Modifier.size(22.dp));Text(rarityNames[r].uppercase(),Modifier.weight(1f),color=color,fontSize=9.sp,letterSpacing=.7.sp)}
-                RelicArt(item.kind,color,Modifier.size(86.dp),item.id)
+            AetherSurface(SurfaceKind.Artifact,Modifier.weight(1f).clickable{selected=item.id}){
+                Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){RuneSeal(r,color,Modifier.size(24.dp));Text(rarityNames[r].uppercase(),Modifier.weight(1f),color=color,fontSize=11.sp,letterSpacing=.7.sp)}
+                Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){RelicArt(item.kind,color,Modifier.size(94.dp),item.id)}
                 SagaDivider(color=color)
                 Text(item.name,style=MaterialTheme.typography.titleMedium)
                 Text(if(owned?.equipped==true)"◆ Equipado" else if(owned!=null)"Na coleção" else "◈ ${item.cost} fragmentos",color=color,fontSize=11.sp)

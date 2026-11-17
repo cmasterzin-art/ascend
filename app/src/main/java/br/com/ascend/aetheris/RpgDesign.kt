@@ -19,33 +19,8 @@ import kotlin.math.*
 
 val Parchment=Color(0xFFBDB196)
 val Sepia=Color(0xFF29251E)
-@Composable fun Manuscript(content:@Composable ColumnScope.()->Unit){
-    val minimal=LocalAppearance.current.minimal
-    Box(Modifier.fillMaxWidth().clip(CutCornerShape(topStart=3.dp,topEnd=9.dp,bottomStart=7.dp,bottomEnd=2.dp)).background(Brush.linearGradient(listOf(Color(0xFF827766),Parchment,Color(0xFFB0A58B),Color(0xFF8D806A)))).border(1.dp,OldBronze,CutCornerShape(4.dp))){
-        Canvas(Modifier.matchParentSize()){
-            if(!minimal){
-                repeat(500){i->val x=((i*137)%997)/997f*size.width;val y=((i*83)%991)/991f*size.height;drawLine(Sepia.copy(alpha=.07f),Offset(x,y),Offset(x+2+(i%7),y+.5f),.7f)}
-                repeat(22){i->val x=(i*43%991)/991f*size.width;val y=size.height*i/21f;drawOval(Sepia.copy(alpha=.025f),Offset(x-30,y-10),Size(100f,35f))}
-            }
-            drawRect(Brush.horizontalGradient(listOf(Color.Black.copy(alpha=.23f),Color.Transparent),endX=22.dp.toPx()))
-            drawRect(Sepia.copy(alpha=.2f),Offset(10.dp.toPx(),9.dp.toPx()),Size(size.width-20.dp.toPx(),size.height-18.dp.toPx()),style=Stroke(1f))
-            repeat((size.height/15.dp.toPx()).toInt()){i->val y=16.dp.toPx()+i*15.dp.toPx();drawLine(Sepia.copy(alpha=.45f),Offset(6.dp.toPx(),y),Offset(9.dp.toPx(),y+3f),1f)}
-            listOf(Offset(17.dp.toPx(),17.dp.toPx()),Offset(size.width-17.dp.toPx(),17.dp.toPx())).forEach{drawCircle(Color(0xFF4A4236),2.7.dp.toPx(),it);drawCircle(Color(0xFFAB9775),1.dp.toPx(),it-Offset(1f,1f))}
-        }
-        CompositionLocalProvider(LocalContentColor provides Sepia){Column(Modifier.padding(horizontal=24.dp,vertical=26.dp),verticalArrangement=Arrangement.spacedBy(12.dp),content=content)}
-    }
-}
-@Composable fun SagaCover(count:Int){
-    Column(Modifier.fillMaxWidth().materialSurface(accent=OldBronze,leather=true).padding(22.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
-        Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(16.dp)){
-            RuneSeal(4,Gold,Modifier.size(62.dp))
-            Column{Eyebrow("CÓDICE DE AETHERIS");Text("Livro de missões",style=MaterialTheme.typography.headlineMedium)}
-        }
-        SagaDivider()
-        Text("Juramentos gravados.\nUma saga escrita em gestos.",fontFamily=SagaFont,fontSize=16.sp,lineHeight=25.sp,color=Ink)
-        Text("$count recompensas resgatadas",color=Muted,fontSize=12.sp)
-    }
-}
+@Composable fun Manuscript(content:@Composable ColumnScope.()->Unit){AetherSurface(SurfaceKind.Parchment){content()}}
+@Composable fun SagaCover(count:Int){AetherSurface(SurfaceKind.Ceremonial){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){RuneSeal(4,Gold,Modifier.size(44.dp));Column(Modifier.weight(1f)){Text("Livro de missões",style=MaterialTheme.typography.titleLarge);Text("$count recompensas resgatadas · contratos e sagas",color=Muted,fontSize=12.sp)}}}}
 @Composable fun rarityColor(n:Int)=listOf(Muted,Green,Blue,Violet,Gold)[n]
 /** A sprite atlas is sampled at draw time; original image files remain intact. */
 @Composable fun ArtTile(resource:Int,index:Int,rows:Int,modifier:Modifier=Modifier){

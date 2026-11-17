@@ -46,15 +46,12 @@ import java.time.LocalDate
    val expedition=if(m.id.startsWith("claim:"))expeditionRef(m.id.removePrefix("claim:").substringBefore('@')) else null
    val important=expedition?.let{it.second==it.first.phases.lastIndex}==true||m.category=="Sagas"
    val accent=if(important)Gold else if(m.category=="História")Blue else ColdIron
-   Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min),horizontalArrangement=Arrangement.spacedBy(12.dp)){
-    Column(Modifier.width(34.dp).fillMaxHeight().drawWithCache{onDrawBehind{drawLine(ColdIron.copy(alpha=.35f),Offset(size.width/2,44.dp.toPx()),Offset(size.width/2,size.height),1.dp.toPx())}},horizontalAlignment=Alignment.CenterHorizontally){RuneSeal(if(important)4 else m.symbol,accent,Modifier.size(34.dp))}
-    Column(Modifier.weight(1f).materialSurface(accent=accent,leather=m.category=="História").padding(18.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
-     Eyebrow(if(important)"${m.category} · marca de jornada" else m.category,if(important)Gold else Blue)
-     Text(m.title,style=MaterialTheme.typography.titleLarge)
-     Text(m.date?.let{if(m.id.startsWith("memory:"))"Conversa guardada em ${displayDate(it)}" else displayDate(it)}?:"Data não disponível",color=Muted,fontSize=13.sp,lineHeight=21.sp)
-     if(important)SagaDivider(color=accent)
-     ReadingBlock(m.detail)
-    }
+   AetherSurface(SurfaceKind.Parchment){
+    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp),verticalAlignment=Alignment.CenterVertically){RuneSeal(if(important)4 else m.symbol,Sepia,Modifier.size(38.dp));Column(Modifier.weight(1f)){Eyebrow(m.category,Sepia);Text(m.date?.let{displayDate(it)}?:"Data não disponível",color=Sepia,fontSize=12.sp)}}
+    Text(m.title,color=Sepia,style=MaterialTheme.typography.titleLarge)
+    if(m.id.startsWith("memory:")&&m.date!=null)Text("Conversa guardada em ${displayDate(m.date)}",color=Sepia,fontSize=12.sp)
+    if(important)SagaDivider(color=Sepia)
+    ReadingBlock(m.detail,color=Sepia)
    }
   }
  }

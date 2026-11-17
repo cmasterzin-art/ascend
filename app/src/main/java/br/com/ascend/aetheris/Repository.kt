@@ -16,7 +16,7 @@ import java.security.MessageDigest
 
 val Context.preferences by preferencesDataStore("ascend_settings")
 class AscendApp:Application(){
-    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5).build() }
+    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6).build() }
     val repository by lazy { GameRepository(database){s->HabitWidget.refresh(this,s)} }
 }
 data class GameEvent(val message:String,val level:Int=0,val xp:Long=0,val coins:Long=0,val points:List<Long> = emptyList(),val highlights:List<String> = emptyList())
@@ -24,7 +24,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     private val d=db.dao(); private val lock=Mutex()
     val state=MutableStateFlow<GameState?>(null)
     val events=MutableSharedFlow<GameEvent>(extraBufferCapacity=10)
-    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus(),d.restDays())
+    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus(),d.restDays(),d.plans(),d.focusSessions())
     suspend fun refresh()=lock.withLock { state.value=read() }
     private suspend fun change(message:String="Salvo",block:suspend ()->Unit){
         lock.withLock {
@@ -112,7 +112,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         require(date<=today() && date>=savedHabit.created){"Escolha uma data entre a criação do hábito e hoje."}
         val existing=d.records().find{it.habitId==h.id && it.date==date}
         require(existing!=null||!savedHabit.deleted){"Este hábito foi excluído. Consulte o histórico para corrigir registros existentes."}
-        var r=existing?:HabitRecord("${savedHabit.id}@$date",savedHabit.id,date,0,savedHabit.target,savedHabit.xp,savedHabit.coins,savedHabit.points,savedHabit.attribute,savedHabit.proportional,savedHabit.type,savedHabit.category,savedHabit.unit,savedHabit.name,scheduled(savedHabit,date,d.restDays().map{it.date}.toSet()))
+        var r=existing?:HabitRecord("${savedHabit.id}@$date",savedHabit.id,date,0,savedHabit.target,savedHabit.xp,savedHabit.coins,savedHabit.points,savedHabit.attribute,savedHabit.proportional,savedHabit.type,savedHabit.category,savedHabit.unit,savedHabit.name,scheduled(savedHabit,date,d.restDays().map{it.date}.toSet(),d.plans()))
         if(correction!=null) {
             require(correction.id==r.id && correction.target>0 && correction.xp in 0..1000000 && correction.coins in 0..1000000 && correction.points in 0..1000000){"Correção inválida."}
             r=r.copy(xp=correction.xp,coins=correction.coins,points=correction.points)
@@ -186,7 +186,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     }
     suspend fun widgetComplete(habitId:String,date:String)=change("A chama ganhou força"){
         val s=read();require(date==today()){"O dia mudou. Atualize o widget."}
-        val h=requireNotNull(s.habits.find{it.id==habitId}){"Este hábito não está mais disponível. Abra a Jornada."};require(h.type==0&&!h.paused&&!h.archived&&!h.deleted&&scheduled(h,date,s.restDates)){"Registre este hábito no aplicativo."}
+        val h=requireNotNull(s.habits.find{it.id==habitId}){"Este hábito não está mais disponível. Abra a Jornada."};require(h.type==0&&!h.paused&&!h.archived&&!h.deleted&&scheduled(h,date,s.restDates,s.plans)){"Registre este hábito no aplicativo."}
         val old=s.record(h.id,date)
         if(old?.complete!=true){val r=old?:HabitRecord("${h.id}@$date",h.id,date,0,h.target,h.xp,h.coins,h.points,h.attribute,h.proportional,h.type,h.category,h.unit,h.name,true)
             val complete=r.copy(progress=r.target);d.record(complete);d.reward(Reward("habit:${r.id}",Progression.reward(r.xp,complete.progress,r.target,r.proportional),Progression.reward(r.coins,complete.progress,r.target,r.proportional),Progression.reward(r.points,complete.progress,r.target,r.proportional),r.attribute,date,"Hábito · ${r.name}"))}
@@ -227,12 +227,19 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         require(date >= (d.player()?.created ?: today())) { "Escolha uma data a partir do início da sua jornada." }
         if(enabled) d.restDay(RestDay(date)) else d.deleteRestDay(date)
     }
+    suspend fun plan(habitId:String,date:String,mode:Int)=change("Planejamento atualizado"){
+        LocalDate.parse(date);require(date>=today()){"Ajustes pontuais são permitidos somente de hoje em diante."}
+        require(mode in 0..2);val h=requireNotNull(d.habits().find{it.id==habitId})
+        require(date>=h.created && !h.paused&&!h.archived&&!h.deleted){"Escolha um hábito ativo."}
+        val id="$habitId@$date"
+        if(mode==0)d.deletePlan(id) else d.plan(PlanException(id,habitId,date,mode==1))
+    }
     suspend fun startFocus(h:Habit,minutes:Int)=change("Sessão iniciada"){
         val savedHabit=requireNotNull(d.habits().find{it.id==h.id}){"Este hábito não está mais disponível."}
         require(savedHabit.type==2 && !savedHabit.deleted && !savedHabit.archived && !savedHabit.paused && minutes in 1..1440){"Escolha um hábito cronometrado ativo e duração de 1 a 1440 minutos."}
         require(d.focus()==null){"Encerre a sessão atual antes de iniciar outra."}
         val date=today();val r=d.records().find{it.habitId==savedHabit.id && it.date==date}
-        d.focus(Focus(habitId=savedHabit.id,date=date,duration=minutes,startedAt=System.currentTimeMillis(),baseline=r?.progress?:0))
+        val now=System.currentTimeMillis();d.focus(Focus(habitId=savedHabit.id,date=date,duration=minutes,startedAt=now,baseline=r?.progress?:0,sessionId=uid(),beganAt=now))
     }
     suspend fun pauseFocus()=change("Foco atualizado"){
         val f=d.focus()?:return@change;d.focus(f.copy(elapsed=f.seconds(),startedAt=if(f.startedAt==0L) System.currentTimeMillis() else 0))
@@ -242,29 +249,34 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         if(register){
             val h=d.habits().find{it.id==f.habitId}?:error("Hábito não encontrado")
             val existing=d.records().find{it.habitId==f.habitId && it.date==f.date}
-            val r=existing?:HabitRecord("${h.id}@${f.date}",h.id,f.date,0,h.target,h.xp,h.coins,h.points,h.attribute,h.proportional,h.type,h.category,h.unit,h.name,scheduled(h,f.date,d.restDays().map{it.date}.toSet()))
+            val r=existing?:HabitRecord("${h.id}@${f.date}",h.id,f.date,0,h.target,h.xp,h.coins,h.points,h.attribute,h.proportional,h.type,h.category,h.unit,h.name,scheduled(h,f.date,d.restDays().map{it.date}.toSet(),d.plans()))
             // Absolute baseline makes overlapping manual progress idempotent.
             val next=maxOf(r.progress,f.baseline+(f.seconds()/60).toInt()).coerceAtMost(r.target)
             d.record(r.copy(progress=next))
             d.reward(Reward("habit:${r.id}",Progression.reward(r.xp,next,r.target,r.proportional),Progression.reward(r.coins,next,r.target,r.proportional),Progression.reward(r.points,next,r.target,r.proportional),r.attribute,r.date,"Hábito · ${r.name}"))
-        };d.clearFocus()
+        }
+        if(f.sessionId.isNotBlank()){
+            val now=System.currentTimeMillis().coerceAtLeast(f.beganAt);val seconds=f.seconds()
+            d.focusSession(FocusSession(f.sessionId,f.habitId,d.habits().first{it.id==f.habitId}.name,f.date,f.beganAt,now,seconds,f.duration,if(!register)"cancelled" else if(seconds>=f.duration*60L)"completed" else "interrupted",register))
+        }
+        d.clearFocus()
     }
     suspend fun importState(s:GameState)=change("Backup restaurado"){
         validateState(s)
-        d.clearRestDays();d.clearFocus();d.clearRecords();d.clearHabits();d.clearLedger();d.clearQuests();d.clearClaims();d.clearAssets();d.clearAchievements();d.clearJournal();d.clearRoutines();d.clearPlayer()
+        d.clearPlans();d.clearFocusSessions();d.clearRestDays();d.clearFocus();d.clearRecords();d.clearHabits();d.clearLedger();d.clearQuests();d.clearClaims();d.clearAssets();d.clearAchievements();d.clearJournal();d.clearRoutines();d.clearPlayer()
         s.restDays.forEach{d.restDay(it)}
-        s.player?.let{d.player(it)};s.habits.forEach{d.habit(it)};s.records.forEach{d.record(it)};s.ledger.forEach{d.reward(it)};s.quests.forEach{d.quest(it)};s.claims.forEach{d.claim(it)};s.assets.forEach{d.asset(it)};s.achievements.forEach{d.unlock(it)};s.journal.forEach{d.journal(it)};s.routines.forEach{d.routine(it)};s.focus?.let{d.focus(it.copy(elapsed=it.seconds(),startedAt=0))}
+        s.player?.let{d.player(it)};s.habits.forEach{d.habit(it)};s.plans.forEach{d.plan(it)};s.focusSessions.forEach{d.focusSession(it)};s.records.forEach{d.record(it)};s.ledger.forEach{d.reward(it)};s.quests.forEach{d.quest(it)};s.claims.forEach{d.claim(it)};s.assets.forEach{d.asset(it)};s.achievements.forEach{d.unlock(it)};s.journal.forEach{d.journal(it)};s.routines.forEach{d.routine(it)};s.focus?.let{d.focus(it.copy(elapsed=it.seconds(),startedAt=0))}
     }
 }
 fun validateHabitInput(h:Habit){
         LocalDate.parse(h.created)
         require(h.name.isNotBlank() && h.target in 1..1000000 && h.xp in 0..1000000 && h.coins in 0..1000000 && h.points in 0..1000000){"Revise o nome, a meta e as recompensas (0 a 1.000.000)."}
         require(h.attribute in 0..4 && h.type in 0..3 && h.days.split(',').all{it.toIntOrNull() in 1..7}){"Selecione ao menos um dia."}
-        require(Regex("([01]\\d|2[0-3]):[0-5]\\d").matches(h.time)){"Use um horário como 08:00."}
+        require(h.time.isBlank()&&!h.reminder||Regex("([01]\\d|2[0-3]):[0-5]\\d").matches(h.time)){"Use um horário como 08:00."}
     require(h.difficulty in 0..2 && h.icon in glyphs.indices && h.color in palette.indices){"Revise a dificuldade, o ícone e a cor."}
     require(h.templateId.length<=100 && h.narrativeName.length<=200){"Nome narrativo muito longo."}
 }
-data class BackupEnvelope(val format:String="ASCEND",val version:Int=7,val sha256:String,val payload:String)
+data class BackupEnvelope(val format:String="ASCEND",val version:Int=8,val sha256:String,val payload:String)
 object Backup {
     private val gson=Gson()
     private fun digest(s:String)=MessageDigest.getInstance("SHA-256").digest(s.toByteArray(Charsets.UTF_8)).joinToString(""){"%02x".format(it)}
@@ -272,11 +284,13 @@ object Backup {
     fun decode(text:String):GameState {
         require(text.length<=20_000_000){"Backup muito grande (máximo 20 MB)."}
         val b=gson.fromJson(text,BackupEnvelope::class.java)
-        require(b.format=="ASCEND" && b.version in 1..7 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
+        require(b.format=="ASCEND" && b.version in 1..8 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
         val json=com.google.gson.JsonParser.parseString(b.payload).asJsonObject
         listOf("quests","claims").forEach{table->json.getAsJsonArray(table)?.forEach{row->listOf("sagaStart","sagaBaseline").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}}
         json.getAsJsonArray("quests")?.forEach{row->val obj=row.asJsonObject;if(!obj.has("sagaState"))obj.addProperty("sagaState",0);if(!obj.has("sagaEnd"))obj.addProperty("sagaEnd","");if(!obj.has("sagaStopped"))obj.addProperty("sagaStopped",0)}
         json.getAsJsonArray("assets")?.forEach{row->listOf("memorySpeaker","memoryText").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}
+        listOf("plans","focusSessions").forEach{if(!json.has(it))json.add(it,com.google.gson.JsonArray())}
+        json["focus"]?.takeIf{it.isJsonObject}?.asJsonObject?.let{f->if(!f.has("sessionId"))f.addProperty("sessionId","");if(!f.has("beganAt"))f.addProperty("beganAt",0)}
         val s=gson.fromJson(json,GameState::class.java);validateState(s);return s
     }
 }
@@ -289,7 +303,7 @@ fun validateState(s:GameState){
     distinct(s.habits.map{it.id});distinct(s.records.map{it.id});distinct(s.ledger.map{it.id});distinct(s.quests.map{it.id});distinct(s.claims.map{it.id});distinct(s.assets.map{it.id});distinct(s.achievements.map{it.id});distinct(s.journal.map{it.id});distinct(s.routines.map{it.id})
     require(s.restDays.size<=36600)
     distinct(s.restDays.map{it.date});s.restDays.forEach{LocalDate.parse(it.date)}
-    s.habits.forEach{h->require(h.name.isNotBlank() && h.target in 1..1000000 && h.attribute in 0..4 && h.color in 0..4 && h.icon in glyphs.indices && h.type in 0..3 && h.xp in 0..1000000 && h.coins in 0..1000000 && h.points in 0..1000000 && h.days.split(',').all{it.toIntOrNull() in 1..7});LocalDate.parse(h.created);LocalTime.parse(h.time)
+    s.habits.forEach{h->require(h.name.isNotBlank() && h.target in 1..1000000 && h.attribute in 0..4 && h.color in 0..4 && h.icon in glyphs.indices && h.type in 0..3 && h.xp in 0..1000000 && h.coins in 0..1000000 && h.points in 0..1000000 && h.days.split(',').all{it.toIntOrNull() in 1..7});LocalDate.parse(h.created);if(h.time.isNotBlank())LocalTime.parse(h.time)
         if(h.scheduleHistory.isNotBlank())h.scheduleHistory.split(';').forEach{entry->val parts=entry.split('|');require(parts.size==3 && parts[1].split(',').all{it.toIntOrNull() in 1..7} && parts[2].toBooleanStrictOrNull()!=null);LocalDate.parse(parts[0])}
     }
     s.records.forEach{r->require(s.habits.any{it.id==r.habitId} && r.id=="${r.habitId}@${r.date}" && r.target in 1..1000000 && r.progress in 0..r.target && r.attribute in 0..4 && r.type in 0..3 && r.xp in 0..1000000 && r.coins in 0..1000000 && r.points in 0..1000000 && r.date<=today());LocalDate.parse(r.date)}
@@ -310,6 +324,10 @@ fun validateState(s:GameState){
     s.journal.forEach{require(it.title.length<=100000 && it.text.length<=1000000);LocalDate.parse(it.date)}
     s.routines.forEach{r->require(r.name.isNotBlank() && r.habitIds.split(',').all{id->s.habits.any{it.id==id}});LocalTime.parse(r.time)}
     s.claims.forEach{c->if(c.sagaStart.isNotBlank()){LocalDate.parse(c.sagaStart);parseBaseline(c.sagaBaseline)};require(s.quests.any{it.id==c.questId} && c.id=="${c.questId}@${c.occurrence}" && c.xp in 0..1000000 && c.coins in 0..1000000 && c.target in 1..1000000 && c.metric in 0..3 && c.period in 0..3 && c.attribute in -1..4);LocalDate.parse(c.date);if(c.period!=2)LocalDate.parse(c.occurrence)}
+    require(s.plans.size<=200000 && s.focusSessions.size<=200000)
+    distinct(s.plans.map{it.id});distinct(s.focusSessions.map{it.id})
+    s.plans.forEach{p->LocalDate.parse(p.date);require(p.id=="${p.habitId}@${p.date}"&&s.habits.any{it.id==p.habitId&&p.date>=it.created})}
+    s.focusSessions.forEach{f->LocalDate.parse(f.date);require(s.habits.any{it.id==f.habitId} && f.date<=today() && f.startedAt>0 && f.endedAt>=f.startedAt && f.plannedMinutes in 1..1440 && f.elapsedSeconds in 0..f.plannedMinutes*60L && f.status in listOf("completed","interrupted","cancelled") && f.registered==(f.status!="cancelled"))}
     s.focus?.let{f->
         LocalDate.parse(f.date)
         require(f.id==1 && s.habits.any{it.id==f.habitId && f.date>=it.created} && f.date<=today() && f.duration in 1..1440 && f.elapsed in 0..f.duration*60L && f.startedAt>=0 && f.baseline in 0..1000000){"Sessão de foco inválida no backup."}
