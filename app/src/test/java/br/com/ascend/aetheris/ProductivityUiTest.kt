@@ -47,7 +47,7 @@ class ProductivityUiTest{
         val sessionId=app.repository.state.value!!.focus!!.sessionId
         compose.activityRule.scenario.recreate();wait{app.repository.state.value!!.focus?.sessionId==sessionId}
         assertEquals(60L,app.repository.state.value!!.focus!!.seconds())
-        compose.onNodeWithTag("journey_list").performScrollToNode(hasText("Registrar"));compose.onNodeWithText("Registrar").performScrollTo().performClick();wait{app.repository.state.value!!.focusSessions.size==1};assertEquals(60L,app.repository.state.value!!.xp)
+        compose.onNodeWithTag("journey_list").performScrollToNode(hasText("Registrar"));compose.onNodeWithText("Registrar").performScrollTo();shot("cronometro-165");compose.onNodeWithText("Registrar").performClick();wait{app.repository.state.value!!.focusSessions.size==1};assertEquals(60L,app.repository.state.value!!.xp)
         compose.onNodeWithTag("journey_list").performScrollToIndex(0);compose.onAllNodesWithText("Foco").onFirst().performScrollTo().performClick();compose.onNodeWithText("Histórico de Foco").assertExists();shot("foco-historico-160")
         compose.onNodeWithTag("focus_history_list").performScrollToNode(hasText("Detalhes da sessão"));compose.onNodeWithText("Detalhes da sessão").performClick();shot("foco-sessao-160");compose.onNodeWithText("Fechar").performClick();back()
         assertEquals(1,app.repository.state.value!!.focusSessions.size)

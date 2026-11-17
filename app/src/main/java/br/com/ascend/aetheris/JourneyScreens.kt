@@ -38,7 +38,7 @@ import java.util.Locale
 @Composable fun FocusCard(f:Focus,s:GameState,vm:GameViewModel){
     var now by remember{mutableLongStateOf(System.currentTimeMillis())};LaunchedEffect(f){while(f.startedAt>0){now=System.currentTimeMillis();delay(1000)}}
     val seconds=f.seconds(now);val remaining=(f.duration*60L-seconds).coerceAtLeast(0)
-    Panel(accent=Violet){Eyebrow("Foco · ${s.habits.find{it.id==f.habitId}?.name?:"Sessão"}",Violet);Text("%02d:%02d".format(remaining/60,remaining%60),color=Ink,fontFamily=FontFamily.Serif,fontSize=42.sp);Meter(seconds.toFloat()/(f.duration*60),Violet);Text("${seconds/60} minutos efetivos · sessão de ${displayDate(f.date)}",color=Muted,fontSize=12.sp)
+    Panel(accent=Violet){Eyebrow("Foco · ${s.habits.find{it.id==f.habitId}?.name?:"Sessão"}",Violet);Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){DayDial(seconds.toFloat()/(f.duration*60),"%02d:%02d".format(remaining/60,remaining%60))};Meter(seconds.toFloat()/(f.duration*60),Violet);Text("${seconds/60} minutos efetivos · sessão de ${displayDate(f.date)}",color=Muted,fontSize=12.sp)
         Row(horizontalArrangement=Arrangement.spacedBy(6.dp)){OutlinedButton({vm.run{vm.repo.pauseFocus()}}){Text(if(f.startedAt>0)"Pausar" else "Retomar")};Action("Registrar",{vm.run{vm.repo.endFocus(true)}})};TextButton({vm.run{vm.repo.endFocus(false)}}){Text("Descartar sessão",color=Muted)}
         Text("O tempo continua fora desta tela. Ao registrar, conta apenas minutos completos e preserva o progresso manual já registrado.",color=Muted,fontSize=11.sp)
     }
