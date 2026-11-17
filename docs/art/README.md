@@ -30,3 +30,7 @@ As pinturas foram preservadas. Cinco efeitos breves originais foram sintetizados
 `forest_atlas.webp` é uma pintura original nova em grade 3 × 3: três estados da floresta, três estados do santuário, Marco dos Retornos, Guardião da Névoa e Broche da Vigília. A direção pediu universo e criatura originais, coerentes com a pintura local do fiorde; nenhum recurso oficial de outra franquia foi utilizado. A imagem original foi convertida para WebP sem edição do conteúdo por scripts. Células são amostradas na renderização por ArtTile, preservando o arquivo completo. Não são simples filtros de cor ou vetores apresentados como pintura.
 
 Bytes: 449,560. SHA-256: `7882d1a03a3687695364d32b941e1060e79bc17dfcba83ccc2a221dbfbe95343`.
+
+## Recursos originais 1.6.1
+
+`ForgeArt.kt`: biblioteca vetorial procedural original de ferro riscado, couro costurado, papel granulado, molduras, entrelaçados pareados, rebites, chapas de canto, nichos e medalhão de nível. Sem recursos externos ou cópia de jogos comerciais; reutiliza as pinturas já registradas acima. Renderização com cache e semente fixa; sem textura animada. Aplicação e capturas em [VISUAL-1.6.1.md](../VISUAL-1.6.1.md).

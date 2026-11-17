@@ -1,3 +1,25 @@
+# Validação — ASCEND 1.6.1
+
+16/11/2026. Base `feat/ascend-1.6`, commit `861acb5`. Branch de entrega `feat/ascend-1.6.1`.
+
+- `testDebugUnitTest assembleDebug lintDebug`: **BUILD SUCCESSFUL** com JDK17 / SDK35 / Gradle8.9.
+- **135 testes aprovados**, zero falhas, erros ou ignorados. Suíte anterior preservada; seletor do Planejador adaptado à descrição acessível da seta, sem remover asserções.
+- Lint: **zero erros / 20 avisos** preexistentes; sem novas supressões.
+- APK: [ASCEND-1.6.1.apk](downloads/ASCEND-1.6.1.apk?raw=true), **23,439,812 bytes**.
+- SHA-256: `e0a932269b6dd6bd588c4a455ad7b2281b64538c2c3071881df70dcb8a067c2d`.
+- Assinatura v2 válida, certificado idêntico ao APK 1.6.0: `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`. `zipalign -c 4` aprovado.
+- Manifesto: `br.com.ascend.aetheris`, versionName **1.6.1**, versionCode **12**, minSdk26 / targetSdk35. Sem permissão INTERNET.
+- Escopo de produção: somente apresentação/layout/versionamento. Nenhuma alteração em repositórios, entidades, esquemas Room v6, backup v8, ledger, economia, recompensas ou permissões.
+- Nove capturas nativas atuais: seis telas P0, Análises e cenários estreitos de Jornada e Planejador. Renderização real em Robolectric, **não em aparelho físico**; comparações preservam imagens anteriores da 1.6.
+- Jornada e Planejador em 320 dp / texto130%, tema claro/minimalista/redução de movimento e regressões existentes continuam cobertos. Revisão visual das telas em [VISUAL-1.6.1.md](docs/VISUAL-1.6.1.md).
+- Instalação física sobre a 1.6.0, launcher e TalkBack **não executados**. A compatibilidade de identidade é conferida por pacote/certificado e incremento de versão; isso não substitui teste físico.
+
+[Log do build](docs/validation/BUILD-1.6.1.txt) · [APK/assinatura](docs/validation/APK-1.6.1.txt) · [Lint](docs/validation/LINT-1.6.1.txt) · [XMLs executados](docs/validation/).
+
+---
+
+## Registro anterior da 1.6.0
+
 # Validação — ASCEND 1.6.0
 
 16/11/2026. Base `feat/ascend-1.5.2`, commit `67c3bd1cc0309ee262538d7343a4f9015e09d4d6`. Desenvolvimento em `feat/ascend-1.6`, com marcos publicados sem modificar a principal.

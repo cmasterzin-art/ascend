@@ -46,3 +46,7 @@ Navegação usa 140 ms; barras, retrato de abas e cenas da floresta usam 240 ms.
 Hierarquia, contraste, alvos confortáveis e estados textuais têm prioridade sobre ornamentos. A UI foi exercitada em 411/320 dp e fonte 130%, claro/escuro, minimalista e redução de movimento. Testes de leitor de tela, teclado físico e fabricante continuam pendentes. Widgets usam o tema do sistema, como antes.
 
 [Comparações reais](VISUAL-1.6.md) · [Regras funcionais](PRODUTIVIDADE-1.6.md).
+
+## Evolução 2.1 — Nordic Cinematic UI
+
+As cinco famílias recebem materialidade e composição em `ForgeArt.kt`, compartilhadas por `AetherSurface` e `SagaButton`. Retrato/medalhão e navegação usam a mesma biblioteca. Tokens, tipografia funcional, Cinzel, temas e comportamentos são preservados. [Implementação e comparações](VISUAL-1.6.1.md).

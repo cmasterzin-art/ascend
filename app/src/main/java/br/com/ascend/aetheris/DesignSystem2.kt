@@ -20,10 +20,10 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
 @Composable fun AetherSurface(kind:SurfaceKind=SurfaceKind.Operational,modifier:Modifier=Modifier,content:@Composable ColumnScope.()->Unit){
  val dark=LocalAppearance.current.dark
  val accent=when(kind){SurfaceKind.Heroic->Blue;SurfaceKind.Ceremonial->Gold;SurfaceKind.Parchment->Sepia;SurfaceKind.Artifact->Violet;else->ColdIron}
- val base=when(kind){SurfaceKind.Parchment->if(dark)Color(0xFFD0C3A5) else Color(0xFFF2E5C7);SurfaceKind.Artifact->if(dark)Color(0xFF211D25) else Color(0xFFE8E0D5);else->Surface}
+ val base=when(kind){SurfaceKind.Parchment->if(dark)Color(0xFFD0C3A5) else Color(0xFFF2E5C7);SurfaceKind.Ceremonial->if(dark)Color(0xFF29211C) else Color(0xFFE1D5BF);SurfaceKind.Artifact->if(dark)Color(0xFF211D25) else Color(0xFFE8E0D5);else->Surface}
  val shades=if(kind==SurfaceKind.Parchment)listOf(if(dark)Color(0xFFB7AA8D) else Color(0xFFE0CDA6),base,if(dark)Color(0xFFDBCEB0) else Color(0xFFF2E5C7)) else listOf(base,base.copy(alpha=.7f))
- val shape=if(kind==SurfaceKind.Operational)RoundedCornerShape(10.dp) else AetherTokens.shape
- Column(modifier.fillMaxWidth().clip(shape).background(Brush.linearGradient(shades)).border(1.dp,accent.copy(alpha=.19f),shape).padding(AetherTokens.inset),verticalArrangement=Arrangement.spacedBy(12.dp)){
+ val shape=androidx.compose.foundation.shape.CutCornerShape(if(kind==SurfaceKind.Operational)4.dp else 10.dp)
+ Column(modifier.fillMaxWidth().clip(shape).background(Brush.linearGradient(shades)).forgeMaterial(kind).border(1.dp,accent.copy(alpha=.32f),shape).padding(AetherTokens.inset),verticalArrangement=Arrangement.spacedBy(12.dp)){
   if(kind!=SurfaceKind.Operational)Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){Box(Modifier.width(26.dp).height(2.dp).background(accent));Text(when(kind){SurfaceKind.Heroic->"SAGA PESSOAL";SurfaceKind.Ceremonial->"MARCA DE AETHERIS";SurfaceKind.Parchment->"ARQUIVO DO CRONISTA";else->"COLEÇÃO DE ARTEFATOS"},color=accent,fontSize=10.sp,letterSpacing=1.5.sp)}
   CompositionLocalProvider(LocalContentColor provides if(kind==SurfaceKind.Parchment)Sepia else Ink){content()}
  }
@@ -34,9 +34,13 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
 }
 @Composable fun CompactHero(s:GameState,onPortrait:()->Unit={}){
  val p=requireNotNull(s.player)
- Row(Modifier.fillMaxWidth().background(Brush.horizontalGradient(listOf(Blue.copy(alpha=.13f),Surface)),AetherTokens.shape).border(1.dp,Blue.copy(alpha=.25f),AetherTokens.shape).padding(14.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){
-  Box(Modifier.clickable(onClickLabel="Ampliar retrato",onClick=onPortrait)){Avatar(p,s,64.dp)}
-  Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)){Text(p.name,style=MaterialTheme.typography.titleLarge);Text("${classes[p.heroClass]} · nível ${s.level} · ${p.title}",color=Muted,fontSize=11.sp,lineHeight=16.sp);Meter(Progression.current(s.xp).toFloat()/Progression.requirement(s.level),Blue);Text("${Progression.current(s.xp)}/${Progression.requirement(s.level)} XP · ${s.coins} fragmentos",fontSize=11.sp,color=Blue)}
+ Box(Modifier.fillMaxWidth().clip(androidx.compose.foundation.shape.CutCornerShape(9.dp))){
+  if(!LocalAppearance.current.minimal)Image(androidx.compose.ui.res.painterResource(R.drawable.nordic_fjord),null,Modifier.matchParentSize(),contentScale=androidx.compose.ui.layout.ContentScale.Crop)
+  Row(Modifier.fillMaxWidth().background(Brush.horizontalGradient(listOf(Surface.copy(alpha=.6f),Surface.copy(alpha=.94f)))).forgeMaterial(SurfaceKind.Heroic).padding(16.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){
+   Box(Modifier.clickable(onClickLabel="Ampliar retrato",onClick=onPortrait)){ForgePortrait(s,64.dp)}
+   Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(5.dp)){Text(p.name,style=MaterialTheme.typography.titleLarge);Text("${classes[p.heroClass]} · nível ${s.level} · ${p.title}",color=Muted,fontSize=11.sp,lineHeight=16.sp);Meter(Progression.current(s.xp).toFloat()/Progression.requirement(s.level),Blue);Text("${Progression.current(s.xp)}/${Progression.requirement(s.level)} XP · ${s.coins} fragmentos",fontSize=11.sp,color=Blue)}
+   ForgeMedallion(s.level)
+  }
  }
 }
 

@@ -1,3 +1,11 @@
+# Mudanças — 1.6.1 · As Forjas de Aetheris
+
+- Nordic Cinematic UI / DS2.1: biblioteca Canvas original, ferro riscado, couro costurado, papel granulado, chapas heroicas, nichos rebaixados, entrelaçados e medalhão.
+- Jornada com fiorde integrado, retrato emoldurado e nível; Herói, arsenal e Memórias com composições refinadas. Navegação e botões compartilhados chanfrados.
+- Planejador com setas e descrições acessíveis, preservando a agenda e evitando quebra de palavras em telas estreitas.
+- Apenas apresentação. Room v6, backup v8, regras, dados, retratos e permissões preservados. Versão 1.6.1 / code 12.
+- [Capturas comparativas e limites reais](docs/VISUAL-1.6.1.md).
+
 # Mudanças — 1.6.0 · O Renascimento de Aetheris
 
 - Design System 2.0 aplicado a Jornada, hábitos, contratos, Sagas, Perfil, inventário, leitura, controles e widgets; cinco contextos de superfície, cabeçalhos e métricas compartilhados.
