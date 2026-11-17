@@ -7,6 +7,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.*
@@ -20,13 +21,14 @@ import androidx.compose.ui.semantics.*
     }
 }
 @Composable fun HabitEditor(h:Habit,onDismiss:()->Unit,onSave:(Habit)->Unit){
-    var narrative by remember{mutableStateOf(h.narrativeName)};var trackStreak by remember{mutableStateOf(h.trackStreak)}
-    var name by remember{mutableStateOf(h.name)};var desc by remember{mutableStateOf(h.description)};var category by remember{mutableStateOf(h.category)};var attr by remember{mutableIntStateOf(h.attribute)};var type by remember{mutableIntStateOf(h.type)};var target by remember{mutableStateOf(h.target.toString())};var unit by remember{mutableStateOf(h.unit)}
-    var xp by remember{mutableStateOf(h.xp.toString())};var coins by remember{mutableStateOf(h.coins.toString())};var points by remember{mutableStateOf(h.points.toString())};var days by remember{mutableStateOf(h.days.split(',').mapNotNull{it.toIntOrNull()}.toSet())};var time by remember{mutableStateOf(h.time)};var proportional by remember{mutableStateOf(h.proportional)};var reminder by remember{mutableStateOf(h.reminder)};var difficulty by remember{mutableIntStateOf(h.difficulty)};var icon by remember{mutableIntStateOf(h.icon)};var color by remember{mutableIntStateOf(h.color)}
-    FullForm(if(h.name.isBlank())"Novo hábito" else if(h.templateId.isNotBlank()&&h.scheduleHistory.isBlank())"Personalizar ritual" else "Editar hábito",onDismiss,{
-        onSave(h.copy(name=name.trim(),narrativeName=narrative.trim(),trackStreak=trackStreak,description=desc,category=category,attribute=attr,type=type,target=if(type==0)1 else target.toIntOrNull()?:0,unit=if(type==2)"minutos" else unit,xp=xp.toIntOrNull()?:-1,coins=coins.toIntOrNull()?:-1,points=points.toIntOrNull()?:-1,days=days.sorted().joinToString(","),time=time,proportional=proportional && type in 1..2,reminder=reminder,difficulty=difficulty,icon=icon,color=color))
-    }){
-        var advanced by remember{mutableStateOf(h.templateId.isNotBlank())}
+    var narrative by rememberSaveable(h.id){mutableStateOf(h.narrativeName)};var trackStreak by rememberSaveable(h.id){mutableStateOf(h.trackStreak)}
+    var name by rememberSaveable(h.id){mutableStateOf(h.name)};var desc by rememberSaveable(h.id){mutableStateOf(h.description)};var category by rememberSaveable(h.id){mutableStateOf(h.category)};var attr by rememberSaveable(h.id){mutableIntStateOf(h.attribute)};var type by rememberSaveable(h.id){mutableIntStateOf(h.type)};var target by rememberSaveable(h.id){mutableStateOf(h.target.toString())};var unit by rememberSaveable(h.id){mutableStateOf(h.unit)}
+    var xp by rememberSaveable(h.id){mutableStateOf(h.xp.toString())};var coins by rememberSaveable(h.id){mutableStateOf(h.coins.toString())};var points by rememberSaveable(h.id){mutableStateOf(h.points.toString())};var days by rememberSaveable(h.id){mutableStateOf(h.days.split(',').mapNotNull{it.toIntOrNull()}.toSet())};var time by rememberSaveable(h.id){mutableStateOf(h.time)};var proportional by rememberSaveable(h.id){mutableStateOf(h.proportional)};var reminder by rememberSaveable(h.id){mutableStateOf(h.reminder)};var difficulty by rememberSaveable(h.id){mutableIntStateOf(h.difficulty)};var icon by rememberSaveable(h.id){mutableIntStateOf(h.icon)};var color by rememberSaveable(h.id){mutableIntStateOf(h.color)}
+    var discard by remember{mutableStateOf(false)}
+    fun draft() = h.copy(name=name.trim(),narrativeName=narrative.trim(),trackStreak=trackStreak,description=desc,category=category,attribute=attr,type=type,target=if(type==0)1 else target.toIntOrNull()?:0,unit=if(type==2)"minutos" else unit,xp=xp.toIntOrNull()?:-1,coins=coins.toIntOrNull()?:-1,points=points.toIntOrNull()?:-1,days=days.sorted().joinToString(","),time=time,proportional=proportional && type in 1..2,reminder=reminder,difficulty=difficulty,icon=icon,color=color)
+    val dirty=draft()!=h
+    FullForm(if(h.name.isBlank())"Novo hábito" else if(h.templateId.isNotBlank()&&h.scheduleHistory.isBlank())"Personalizar ritual" else "Editar hábito",{if(dirty)discard=true else onDismiss()},{onSave(draft())}){
+        var advanced by rememberSaveable(h.id){mutableStateOf(h.templateId.isNotBlank())}
         Panel(accent=habitColor(color)){
             Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){
                 Text(glyphs[icon],color=habitColor(color),fontSize=36.sp)
@@ -61,16 +63,28 @@ import androidx.compose.ui.semantics.*
         }
         Panel(accent=Blue){Text("Alterar recompensas afeta apenas novos registros. O histórico preserva os valores originais. Use a correção de registro no histórico quando necessário.",color=Muted,fontSize=13.sp)}
     }
+    if(discard)DiscardEdits(onDismiss,{discard=false})
 }
 @Composable fun ProgressEditor(h:Habit,r:HabitRecord?,onDismiss:()->Unit,onSave:(String,Int,HabitRecord?)->Unit){
-    var date by remember{mutableStateOf(r?.date?:today())};var amount by remember{mutableStateOf((r?.progress?:0).toString())};var correct by remember{mutableStateOf(false)};var xp by remember{mutableStateOf((r?.xp?:h.xp).toString())};var coins by remember{mutableStateOf((r?.coins?:h.coins).toString())};var points by remember{mutableStateOf((r?.points?:h.points).toString())}
-    FullForm("Registrar · ${h.name}",onDismiss,{
+    var date by rememberSaveable(h.id,r?.id){mutableStateOf(r?.date?:today())};var amount by rememberSaveable(h.id,r?.id){mutableStateOf((r?.progress?:0).toString())};var correct by rememberSaveable(h.id,r?.id){mutableStateOf(false)};var xp by rememberSaveable(h.id,r?.id){mutableStateOf((r?.xp?:h.xp).toString())};var coins by rememberSaveable(h.id,r?.id){mutableStateOf((r?.coins?:h.coins).toString())};var points by rememberSaveable(h.id,r?.id){mutableStateOf((r?.points?:h.points).toString())}
+    var inputError by rememberSaveable(h.id,r?.id){mutableStateOf<String?>(null)}
+    var discard by remember{mutableStateOf(false)}
+    val dirty=date!=(r?.date?:today())||amount!=(r?.progress?:0).toString()||correct&&(xp!=(r?.xp?:h.xp).toString()||coins!=(r?.coins?:h.coins).toString()||points!=(r?.points?:h.points).toString())
+    FullForm("Registrar · ${h.name}",{if(dirty)discard=true else onDismiss()},{
         val correction=if(correct&&r!=null) r.copy(xp=xp.toIntOrNull()?:-1,coins=coins.toIntOrNull()?:-1,points=points.toIntOrNull()?:-1) else null
-        onSave(date,amount.toIntOrNull()?:0,correction)
+        val value=amount.toIntOrNull()
+        inputError=when{
+            value==null||value<0 -> "Informe um número inteiro igual ou maior que zero."
+            runCatching{java.time.LocalDate.parse(date)}.isFailure -> "Informe uma data válida no formato AAAA-MM-DD."
+            correction!=null&&(correction.xp !in 0..1000000||correction.coins !in 0..1000000||correction.points !in 0..1000000) -> "Informe recompensas entre 0 e 1.000.000."
+            else -> null
+        }
+        if(inputError==null)onSave(date,requireNotNull(value),correction)
     }){
+        inputError?.let{Text(it,color=MaterialTheme.colorScheme.error)}
         FormField(date,{date=it},"Data · AAAA-MM-DD")
         Text("Meta deste registro: ${r?.target?:h.target} ${r?.unit?:h.unit}",color=Gold)
-        FormField(amount,{amount=it},"Progresso total nesta data",number=true)
+        FormField(amount,{amount=it;inputError=null},"Progresso total nesta data",number=true)
         if(h.type!=0)Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
             (if(h.type==2)listOf(5,15,25) else listOf(1,5,10)).forEach{step->OutlinedButton({amount=((amount.toIntOrNull()?:0).coerceAtLeast(0).toLong()+step).coerceAtMost((r?.target?:h.target).toLong()).toString()}){Text("+$step")}}
         }
@@ -79,6 +93,10 @@ import androidx.compose.ui.semantics.*
         if(r!=null){Toggle("Corrigir recompensas deste registro",correct,{correct=it});if(correct){FormField(xp,{xp=it},"XP da meta",true);FormField(coins,{coins=it},"Fragmentos da meta",true);FormField(points,{points=it},"Pontos da meta",true)}}
         Text("Se fragmentos de um registro desfeito já tiverem sido gastos, a diferença será compensada pelos próximos ganhos. O saldo disponível permanece em zero até a compensação.",color=Muted,fontSize=12.sp)
     }
+    if(discard)DiscardEdits(onDismiss,{discard=false})
+}
+@Composable private fun DiscardEdits(onDiscard:()->Unit,onKeep:()->Unit){
+    AlertDialog(onDismissRequest=onKeep,title={Text("Descartar alterações?")},text={Text("As mudanças deste formulário ainda não foram salvas.")},confirmButton={SagaButton("Descartar",onDiscard,destructive=true)},dismissButton={TextButton(onKeep){Text("Continuar editando")}})
 }
 @Composable fun Onboarding(onRestore:(()->Unit)?=null,onCreate:(Player,List<Habit>)->Unit){
     var step by remember{mutableIntStateOf(0)};var name by remember{mutableStateOf("")};var cls by remember{mutableIntStateOf(1)};var color by remember{mutableIntStateOf(1)};var face by remember{mutableIntStateOf(0)};var outfit by remember{mutableIntStateOf(0)};var frame by remember{mutableIntStateOf(0)};var title by remember{mutableIntStateOf(0)};var goals by remember{mutableStateOf(setOf("Aprender"))};var starters by remember{mutableStateOf(setOf(0))}
@@ -116,5 +134,5 @@ import androidx.compose.ui.semantics.*
 }
 @Composable fun JournalEditor(j:Journal?,onDismiss:()->Unit,onSave:(Journal)->Unit){
     var title by remember{mutableStateOf(j?.title?:"")};var text by remember{mutableStateOf(j?.text?:"")}
-    FullForm("Diário do aventureiro",onDismiss,{onSave(Journal(j?.id?:uid(),title,text,j?.date?:today()))}){Eyebrow(j?.date?:today());FormField(title,{title=it},"Título");OutlinedTextField(text,{text=it},Modifier.fillMaxWidth().heightIn(min=320.dp),label={Text("O que este dia deixou em você?")});Text("Esta página fica somente neste aparelho e no backup local que você exportar.",color=Muted,fontSize=12.sp)}
+    FullForm("Diário do aventureiro",onDismiss,{onSave(Journal(j?.id?:uid(),title,text,j?.date?:today()))}){Eyebrow(displayDate(j?.date?:today()));FormField(title,{title=it},"Título");OutlinedTextField(text,{text=it},Modifier.fillMaxWidth().heightIn(min=320.dp),label={Text("O que este dia deixou em você?")});Text("Esta página fica somente neste aparelho e no backup local que você exportar.",color=Muted,fontSize=12.sp)}
 }

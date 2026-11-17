@@ -19,7 +19,7 @@ import java.time.LocalDate
  Page{Title("Crônica da Semana","As marcas permanecem abertas a correções.")
  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)){SagaButton("Anterior",{week=LocalDate.parse(week).minusWeeks(1).toString()},Modifier.weight(1f),enabled=week>firstWeek,secondary=true);SagaButton("Seguinte",{week=LocalDate.parse(week).plusWeeks(1).toString()},Modifier.weight(1f),enabled=week<weekOf(today()),secondary=true)}
  Manuscript{
-  Eyebrow("${displayDate(c.start)} a ${displayDate(c.end)}",Sepia)
+  Eyebrow(displayPeriod(c.start,c.end),Sepia)
   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(18.dp)){Box(Modifier.weight(1f)){ChronicleNumber(c.summary.completed.toString(),if(c.summary.completed==1)"ritual concluído" else "rituais concluídos")};Box(Modifier.weight(1f)){ChronicleNumber(c.summary.rate?.let{"$it%"}?:"—","conclusão prevista")}}
   Text("${c.summary.planned} ${if(c.summary.planned==1)"hábito programado" else "hábitos programados"} · ${if(c.start==weekOf(today()))"semana atual até hoje" else "semana encerrada"}",color=Sepia,fontSize=12.sp,lineHeight=20.sp)
   SagaDivider(color=Sepia)

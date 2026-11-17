@@ -1,6 +1,16 @@
-# ASCEND — progresso da versão 1.5.1
+# ASCEND — progresso da versão 1.5.2
 
 Implementação nativa em Kotlin, Compose, Material 3, Navigation, Room, DataStore, ViewModel, Coroutines e StateFlow. Sem permissão INTERNET, contas, anúncios ou backend.
+
+## Estabilizado na 1.5.2
+
+- Registro rejeita quantidade negativa e o formulário não converte texto inválido em zero; permite corrigir sem perder o valor digitado.
+- Snapshot de um registro novo vem do hábito persistido; snapshots existentes, fórmula e valores de XP/fragmentos permanecem iguais.
+- Foco consulta o hábito atual e exige cronometrado ativo; encerramento considera descansos no histórico.
+- Validação de datas do personagem/foco no backup, mantendo Room v5/backup v7; rollback verificado com falha de gravação injetada.
+- Widgets mostram feedback para ação antiga, revalidam atalhos complexos, ocultam progresso sem programação e preservam o título na largura mínima. Modo estrito é explicado nas Configurações.
+- Rascunhos de hábito/registro salvos para recriação da Activity, confirmação de descarte e período brasileiro sem datas repetidas.
+- 116 testes aprovados; APK 1.5.2/versionCode 10, certificado preservado. [Auditoria, limites e checklist físico](docs/ESTABILIDADE-1.5.2.md).
 
 ## Refinado na 1.5.1
 

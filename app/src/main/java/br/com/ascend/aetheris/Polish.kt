@@ -16,6 +16,7 @@ import java.util.Locale
 /** Presentation only: database/backup dates remain ISO. */
 fun displayDate(iso:String):String=runCatching{LocalDate.parse(iso).format(DateTimeFormatter.ofPattern("dd/MM/yyyy",Locale.forLanguageTag("pt-BR")))}.getOrDefault(iso)
 fun widgetDate(iso:String):String=runCatching{LocalDate.parse(iso).format(DateTimeFormatter.ofPattern("EEE · d MMM",Locale.forLanguageTag("pt-BR")))}.getOrDefault(iso)
+fun displayPeriod(start:String,end:String)=if(start==end)displayDate(start) else "${displayDate(start)} a ${displayDate(end)}"
 @Composable fun ReadingBlock(text:String,label:String?=null,color:Color=Ink){
  Column(Modifier.fillMaxWidth().padding(vertical=4.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
   label?.let{Eyebrow(it,Muted)}

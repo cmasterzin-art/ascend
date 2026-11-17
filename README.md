@@ -1,19 +1,20 @@
-# ASCEND — Crônicas da Ascensão · 1.5.1
+# ASCEND — Crônicas da Ascensão · 1.5.2
 
-[**Baixar APK Android 1.5.1**](downloads/ASCEND-1.5.1.apk?raw=true)
+[**Baixar APK Android 1.5.2**](downloads/ASCEND-1.5.2.apk?raw=true)
 
 RPG de hábitos para Android 8.0 ou superior. **Tudo funciona localmente**, sem conta, internet, anúncios, assinatura ou serviços pagos. O GitHub distribui o código e o instalador; o aplicativo não tem permissão INTERNET.
 
-A versão **1.5.1 — O Polimento de Aetheris** refina widgets, Floresta, locais, Expedições, Guardião, Memórias, Crônica Semanal e Perfil. Objetivos aparecem antes das narrativas longas; datas usam o formato brasileiro; leitura, espaçamento e controles recebem acabamento mais sóbrio.
+A versão **1.5.2 — A Forja da Estabilidade** corrige validação de registros, snapshots desatualizados, início de foco, datas de backup e atalhos de widgets. Rascunhos de hábito/registro sobrevivem à restauração de estado; sair de uma edição alterada pede confirmação. Progresso inválido não é convertido silenciosamente em zero.
 
-A exploração da Floresta, três Expedições, sete marcos, progressão, Grimório, Sagas, inventário e demais sistemas da 1.5 continuam disponíveis. Não há novas regras de XP, moedas, banco ou backup.
+**116 testes aprovados**, incluindo os 97 anteriores. Room v5, backup v7, economia, pinturas e recursos da 1.5.1 foram preservados. O relatório separa defeitos reproduzidos, proteções preventivas e verificações físicas pendentes.
 
-**Atualização dos APKs 1.1, 1.2, 1.3, 1.3.1, 1.4, 1.4.5 ou 1.5.0 fornecidos neste repositório:** exporte um backup de segurança e instale a 1.5.1 por cima, **sem desinstalar**. O certificado é o mesmo. A antiga 1.0 possui assinatura diferente; consulte [INSTALACAO.md](INSTALACAO.md).
+**Atualização dos APKs 1.1, 1.2, 1.3, 1.3.1, 1.4, 1.4.5, 1.5.0 ou 1.5.1 fornecidos neste repositório:** exporte um backup de segurança e instale a 1.5.2 por cima, **sem desinstalar**. O certificado é o mesmo. A antiga 1.0 possui assinatura diferente; consulte [INSTALACAO.md](INSTALACAO.md).
 
 - [Instalação e atualização](INSTALACAO.md)
 - [Funcionalidades e limites reais](PROGRESSO.md)
 - [Assinatura e preservação de atualizações](ASSINATURA.md)
 - [Validação](VALIDACAO.md)
+- [Auditoria, correções e checklist físico da 1.5.2](docs/ESTABILIDADE-1.5.2.md)
 - [Exploração, fases, recompensas e widgets](docs/EXPLORACAO-1.5.md)
 
 ## Visual
@@ -40,4 +41,4 @@ Para usar a chave de depuração preservada, configure `ASCEND_KEYSTORE_PATH` co
 
 O fluxo central continua: registro por hábito/dia → recompensa com chave determinística → ledger transacional → nível/atributos/moedas derivados. Recompensas são snapshots; editar um hábito não reescreve XP histórico. Reverter moedas já gastas gera compensação futura, com saldo disponível limitado a zero.
 
-Banco Room v5, com migrações explícitas 1 → 2 → 3 → 4 → 5; backups v7 leem também arquivos v1–v6. A 1.5.1 mantém o esquema v5 e o formato de backup v7 da 1.5.0, sem migração adicional. Nenhum fallback destrutivo é usado. Preferências de aparência, interesses e sugestões dispensadas ficam no aparelho e não são transferidas pelo backup.
+Banco Room v5, com migrações explícitas 1 → 2 → 3 → 4 → 5; backups v7 leem também arquivos v1–v6. A 1.5.2 mantém o esquema v5 e o formato de backup v7 da 1.5.0, sem migração adicional. Nenhum fallback destrutivo é usado. Preferências de aparência, interesses e sugestões dispensadas ficam no aparelho e não são transferidas pelo backup.
