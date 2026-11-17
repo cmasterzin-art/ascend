@@ -82,7 +82,7 @@ val Ember=Color(0xFF8D4B43)
                 drawRect(Brush.verticalGradient(listOf(Color.Transparent,Color(0xFF070A0F).copy(alpha=.35f)),startY=130f,endY=150f))
                 drawRect(border.copy(alpha=.7f),Offset(1.5f,1.5f),Size(97f,147f),style=Stroke(.65f))
                 drawRect(border.copy(alpha=.25f),Offset(3f,3f),Size(94f,144f),style=Stroke(.4f))
-                repeat(if(p.frame>0||assets.any{it.kind=="frame"})12 else 4){i->val y=8f+i*11.6f;drawPath(poly(2f,y,5f,y+3,2f,y+6),border,style=Stroke(.6f));drawPath(poly(98f,y,95f,y+3,98f,y+6),border,style=Stroke(.6f))}
+                drawRect(Brush.horizontalGradient(listOf(border.copy(alpha=if(p.frame>0||assets.any{it.kind=="frame"}).5f else .2f),Color.Transparent,border.copy(alpha=.15f))));drawLine(Color.White.copy(alpha=.3f),Offset(8f,2f),Offset(92f,2f),.5f)
                 drawLine(color.copy(alpha=.7f),Offset(12f,146f),Offset(88f,146f),if(p.outfit==0).6f else if(p.outfit==1)1.2f else 2f)
                 drawRect(border.copy(alpha=flash.value))
             }

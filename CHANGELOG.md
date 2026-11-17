@@ -1,3 +1,11 @@
+# Mudanças — 1.6.2 · Refinamento Visual Nórdico
+
+- Quatro recursos originais em WebP: ferro, couro, velino e medalhão; removidos padrões repetidos de riscos, rebites e entrelaçados dos componentes.
+- Navegação contínua com pendente de seleção, botões e abas em placas discretas; mesmos controles e ações.
+- Jornada com composição compacta de retrato/fiorde/XP, mostrador diário e atalhos; Missões como códice; Herói e nichos refinados. Materiais propagados pelas superfícies compartilhadas.
+- Exclusivamente visual. Room v6, backup v8, permissões, dados, funções e economia preservados. Versão 1.6.2 / code13.
+- [Capturas comparativas e limitações](docs/VISUAL-1.6.2.md).
+
 # Mudanças — 1.6.1 · As Forjas de Aetheris
 
 - Nordic Cinematic UI / DS2.1: biblioteca Canvas original, ferro riscado, couro costurado, papel granulado, chapas heroicas, nichos rebaixados, entrelaçados e medalhão.

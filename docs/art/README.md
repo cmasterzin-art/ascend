@@ -34,3 +34,7 @@ Bytes: 449,560. SHA-256: `7882d1a03a3687695364d32b941e1060e79bc17dfcba83ccc2a221
 ## Recursos originais 1.6.1
 
 `ForgeArt.kt`: biblioteca vetorial procedural original de ferro riscado, couro costurado, papel granulado, molduras, entrelaçados pareados, rebites, chapas de canto, nichos e medalhão de nível. Sem recursos externos ou cópia de jogos comerciais; reutiliza as pinturas já registradas acima. Renderização com cache e semente fixa; sem textura animada. Aplicação e capturas em [VISUAL-1.6.1.md](../VISUAL-1.6.1.md).
+
+## Materiais originais 1.6.2
+
+Quatro recursos gerados nesta execução com a ferramenta de geração de imagens: `forge_iron.webp` (ferro escurecido), `forge_leather.webp` (couro), `forge_vellum.webp` (velino) e `forge_brooch.webp` (medalhão com relevo entrelaçado original). Estudos próprios sem texto, marcas ou recursos extraídos de obras comerciais. Otimizados em WebP, com materiais em 1024 px e medalhão em 256 px com transparência. Os originais foram preservados no ambiente de geração; os arquivos distribuídos são locais no APK. Aplicação real, comparação e limitações: [VISUAL-1.6.2.md](../VISUAL-1.6.2.md).
