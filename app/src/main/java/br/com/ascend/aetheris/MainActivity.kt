@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
@@ -45,10 +46,21 @@ class MainActivity:ComponentActivity(){var widgetHabit by mutableStateOf<String?
     SideEffect{activity?.window?.let{window->androidx.core.view.WindowCompat.getInsetsController(window,view).apply{isAppearanceLightStatusBars=!appearance.dark;isAppearanceLightNavigationBars=!appearance.dark}}}
     val s by vm.state.collectAsStateWithLifecycle();val error by vm.error.collectAsStateWithLifecycle();val relaxed by vm.relaxed.collectAsStateWithLifecycle();val bosses by vm.bosses.collectAsStateWithLifecycle()
     val nav=rememberNavController();val entry by nav.currentBackStackEntryAsState();val route=entry?.destination?.route?:"journey";val context=LocalContext.current
-    var habitEditor by remember{mutableStateOf<Habit?>(null)};var progress by remember{mutableStateOf<Pair<Habit,HabitRecord?>?>(null)};var focus by remember{mutableStateOf<Habit?>(null)};var levelup by remember{mutableStateOf<GameEvent?>(null)}
+    var habitEditor by rememberSaveable(stateSaver=HabitEditorState){mutableStateOf<Habit?>(null)};var progress by rememberSaveable(stateSaver=RecordEditorState){mutableStateOf<Pair<Habit,HabitRecord?>?>(null)};var focus by remember{mutableStateOf<Habit?>(null)};var levelup by remember{mutableStateOf<GameEvent?>(null)}
     val widgetHabit=(activity as? MainActivity)?.widgetHabit
     val widgetJourney=(activity as? MainActivity)?.widgetJourney?:false
-    LaunchedEffect(widgetHabit,widgetJourney,s?.player){if(s?.player!=null&&(widgetHabit!=null||widgetJourney)){s?.habits?.find{it.id==widgetHabit&&!it.deleted}?.let{h->progress=h to s?.record(h.id)};nav.navigate("journey"){launchSingleTop=true};(activity as? MainActivity)?.let{it.widgetHabit=null;it.widgetJourney=false;it.intent.removeExtra("habit");it.intent.removeExtra("widget_journey")}}}
+    LaunchedEffect(widgetHabit,widgetJourney,s?.player){
+        if(s?.player!=null&&(widgetHabit!=null||widgetJourney)){
+            progress=null
+            val requestDate=(activity as? MainActivity)?.intent?.getStringExtra("date")
+            if(widgetHabit!=null){
+                val h=s?.let{widgetRegistrationHabit(it,widgetHabit,requestDate)}
+                if(h!=null)progress=h to s?.record(h.id) else vm.error.value=if(requestDate!=null&&requestDate!=today())"O dia mudou. Escolha um ritual na Jornada." else "Este ritual mudou ou não está programado para hoje. Confira sua Jornada."
+            }
+            nav.navigate("journey"){launchSingleTop=true}
+            (activity as? MainActivity)?.let{it.widgetHabit=null;it.widgetJourney=false;listOf("habit","widget_journey","date").forEach(it.intent::removeExtra)}
+        }
+    }
     var welcomeBackup by remember{mutableStateOf<GameState?>(null)}
     var readingBackup by remember{mutableStateOf(false)}
     val welcomeRestore=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()){uri->if(uri!=null)vm.run{readingBackup=true;try{welcomeBackup=readLocalBackup(context,uri)}finally{readingBackup=false}}}
@@ -109,10 +121,10 @@ class MainActivity:ComponentActivity(){var widgetHabit by mutableStateOf<String?
     val appearance=LocalAppearance.current
     Page{Title("Configurações","Seu progresso fica com você.");
         Panel{Eyebrow("Aparência e acessibilidade");Text("Tema visual",color=Muted);val theme by vm.appearance.collectAsStateWithLifecycle();ChipRow(listOf("Escuro","Claro","Sistema"),listOf("dark","light","system").indexOf(theme).coerceAtLeast(0),{vm.theme(listOf("dark","light","system")[it])});Toggle("Reduzir animações",appearance.reducedMotion,{vm.setting("reducedMotion",it)});Toggle("Modo minimalista",appearance.minimal,{vm.setting("minimal",it)});Toggle("Exibir nomes narrativos",LocalNarrativeNames.current,{vm.setting("narrative_names",it)});Text("O modo minimalista simplifica a Jornada e mantém seus hábitos e recompensas.",color=Muted,fontSize=12.sp)};
-        Panel{Eyebrow("Ritmo de jornada");Toggle("Modo livre de cobrança de frequência",relaxed,{vm.setting("relaxed",it)});Text(if(relaxed)"A jornada oferece hábitos ativos todos os dias, sem cobrança por atraso. A programação original é preservada no calendário." else "Dias não programados são descanso. Nenhuma ausência remove XP, níveis ou conquistas.",color=Muted,fontSize=13.sp);Text("Para descanso temporário, pause o hábito no Livro de hábitos. Edite seus dias para reorganizar a semana.",color=Muted,fontSize=12.sp)};Panel(accent=Blue){Eyebrow("Backup local versionado",Blue);Text("Exporte todas as crônicas, hábitos, recompensas, compras e páginas do diário. A importação valida o arquivo antes de substituir os dados.",color=Muted,fontSize=13.sp);Action("Exportar backup",{export.launch("ASCEND-backup-${today()}.json")},enabled=!busy);OutlinedButton({importBackup.launch(arrayOf("application/json","text/plain","application/octet-stream"))},enabled=!busy){Text("Importar backup")};if(busy)CircularProgressIndicator();Text("Guarde seu backup em um local privado. O arquivo inclui o diário e não é criptografado. As preferências de interface e permissões do Android são configuradas neste aparelho.",color=Muted,fontSize=12.sp)}
+        Panel{Eyebrow("Ritmo de jornada");Toggle("Modo livre de cobrança de frequência",relaxed,{vm.setting("relaxed",it)});Text(if(relaxed)"A jornada oferece hábitos ativos todos os dias, sem cobrança por atraso. A programação original é preservada no calendário." else "Dias não programados são descanso. Nenhuma ausência remove XP, níveis ou conquistas.",color=Muted,fontSize=13.sp);Text("Os widgets seguem os dias programados, mesmo no modo livre. Para descanso temporário, pause o hábito no Livro de hábitos. Edite seus dias para reorganizar a semana.",color=Muted,fontSize=12.sp)};Panel(accent=Blue){Eyebrow("Backup local versionado",Blue);Text("Exporte todas as crônicas, hábitos, recompensas, compras e páginas do diário. A importação valida o arquivo antes de substituir os dados.",color=Muted,fontSize=13.sp);Action("Exportar backup",{export.launch("ASCEND-backup-${today()}.json")},enabled=!busy);OutlinedButton({importBackup.launch(arrayOf("application/json","text/plain","application/octet-stream"))},enabled=!busy){Text("Importar backup")};if(busy)CircularProgressIndicator();Text("Guarde seu backup em um local privado. O arquivo inclui o diário e não é criptografado. As preferências de interface e permissões do Android são configuradas neste aparelho.",color=Muted,fontSize=12.sp)}
         Panel{Eyebrow("Vozes e efeitos");val effects by vm.soundEnabled.collectAsStateWithLifecycle();val volume by vm.soundVolume.collectAsStateWithLifecycle();Toggle("Efeitos sonoros",effects,{vm.setting("sound_enabled",it)});Text("Volume dos efeitos · ${(volume*100).toInt()}%",color=Muted);Slider(volume,{vm.volume(it)},enabled=effects);Text("Sons locais breves, sem música contínua. Respeitam o modo silencioso e o volume de mídia do Android. Vibração não é utilizada.",color=Muted,fontSize=12.sp)}
         if(s.debt>0)Panel{Text("Compensação pendente: ${s.debt} fragmentos",color=Gold);Text("Registros corrigidos tinham recompensas já gastas. Novos ganhos compensarão essa diferença automaticamente.",color=Muted,fontSize=13.sp)}
-        Panel{Eyebrow("ASCEND · versão 1.5.1");Text("Crônicas da Ascensão\nAetheris existe nos seus próximos passos.",fontFamily=androidx.compose.ui.text.font.FontFamily.Serif,fontSize=18.sp);Text("Aplicativo offline. Sem conta, anúncios, compras reais ou coleta remota de dados.",color=Muted,fontSize=12.sp)}
+        Panel{Eyebrow("ASCEND · versão 1.5.2");Text("Crônicas da Ascensão\nAetheris existe nos seus próximos passos.",fontFamily=androidx.compose.ui.text.font.FontFamily.Serif,fontSize=18.sp);Text("Aplicativo offline. Sem conta, anúncios, compras reais ou coleta remota de dados.",color=Muted,fontSize=12.sp)}
     }
     pending?.let{backup->AlertDialog(onDismissRequest={pending=null},title={Text("Restaurar as crônicas?")},text={Text("Personagem: ${backup.player?.name}\n${backup.habits.size} hábitos · ${backup.records.size} registros\n\nOs dados atuais deste aparelho serão substituídos. Exporte um backup antes se desejar preservá-los.")},confirmButton={TextButton({vm.run{vm.repo.importState(backup);pending=null}}){Text("Restaurar")}},dismissButton={TextButton({pending=null}){Text("Cancelar")}})}
 }

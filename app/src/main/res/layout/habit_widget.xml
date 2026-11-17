@@ -1,6 +1,6 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:padding="10dp" android:background="@drawable/widget_surface">
  <LinearLayout android:layout_width="match_parent" android:layout_height="48dp" android:orientation="horizontal" android:gravity="center_vertical">
-  <ImageView android:layout_width="20dp" android:layout_height="24dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_sigil" android:importantForAccessibility="no"/>
+  <ImageView android:id="@+id/widget_sigil" android:layout_width="20dp" android:layout_height="24dp" android:layout_marginEnd="8dp" android:src="@drawable/widget_sigil" android:importantForAccessibility="no"/>
   <TextView android:id="@+id/widget_header" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent" android:text="ASCEND" android:textColor="@color/widget_accent" android:fontFamily="serif" android:textStyle="bold" android:textSize="16sp" android:gravity="center_vertical" android:maxLines="1" android:contentDescription="Abrir Jornada do ASCEND"/>
   <TextView android:id="@+id/widget_open" android:layout_width="64dp" android:layout_height="48dp" android:text="Abrir\nJornada" android:textColor="@color/widget_text" android:textSize="10sp" android:gravity="center" android:background="@drawable/widget_secondary" android:contentDescription="Abrir Jornada"/>
  </LinearLayout>

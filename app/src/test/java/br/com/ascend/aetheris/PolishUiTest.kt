@@ -42,7 +42,7 @@ class PolishUiTest{
     }
     @Test fun memoryAndWeekUseReadableDatesAndEmptyFilters(){
         vm.run{val h=Habit(name="Pequeno ritual",xp=0);app.repository.habit(h);app.repository.progress(h,today(),1);app.repository.rememberNarrative(nextNarrative(app.repository.state.value!!)!!.id)};wait{app.repository.state.value!!.assets.any{it.kind=="memory"}}
-        compose.onNodeWithTag("nav:world").performClick();compose.onNodeWithText("Crônicas").performClick();compose.onNodeWithText("Crônica da Semana").performScrollTo().performClick();compose.onNodeWithText("${displayDate(weekOf(today()))} a ${displayDate(today())}",ignoreCase=true).assertExists();shot("cronica-151")
+        compose.onNodeWithTag("nav:world").performClick();compose.onNodeWithText("Crônicas").performClick();compose.onNodeWithText("Crônica da Semana").performScrollTo().performClick();compose.onNodeWithText(displayPeriod(weekOf(today()),today()),ignoreCase=true).assertExists();shot("cronica-151")
         compose.runOnIdle{compose.activity.onBackPressedDispatcher.onBackPressed()};compose.waitForIdle();compose.onNodeWithText("Salão das Memórias").performScrollTo().performClick();compose.onNodeWithText("História").performScrollTo().performClick()
         compose.onNodeWithTag("memory_list").performScrollToNode(hasText("Conversa guardada em ${displayDate(today())}"));shot("memorias-151")
         compose.onNodeWithTag("memory_list").performScrollToIndex(0);compose.onNodeWithText("Sagas").performScrollTo().performClick();compose.onNodeWithText("Ainda não há inscrições nesta parte do salão. O lugar permanece reservado.").assertExists();shot("memorias-vazio-151")

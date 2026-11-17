@@ -186,7 +186,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     }
     suspend fun widgetComplete(habitId:String,date:String)=change("A chama ganhou força"){
         val s=read();require(date==today()){"O dia mudou. Atualize o widget."}
-        val h=requireNotNull(s.habits.find{it.id==habitId});require(h.type==0&&!h.paused&&!h.archived&&!h.deleted&&scheduled(h,date,s.restDates)){"Registre este hábito no aplicativo."}
+        val h=requireNotNull(s.habits.find{it.id==habitId}){"Este hábito não está mais disponível. Abra a Jornada."};require(h.type==0&&!h.paused&&!h.archived&&!h.deleted&&scheduled(h,date,s.restDates)){"Registre este hábito no aplicativo."}
         val old=s.record(h.id,date)
         if(old?.complete!=true){val r=old?:HabitRecord("${h.id}@$date",h.id,date,0,h.target,h.xp,h.coins,h.points,h.attribute,h.proportional,h.type,h.category,h.unit,h.name,true)
             val complete=r.copy(progress=r.target);d.record(complete);d.reward(Reward("habit:${r.id}",Progression.reward(r.xp,complete.progress,r.target,r.proportional),Progression.reward(r.coins,complete.progress,r.target,r.proportional),Progression.reward(r.points,complete.progress,r.target,r.proportional),r.attribute,date,"Hábito · ${r.name}"))}
