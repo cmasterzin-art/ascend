@@ -1,3 +1,11 @@
+# ASCEND 1.6.9 — validação
+
+17/11/2026. Base `feat/ascend-1.6.8` (`b2252cb`). GitHub Actions execução `44190969728` (commit `b6bacbb` / `bd58ab3`): `testDebugUnitTest assembleDebug lintDebug`: BUILD SUCCESSFUL em `2m 42s` (`56` tarefas executadas). **135 testes aprovados**, zero falhas, erros ou ignorados; `lintDebug` com **0 erros e 22 avisos**.
+
+APK compilado em CI com `22847850` bytes, `versionName 1.6.9` / `versionCode 16`, SHA-256 `3b939a77125a2fa679a6eb4909f56efe376f6112c2a0077f85f1df50a6025a6b`; zipalign aprovado; assinatura v2 válida; sem `INTERNET`. Como o secret `ASCEND_KEYSTORE_BASE64` não estava configurado no GitHub, o APK do artifact `ASCEND-Compilacao` usou o certificado temporário de depuração do runner (`2af2b8789e804a3897403cd2de1029cfefa83c3c7858704549ffa31a8f0bc4f4`); portanto, `downloads/ASCEND-1.6.9.apk` não foi publicado com assinatura incompatível com `1.1–1.6.8` (`e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`). Room v6, backup v8 e repositórios preservados.
+
+Renderizações reais Robolectric de 22 telas/variantes em `docs/screenshots/v1.6.9`, conceito visual `docs/art/concepts/entalhe-169.webp` e 6 folhas/superfícies WebP originais em `docs/art/README.md`. Sem teste físico de instalação, launcher ou TalkBack. Escopo e limites em `docs/VISUAL-1.6.9.md`. Logs em `docs/validation/BUILD-1.6.9.txt`, `docs/validation/LINT-1.6.9.txt` e `docs/validation/APK-1.6.9.txt`.
+
 # ASCEND 1.6.8 — validação
 
 17/11/2026. Base 1.6.5 (`cdc6ea9`). `testDebugUnitTest assembleDebug lintDebug`: BUILD SUCCESSFUL. **135 testes aprovados**, zero falhas/erros/ignorados. Uma captura do cronômetro foi acrescentada ao fluxo existente, sem remover asserções.

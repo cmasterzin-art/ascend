@@ -1,3 +1,7 @@
+# 1.6.9 — O Último Entalhe
+
+Consolidação artística definitiva (*Nordic Cinematic UI*) sem alterações funcionais: família de 25 símbolos vetoriais (`CarvedArt.kt` / `CarvedGlyph`), seis recursos `.webp` originais (`carved_emblems`, `carved_seals`, `plate_iron`, `plate_bronze`, `artifact_frame`, `widget_slate`), navegação inferior e abas contínuas (`AetherisNavigation`, `AetherisTabs`), placas metálicas para botões (`SagaButton`), molduras de arsenal com raridades diferenciadas (`ArtifactFrame`), selos cerimoniais (`CeremonialSeal`), compactação dos menus superiores e superfície de ardósia nos widgets (`widget_surface.xml`). [Escopo e limites](docs/VISUAL-1.6.9.md).
+
 # 1.6.8 — O Véu do Norte
 
 Composição da Jornada, ficha vertical do Herói, cronômetro ampliado e organização dos filtros. [Escopo e limites](docs/VISUAL-1.6.8.md).
