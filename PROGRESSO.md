@@ -1,3 +1,7 @@
+# ASCEND 1.6.5 — As Sombras do Norte
+
+Paleta mineral, moldura pictórica, basalto, mostradores e widgets refinados. Apenas apresentação. [Capturas e limitações](docs/VISUAL-1.6.5.md).
+
 # ASCEND — progresso da versão 1.6.2
 
 Implementação nativa em Kotlin, Compose, Material 3, Navigation, Room, DataStore, ViewModel, Coroutines e StateFlow. Sem permissão INTERNET, contas, anúncios ou backend.

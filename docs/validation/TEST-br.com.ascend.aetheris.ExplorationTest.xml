@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.ExplorationTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-17T02:54:38" hostname="da0963ce0ccf" time="1.386">
+<testsuite name="br.com.ascend.aetheris.ExplorationTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-17T11:59:13" hostname="da0963ce0ccf" time="1.332">
   <properties/>
-  <testcase name="v5DatabaseAndV6BackupDoNotInventExploration" classname="br.com.ascend.aetheris.ExplorationTest" time="0.112"/>
-  <testcase name="sagaAndExpeditionShareActivityButHabitRewardIsSingle" classname="br.com.ascend.aetheris.ExplorationTest" time="0.309"/>
-  <testcase name="widgetSimpleCompletionIsScheduledLocalAndIdempotent" classname="br.com.ascend.aetheris.ExplorationTest" time="0.189"/>
-  <testcase name="originalRegionsAndLevelGateArePreserved" classname="br.com.ascend.aetheris.ExplorationTest" time="0.057"/>
-  <testcase name="snapshotCorrectsRecordsAndRewardIsUnique" classname="br.com.ascend.aetheris.ExplorationTest" time="0.229"/>
-  <testcase name="threeExpeditionsAndBossPhasesHaveDistinctBaselinesAndConsequences" classname="br.com.ascend.aetheris.ExplorationTest" time="0.489"/>
+  <testcase name="v5DatabaseAndV6BackupDoNotInventExploration" classname="br.com.ascend.aetheris.ExplorationTest" time="0.135"/>
+  <testcase name="sagaAndExpeditionShareActivityButHabitRewardIsSingle" classname="br.com.ascend.aetheris.ExplorationTest" time="0.318"/>
+  <testcase name="widgetSimpleCompletionIsScheduledLocalAndIdempotent" classname="br.com.ascend.aetheris.ExplorationTest" time="0.168"/>
+  <testcase name="originalRegionsAndLevelGateArePreserved" classname="br.com.ascend.aetheris.ExplorationTest" time="0.082"/>
+  <testcase name="snapshotCorrectsRecordsAndRewardIsUnique" classname="br.com.ascend.aetheris.ExplorationTest" time="0.198"/>
+  <testcase name="threeExpeditionsAndBossPhasesHaveDistinctBaselinesAndConsequences" classname="br.com.ascend.aetheris.ExplorationTest" time="0.429"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

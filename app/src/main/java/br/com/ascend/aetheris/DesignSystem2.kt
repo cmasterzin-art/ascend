@@ -35,12 +35,13 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
 @Composable fun CompactHero(s:GameState,onPortrait:()->Unit={}){
  val p=requireNotNull(s.player)
  BoxWithConstraints(Modifier.fillMaxWidth().clip(CutCornerShape(6.dp)).border(1.dp,ColdIron.copy(alpha=.3f),CutCornerShape(6.dp))){
+  val narrow=maxWidth<320.dp
   if(!LocalAppearance.current.minimal)Image(androidx.compose.ui.res.painterResource(R.drawable.nordic_fjord),null,Modifier.matchParentSize(),contentScale=androidx.compose.ui.layout.ContentScale.Crop)
   Column(Modifier.fillMaxWidth().background(Brush.horizontalGradient(listOf(Surface.copy(alpha=.12f),Surface.copy(alpha=.72f)))).padding(14.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
    Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){
-    Box(Modifier.clickable(onClickLabel="Ampliar retrato",onClick=onPortrait)){ForgePortrait(s,if(maxWidth<320.dp)58.dp else 78.dp)}
+    Box(Modifier.clickable(onClickLabel="Ampliar retrato",onClick=onPortrait)){ForgePortrait(s,if(narrow)58.dp else 78.dp)}
     Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(5.dp)){
-     Text(p.name,style=if(maxWidth<320.dp)MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium)
+     Text(p.name,style=if(narrow)MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium)
      Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){ClassEmblem(p.heroClass,Modifier.size(20.dp));Text(classes[p.heroClass],color=Blue,fontSize=12.sp)}
      Text(p.title,color=Muted,fontSize=12.sp)
     }

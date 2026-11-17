@@ -1,14 +1,14 @@
 # Continuidade de assinatura
 
-Identificador estável: `br.com.ascend.aetheris`. Versão 1.6.2, versionCode 13.
+Identificador estável: `br.com.ascend.aetheris`. Versão 1.6.5, versionCode 14.
 
 ## APK fornecido nesta entrega
 
-O APK 1.6.2 reutiliza a chave privada das versões 1.1/1.2/1.3/1.3.1/1.4/1.4.5/1.5.0/1.5.1/1.5.2, sem regenerá-la. Certificado SHA-256 dessas versões:
+O APK 1.6.5 reutiliza a chave privada das versões 1.1/1.2/1.3/1.3.1/1.4/1.4.5/1.5.0/1.5.1/1.5.2, sem regenerá-la. Certificado SHA-256 dessas versões:
 
 `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`
 
-Instale a 1.6.2 por cima dos APKs 1.1, 1.2, 1.3, 1.3.1, 1.4, 1.4.5, 1.5.0, 1.5.1, 1.5.2, 1.6.0 ou 1.6.1 fornecidos no repositório. A identidade de assinatura é a mesma; a 1.6.2 mantém Room v6 / backup v8 da 1.6.0 e a migração aditiva 5 → 6 sobre a 1.5.2. As migrações anteriores continuam testadas. A atualização em telefone físico não foi executada. A chave permanece fora do Git público, no arquivo privado preservado `ascend-1.1.keystore`.
+Instale a 1.6.5 por cima dos APKs 1.1, 1.2, 1.3, 1.3.1, 1.4, 1.4.5, 1.5.0, 1.5.1, 1.5.2, 1.6.0 ou 1.6.1 fornecidos no repositório. A identidade de assinatura é a mesma; a 1.6.5 mantém Room v6 / backup v8 da 1.6.0 e a migração aditiva 5 → 6 sobre a 1.5.2. As migrações anteriores continuam testadas. A atualização em telefone físico não foi executada. A chave permanece fora do Git público, no arquivo privado preservado `ascend-1.1.keystore`.
 
 A chave original da 1.0 não está disponível; seu certificado é diferente. Para sair da 1.0, exporte um backup e siga [INSTALACAO.md](INSTALACAO.md). Se possui a chave da sua instalação, pode recompilar a atualização com ela.
 

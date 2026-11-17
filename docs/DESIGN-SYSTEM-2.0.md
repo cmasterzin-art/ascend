@@ -54,3 +54,7 @@ As cinco famílias recebem materialidade e composição em `ForgeArt.kt`, compar
 ## Refinamento 1.6.2
 
 `ForgeArt.kt` substitui os padrões de riscos e entrelaçados por materiais raster originais com recorte proporcional. Navegação contínua com pendente de seleção, placas de botão, medalhão e manuscritos compõem o novo acabamento. As interfaces dos componentes e seus callbacks funcionais são mantidos. [Comparações](VISUAL-1.6.2.md).
+
+## Design System 2.5
+
+Paleta mineral, basalto operacional, moldura de retrato com proporção fixa, mostradores com medalhão e acabamento RemoteViews. [Implementação e limites](VISUAL-1.6.5.md).
