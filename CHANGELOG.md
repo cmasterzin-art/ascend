@@ -1,3 +1,7 @@
+# 1.6.8 — O Véu do Norte
+
+Composição da Jornada, ficha vertical do Herói, cronômetro ampliado e organização dos filtros. [Escopo e limites](docs/VISUAL-1.6.8.md).
+
 # ASCEND 1.6.5 — As Sombras do Norte
 
 Paleta mineral, moldura pictórica, basalto, mostradores e widgets refinados. Apenas apresentação. [Capturas e limitações](docs/VISUAL-1.6.5.md).

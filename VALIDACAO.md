@@ -1,3 +1,11 @@
+# ASCEND 1.6.8 — validação
+
+17/11/2026. Base 1.6.5 (`cdc6ea9`). `testDebugUnitTest assembleDebug lintDebug`: BUILD SUCCESSFUL. **135 testes aprovados**, zero falhas/erros/ignorados. Uma captura do cronômetro foi acrescentada ao fluxo existente, sem remover asserções.
+
+APK 23684205 bytes, versionName1.6.8 / code15. SHA-256 `7632ecacd5b8dbb65b8ae7c7875c700913c13a63b8c7d7742a2b8fd480156143`. Assinatura v2 válida com certificado preservado `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`; zipalign aprovado; sem INTERNET. Room v6, backup v8 e repositórios preservados.
+
+Renderizações reais de 11 interfaces e cenários estreitos em docs/screenshots/v1.6.8. Conceito da 1.6.5 preservado em docs/art/concepts. Sem teste físico de instalação, launcher ou TalkBack. Alcance artístico parcial e limitações em docs/VISUAL-1.6.8.md. Logs em docs/validation.
+
 # ASCEND 1.6.5 — validação
 
 17/11/2026. Base 1.6.2 (`8e56c8c`). `testDebugUnitTest assembleDebug lintDebug`: BUILD SUCCESSFUL. **135 testes aprovados**, zero falhas/erros/ignorados. Uma captura do cronômetro foi acrescentada ao fluxo existente, sem remover asserções.
