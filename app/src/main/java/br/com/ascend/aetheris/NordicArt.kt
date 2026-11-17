@@ -48,8 +48,12 @@ val Ember=Color(0xFF8D4B43)
         drawPath(Path().apply{moveTo(x,y-4.dp.toPx());lineTo(x+4.dp.toPx(),y);lineTo(x,y+4.dp.toPx());lineTo(x-4.dp.toPx(),y);close()},color,style=Stroke(1f))
     }
 }
+/** Rank 0–4 maps to dormant, codex, oath, saga and reward seals; engraving in minimal mode. */
 @Composable fun RuneSeal(rank:Int,color:Color,modifier:Modifier=Modifier){
-    Canvas(modifier.size(40.dp)){
+    if(LocalAppearance.current.minimal)RuneEngraving(rank,color,modifier.size(40.dp)) else CeremonialSeal(SealKind.entries[rank.coerceIn(0,4)],true,modifier.size(40.dp))
+}
+@Composable private fun RuneEngraving(rank:Int,color:Color,modifier:Modifier){
+    Canvas(modifier){
         val r=size.minDimension*.44f;val center=Offset(size.width/2,size.height/2)
         drawCircle(color.copy(alpha=.1f),r,center)
         drawCircle(color.copy(alpha=.65f),r,center,style=Stroke(1.dp.toPx()))

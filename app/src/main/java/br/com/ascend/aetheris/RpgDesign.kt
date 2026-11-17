@@ -20,7 +20,7 @@ import kotlin.math.*
 val Parchment=Color(0xFFBDB196)
 val Sepia=Color(0xFF29251E)
 @Composable fun Manuscript(content:@Composable ColumnScope.()->Unit){AetherSurface(SurfaceKind.Parchment){content()}}
-@Composable fun SagaCover(count:Int){AetherSurface(SurfaceKind.Ceremonial){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){Box(Modifier.size(62.dp),contentAlignment=Alignment.Center){Image(painterResource(R.drawable.forge_brooch),null,Modifier.matchParentSize());RuneSeal(4,Gold,Modifier.size(30.dp))};Column(Modifier.weight(1f)){Text("Livro de missões",style=MaterialTheme.typography.titleLarge);Text("$count recompensas resgatadas · contratos e sagas",color=Muted,fontSize=12.sp)}}}}
+@Composable fun SagaCover(count:Int){AetherSurface(SurfaceKind.Ceremonial){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){Box(Modifier.size(62.dp),contentAlignment=Alignment.Center){Image(painterResource(R.drawable.forge_brooch),null,Modifier.matchParentSize());CeremonialSeal(SealKind.Saga,true,Modifier.size(34.dp))};Column(Modifier.weight(1f)){Text("Livro de missões",style=MaterialTheme.typography.titleLarge);Text("$count recompensas resgatadas · contratos e sagas",color=Muted,fontSize=12.sp)}}}}
 @Composable fun rarityColor(n:Int)=listOf(Muted,Green,Blue,Violet,Gold)[n]
 /** A sprite atlas is sampled at draw time; original image files remain intact. */
 @Composable fun ArtTile(resource:Int,index:Int,rows:Int,modifier:Modifier=Modifier){
@@ -33,12 +33,19 @@ val Sepia=Color(0xFF29251E)
         drawImage(art,srcOffset=IntOffset(index%3*cellWidth+(cellWidth-sourceWidth)/2,index/3*cellHeight+(cellHeight-sourceHeight)/2),srcSize=IntSize(sourceWidth,sourceHeight),dstSize=IntSize(size.width.toInt().coerceAtLeast(1),size.height.toInt().coerceAtLeast(1)),filterQuality=FilterQuality.Medium)
     }
 }
-@Composable fun RelicArt(kind:String,color:Color,modifier:Modifier=Modifier,itemId:String?=null){
+@Composable fun RelicArt(kind:String,color:Color,modifier:Modifier=Modifier,itemId:String?=null,dim:Boolean=false){
     val index=when(kind){"head"->0;"outfit"->1;"accessory"->2;"weapon"->3;"companion"->when(itemId){"lyra"->5;"ignis"->6;else->4};"frame"->7;else->8}
     val variant=when(itemId){"will-helm"->0;"armor"->1;"ember-amulet"->2;"dawn-outfit"->3;"rune-frame"->4;"night"->5;"lantern"->6;"craft-blade"->7;"traveler-helm"->8;else->null}
-    Box(modifier.size(70.dp).clip(CutCornerShape(3.dp))){
-        if(itemId=="mist-clasp")ArtTile(R.drawable.forest_atlas,8,3,Modifier.matchParentSize()) else ArtTile(if(variant!=null)R.drawable.relic_variants else R.drawable.relic_atlas,variant?:index,3,Modifier.matchParentSize())
-        Canvas(Modifier.matchParentSize()){drawRect(Brush.verticalGradient(listOf(Color.Transparent,Color.Black.copy(alpha=.24f))));drawLine(color.copy(alpha=.3f),Offset(0f,size.height),Offset(size.width,size.height),1f)}
+    Box(modifier.size(70.dp).clip(CutCornerShape(3.dp)).background(Color(0xFF0C0D0D))){
+        Box(Modifier.matchParentSize().padding(3.dp).alpha(if(dim).28f else 1f)){
+            if(itemId=="mist-clasp")ArtTile(R.drawable.forest_atlas,8,3,Modifier.matchParentSize()) else ArtTile(if(variant!=null)R.drawable.relic_variants else R.drawable.relic_atlas,variant?:index,3,Modifier.matchParentSize())
+        }
+        ArtifactFrame(Modifier.matchParentSize())
+        Canvas(Modifier.matchParentSize()){
+            drawRect(Brush.verticalGradient(listOf(Color.Transparent,Color.Black.copy(alpha=.28f))))
+            drawRect(color.copy(alpha=if(dim).25f else .45f),style=Stroke(1.dp.toPx()))
+            drawLine(color.copy(alpha=if(dim).35f else .8f),Offset(6.dp.toPx(),size.height-1.dp.toPx()),Offset(size.width-6.dp.toPx(),size.height-1.dp.toPx()),1.5.dp.toPx())
+        }
     }
 }
 @Composable fun BuildingScene(index:Int,stage:Int,modifier:Modifier=Modifier){

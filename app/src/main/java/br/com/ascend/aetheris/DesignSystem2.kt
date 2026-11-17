@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
@@ -32,23 +33,26 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
 @Composable fun SectionHeader(title:String,sub:String=""){
  Column(verticalArrangement=Arrangement.spacedBy(5.dp)){Text(title,style=MaterialTheme.typography.titleLarge);if(sub.isNotBlank())Text(sub,color=Muted,fontSize=12.sp,lineHeight=19.sp)}
 }
+/** The fjord is not a card: it bleeds to the screen edges and dissolves into the page through mist. */
 @Composable fun CompactHero(s:GameState,onPortrait:()->Unit={}){
- val p=requireNotNull(s.player)
- BoxWithConstraints(Modifier.fillMaxWidth().clip(CutCornerShape(6.dp)).border(1.dp,ColdIron.copy(alpha=.3f),CutCornerShape(6.dp))){
-  val narrow=maxWidth<320.dp
-  if(!LocalAppearance.current.minimal)Image(androidx.compose.ui.res.painterResource(R.drawable.nordic_fjord),null,Modifier.matchParentSize(),contentScale=androidx.compose.ui.layout.ContentScale.Crop)
-  Column(Modifier.fillMaxWidth().background(Brush.horizontalGradient(listOf(Surface.copy(alpha=.12f),Surface.copy(alpha=.72f)))).padding(14.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
-   Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){
-    Box(Modifier.clickable(onClickLabel="Ampliar retrato",onClick=onPortrait)){ForgePortrait(s,if(narrow)58.dp else 78.dp)}
-    Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(5.dp)){
+ val p=requireNotNull(s.player);val minimal=LocalAppearance.current.minimal;val night=Night
+ BoxWithConstraints(Modifier.fillMaxWidth().layout{m,c->val bleed=20.dp.roundToPx();val placeable=m.measure(c.copy(minWidth=c.maxWidth+2*bleed,maxWidth=c.maxWidth+2*bleed));layout(c.maxWidth,placeable.height){placeable.place(-bleed,0)}}){
+  val narrow=maxWidth<360.dp
+  if(!minimal)Image(androidx.compose.ui.res.painterResource(R.drawable.nordic_fjord),null,Modifier.matchParentSize(),contentScale=androidx.compose.ui.layout.ContentScale.Crop,alpha=.9f)
+  Box(Modifier.matchParentSize().background(Brush.verticalGradient(0f to night.copy(alpha=.85f),.22f to night.copy(alpha=.18f),.62f to night.copy(alpha=.42f),1f to night)))
+  Box(Modifier.matchParentSize().background(Brush.horizontalGradient(listOf(Color.Transparent,night.copy(alpha=.5f)))))
+  Column(Modifier.fillMaxWidth().padding(horizontal=20.dp).padding(top=16.dp,bottom=6.dp),verticalArrangement=Arrangement.spacedBy(12.dp)){
+   Row(verticalAlignment=Alignment.Bottom,horizontalArrangement=Arrangement.spacedBy(14.dp)){
+    Box(Modifier.clickable(onClickLabel="Ampliar retrato",onClick=onPortrait)){ForgePortrait(s,if(narrow)56.dp else 78.dp)}
+    Column(Modifier.weight(1f).padding(bottom=6.dp),verticalArrangement=Arrangement.spacedBy(5.dp)){
      Text(p.name,style=if(narrow)MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium)
-     Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){ClassEmblem(p.heroClass,Modifier.size(20.dp));Text(classes[p.heroClass],color=Blue,fontSize=12.sp)}
+     Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(7.dp)){ClassEmblem(p.heroClass,Modifier.size(26.dp));Text(classes[p.heroClass],color=Blue,fontSize=12.sp)}
      Text(p.title,color=Muted,fontSize=12.sp)
     }
-    ForgeMedallion(s.level)
+    Box(Modifier.padding(bottom=4.dp)){ForgeMedallion(s.level)}
    }
-   Column(Modifier.fillMaxWidth().padding(10.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){
-    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("${Progression.current(s.xp)}/${Progression.requirement(s.level)} XP",color=Blue,fontSize=11.sp);Text("${s.coins} fragmentos",fontSize=11.sp,color=Muted)}
+   Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(6.dp)){
+    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("${Progression.current(s.xp)}/${Progression.requirement(s.level)} XP",color=Blue,fontSize=11.sp,letterSpacing=.4.sp);Text("${s.coins} fragmentos",fontSize=11.sp,color=Muted)}
     Meter(Progression.current(s.xp).toFloat()/Progression.requirement(s.level),Blue)
    }
   }
@@ -57,8 +61,8 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
 
 @Composable fun MissionCard2(q:Quest,s:GameState,vm:GameViewModel,category:Int,value:Long,claimed:Boolean,onEdit:()->Unit){
  val contractInk=if(category==0)Sepia else Ink;val contractMuted=if(category==0)Sepia.copy(alpha=.75f) else Muted
- AetherSurface(if(category>=1)SurfaceKind.Ceremonial else SurfaceKind.Parchment){
-  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Eyebrow(listOf("CONTRATO DIÁRIO","JURAMENTO SEMANAL","CONTRATO ÉPICO","DESAFIO RITUAL")[category],if(category==0)Sepia else Gold);RuneSeal(if(claimed)4 else category,if(category==0)Sepia else if(claimed)Green else Gold,Modifier.size(32.dp))}
+ AetherSurface(if(category>=1)SurfaceKind.Ceremonial else SurfaceKind.Parchment,if(category==2)Modifier.border(1.dp,Gold.copy(alpha=.5f),CutCornerShape(6.dp)) else Modifier){
+  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Eyebrow(listOf("CONTRATO DIÁRIO","JURAMENTO SEMANAL","CONTRATO ÉPICO","DESAFIO RITUAL")[category],if(category==0)Sepia else Gold);CeremonialSeal(if(claimed)SealKind.Reward else listOf(SealKind.Mission,SealKind.Oath,SealKind.Saga,SealKind.Mission)[category],claimed||value>=q.target,Modifier.size(38.dp))}
   Text(q.name,color=contractInk,style=MaterialTheme.typography.titleLarge)
   NorthDivider()
   StatusSeal(if(claimed)"Resgatado" else if(value>=q.target)"Recompensa disponível" else "Em andamento",if(category==0)Sepia else if(claimed)Green else Blue)

@@ -60,18 +60,28 @@ val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
 }
 @Composable fun Meter(value:Float,color:Color=Blue,modifier:Modifier=Modifier,trackColor:Color=CardColor){
     val fraction by animateFloatAsState(value.coerceIn(0f,1f),tween(if(LocalAppearance.current.reducedMotion)0 else AetherTokens.scene),label="progresso")
-    val track=trackColor
-    Canvas(modifier.fillMaxWidth().height(11.dp).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)}){
-        drawRect(Brush.verticalGradient(listOf(Color.Black.copy(alpha=.5f),track,Color.Black.copy(alpha=.2f))));drawRect(color.copy(alpha=.3f),style=Stroke(1.dp.toPx()))
-        if(fraction>0)drawRect(Brush.horizontalGradient(listOf(color.copy(alpha=.5f),color.copy(alpha=.9f),color)),size=Size(size.width*fraction,size.height))
-        listOf(.25f,.5f,.75f).forEach{stop->val x=size.width*stop;drawLine(color.copy(alpha=.65f),Offset(x,0f),Offset(x,size.height),1.dp.toPx())}
-        repeat(10){i->val x=size.width*i/10;drawLine(Color.Black.copy(alpha=.32f),Offset(x,0f),Offset(x,size.height),1.dp.toPx())}
-        drawLine(Color.White.copy(alpha=.2f),Offset.Zero,Offset(size.width*fraction,0f),1f)
+    val track=trackColor;val dark=LocalAppearance.current.dark
+    // A groove cut into stone; the value fills it like cooled metal with a single bright leading edge.
+    Canvas(modifier.fillMaxWidth().height(10.dp).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)}){
+        val w=size.width;val h=size.height;val d=1.dp.toPx();val tip=h*.55f
+        val groove=Path().apply{moveTo(tip,0f);lineTo(w-tip,0f);lineTo(w,h/2);lineTo(w-tip,h);lineTo(tip,h);lineTo(0f,h/2);close()}
+        drawPath(groove,Brush.verticalGradient(listOf(Color.Black.copy(alpha=.8f),track.copy(alpha=.85f),Color.Black.copy(alpha=.4f))))
+        if(fraction>0f){val fw=(w*fraction).coerceAtLeast(tip*2)
+            clipPath(groove){
+                drawRect(Brush.horizontalGradient(listOf(color.copy(alpha=.38f),color.copy(alpha=.82f),color),endX=fw),size=Size(fw,h))
+                drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha=.24f),Color.Transparent,Color.Black.copy(alpha=.34f))),size=Size(fw,h))
+                if(fraction<1f)drawRect(Brush.horizontalGradient(listOf(Color.Transparent,Color.White.copy(alpha=.5f)),startX=fw-7*d,endX=fw),topLeft=Offset(fw-7*d,0f),size=Size(7*d,h))
+            }
+        }
+        listOf(.25f,.5f,.75f).forEach{stop->val x=w*stop;drawLine(Color.Black.copy(alpha=.55f),Offset(x,h*.18f),Offset(x,h*.82f),d)}
+        drawLine(Color.Black.copy(alpha=.6f),Offset(tip,d*.5f),Offset(w-tip,d*.5f),d)
+        drawLine(Color.White.copy(alpha=if(dark).1f else .55f),Offset(tip,h-d*.5f),Offset(w-tip,h-d*.5f),d)
+        drawPath(groove,color.copy(alpha=.3f),style=Stroke(d))
     }
 }
 @Composable fun Stat(value:String,label:String,color:Color=Gold){Column{Text(value,color=color,fontSize=24.sp,fontFamily=SagaFont);Text(label,color=Muted,fontSize=10.sp,letterSpacing=.6.sp)}}
 @Composable fun Action(text:String,onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boolean=true,completed:Boolean=false){SagaButton(text,onClick,modifier,enabled=enabled,completed=completed)}
 @Composable fun Empty(text:String){Row(Modifier.fillMaxWidth().materialSurface(accent=ColdIron).padding(18.dp),horizontalArrangement=Arrangement.spacedBy(14.dp),verticalAlignment=Alignment.CenterVertically){RuneSeal(0,Muted,Modifier.size(32.dp));Text(text,Modifier.weight(1f),color=Muted,fontSize=14.sp,lineHeight=23.sp)}}
-@Composable fun ChipRow(values:List<String>,selected:Int,onSelect:(Int)->Unit){Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(6.dp)){values.forEachIndexed{i,v->FilterChip(selected==i,{onSelect(i)},modifier=Modifier.heightIn(min=48.dp),label={Text(v,fontSize=12.sp)},shape=CutCornerShape(4.dp),colors=FilterChipDefaults.filterChipColors(selectedContainerColor=Gold.copy(alpha=.11f),selectedLabelColor=Gold,labelColor=Muted),border=FilterChipDefaults.filterChipBorder(enabled=true,selected=selected==i,borderColor=Muted.copy(alpha=.28f),selectedBorderColor=Gold.copy(alpha=.7f)))}}}
-@Composable fun FormField(value:String,onChange:(String)->Unit,label:String,number:Boolean=false,multi:Boolean=false){OutlinedTextField(value,onChange,Modifier.fillMaxWidth(),label={Text(label)},textStyle=MaterialTheme.typography.bodyLarge,singleLine=!multi,minLines=if(multi)3 else 1,keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=if(number)androidx.compose.ui.text.input.KeyboardType.Number else androidx.compose.ui.text.input.KeyboardType.Text),shape=CutCornerShape(5.dp))}
+@Composable fun ChipRow(values:List<String>,selected:Int,onSelect:(Int)->Unit){Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),horizontalArrangement=Arrangement.spacedBy(6.dp)){values.forEachIndexed{i,v->FilterChip(selected==i,{onSelect(i)},modifier=Modifier.heightIn(min=48.dp),label={Text(v,fontSize=12.sp)},shape=CutCornerShape(4.dp),colors=FilterChipDefaults.filterChipColors(containerColor=Surface.copy(alpha=.85f),selectedContainerColor=Gold.copy(alpha=.15f),selectedLabelColor=Gold,labelColor=Muted),border=FilterChipDefaults.filterChipBorder(enabled=true,selected=selected==i,borderColor=ColdIron.copy(alpha=.28f),selectedBorderColor=Gold.copy(alpha=.72f)))}}}
+@Composable fun FormField(value:String,onChange:(String)->Unit,label:String,number:Boolean=false,multi:Boolean=false){OutlinedTextField(value,onChange,Modifier.fillMaxWidth(),label={Text(label)},textStyle=MaterialTheme.typography.bodyLarge,singleLine=!multi,minLines=if(multi)3 else 1,keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=if(number)androidx.compose.ui.text.input.KeyboardType.Number else androidx.compose.ui.text.input.KeyboardType.Text),shape=CutCornerShape(5.dp),colors=OutlinedTextFieldDefaults.colors(focusedBorderColor=Gold.copy(alpha=.75f),unfocusedBorderColor=ColdIron.copy(alpha=.38f),focusedLabelColor=Gold,unfocusedLabelColor=Muted,focusedContainerColor=Surface.copy(alpha=.45f),unfocusedContainerColor=Surface.copy(alpha=.25f)))}
 @Composable fun Toggle(label:String,checked:Boolean,onChange:(Boolean)->Unit){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Text(label,Modifier.weight(1f),fontSize=14.sp);Switch(checked,onChange,modifier=Modifier.semantics{contentDescription=label})}}
