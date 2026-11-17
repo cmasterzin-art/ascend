@@ -7,15 +7,16 @@ permissions:
   contents: write
 jobs:
   distribuir:
-    if: hashFiles('downloads/ASCEND-1.6.9.apk.sha256') != ''
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
       - name: Conferir APK já compilado e testado
+        if: hashFiles('downloads/ASCEND-1.6.9.apk.sha256') != ''
         working-directory: downloads
         run: sha256sum -c ASCEND-1.6.9.apk.sha256
       - uses: actions/upload-artifact@v4
+        if: hashFiles('downloads/ASCEND-1.6.9.apk.sha256') != ''
         with:
           name: ASCEND-Android
           path: downloads/ASCEND-1.6.9.apk
