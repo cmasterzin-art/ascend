@@ -1,3 +1,12 @@
+# Mudanças — 1.5.2 · A Forja da Estabilidade
+
+- Correção de progresso inválido sendo convertido em zero, snapshot novo usando hábito desatualizado e início de foco com referência incompatível/excluída.
+- Registro de foco considera descansos; backup valida datas do personagem e da sessão antes da restauração, sem alterar Room v5/backup v7.
+- Widget explica recusa de ação antiga, revalida atalhos de registro, oculta barra sem atividades e protege título em largura mínima/fonte 130%.
+- Estado salvo de editores de hábito/registro e confirmação de descarte. Recriação da Activity após widget validada no Robolectric.
+- Período de um dia mostra uma data; Diário mantém apresentação brasileira. Pinturas, sons, economia, Sagas e Expedições preservados.
+- 116 testes aprovados (97 anteriores + 19 adicionais), Android Lint sem erros/21 avisos documentados; versionCode 10, mesma assinatura. [Auditoria completa](docs/ESTABILIDADE-1.5.2.md).
+
 # Mudanças — 1.5.1 · O Polimento de Aetheris
 
 - Widgets: moldura em ferro/bronze, símbolo próprio, percentual, data e botões com hierarquia; densidade conforme espaço/fonte; estados vazios intencionais.

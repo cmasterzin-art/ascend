@@ -52,4 +52,15 @@ class WidgetStabilityTest{
   assertTrue(summary().contains("0/1"));repo.widgetComplete(h.id,today());assertTrue(summary().contains("1/1"));repo.progress(h,today(),0);assertTrue(summary().contains("0/1"))
   repo.habit(h.copy(paused=true));assertTrue(summary().contains("Nenhum ritual"));repo.importState(Backup.decode(backup));assertTrue(summary().contains("0/1"));assertEquals(0L,repo.state.value!!.xp)
  }
+ @Test fun failedWidgetLoadKeepsARecoverableJourneyActionWithoutStaleButtons()=runBlocking{
+  val manager=AppWidgetManager.getInstance(app);val host=Shadows.shadowOf(manager)
+  host.addBoundWidget(153,AppWidgetProviderInfo().apply{provider=ComponentName(app,HabitWidget::class.java);initialLayout=R.layout.habit_widget})
+  repo.habit(Habit(name="Ritual"));app.database.openHelper.writableDatabase.execSQL("ALTER TABLE player RENAME TO unavailable_player")
+  HabitWidget().onUpdate(app,manager,intArrayOf(153))
+  withTimeout(5000){while(host.getViewFor(153).findViewById<TextView>(R.id.widget_summary).text.toString()!="Abra a Jornada para atualizar os rituais."){Shadows.shadowOf(Looper.getMainLooper()).idle();delay(10)}}
+  val view=host.getViewFor(153);assertEquals(View.GONE,view.findViewById<View>(R.id.widget_habit1).visibility);assertEquals(View.GONE,view.findViewById<View>(R.id.widget_progress).visibility)
+  view.findViewById<View>(R.id.widget_open).performClick();val intent=Shadows.shadowOf(app).nextStartedActivity;assertTrue(intent.getBooleanExtra("widget_journey",false));assertTrue(intent.flags and Intent.FLAG_ACTIVITY_SINGLE_TOP!=0);assertTrue(intent.flags and Intent.FLAG_ACTIVITY_CLEAR_TOP!=0)
+  app.database.openHelper.writableDatabase.execSQL("ALTER TABLE unavailable_player RENAME TO player")
+ }
+
 }
