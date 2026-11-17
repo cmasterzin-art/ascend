@@ -6,19 +6,20 @@
         </shape>
     </item>
     <item>
-        <bitmap android:src="@drawable/widget_slate" android:gravity="fill" android:alpha="0.45"/>
+        <bitmap android:src="@drawable/widget_slate" android:gravity="fill" android:alpha="0.18"/>
     </item>
-    <item android:top="1dp" android:left="14dp" android:right="14dp" android:bottom="0dp">
-        <shape android:shape="rectangle">
-            <size android:height="2dp"/>
-            <solid android:color="@color/widget_accent"/>
-        </shape>
-    </item>
-    <item android:top="2dp">
+    <item>
         <shape>
             <solid android:color="#00000000"/>
             <corners android:radius="6dp"/>
-            <stroke android:width="1dp" android:color="@color/widget_stroke"/>
+            <stroke android:width="1.2dp" android:color="@color/widget_stroke"/>
+        </shape>
+    </item>
+    <item android:top="2dp" android:bottom="2dp" android:left="2dp" android:right="2dp">
+        <shape>
+            <solid android:color="#00000000"/>
+            <corners android:radius="4dp"/>
+            <stroke android:width="0.6dp" android:color="@color/widget_accent"/>
         </shape>
     </item>
 </layer-list>
