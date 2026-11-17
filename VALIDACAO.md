@@ -1,3 +1,11 @@
+# ASCEND 1.6.5 — validação
+
+17/11/2026. Base 1.6.2 (`8e56c8c`). `testDebugUnitTest assembleDebug lintDebug`: BUILD SUCCESSFUL. **135 testes aprovados**, zero falhas/erros/ignorados. Uma captura do cronômetro foi acrescentada ao fluxo existente, sem remover asserções.
+
+APK 22748016 bytes, versionName1.6.5 / code14. SHA-256 `5a2b724dbb06d91aea28afdb47343fd7bd948b88e15505d6bcd0858378977ab0`. Assinatura v2 válida com certificado preservado `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`; zipalign aprovado; sem INTERNET. Room v6, backup v8 e repositórios preservados.
+
+Renderizações reais de 11 interfaces e cenários estreitos em docs/screenshots/v1.6.5. Conceito separado em docs/art/concepts. Sem teste físico de instalação, launcher ou TalkBack. Alcance artístico parcial e limitações em docs/VISUAL-1.6.5.md. Logs em docs/validation.
+
 # Validação — ASCEND 1.6.2
 
 16/11/2026. Base `feat/ascend-1.6.1`, commit `4add529`. Branch `feat/ascend-1.6.2`.

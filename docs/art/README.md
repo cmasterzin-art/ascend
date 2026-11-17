@@ -38,3 +38,7 @@ Bytes: 449,560. SHA-256: `7882d1a03a3687695364d32b941e1060e79bc17dfcba83ccc2a221
 ## Materiais originais 1.6.2
 
 Quatro recursos gerados nesta execução com a ferramenta de geração de imagens: `forge_iron.webp` (ferro escurecido), `forge_leather.webp` (couro), `forge_vellum.webp` (velino) e `forge_brooch.webp` (medalhão com relevo entrelaçado original). Estudos próprios sem texto, marcas ou recursos extraídos de obras comerciais. Otimizados em WebP, com materiais em 1024 px e medalhão em 256 px com transparência. Os originais foram preservados no ambiente de geração; os arquivos distribuídos são locais no APK. Aplicação real, comparação e limitações: [VISUAL-1.6.2.md](../VISUAL-1.6.2.md).
+
+## 1.6.5
+
+Conceito original de três telas em `concepts/north-165.webp`; apenas direção artística. `north_frame.webp` e `north_stone.webp` foram gerados nesta execução e otimizados em WebP para uso local real. Recursos anteriores preservados. Sem cópia de assets comerciais.

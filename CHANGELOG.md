@@ -1,3 +1,7 @@
+# ASCEND 1.6.5 — As Sombras do Norte
+
+Paleta mineral, moldura pictórica, basalto, mostradores e widgets refinados. Apenas apresentação. [Capturas e limitações](docs/VISUAL-1.6.5.md).
+
 # Mudanças — 1.6.2 · Refinamento Visual Nórdico
 
 - Quatro recursos originais em WebP: ferro, couro, velino e medalhão; removidos padrões repetidos de riscos, rebites e entrelaçados dos componentes.

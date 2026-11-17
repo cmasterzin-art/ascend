@@ -33,7 +33,7 @@ val mainNames=listOf("Jornada","Hábitos","Missões","Mundo","Herói")
 @Composable fun AetherisNavigation(route:String,onSelect:(String)->Unit){
  val selected=if(route.startsWith("region/")||route.startsWith("location/")||route.startsWith("expedition/"))"world" else when(route){"grimoire","planner","analysis","focus_history"->"habits";"settings","journal","memories","portrait"->"character";"weekly"->"world";else->route}
  val dark=LocalAppearance.current.dark;val motion=LocalAppearance.current.reducedMotion
- val bronze=Gold;val base=if(dark)Color(0xFF12191E) else Color(0xFFE4DED2)
+ val bronze=Gold;val base=if(dark)Color(0xFF151714) else Color(0xFFE4DED2)
  Column(Modifier.fillMaxWidth().background(base).forgeMaterial().navigationBarsPadding()){
   Canvas(Modifier.fillMaxWidth().height(4.dp)){
    drawLine(bronze.copy(alpha=.5f),Offset.Zero,Offset(size.width,0f),1.dp.toPx())
@@ -48,7 +48,7 @@ val mainNames=listOf("Jornada","Hábitos","Missões","Mundo","Herói")
        val d=1.dp.toPx();val w=size.width;val h=size.height
        val shield=Path().apply{moveTo(8*d,0f);lineTo(w-8*d,0f);lineTo(w-8*d,h-12*d);quadraticTo(w*.5f,h-5*d,w*.5f,h-3*d);quadraticTo(w*.5f,h-5*d,8*d,h-12*d);close()}
        drawPath(shield,Brush.verticalGradient(listOf(bronze.copy(alpha=.28f*light),bronze.copy(alpha=.04f*light))))
-       drawPath(shield,bronze.copy(alpha=.5f*light),style=Stroke(.7f*d))
+       drawCircle(Brush.radialGradient(listOf(bronze.copy(alpha=.14f*light),Color.Transparent)),radius=w*.48f,center=Offset(w/2,h*.4f))
        drawLine(bronze.copy(alpha=.9f*light),Offset(w*.32f,0f),Offset(w*.68f,0f),2*d)
       }
      }

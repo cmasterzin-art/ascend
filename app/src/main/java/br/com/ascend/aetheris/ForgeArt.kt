@@ -19,7 +19,7 @@ import androidx.compose.ui.semantics.*
 @Composable fun Modifier.forgeMaterial(kind:SurfaceKind=SurfaceKind.Operational):Modifier{
  val appearance=LocalAppearance.current;val dark=appearance.dark;val minimal=appearance.minimal
  val paper=kind==SurfaceKind.Parchment
- val metal=if(minimal)null else ImageBitmap.imageResource(when(kind){SurfaceKind.Parchment->R.drawable.forge_vellum;SurfaceKind.Ceremonial->R.drawable.forge_leather;else->R.drawable.forge_iron})
+ val metal=if(minimal)null else ImageBitmap.imageResource(when(kind){SurfaceKind.Parchment->R.drawable.forge_vellum;SurfaceKind.Ceremonial->R.drawable.forge_leather;SurfaceKind.Operational,SurfaceKind.Artifact->R.drawable.north_stone;else->R.drawable.forge_iron})
  val edge=if(paper)Sepia else if(kind==SurfaceKind.Ceremonial)Gold else ColdIron
  return drawWithCache{
   val ratio=size.width/size.height.coerceAtLeast(1f)
@@ -58,12 +58,15 @@ import androidx.compose.ui.semantics.*
  }
 }
 @Composable fun ForgePortrait(s:GameState,size:Dp){
- Box(Modifier.clip(CutCornerShape(topStart=12.dp,topEnd=12.dp,bottomEnd=3.dp,bottomStart=3.dp)).background(Color(0xFF10161B)).forgeMaterial(SurfaceKind.Artifact).border(1.dp,ColdIron.copy(alpha=.55f),CutCornerShape(topStart=12.dp,topEnd=12.dp,bottomEnd=3.dp,bottomStart=3.dp)).padding(4.dp)){Avatar(s.player!!,s,size)}
+ Box(Modifier.width(size+12.dp).height(size*1.5f+18.dp),contentAlignment=Alignment.Center){
+  Avatar(s.player!!,s,size)
+  if(!LocalAppearance.current.minimal)Image(painterResource(R.drawable.north_frame),null,Modifier.matchParentSize(),contentScale=ContentScale.Fit)
+ }
 }
 
 /** A recessed dial for the existing daily ratio; has no independent progress logic. */
-@Composable fun DayDial(value:Float,label:String){val color=Green
- Box(Modifier.size(64.dp).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)},contentAlignment=Alignment.Center){Canvas(Modifier.matchParentSize()){
+@Composable fun DayDial(value:Float,label:String){val color=Gold
+ Box(Modifier.size(84.dp).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)},contentAlignment=Alignment.Center){if(!LocalAppearance.current.minimal)Image(painterResource(R.drawable.forge_brooch),null,Modifier.matchParentSize());Canvas(Modifier.matchParentSize()){
   val inset=5.dp.toPx();val bounds=Size(size.width-2*inset,size.height-2*inset)
   drawArc(Color.Black.copy(alpha=.6f),0f,360f,false,Offset(inset,inset),bounds,style=Stroke(5.dp.toPx()))
   drawArc(color.copy(alpha=.25f),-90f,360f,false,Offset(inset,inset),bounds,style=Stroke(1.dp.toPx()))
