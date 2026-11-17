@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.CatalogRepositoryTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-17T22:25:16" hostname="runnervmccnms" time="12.709">
+<testsuite name="br.com.ascend.aetheris.CatalogRepositoryTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-17T22:33:41" hostname="runnervmccnms" time="10.178">
   <properties/>
-  <testcase name="migrateActualV2PreservesAllProgressAndAllowsCatalog" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="11.601"/>
-  <testcase name="oldBackupWithoutMetadataUsesSafeDefaults" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.223"/>
-  <testcase name="manualHabitsAreReusedAndRoutinesAreAtomicAndIdempotent" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.324"/>
-  <testcase name="addCustomizeEditRewardSnapshotAndReload" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.229"/>
-  <testcase name="concurrentAddsAndRenamingCannotDuplicateTemplate" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.155"/>
-  <testcase name="disabledStreakDoesNotRemoveHabitRewards" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.175"/>
+  <testcase name="migrateActualV2PreservesAllProgressAndAllowsCatalog" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="9.343"/>
+  <testcase name="oldBackupWithoutMetadataUsesSafeDefaults" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.142"/>
+  <testcase name="manualHabitsAreReusedAndRoutinesAreAtomicAndIdempotent" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.292"/>
+  <testcase name="addCustomizeEditRewardSnapshotAndReload" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.177"/>
+  <testcase name="concurrentAddsAndRenamingCannotDuplicateTemplate" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.169"/>
+  <testcase name="disabledStreakDoesNotRemoveHabitRewards" classname="br.com.ascend.aetheris.CatalogRepositoryTest" time="0.052"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
