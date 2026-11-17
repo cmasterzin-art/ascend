@@ -1,3 +1,26 @@
+# Validação — ASCEND 1.6.2
+
+16/11/2026. Base `feat/ascend-1.6.1`, commit `4add529`. Branch `feat/ascend-1.6.2`.
+
+- `testDebugUnitTest assembleDebug lintDebug`: **BUILD SUCCESSFUL**, JDK17 / SDK35 / Gradle8.9.
+- **135 testes aprovados**, zero falhas, erros ou ignorados. Nenhum teste existente foi modificado ou removido.
+- Lint: **zero erros / 20 avisos** preexistentes, sem novas supressões.
+- APK: [ASCEND-1.6.2.apk](downloads/ASCEND-1.6.2.apk?raw=true), **22654144 bytes**.
+- SHA-256: `5f54280fbf93c4f7187b80253e38857d4b1165661df98cd64d04ab6c0c3f0130`.
+- Assinatura v2 válida, certificado idêntico ao APK 1.6.1: `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`. `zipalign -c 4` aprovado.
+- Manifesto: `br.com.ascend.aetheris`, versionName **1.6.2**, versionCode **13**, minSdk26 / targetSdk35. Permissões idênticas à 1.6.1, sem INTERNET.
+- Escopo: somente apresentação/layout e versionamento. Room v6, backup v8, repositórios, entidades, regras, economia, recompensas, programação e dados preservados.
+- Quatro assets WebP originais somam **135838 bytes**, distribuídos localmente no APK; sem serviço ou download em execução.
+- Nove capturas atuais de UI real em renderização nativa Robolectric, incluindo telas prioritárias, navegação em contexto e cenários de 320 dp / fonte130%. Comparação com a 1.6.1 preservada em [VISUAL-1.6.2.md](docs/VISUAL-1.6.2.md).
+- A primeira execução revelou seletores ligados ao texto do cabeçalho; o texto original foi mantido e a suíte completa voltou a passar sem adaptação dos testes. Inspeção visual também corrigiu contraste no velino e compactou o resumo diário.
+- Testes físicos de instalação sobre a 1.6.1, launcher e TalkBack **não executados**. Pacote, certificado, permissões e incremento de versão foram conferidos; isso não substitui teste físico.
+
+[Build](docs/validation/BUILD-1.6.2.txt) · [APK/assinatura](docs/validation/APK-1.6.2.txt) · [Lint](docs/validation/LINT-1.6.2.txt) · [XMLs executados](docs/validation/).
+
+---
+
+## Registro anterior da 1.6.1
+
 # Validação — ASCEND 1.6.1
 
 16/11/2026. Base `feat/ascend-1.6`, commit `861acb5`. Branch de entrega `feat/ascend-1.6.1`.

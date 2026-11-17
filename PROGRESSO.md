@@ -1,6 +1,13 @@
-# ASCEND — progresso da versão 1.6.1
+# ASCEND — progresso da versão 1.6.2
 
 Implementação nativa em Kotlin, Compose, Material 3, Navigation, Room, DataStore, ViewModel, Coroutines e StateFlow. Sem permissão INTERNET, contas, anúncios ou backend.
+
+## Entregue na 1.6.2
+
+- Biblioteca visual com materiais originais otimizados, sem padrões geométricos repetidos. Navegação contínua, botões/abas, Jornada, códice de missões, Herói e arsenal refinados.
+- Aplicação global pelos componentes compartilhados; temas, minimalista, redução de movimento, Room v6 e backup v8 preservados. Apenas apresentação; nenhuma funcionalidade nova.
+- 135 testes existentes aprovados sem alterações; build concluído e Lint com zero erros / 20 avisos. APK 1.6.2 / code13 com certificado preservado.
+- [Comparações e limites reais](docs/VISUAL-1.6.2.md) · [Validação](VALIDACAO.md).
 
 ## Entregue na 1.6.1
 
