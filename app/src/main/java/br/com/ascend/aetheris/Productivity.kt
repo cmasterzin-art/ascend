@@ -5,8 +5,8 @@ import java.time.LocalDate
 
 @Entity(tableName="plan_exceptions",foreignKeys=[ForeignKey(entity=Habit::class,parentColumns=["id"],childColumns=["habitId"],onDelete=ForeignKey.RESTRICT)],indices=[Index("habitId")])
 data class PlanException(@PrimaryKey val id:String,val habitId:String,val date:String,val include:Boolean)
-@Entity(tableName="focus_sessions",foreignKeys=[ForeignKey(entity=Habit::class,parentColumns=["id"],childColumns=["habitId"],onDelete=ForeignKey.RESTRICT)],indices=[Index("habitId")])
-data class FocusSession(@PrimaryKey val id:String,val habitId:String,val habitName:String,val date:String,val startedAt:Long,val endedAt:Long,val elapsedSeconds:Long,val plannedMinutes:Int,val status:String,val registered:Boolean)
+@Entity(tableName="focus_sessions",indices=[Index("habitId"),Index("pathId"),Index("taskId")])
+data class FocusSession(@PrimaryKey val id:String,val habitId:String="",val habitName:String="",val date:String,val startedAt:Long,val endedAt:Long,val elapsedSeconds:Long,val plannedMinutes:Int,val status:String,val registered:Boolean,@ColumnInfo(defaultValue="''") val pathId:String="",@ColumnInfo(defaultValue="''") val taskId:String="",@ColumnInfo(defaultValue="''") val targetLabel:String="")
 
 data class AnalysisPeriod(val start:String,val end:String,val label:String){
  val days get()=java.time.temporal.ChronoUnit.DAYS.between(LocalDate.parse(start),LocalDate.parse(end)).toInt()+1

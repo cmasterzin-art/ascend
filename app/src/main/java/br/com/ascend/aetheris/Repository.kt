@@ -16,7 +16,7 @@ import java.security.MessageDigest
 
 val Context.preferences by preferencesDataStore("ascend_settings")
 class AscendApp:Application(){
-    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6).build() }
+    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7).build() }
     val repository by lazy { GameRepository(database){s->HabitWidget.refresh(this,s)} }
 }
 data class GameEvent(val message:String,val level:Int=0,val xp:Long=0,val coins:Long=0,val points:List<Long> = emptyList(),val highlights:List<String> = emptyList())
@@ -24,7 +24,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     private val d=db.dao(); private val lock=Mutex()
     val state=MutableStateFlow<GameState?>(null)
     val events=MutableSharedFlow<GameEvent>(extraBufferCapacity=10)
-    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus(),d.restDays(),d.plans(),d.focusSessions())
+    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus(),d.restDays(),d.plans(),d.focusSessions(),d.paths(),d.pathStages(),d.pathTasks(),d.pathSubtasks(),d.pathHabitLinks(),d.timeBlocks(),d.agendaEvents(),d.inboxItems())
     suspend fun refresh()=lock.withLock { state.value=read() }
     private suspend fun change(message:String="Salvo",block:suspend ()->Unit){
         lock.withLock {
@@ -239,17 +239,29 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         require(savedHabit.type==2 && !savedHabit.deleted && !savedHabit.archived && !savedHabit.paused && minutes in 1..1440){"Escolha um hábito cronometrado ativo e duração de 1 a 1440 minutos."}
         require(d.focus()==null){"Encerre a sessão atual antes de iniciar outra."}
         val date=today();val r=d.records().find{it.habitId==savedHabit.id && it.date==date}
-        val now=System.currentTimeMillis();d.focus(Focus(habitId=savedHabit.id,date=date,duration=minutes,startedAt=now,baseline=r?.progress?:0,sessionId=uid(),beganAt=now))
+        val now=System.currentTimeMillis();d.focus(Focus(habitId=savedHabit.id,date=date,duration=minutes,startedAt=now,baseline=r?.progress?:0,sessionId=uid(),beganAt=now,targetLabel=savedHabit.name))
+    }
+    suspend fun startPathFocus(pathId:String="",taskId:String="",minutes:Int)=change("Sessão de caminho iniciada"){
+        require(minutes in 1..1440){"Escolha uma duração de 1 a 1440 minutos."}
+        require(d.focus()==null){"Encerre a sessão atual antes de iniciar outra."}
+        val task=if(taskId.isNotBlank()) requireNotNull(d.pathTasks().find{it.id==taskId}){"Tarefa não encontrada."} else null
+        val resolvedPathId=pathId.ifBlank{task?.pathId.orEmpty()}
+        val path=if(resolvedPathId.isNotBlank()) requireNotNull(d.paths().find{it.id==resolvedPathId}){"Caminho não encontrado."} else null
+        require(path!=null || task!=null){"Selecione um caminho ou tarefa."}
+        val label=task?.title ?: path?.name ?: ""
+        val now=System.currentTimeMillis()
+        d.focus(Focus(habitId="",date=today(),duration=minutes,startedAt=now,baseline=0,sessionId=uid(),beganAt=now,pathId=resolvedPathId,taskId=taskId,targetLabel=label))
     }
     suspend fun pauseFocus()=change("Foco atualizado"){
         val f=d.focus()?:return@change;d.focus(f.copy(elapsed=f.seconds(),startedAt=if(f.startedAt==0L) System.currentTimeMillis() else 0))
     }
     suspend fun endFocus(register:Boolean)=change(if(register) "Tempo efetivo registrado" else "Sessão descartada"){
         val f=d.focus()?:return@change
-        if(register){
-            val h=d.habits().find{it.id==f.habitId}?:error("Hábito não encontrado")
+        val h=if(f.habitId.isNotBlank()) d.habits().find{it.id==f.habitId} else null
+        if(register && f.habitId.isNotBlank()){
+            val habit=h?:error("Hábito não encontrado")
             val existing=d.records().find{it.habitId==f.habitId && it.date==f.date}
-            val r=existing?:HabitRecord("${h.id}@${f.date}",h.id,f.date,0,h.target,h.xp,h.coins,h.points,h.attribute,h.proportional,h.type,h.category,h.unit,h.name,scheduled(h,f.date,d.restDays().map{it.date}.toSet(),d.plans()))
+            val r=existing?:HabitRecord("${habit.id}@${f.date}",habit.id,f.date,0,habit.target,habit.xp,habit.coins,habit.points,habit.attribute,habit.proportional,habit.type,habit.category,habit.unit,habit.name,scheduled(habit,f.date,d.restDays().map{it.date}.toSet(),d.plans()))
             // Absolute baseline makes overlapping manual progress idempotent.
             val next=maxOf(r.progress,f.baseline+(f.seconds()/60).toInt()).coerceAtMost(r.target)
             d.record(r.copy(progress=next))
@@ -257,15 +269,229 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         }
         if(f.sessionId.isNotBlank()){
             val now=System.currentTimeMillis().coerceAtLeast(f.beganAt);val seconds=f.seconds()
-            d.focusSession(FocusSession(f.sessionId,f.habitId,d.habits().first{it.id==f.habitId}.name,f.date,f.beganAt,now,seconds,f.duration,if(!register)"cancelled" else if(seconds>=f.duration*60L)"completed" else "interrupted",register))
+            val label=h?.name ?: f.targetLabel.ifBlank{ d.pathTasks().find{it.id==f.taskId}?.title ?: d.paths().find{it.id==f.pathId}?.name ?: "Sessão" }
+            d.focusSession(FocusSession(f.sessionId,f.habitId,h?.name?:"",f.date,f.beganAt,now,seconds,f.duration,if(!register)"cancelled" else if(seconds>=f.duration*60L)"completed" else "interrupted",register,f.pathId,f.taskId,label))
         }
         d.clearFocus()
     }
+    suspend fun savePath(p:PersonalPath)=change("Caminho salvo"){
+        val clean=p.copy(name=p.name.trim(),category=p.category.trim().ifBlank{"Pessoal"})
+        validatePathInput(clean)
+        val finalPath=if(clean.state==3 && clean.completedDate.isBlank()) clean.copy(completedDate=today()) else clean
+        d.path(finalPath)
+    }
+    suspend fun setPathState(pathId:String,newState:Int)=change(if(newState==3)"Caminho concluído" else "Estado do caminho atualizado"){
+        require(newState in pathStates.indices){"Estado inválido."}
+        val p=requireNotNull(d.paths().find{it.id==pathId}){"Caminho não encontrado."}
+        val doneDate=if(newState==3) p.completedDate.ifBlank{today()} else p.completedDate
+        d.path(p.copy(state=newState,completedDate=doneDate))
+    }
+    suspend fun duplicatePath(pathId:String,includeStructure:Boolean=true)=change("Caminho duplicado"){
+        val orig=requireNotNull(d.paths().find{it.id==pathId}){"Caminho não encontrado."}
+        val newPathId=uid()
+        val pos=(d.paths().maxOfOrNull{it.position}?:-1)+1
+        d.path(orig.copy(id=newPathId,name="${orig.name} (cópia)",state=0,startDate=today(),completedDate="",position=pos))
+        if(includeStructure){
+            val stageMap=HashMap<String,String>()
+            d.pathStages().filter{it.pathId==pathId}.sortedBy{it.position}.forEach{st->
+                val ns=uid();stageMap[st.id]=ns
+                d.pathStage(st.copy(id=ns,pathId=newPathId))
+            }
+            val allSubtasks=d.pathSubtasks().groupBy{it.taskId}
+            d.pathTasks().filter{it.pathId==pathId&&!it.archived}.sortedBy{it.position}.forEach{t->
+                val nt=uid()
+                d.pathTask(t.copy(id=nt,pathId=newPathId,stageId=stageMap[t.stageId]?:"",completed=false,completedDate="",archived=false,created=today()))
+                allSubtasks[t.id].orEmpty().sortedBy{it.position}.forEach{sub->
+                    d.pathSubtask(sub.copy(id=uid(),taskId=nt,done=false))
+                }
+            }
+        }
+    }
+    suspend fun deletePath(pathId:String)=change("Caminho excluído"){
+        val p=requireNotNull(d.paths().find{it.id==pathId}){"Caminho não encontrado."}
+        val tasks=d.pathTasks().filter{it.pathId==pathId}
+        val taskIds=tasks.mapTo(HashSet()){it.id}
+        d.focus()?.let{f->if(f.pathId==pathId || f.taskId in taskIds) d.focus(f.copy(pathId="",taskId="",targetLabel=f.targetLabel.ifBlank{p.name}))}
+        d.focusSessions().filter{it.pathId==pathId || it.taskId in taskIds}.forEach{fs->
+            d.focusSession(fs.copy(pathId=if(fs.pathId==pathId)"" else fs.pathId,taskId=if(fs.taskId in taskIds)"" else fs.taskId,targetLabel=fs.targetLabel.ifBlank{p.name}))
+        }
+        d.timeBlocks().filter{it.pathId==pathId || it.taskId in taskIds}.forEach{tb->
+            d.timeBlock(tb.copy(pathId=if(tb.pathId==pathId)"" else tb.pathId,taskId=if(tb.taskId in taskIds)"" else tb.taskId))
+        }
+        d.deletePathHabitLinksByPath(pathId)
+        tasks.forEach{t->d.deletePathSubtasksByTask(t.id);d.deletePathTask(t.id)}
+        d.deletePathStagesByPath(pathId)
+        d.deletePath(pathId)
+    }
+    suspend fun saveStage(stage:PathStage)=change("Etapa salva"){
+        val clean=stage.copy(name=stage.name.trim())
+        require(clean.id.isNotBlank() && clean.name.isNotBlank() && clean.name.length<=120 && clean.position>=0){"Informe um nome para a etapa."}
+        require(d.paths().any{it.id==clean.pathId}){"Caminho não encontrado."}
+        d.pathStage(clean)
+    }
+    suspend fun deleteStage(stageId:String)=change("Etapa removida"){
+        d.pathTasks().filter{it.stageId==stageId}.forEach{d.pathTask(it.copy(stageId=""))}
+        d.deletePathStage(stageId)
+    }
+    suspend fun saveTask(task:PathTask)=change("Tarefa salva"){
+        val clean=task.copy(title=task.title.trim())
+        validateTaskInput(clean,d.paths(),d.pathStages())
+        val finalTask=if(clean.completed && clean.completedDate.isBlank()) clean.copy(completedDate=today()) else if(!clean.completed) clean.copy(completedDate="") else clean
+        d.pathTask(finalTask)
+    }
+    suspend fun toggleTask(taskId:String)=change("Tarefa atualizada"){
+        val t=requireNotNull(d.pathTasks().find{it.id==taskId}){"Tarefa não encontrada."}
+        val nextDone=!t.completed
+        d.pathTask(t.copy(completed=nextDone,completedDate=if(nextDone)today() else ""))
+    }
+    suspend fun moveTask(taskId:String,targetPathId:String,targetStageId:String="")=change("Tarefa movida"){
+        val t=requireNotNull(d.pathTasks().find{it.id==taskId}){"Tarefa não encontrada."}
+        if(targetPathId.isNotBlank()) require(d.paths().any{it.id==targetPathId}){"Caminho de destino não encontrado."}
+        if(targetStageId.isNotBlank()) require(d.pathStages().any{it.id==targetStageId && it.pathId==targetPathId}){"Etapa de destino incompatível com o caminho."}
+        d.pathTask(t.copy(pathId=targetPathId,stageId=if(targetPathId.isBlank())"" else targetStageId))
+    }
+    suspend fun duplicateTask(taskId:String)=change("Tarefa duplicada"){
+        val t=requireNotNull(d.pathTasks().find{it.id==taskId}){"Tarefa não encontrada."}
+        val newTaskId=uid()
+        val pos=(d.pathTasks().filter{it.pathId==t.pathId}.maxOfOrNull{it.position}?:-1)+1
+        d.pathTask(t.copy(id=newTaskId,title="${t.title} (cópia)",completed=false,completedDate="",archived=false,position=pos,created=today()))
+        d.pathSubtasks().filter{it.taskId==taskId}.sortedBy{it.position}.forEach{sub->
+            d.pathSubtask(sub.copy(id=uid(),taskId=newTaskId,done=false))
+        }
+    }
+    suspend fun deleteTask(taskId:String)=change("Tarefa excluída"){
+        val t=requireNotNull(d.pathTasks().find{it.id==taskId}){"Tarefa não encontrada."}
+        d.focus()?.let{f->if(f.taskId==taskId) d.focus(f.copy(taskId="",targetLabel=f.targetLabel.ifBlank{t.title}))}
+        d.focusSessions().filter{it.taskId==taskId}.forEach{fs->d.focusSession(fs.copy(taskId="",targetLabel=fs.targetLabel.ifBlank{t.title}))}
+        d.timeBlocks().filter{it.taskId==taskId}.forEach{tb->d.timeBlock(tb.copy(taskId=""))}
+        d.deletePathSubtasksByTask(taskId)
+        d.deletePathTask(taskId)
+    }
+    suspend fun saveSubtask(sub:PathSubtask)=change("Subtarefa salva"){
+        val clean=sub.copy(title=sub.title.trim())
+        require(clean.id.isNotBlank() && clean.title.isNotBlank() && clean.title.length<=200 && clean.position>=0){"Informe um título para a subtarefa."}
+        require(d.pathTasks().any{it.id==clean.taskId}){"Tarefa pai não encontrada."}
+        d.pathSubtask(clean)
+    }
+    suspend fun toggleSubtask(subtaskId:String)=change("Subtarefa atualizada"){
+        val s=requireNotNull(d.pathSubtasks().find{it.id==subtaskId}){"Subtarefa não encontrada."}
+        d.pathSubtask(s.copy(done=!s.done))
+    }
+    suspend fun reorderSubtask(subtaskId:String,step:Int)=change("Ordem das subtarefas atualizada"){
+        val target=requireNotNull(d.pathSubtasks().find{it.id==subtaskId}){"Subtarefa não encontrada."}
+        val list=d.pathSubtasks().filter{it.taskId==target.taskId}.sortedBy{it.position}.toMutableList()
+        val i=list.indexOfFirst{it.id==subtaskId};val j=(i+step).coerceIn(0,(list.size-1).coerceAtLeast(0))
+        if(i>=0&&i!=j){java.util.Collections.swap(list,i,j);list.forEachIndexed{n,v->d.pathSubtask(v.copy(position=n))}}
+    }
+    suspend fun deleteSubtask(subtaskId:String)=change("Subtarefa removida"){
+        d.deletePathSubtask(subtaskId)
+    }
+    suspend fun linkHabitToPath(pathId:String,habitId:String,enabled:Boolean)=change(if(enabled)"Hábito vinculado ao caminho" else "Vínculo removido"){
+        require(d.paths().any{it.id==pathId}){"Caminho não encontrado."}
+        val h=requireNotNull(d.habits().find{it.id==habitId}){"Hábito não encontrado."}
+        val linkId="$pathId@$habitId"
+        if(enabled){
+            require(!h.deleted){"Escolha um hábito existente."}
+            d.pathHabitLink(PathHabitLink(linkId,pathId,habitId,today()))
+        }else{
+            d.deletePathHabitLink(linkId)
+        }
+    }
+    suspend fun saveTimeBlock(b:TimeBlock)=change("Bloco de tempo salvo"){
+        val clean=b.copy(title=b.title.trim(),category=b.category.trim().ifBlank{"Foco"})
+        validateTimeBlockInput(clean,d.paths(),d.pathTasks(),d.habits())
+        d.timeBlock(clean)
+    }
+    suspend fun deleteTimeBlock(id:String)=change("Bloco de tempo removido"){
+        d.deleteTimeBlock(id)
+    }
+    suspend fun saveEvent(e:AgendaEvent)=change("Compromisso salvo"){
+        val clean=e.copy(title=e.title.trim(),kind=e.kind.trim().ifBlank{"Compromisso"})
+        validateAgendaEventInput(clean)
+        d.agendaEvent(clean)
+    }
+    suspend fun toggleEvent(id:String)=change("Compromisso atualizado"){
+        val e=requireNotNull(d.agendaEvents().find{it.id==id}){"Compromisso não encontrado."}
+        d.agendaEvent(e.copy(completed=!e.completed))
+    }
+    suspend fun deleteEvent(id:String)=change("Compromisso excluído"){
+        d.deleteAgendaEvent(id)
+    }
+    suspend fun saveInboxItem(item:InboxItem)=change("Item guardado na Caixa de Entrada"){
+        val clean=item.copy(title=item.title.trim())
+        require(clean.id.isNotBlank() && clean.title.isNotBlank() && clean.title.length<=200){"Informe um título para capturar."}
+        LocalDate.parse(clean.created)
+        d.inboxItem(clean)
+    }
+    suspend fun deleteInboxItem(id:String)=change("Item removido da Caixa de Entrada"){
+        d.deleteInboxItem(id)
+    }
+    suspend fun triageInboxToTask(inboxId:String,task:PathTask,subtaskTitles:List<String> = emptyList())=change("Item organizado em tarefa"){
+        requireNotNull(d.inboxItems().find{it.id==inboxId}){"Item da Caixa de Entrada não encontrado."}
+        val clean=task.copy(title=task.title.trim())
+        validateTaskInput(clean,d.paths(),d.pathStages())
+        d.pathTask(clean)
+        subtaskTitles.map{it.trim()}.filter{it.isNotBlank()}.forEachIndexed{i,title->
+            require(title.length<=200){"Subtarefa muito longa."}
+            d.pathSubtask(PathSubtask(taskId=clean.id,title=title,position=i))
+        }
+        d.deleteInboxItem(inboxId)
+    }
+    suspend fun triageInboxToEvent(inboxId:String,event:AgendaEvent)=change("Item agendado como compromisso"){
+        requireNotNull(d.inboxItems().find{it.id==inboxId}){"Item da Caixa de Entrada não encontrado."}
+        val clean=event.copy(title=event.title.trim(),kind=event.kind.trim().ifBlank{"Compromisso"})
+        validateAgendaEventInput(clean)
+        d.agendaEvent(clean)
+        d.deleteInboxItem(inboxId)
+    }
     suspend fun importState(s:GameState)=change("Backup restaurado"){
         validateState(s)
+        d.clearPathHabitLinks();d.clearPathSubtasks();d.clearPathTasks();d.clearPathStages();d.clearPaths();d.clearTimeBlocks();d.clearAgendaEvents();d.clearInboxItems()
         d.clearPlans();d.clearFocusSessions();d.clearRestDays();d.clearFocus();d.clearRecords();d.clearHabits();d.clearLedger();d.clearQuests();d.clearClaims();d.clearAssets();d.clearAchievements();d.clearJournal();d.clearRoutines();d.clearPlayer()
         s.restDays.forEach{d.restDay(it)}
-        s.player?.let{d.player(it)};s.habits.forEach{d.habit(it)};s.plans.forEach{d.plan(it)};s.focusSessions.forEach{d.focusSession(it)};s.records.forEach{d.record(it)};s.ledger.forEach{d.reward(it)};s.quests.forEach{d.quest(it)};s.claims.forEach{d.claim(it)};s.assets.forEach{d.asset(it)};s.achievements.forEach{d.unlock(it)};s.journal.forEach{d.journal(it)};s.routines.forEach{d.routine(it)};s.focus?.let{d.focus(it.copy(elapsed=it.seconds(),startedAt=0))}
+        s.player?.let{d.player(it)};s.habits.forEach{d.habit(it)};s.plans.forEach{d.plan(it)};s.records.forEach{d.record(it)};s.ledger.forEach{d.reward(it)};s.quests.forEach{d.quest(it)};s.claims.forEach{d.claim(it)};s.assets.forEach{d.asset(it)};s.achievements.forEach{d.unlock(it)};s.journal.forEach{d.journal(it)};s.routines.forEach{d.routine(it)}
+        s.paths.forEach{d.path(it)};s.pathStages.forEach{d.pathStage(it)};s.pathTasks.forEach{d.pathTask(it)};s.pathSubtasks.forEach{d.pathSubtask(it)};s.pathHabitLinks.forEach{d.pathHabitLink(it)};s.timeBlocks.forEach{d.timeBlock(it)};s.agendaEvents.forEach{d.agendaEvent(it)};s.inboxItems.forEach{d.inboxItem(it)}
+        s.focusSessions.forEach{d.focusSession(it)};s.focus?.let{d.focus(it.copy(elapsed=it.seconds(),startedAt=0))}
+    }
+}
+fun validatePathInput(p:PersonalPath){
+    require(p.id.isNotBlank() && p.name.isNotBlank() && p.name.length<=120){"Informe um nome para o caminho (até 120 caracteres)."}
+    LocalDate.parse(p.startDate)
+    if(p.deadline.isNotBlank()){
+        LocalDate.parse(p.deadline)
+        require(p.deadline>=p.startDate){"O prazo do caminho deve ser igual ou posterior ao início."}
+    }
+    if(p.completedDate.isNotBlank()) LocalDate.parse(p.completedDate)
+    require(p.priority in priorityLabels.indices && p.state in pathStates.indices && p.attribute in -1..4 && p.icon in glyphs.indices && p.color in palette.indices){"Revise prioridade, estado, atributo ou emblema."}
+}
+fun validateTaskInput(t:PathTask,paths:List<PersonalPath>,stages:List<PathStage>){
+    require(t.id.isNotBlank() && t.title.isNotBlank() && t.title.length<=200){"Informe um título para a tarefa."}
+    require(t.priority in priorityLabels.indices && t.estimateMinutes in 0..1440 && t.position>=0){"Revise prioridade ou estimativa."}
+    LocalDate.parse(t.created)
+    if(t.deadline.isNotBlank()) LocalDate.parse(t.deadline)
+    if(t.scheduledDate.isNotBlank()) LocalDate.parse(t.scheduledDate)
+    if(t.scheduledTime.isNotBlank()) LocalTime.parse(t.scheduledTime)
+    if(t.completedDate.isNotBlank()) LocalDate.parse(t.completedDate)
+    if(t.pathId.isNotBlank()) require(paths.any{it.id==t.pathId}){"Caminho associado não encontrado."}
+    if(t.stageId.isNotBlank()) require(t.pathId.isNotBlank() && stages.any{it.id==t.stageId && it.pathId==t.pathId}){"Etapa associada não pertence ao caminho."}
+}
+fun validateTimeBlockInput(b:TimeBlock,paths:List<PersonalPath>,tasks:List<PathTask>,habits:List<Habit>){
+    require(b.id.isNotBlank() && b.title.isNotBlank() && b.title.length<=160){"Informe um título para o bloco de tempo."}
+    LocalDate.parse(b.date)
+    val start=LocalTime.parse(b.startTime);val end=LocalTime.parse(b.endTime)
+    require(end.isAfter(start)){"O horário final deve ser posterior ao inicial."}
+    require(b.color in palette.indices){"Cor inválida."}
+    if(b.pathId.isNotBlank()) require(paths.any{it.id==b.pathId}){"Caminho vinculado não encontrado."}
+    if(b.taskId.isNotBlank()) require(tasks.any{it.id==b.taskId}){"Tarefa vinculada não encontrada."}
+    if(b.habitId.isNotBlank()) require(habits.any{it.id==b.habitId}){"Hábito vinculado não encontrado."}
+}
+fun validateAgendaEventInput(e:AgendaEvent){
+    require(e.id.isNotBlank() && e.title.isNotBlank() && e.title.length<=160){"Informe um título para o compromisso."}
+    LocalDate.parse(e.date)
+    if(e.startTime.isNotBlank()) LocalTime.parse(e.startTime)
+    if(e.endTime.isNotBlank()){
+        require(e.startTime.isNotBlank()){"Informe o horário de início antes do término."}
+        require(!LocalTime.parse(e.endTime).isBefore(LocalTime.parse(e.startTime))){"O horário de término não pode preceder o início."}
     }
 }
 fun validateHabitInput(h:Habit){
@@ -276,7 +502,7 @@ fun validateHabitInput(h:Habit){
     require(h.difficulty in 0..2 && h.icon in glyphs.indices && h.color in palette.indices){"Revise a dificuldade, o ícone e a cor."}
     require(h.templateId.length<=100 && h.narrativeName.length<=200){"Nome narrativo muito longo."}
 }
-data class BackupEnvelope(val format:String="ASCEND",val version:Int=8,val sha256:String,val payload:String)
+data class BackupEnvelope(val format:String="ASCEND",val version:Int=9,val sha256:String,val payload:String)
 object Backup {
     private val gson=Gson()
     private fun digest(s:String)=MessageDigest.getInstance("SHA-256").digest(s.toByteArray(Charsets.UTF_8)).joinToString(""){"%02x".format(it)}
@@ -284,13 +510,14 @@ object Backup {
     fun decode(text:String):GameState {
         require(text.length<=20_000_000){"Backup muito grande (máximo 20 MB)."}
         val b=gson.fromJson(text,BackupEnvelope::class.java)
-        require(b.format=="ASCEND" && b.version in 1..8 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
+        require(b.format=="ASCEND" && b.version in 1..9 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
         val json=com.google.gson.JsonParser.parseString(b.payload).asJsonObject
         listOf("quests","claims").forEach{table->json.getAsJsonArray(table)?.forEach{row->listOf("sagaStart","sagaBaseline").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}}
         json.getAsJsonArray("quests")?.forEach{row->val obj=row.asJsonObject;if(!obj.has("sagaState"))obj.addProperty("sagaState",0);if(!obj.has("sagaEnd"))obj.addProperty("sagaEnd","");if(!obj.has("sagaStopped"))obj.addProperty("sagaStopped",0)}
         json.getAsJsonArray("assets")?.forEach{row->listOf("memorySpeaker","memoryText").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}
-        listOf("plans","focusSessions").forEach{if(!json.has(it))json.add(it,com.google.gson.JsonArray())}
-        json["focus"]?.takeIf{it.isJsonObject}?.asJsonObject?.let{f->if(!f.has("sessionId"))f.addProperty("sessionId","");if(!f.has("beganAt"))f.addProperty("beganAt",0)}
+        listOf("plans","focusSessions","paths","pathStages","pathTasks","pathSubtasks","pathHabitLinks","timeBlocks","agendaEvents","inboxItems").forEach{if(!json.has(it))json.add(it,com.google.gson.JsonArray())}
+        json["focus"]?.takeIf{it.isJsonObject}?.asJsonObject?.let{f->if(!f.has("sessionId"))f.addProperty("sessionId","");if(!f.has("beganAt"))f.addProperty("beganAt",0);if(!f.has("pathId"))f.addProperty("pathId","");if(!f.has("taskId"))f.addProperty("taskId","");if(!f.has("targetLabel"))f.addProperty("targetLabel","")}
+        json.getAsJsonArray("focusSessions")?.forEach{row->val obj=row.asJsonObject;listOf("pathId","taskId","targetLabel").forEach{k->if(!obj.has(k))obj.addProperty(k,"")}}
         val s=gson.fromJson(json,GameState::class.java);validateState(s);return s
     }
 }
@@ -327,10 +554,20 @@ fun validateState(s:GameState){
     require(s.plans.size<=200000 && s.focusSessions.size<=200000)
     distinct(s.plans.map{it.id});distinct(s.focusSessions.map{it.id})
     s.plans.forEach{p->LocalDate.parse(p.date);require(p.id=="${p.habitId}@${p.date}"&&s.habits.any{it.id==p.habitId&&p.date>=it.created})}
-    s.focusSessions.forEach{f->LocalDate.parse(f.date);require(s.habits.any{it.id==f.habitId} && f.date<=today() && f.startedAt>0 && f.endedAt>=f.startedAt && f.plannedMinutes in 1..1440 && f.elapsedSeconds in 0..f.plannedMinutes*60L && f.status in listOf("completed","interrupted","cancelled") && f.registered==(f.status!="cancelled"))}
+    require(s.paths.size<=10000 && s.pathStages.size<=50000 && s.pathTasks.size<=200000 && s.pathSubtasks.size<=400000 && s.pathHabitLinks.size<=50000 && s.timeBlocks.size<=200000 && s.agendaEvents.size<=200000 && s.inboxItems.size<=100000)
+    distinct(s.paths.map{it.id});distinct(s.pathStages.map{it.id});distinct(s.pathTasks.map{it.id});distinct(s.pathSubtasks.map{it.id});distinct(s.pathHabitLinks.map{it.id});distinct(s.timeBlocks.map{it.id});distinct(s.agendaEvents.map{it.id});distinct(s.inboxItems.map{it.id})
+    s.paths.forEach{validatePathInput(it)}
+    s.pathStages.forEach{st->require(st.name.isNotBlank() && st.name.length<=120 && st.position>=0 && s.paths.any{it.id==st.pathId})}
+    s.pathTasks.forEach{validateTaskInput(it,s.paths,s.pathStages)}
+    s.pathSubtasks.forEach{sub->require(sub.title.isNotBlank() && sub.title.length<=200 && sub.position>=0 && s.pathTasks.any{it.id==sub.taskId})}
+    s.pathHabitLinks.forEach{l->LocalDate.parse(l.created);require(l.id=="${l.pathId}@${l.habitId}" && s.paths.any{it.id==l.pathId} && s.habits.any{it.id==l.habitId})}
+    s.timeBlocks.forEach{validateTimeBlockInput(it,s.paths,s.pathTasks,s.habits)}
+    s.agendaEvents.forEach{validateAgendaEventInput(it)}
+    s.inboxItems.forEach{item->require(item.title.isNotBlank() && item.title.length<=200);LocalDate.parse(item.created)}
+    s.focusSessions.forEach{f->LocalDate.parse(f.date);require((f.habitId.isNotBlank()||f.pathId.isNotBlank()||f.taskId.isNotBlank()||f.targetLabel.isNotBlank()) && (f.habitId.isBlank()||s.habits.any{it.id==f.habitId}) && (f.pathId.isBlank()||s.paths.any{it.id==f.pathId}) && (f.taskId.isBlank()||s.pathTasks.any{it.id==f.taskId}) && f.date<=today() && f.startedAt>0 && f.endedAt>=f.startedAt && f.plannedMinutes in 1..1440 && f.elapsedSeconds in 0..f.plannedMinutes*60L && f.status in listOf("completed","interrupted","cancelled") && f.registered==(f.status!="cancelled"))}
     s.focus?.let{f->
         LocalDate.parse(f.date)
-        require(f.id==1 && s.habits.any{it.id==f.habitId && f.date>=it.created} && f.date<=today() && f.duration in 1..1440 && f.elapsed in 0..f.duration*60L && f.startedAt>=0 && f.baseline in 0..1000000){"Sessão de foco inválida no backup."}
+        require(f.id==1 && (f.habitId.isNotBlank()||f.pathId.isNotBlank()||f.taskId.isNotBlank()) && (f.habitId.isBlank()||s.habits.any{it.id==f.habitId && f.date>=it.created}) && (f.pathId.isBlank()||s.paths.any{it.id==f.pathId}) && (f.taskId.isBlank()||s.pathTasks.any{it.id==f.taskId}) && f.date<=today() && f.duration in 1..1440 && f.elapsed in 0..f.duration*60L && f.startedAt>=0 && f.baseline in 0..1000000){"Sessão de foco inválida no backup."}
     }
 }
 class GameViewModel(app:Application):AndroidViewModel(app){

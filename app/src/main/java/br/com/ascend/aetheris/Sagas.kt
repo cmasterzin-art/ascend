@@ -49,6 +49,7 @@ fun narrativeCandidates(s:GameState):List<NarrativeLine> = buildList{
  if(chapterUnlocked(6,s))add(NarrativeLine("discovery-ione","O Cronista","Ione voltou com a margem do mapa molhada. Onde o rio mudou, ela desenhou duas linhas: uma para a água, outra para a lembrança."))
  if(s.achievements.any{it.id=="return"})add(NarrativeLine("seren-return","Seren · Guardiã do Jardim","As sementes ficaram sob a terra enquanto você esteve longe. Algumas esperaram. Outras encontraram seu próprio tempo."))
  forestExpeditions.forEach{e->if(expeditionComplete(s,e))add(NarrativeLine("expedition:${e.id}","O Cronista",e.consequence))}
+ s.paths.filter{it.state==3}.forEach{p->add(NarrativeLine("path-done:${p.id}","O Cronista","O caminho \"${p.name}\" alcançou seu marco final. Não foi uma promessa vaga; houve passos reais entre a partida e a chegada."))}
  if(s.records.any{it.complete})add(NarrativeLine("first","O Cronista","Encontrei terra na soleira. Até ontem, só havia poeira. Alguém saiu e voltou; é o primeiro fato deste volume."))
 }
 fun nextNarrative(s:GameState)=narrativeCandidates(s).firstOrNull{line->s.assets.none{it.id=="memory:${line.id}"}}

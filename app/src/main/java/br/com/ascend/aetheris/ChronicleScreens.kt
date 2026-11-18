@@ -36,15 +36,15 @@ import java.time.LocalDate
  }
 }
 @Composable fun MemoryHall(s:GameState){
- var filter by rememberSaveable{mutableIntStateOf(0)};val categories=listOf("Todas","Conquistas","Sagas","Mundo","Personagem","História");val memories=remember(s,filter){hallMemories(s).filter{filter==0||it.category==categories[filter]}}
+ var filter by rememberSaveable{mutableIntStateOf(0)};val categories=listOf("Todas","Conquistas","Sagas","Caminhos","Mundo","Personagem","História");val memories=remember(s,filter){hallMemories(s).filter{filter==0||it.category==categories[filter]}}
  LazyColumn(Modifier.fillMaxSize().testTag("memory_list"),contentPadding=PaddingValues(horizontal=20.dp,vertical=24.dp),verticalArrangement=Arrangement.spacedBy(18.dp)){
   item{Title("Salão das Memórias","${s.player?.name} · inscrições de uma jornada real")}
   item{AetherisTabs(categories,filter,{filter=it})}
   item{Eyebrow("${memories.size} ${if(memories.size==1)"inscrição" else "inscrições"} · ${categories[filter]}",Muted)}
-  if(memories.isEmpty())item{Empty(if(filter==5)"As vozes ainda aguardam uma conversa. Memórias reconhecidas aparecerão aqui." else "Ainda não há inscrições nesta parte do salão. O lugar permanece reservado.")}
+  if(memories.isEmpty())item{Empty(if(filter==categories.indexOf("História"))"As vozes ainda aguardam uma conversa. Memórias reconhecidas aparecerão aqui." else "Ainda não há inscrições nesta parte do salão. O lugar permanece reservado.")}
   items(memories,key={it.id}){m->
    val expedition=if(m.id.startsWith("claim:"))expeditionRef(m.id.removePrefix("claim:").substringBefore('@')) else null
-   val important=expedition?.let{it.second==it.first.phases.lastIndex}==true||m.category=="Sagas"
+   val important=expedition?.let{it.second==it.first.phases.lastIndex}==true||m.category=="Sagas"||m.category=="Caminhos"
    val accent=if(important)Gold else if(m.category=="História")Blue else ColdIron
    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min),horizontalArrangement=Arrangement.spacedBy(12.dp)){
     Column(Modifier.width(26.dp).fillMaxHeight(),horizontalAlignment=Alignment.CenterHorizontally){

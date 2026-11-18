@@ -57,7 +57,7 @@ class Version11Test {
         val fixture=Room.inMemoryDatabaseBuilder(context,GameDatabase::class.java).build()
         val first=GameRepository(fixture);first.refresh();first.create(Player(name="Kael",heroClass=1),listOf(h));first.progress(h,today(),1)
         val state=first.state.value!!;fixture.close();legacyDatabase(context,name,1,state)
-        val disk=Room.databaseBuilder(context,GameDatabase::class.java,name).addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6).build()
+        val disk=Room.databaseBuilder(context,GameDatabase::class.java,name).addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7).build()
         try{
             val migrated=GameRepository(disk);migrated.refresh()
             assertEquals("Kael",migrated.state.value!!.player!!.name);assertEquals(50L,migrated.state.value!!.xp)
