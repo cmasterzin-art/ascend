@@ -89,7 +89,7 @@ val Sepia=Color(0xFF29251E)
             Column(Modifier.offset(x=mapWidth*xs[i]-42.dp,y=mapHeight*ys[i]-28.dp).width(84.dp).heightIn(min=56.dp).clickable(onClickLabel="Explorar $name"){onSelect(i)}.semantics(mergeDescendants=true){contentDescription="$name, ${if(open)"revelada" else "nível ${regionLevels[i]}"}"},horizontalAlignment=Alignment.CenterHorizontally){
                 RegionStone(i,open,chosen)
                 if(i==1&&forestProgress(s)>0)Text("${forestProgress(s)}% · trilha",color=WornIvory,fontSize=9.sp)
-                Text(if(open)labels[i] else "Nível ${regionLevels[i]}",Modifier.background(Color(0xFF0A1019).copy(alpha=.91f),CutCornerShape(2.dp)).padding(horizontal=6.dp,vertical=3.dp),color=if(open)WornIvory else Color(0xFFBDC7D3),fontSize=10.sp)
+                Text(if(open)labels[i] else "Nível ${regionLevels[i]}",Modifier.background(Color(0xFF0A1019).copy(alpha=.74f),CutCornerShape(3.dp)).border(.6.dp,if(chosen)Gold.copy(alpha=.7f) else if(open)OldBronze.copy(alpha=.45f) else ColdIron.copy(alpha=.3f),CutCornerShape(3.dp)).padding(horizontal=6.dp,vertical=2.dp),color=if(open)WornIvory else Color(0xFFBDC7D3),fontSize=10.sp)
             }
         }
     }

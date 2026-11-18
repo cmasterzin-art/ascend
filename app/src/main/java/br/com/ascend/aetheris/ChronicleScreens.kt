@@ -46,15 +46,29 @@ import java.time.LocalDate
    val expedition=if(m.id.startsWith("claim:"))expeditionRef(m.id.removePrefix("claim:").substringBefore('@')) else null
    val important=expedition?.let{it.second==it.first.phases.lastIndex}==true||m.category=="Sagas"
    val accent=if(important)Gold else if(m.category=="História")Blue else ColdIron
-   val textInk=if(important)Ink else Sepia
-   val textMuted=if(important)Muted else Sepia.copy(alpha=.8f)
-   Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min),horizontalArrangement=Arrangement.spacedBy(10.dp)){Column(Modifier.width(24.dp).fillMaxHeight().background(ColdIron.copy(alpha=.15f)),horizontalAlignment=Alignment.CenterHorizontally){RuneSeal(if(important)4 else m.symbol,if(important)Gold else Blue,Modifier.size(24.dp));Box(Modifier.width(1.dp).weight(1f).background(OldBronze))};AetherSurface(if(important)SurfaceKind.Ceremonial else SurfaceKind.Parchment,Modifier.weight(1f)){
-    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp),verticalAlignment=Alignment.CenterVertically){CeremonialSeal(if(important)SealKind.Reward else SealKind.Saga,true,Modifier.size(38.dp));Column(Modifier.weight(1f)){Eyebrow(m.category,if(important)Gold else Sepia);Text(m.date?.let{displayDate(it)}?:"Data não disponível",color=textMuted,fontSize=12.sp)}}
-    Text(m.title,color=textInk,style=MaterialTheme.typography.titleLarge)
-    if(m.id.startsWith("memory:")&&m.date!=null)Text("Conversa guardada em ${displayDate(m.date)}",color=textMuted,fontSize=12.sp)
-    if(important)NorthDivider()
-    ReadingBlock(m.detail,color=textInk)
-   }}
+   Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min),horizontalArrangement=Arrangement.spacedBy(12.dp)){
+    Column(Modifier.width(26.dp).fillMaxHeight(),horizontalAlignment=Alignment.CenterHorizontally){
+     CeremonialSeal(if(important)SealKind.Reward else SealKind.entries[m.symbol.coerceIn(0,4)],important,Modifier.size(if(important)28.dp else 22.dp))
+     Box(Modifier.width(1.dp).weight(1f).padding(top=4.dp).background(if(important)Gold.copy(alpha=.55f) else ColdIron.copy(alpha=.35f)))
+    }
+    if(important){
+     AetherSurface(SurfaceKind.Ceremonial,Modifier.weight(1f).border(1.dp,Gold.copy(alpha=.4f),androidx.compose.foundation.shape.CutCornerShape(6.dp))){
+      Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Eyebrow(m.category,Gold);Text(m.date?.let{displayDate(it)}?:"Data não disponível",color=Muted,fontSize=12.sp)}
+      Text(m.title,color=Ink,style=MaterialTheme.typography.headlineMedium)
+      if(m.id.startsWith("memory:")&&m.date!=null)Text("Conversa guardada em ${displayDate(m.date)}",color=Muted,fontSize=12.sp)
+      NorthDivider()
+      ReadingBlock(m.detail,color=Ink)
+     }
+    }else{
+     Column(Modifier.weight(1f).padding(bottom=10.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){
+      Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Eyebrow(m.category,accent);Text(m.date?.let{displayDate(it)}?:"Data não disponível",color=Muted,fontSize=12.sp)}
+      Text(m.title,color=Ink,style=MaterialTheme.typography.titleLarge)
+      if(m.id.startsWith("memory:")&&m.date!=null)Text("Conversa guardada em ${displayDate(m.date)}",color=Muted,fontSize=12.sp)
+      ReadingBlock(m.detail,color=Muted)
+      Hairline(Modifier.padding(top=6.dp))
+     }
+    }
+   }
   }
  }
 }

@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.*
   if(index==1){
    item{ForestPainting(forestStage(s),"Floresta · estado ${forestStage(s)}");ReadingBlock(regionDescriptions[1])}
    item{val marks=forestExpeditions.sumOf{e->e.phases.indices.count{expeditionClaimValid(s,e,it)}}
-    Column(verticalArrangement=Arrangement.spacedBy(10.dp)){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column{Eyebrow("Exploração",Blue);Text("$marks de 7 marcos confirmados",color=Muted,fontSize=13.sp)};Text("${forestProgress(s)}%",fontFamily=SagaFont,fontSize=32.sp,color=Blue)};Meter(forestProgress(s)/100f,Blue);Text("Trilha · Santuário · Vigília. Cada marco vem das suas atividades; correções podem rever o progresso.",color=Muted,fontSize=12.sp,lineHeight=20.sp)}
+    Column(verticalArrangement=Arrangement.spacedBy(10.dp)){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column{Eyebrow("Exploração",Blue);Text("$marks de 7 marcos confirmados",color=Muted,fontSize=13.sp)};Text("${forestProgress(s)}%",fontFamily=SagaFont,fontSize=32.sp,color=Blue)};Meter(forestProgress(s)/100f,Blue,slim=true);Text("Trilha · Santuário · Vigília. Cada marco vem das suas atividades; correções podem rever o progresso.",color=Muted,fontSize=12.sp,lineHeight=20.sp);Hairline()}
    }
    items(forestExpeditions,key={it.id}){e->val available=expeditionAvailable(s,e);val complete=expeditionComplete(s,e)
     Panel(accent=if(complete)Green else ColdIron){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){RegionStone(forestExpeditions.indexOf(e),available,complete);Column(Modifier.weight(1f)){Eyebrow(if(complete)"Descoberta confirmada" else if(available)"Vestígios conhecidos" else "Local velado",if(complete)Green else Muted);Text(if(available||complete)e.location else "Inscrição sob a névoa",style=MaterialTheme.typography.titleLarge)}}
@@ -56,7 +56,7 @@ import androidx.compose.ui.unit.*
  val color=if(e.id=="vigil")MaterialTheme.colorScheme.error else Blue
  Panel(accent=color){Eyebrow("Objetivo desta etapa",color);val progress=questProgress(q,s)
  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(e.phases[phase].name,style=MaterialTheme.typography.titleLarge);Text("${progress.coerceAtMost(q.target.toLong())} / ${q.target} conclusões",color=color,fontSize=14.sp)};CeremonialSeal(SealKind.Expedition,progress>=q.target,Modifier.size(38.dp))}
- Meter(progress.toFloat()/q.target,color)
+ Meter(progress.toFloat()/q.target,color,slim=true)
  ReadingBlock(e.phases[phase].text)
  Text("Contribuem: "+s.habits.filter{it.id in q.habitIds.split(',')}.joinToString{it.name},color=Muted,fontSize=12.sp,lineHeight=20.sp)
  if(s.claims.any{it.questId==q.id}&&!validClaim(s.claims.first{it.questId==q.id},s))Text("Registro corrigido: recupere a condição para revalidar este mesmo marco, sem novo resgate.",color=Muted,fontSize=12.sp)
@@ -84,8 +84,12 @@ import androidx.compose.ui.unit.*
  }
  item{Eyebrow("Marcos da expedição",Muted)}
  items(e.phases.indices.toList(),key={"phase:$it"}){n->val reached=expeditionClaimValid(s,e,n);val revealed=n<=phase||complete
-  Row(Modifier.fillMaxWidth().padding(vertical=6.dp),horizontalArrangement=Arrangement.spacedBy(14.dp)){
-   CeremonialSeal(SealKind.Expedition,reached,Modifier.size(34.dp));Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(6.dp)){Eyebrow(if(reached)"Marco confirmado" else if(n==phase)"Marco atual" else "Sob a névoa",if(reached)Green else Muted);Text(if(revealed)e.phases[n].name else "Marco velado",style=MaterialTheme.typography.titleMedium);Text(if(reached)e.phases[n].text else "${e.phases[n].target} conclusões após o início desta etapa.",color=Muted,fontSize=13.sp,lineHeight=22.sp)}
+  Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(vertical=4.dp),horizontalArrangement=Arrangement.spacedBy(14.dp)){
+   Column(Modifier.width(34.dp).fillMaxHeight(),horizontalAlignment=Alignment.CenterHorizontally){
+    CeremonialSeal(SealKind.Expedition,reached,Modifier.size(34.dp))
+    if(n<e.phases.lastIndex)Box(Modifier.width(1.dp).weight(1f).padding(top=4.dp).background(if(reached)Green.copy(alpha=.55f) else ColdIron.copy(alpha=.35f)))
+   }
+   Column(Modifier.weight(1f).padding(bottom=8.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){Eyebrow(if(reached)"Marco confirmado" else if(n==phase)"Marco atual" else "Sob a névoa",if(reached)Green else Muted);Text(if(revealed)e.phases[n].name else "Marco velado",style=MaterialTheme.typography.titleMedium);Text(if(reached)e.phases[n].text else "${e.phases[n].target} conclusões após o início desta etapa.",color=Muted,fontSize=13.sp,lineHeight=22.sp)}
   }
  }
  }

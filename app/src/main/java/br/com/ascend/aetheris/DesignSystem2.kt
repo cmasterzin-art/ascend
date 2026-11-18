@@ -48,17 +48,17 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
   Box(Modifier.matchParentSize().background(Brush.verticalGradient(0f to night.copy(alpha=.78f),.18f to night.copy(alpha=.12f),.48f to night.copy(alpha=.3f),.78f to night.copy(alpha=.86f),1f to night)))
   Box(Modifier.matchParentSize().background(Brush.horizontalGradient(0f to night.copy(alpha=.55f),.22f to Color.Transparent,.78f to Color.Transparent,1f to night.copy(alpha=.6f))))
   Column(Modifier.fillMaxWidth().padding(horizontal=20.dp).padding(top=if(narrow)66.dp else 74.dp,bottom=4.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
-   Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){
+   Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(if(narrow)10.dp else 14.dp)){
     Box(Modifier.drawBehind{if(!minimal){val r=size.maxDimension*.95f;drawCircle(Brush.radialGradient(listOf(cold.copy(alpha=.2f),Color.Transparent),center=Offset(size.width/2,size.height*.4f),radius=r),r,Offset(size.width/2,size.height*.4f))}}.clickable(onClickLabel="Ampliar retrato",onClick=onPortrait)){ForgePortrait(s,portrait)}
     Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(3.dp)){
      Text(p.name,style=if(narrow)MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium,letterSpacing=1.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-     Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){ClassEmblem(p.heroClass,Modifier.size(18.dp));Text(classes[p.heroClass],color=Blue,fontSize=12.sp);Text("·",color=Muted,fontSize=12.sp);Text(p.title,color=Muted,fontSize=12.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis)}
-     Spacer(Modifier.height(4.dp))
+     Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){ClassEmblem(p.heroClass,Modifier.size(18.dp));Text(classes[p.heroClass],color=Blue,fontSize=12.sp);if(!narrow){Text("·",color=Muted,fontSize=12.sp);Text(p.title,color=Muted,fontSize=12.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis)}}
+     if(narrow)Text(p.title,color=Muted,fontSize=11.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+     Spacer(Modifier.height(3.dp))
      Meter(Progression.current(s.xp).toFloat()/Progression.requirement(s.level),Blue,slim=true)
-     if(narrow){Text("${Progression.current(s.xp)}/${Progression.requirement(s.level)} XP",color=Blue.copy(alpha=.9f),fontSize=11.sp,maxLines=1);Text("${s.coins} fragmentos",fontSize=11.sp,color=Muted,maxLines=1)}
-     else Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("${Progression.current(s.xp)}/${Progression.requirement(s.level)} XP",color=Blue.copy(alpha=.9f),fontSize=11.sp,letterSpacing=.4.sp,maxLines=1);Text("${s.coins} fragmentos",fontSize=11.sp,color=Muted,maxLines=1)}
+     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("${Progression.current(s.xp)}/${Progression.requirement(s.level)} XP",color=Blue.copy(alpha=.9f),fontSize=if(narrow)10.sp else 11.sp,letterSpacing=if(narrow)0.sp else .4.sp,maxLines=1);Text("${s.coins} ${if(narrow)"frag." else "fragmentos"}",fontSize=if(narrow)10.sp else 11.sp,color=Muted,maxLines=1)}
     }
-    Box(Modifier.semantics(mergeDescendants=true){contentDescription="Nível ${s.level}"}){ForgeMedallion(s.level,Modifier.size(if(narrow)42.dp else 48.dp))}
+    Box(Modifier.semantics(mergeDescendants=true){contentDescription="Nível ${s.level}"}){ForgeMedallion(s.level,Modifier.size(if(narrow)40.dp else 48.dp))}
    }
   }
  }
@@ -102,11 +102,13 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
   if(q.deadline.isNotBlank())Text("Prazo: ${displayDate(q.deadline)}",color=contractMuted,fontSize=12.sp)
   Box(Modifier.fillMaxWidth().height(1.dp).background((if(category==0)Sepia else Gold).copy(alpha=.22f)))
   Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.Bottom,horizontalArrangement=Arrangement.spacedBy(18.dp)){
-   Column{Text("${q.xp} XP",fontSize=22.sp,lineHeight=28.sp,fontFamily=SagaFont,color=contractInk);Text("recompensa final",color=contractMuted,fontSize=11.sp)}
-   Column{Text("${q.coins}",fontSize=22.sp,lineHeight=28.sp,fontFamily=SagaFont,color=contractInk);Text("fragmentos",color=contractMuted,fontSize=11.sp)}
+   Column{Text("${q.xp} XP",fontSize=if(grand)22.sp else 18.sp,lineHeight=24.sp,fontFamily=SagaFont,color=contractInk);Text("recompensa final",color=contractMuted,fontSize=11.sp)}
+   Column{Text("${q.coins}",fontSize=if(grand)22.sp else 18.sp,lineHeight=24.sp,fontFamily=SagaFont,color=contractInk);Text("fragmentos",color=contractMuted,fontSize=11.sp)}
   }
   if(q.special.isNotBlank())Text("Troféu: ${q.special}",color=Gold,fontSize=13.sp)
-  Action(if(claimed)"Recompensa resgatada" else "Resgatar recompensa",{vm.run{vm.repo.claim(q)}},Modifier.fillMaxWidth(),enabled=!claimed&&value>=q.target,completed=claimed)
-  TextButton(onEdit){Text("Editar missão",color=contractMuted)}
+  Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){
+   Action(if(claimed)"Recompensa resgatada" else "Resgatar recompensa",{vm.run{vm.repo.claim(q)}},Modifier.weight(1f),enabled=!claimed&&value>=q.target,completed=claimed)
+   TextButton(onEdit){Text("Editar missão",color=contractMuted)}
+  }
  }
 }

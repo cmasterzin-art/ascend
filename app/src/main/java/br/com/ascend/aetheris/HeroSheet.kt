@@ -9,6 +9,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.style.TextOverflow
@@ -23,14 +24,14 @@ private val hairline:Color @Composable get()=if(LocalAppearance.current.dark)Col
 @Composable fun HeroStage(s:GameState,onPortrait:()->Unit){
  val hero=requireNotNull(s.player);val minimal=LocalAppearance.current.minimal;val night=Night;val dark=LocalAppearance.current.dark
  val cold=if(dark)Color(0xFFB8C7D9) else Color.White
- BoxWithConstraints(Modifier.fillMaxWidth()){
-  val narrow=maxWidth<340.dp;val portrait=if(narrow)92.dp else 118.dp
-  if(!minimal)Image(painterResource(R.drawable.nordic_fjord),null,Modifier.matchParentSize(),contentScale=ContentScale.Crop,alignment=Alignment.TopCenter,alpha=.55f)
+ BoxWithConstraints(Modifier.fillMaxWidth().layout{m,c->val bleed=20.dp.roundToPx();val placeable=m.measure(c.copy(minWidth=c.maxWidth+2*bleed,maxWidth=c.maxWidth+2*bleed));layout(c.maxWidth,placeable.height){placeable.place(-bleed,0)}}){
+  val narrow=maxWidth<360.dp;val portrait=if(narrow)92.dp else 116.dp
+  if(!minimal)Image(painterResource(R.drawable.nordic_fjord),null,Modifier.matchParentSize(),contentScale=ContentScale.Crop,alignment=Alignment.TopCenter,alpha=.52f)
   // Every edge of the painting dissolves into the page: no visible rectangle.
-  Box(Modifier.matchParentSize().background(Brush.verticalGradient(0f to night,.3f to night.copy(alpha=.5f),.65f to night.copy(alpha=.55f),1f to night)))
-  Box(Modifier.matchParentSize().background(Brush.horizontalGradient(0f to night,.25f to night.copy(alpha=.2f),.7f to night.copy(alpha=.35f),1f to night)))
-  Row(Modifier.fillMaxWidth().padding(top=12.dp,bottom=6.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(16.dp)){
-   Box(Modifier.drawBehind{if(!minimal){val r=size.maxDimension*.8f;drawCircle(Brush.radialGradient(listOf(cold.copy(alpha=.22f),Color.Transparent),center=Offset(size.width/2,size.height*.38f),radius=r),r,Offset(size.width/2,size.height*.38f))}}.clickable(onClickLabel="Ampliar retrato",onClick=onPortrait)){ForgePortrait(s,portrait)}
+  Box(Modifier.matchParentSize().background(Brush.verticalGradient(0f to night,.28f to night.copy(alpha=.45f),.68f to night.copy(alpha=.55f),1f to night)))
+  Box(Modifier.matchParentSize().background(Brush.horizontalGradient(0f to night.copy(alpha=.7f),.22f to Color.Transparent,.72f to night.copy(alpha=.35f),1f to night.copy(alpha=.85f))))
+  Row(Modifier.fillMaxWidth().padding(horizontal=20.dp).padding(top=14.dp,bottom=8.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(16.dp)){
+   Box(Modifier.drawBehind{if(!minimal){val r=size.maxDimension*.85f;drawCircle(Brush.radialGradient(listOf(cold.copy(alpha=.24f),Color.Transparent),center=Offset(size.width/2,size.height*.38f),radius=r),r,Offset(size.width/2,size.height*.38f))}}.clickable(onClickLabel="Ampliar retrato",onClick=onPortrait)){ForgePortrait(s,portrait)}
    Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)){
     Eyebrow("Saga pessoal",Muted.copy(alpha=.8f))
     Text(hero.name,style=MaterialTheme.typography.headlineMedium,letterSpacing=1.sp,maxLines=2,overflow=TextOverflow.Ellipsis)
