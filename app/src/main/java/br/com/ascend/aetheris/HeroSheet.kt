@@ -26,8 +26,9 @@ private val hairline:Color @Composable get()=if(LocalAppearance.current.dark)Col
  BoxWithConstraints(Modifier.fillMaxWidth()){
   val narrow=maxWidth<340.dp;val portrait=if(narrow)92.dp else 118.dp
   if(!minimal)Image(painterResource(R.drawable.nordic_fjord),null,Modifier.matchParentSize(),contentScale=ContentScale.Crop,alignment=Alignment.TopCenter,alpha=.55f)
-  Box(Modifier.matchParentSize().background(Brush.verticalGradient(0f to night.copy(alpha=.55f),.5f to night.copy(alpha=.55f),1f to night)))
-  Box(Modifier.matchParentSize().background(Brush.horizontalGradient(0f to Color.Transparent,.6f to night.copy(alpha=.35f),1f to night.copy(alpha=.75f))))
+  // Every edge of the painting dissolves into the page: no visible rectangle.
+  Box(Modifier.matchParentSize().background(Brush.verticalGradient(0f to night,.3f to night.copy(alpha=.5f),.65f to night.copy(alpha=.55f),1f to night)))
+  Box(Modifier.matchParentSize().background(Brush.horizontalGradient(0f to night,.25f to night.copy(alpha=.2f),.7f to night.copy(alpha=.35f),1f to night)))
   Row(Modifier.fillMaxWidth().padding(top=12.dp,bottom=6.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(16.dp)){
    Box(Modifier.drawBehind{if(!minimal){val r=size.maxDimension*.8f;drawCircle(Brush.radialGradient(listOf(cold.copy(alpha=.22f),Color.Transparent),center=Offset(size.width/2,size.height*.38f),radius=r),r,Offset(size.width/2,size.height*.38f))}}.clickable(onClickLabel="Ampliar retrato",onClick=onPortrait)){ForgePortrait(s,portrait)}
    Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)){

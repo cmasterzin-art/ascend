@@ -65,12 +65,11 @@ val mainNames=listOf("Jornada","Hábitos","Missões","Mundo","Herói")
    values.forEachIndexed{index,label->val active=index==selected
     val light by animateFloatAsState(if(active)1f else 0f,tween(if(motion)0 else AetherTokens.quick),label="inscrição")
     Row(verticalAlignment=Alignment.CenterVertically){
-     if(index>0)Canvas(Modifier.size(width=6.dp,height=48.dp)){drawCircle(muted.copy(alpha=.35f),1.2.dp.toPx(),Offset(size.width/2,size.height/2))}
      Box(Modifier.heightIn(min=48.dp).selectable(active,onClick={onSelect(index)},role=Role.Tab).drawBehind{
        if(light>0f){val d=1.dp.toPx()
         drawCircle(Brush.radialGradient(listOf(gold.copy(alpha=.12f*light),Color.Transparent),center=Offset(size.width/2,size.height*.55f),radius=size.width*.6f),size.width*.6f,Offset(size.width/2,size.height*.55f))
         drawLine(gold.copy(alpha=.9f*light),Offset(size.width*.18f,size.height-9*d),Offset(size.width*.82f,size.height-9*d),1.5f*d,cap=StrokeCap.Round)}
-      }.padding(horizontal=9.dp),contentAlignment=Alignment.Center){
+      }.padding(horizontal=11.dp),contentAlignment=Alignment.Center){
       Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(5.dp)){
        if(active&&glyphs[index]!=null)CarvedGlyph(glyphs[index]!!,gold,size=13.dp)
        Text(label,color=if(active)gold else muted,fontSize=13.sp,lineHeight=17.sp,letterSpacing=.3.sp,maxLines=1)
