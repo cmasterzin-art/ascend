@@ -89,7 +89,8 @@ jobs:
         run: |
           mkdir -p "$HOME/.android"
           if [ -n "$ASCEND_KEYSTORE_BASE64" ]; then
-            printf '%s' "$ASCEND_KEYSTORE_BASE64" | base64 --decode > "$HOME/.android/debug.keystore"
+            printf '%s' "$ASCEND_KEYSTORE_BASE64" | tr -d '\r\n ' | base64 --decode > "$HOME/.android/debug.keystore"
+            echo "ASCEND_KEYSTORE_PATH=$HOME/.android/debug.keystore" >> "$GITHUB_ENV"
           else
             echo 'Sem chave preservada no secret ASCEND_KEYSTORE_BASE64: compilação usará chave padrão de debug.'
           fi
