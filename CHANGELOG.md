@@ -1,3 +1,20 @@
+# 1.6.9.15 — O Legado da Forja
+
+Consolidação do Design System Nórdico (*Premium Nordic Experience*), Widgets 3.0 e acabamento individual dos componentes sobre a base `feat/ascend-1.6.9.10`, preservando integralmente regras de negócio, banco Room v6, backup v8, economia, narrativas e os 135 testes existentes. [Prancha de componentes, comparações reais e limites](docs/VISUAL-1.6.9.15.md).
+
+## Design System Nórdico, superfícies e controles
+
+- **Botões forjados e estados (`NorthComponents.kt`, `CarvedArt.kt`):** `SagaButton` e `plateMaterial` refinados com chanfros de cinzel nos cantos, iluminação especular superior, filete central com diamante e nova variante `ceremonial = true` (ouro oxidado, dupla filigrana, diamantes laterais em `Canvas` e tipografia `SagaFont`) aplicada a resgates de contratos, Sagas, Expedições, restauração da Vila, registro de Foco e subida de nível.
+- **Inscrições, seletores, abas e trilhos (`Design.kt`, `Forms.kt`, `AetherisNavigation.kt`):** `FormField` em tábua rebaixada de pedra/ferro com base em bronze; `ChipRow` e `FilterChip` semanais em tabuletas chanfradas; `Toggle` em bronze e ferro; `AetherisTabs` com diamante central no sublinhado ativo e compactação responsiva automática em `320 dp` (reduzindo o menu do Herói para 2 linhas em `320 dp / 130%`); e `Meter` com alto contraste em sépia sobre pergaminho.
+- **Cinco famílias de superfície e modais (`ForgeArt.kt`, `DesignSystem2.kt`):** diferenciação estrutural de cantos, marcenaria e iluminação localizada em `AetherSurface` (`Operational`, `Heroic`, `Ceremonial`, `Parchment`, `Artifact`) e novo modal compartilhado `AetherDialog`.
+- **Acabamento nas telas e Widgets 3.0 (`JourneyHome.kt`, `JourneyScreens.kt`, `EquipmentScreen.kt`, `RpgDesign.kt`, `SagaScreen.kt`, `ProductivityScreens.kt`, `GrimoireScreen.kt`, `widget_*.xml`, `HabitWidget.kt`):** diferenciação visual imediata nos estados de `HabitCard` (`◆ Concluído`, `◈ Em curso`, `Pendente`), correção de unidade em hábitos cronometrados (`30/60 minutos`), indicador de rolagem nos filtros de Hábitos, revisão de singular/plural, maior nitidez nas silhuetas dos nichos vazios do Inventário (`alpha = 0.66f`), aro de astrolábio com 12 marcações radiais no `FocusCard` e **Widgets 3.0** com faixas de atividade alinhadas à esquerda e barra vertical metálica de `4 dp`.
+
+## Compatibilidade, assinatura e validação
+
+- `versionCode 18`, `versionName 1.6.9.15`, `applicationId br.com.ascend.aetheris`, sem permissão `INTERNET`.
+- Assinatura oficial preservada (`e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`) via `ASCEND_KEYSTORE_BASE64`, com APK publicado em `downloads/ASCEND-1.6.9.15.apk`.
+- `testDebugUnitTest assembleDebug lintDebug` aprovado com **135 testes** e **0 erros** no Lint (`22` avisos). Prancha de componentes gerada em `docs/screenshots/v1.6.9.15/prancha-componentes-16915.png`.
+
 # 1.6.9.10 — O Silêncio das Runas
 
 Refinamento cinematográfico e editorial (*Nordic Cinematic UI*) sobre a base `feat/ascend-1.6.9`, preservando integralmente regras de negócio, banco Room v6, backup v8, economia, narrativas e os 135 testes existentes. [Comparações reais e limites](docs/VISUAL-1.6.9.10.md).

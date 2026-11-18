@@ -1,3 +1,11 @@
+# ASCEND 1.6.9.15 — validação
+
+18/11/2026. Base `feat/ascend-1.6.9.10` (`b13904c`). Branch `feat/ascend-1.6.9.15`. GitHub Actions execução `44240234101` (commit `954bbd0` / `e85e7bc`): `testDebugUnitTest assembleDebug lintDebug`: BUILD SUCCESSFUL (`52` tarefas executadas). **135 testes aprovados**, zero falhas, erros ou ignorados; `lintDebug` com **0 erros e 22 avisos**.
+
+APK publicado em [downloads/ASCEND-1.6.9.15.apk](downloads/ASCEND-1.6.9.15.apk?raw=true) com `22914314` bytes, `versionName 1.6.9.15` / `versionCode 18`, SHA-256 `43c70b08a1a5f970b34e25f7bcfef900236997e824526c673cf73ae84d609653`; `zipalign -c 4` aprovado; assinatura v2 válida com certificado oficial preservado `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`; sem `INTERNET`. Room v6, backup v8 e repositórios preservados.
+
+Renderizações reais Robolectric de 24 telas/variantes em `docs/screenshots/v1.6.9.15`, incluindo a prancha de componentes compartilhados (`prancha-componentes-16915.png`), widgets claro/escuro/compacto/expandido e cenários `320 dp` / fonte `130%` (`jornada-320-texto130.png`, `inventario-320-texto130.png`, `saga-320-texto130.png`, `planejador-320-160.png`, `widget-estreito-130-151.png`). Sem teste físico de instalação, launcher ou TalkBack. Prancha, comparações `1.6.9.10 × 1.6.9.15` e limites em [docs/VISUAL-1.6.9.15.md](docs/VISUAL-1.6.9.15.md). Logs em [docs/validation/BUILD-1.6.9.15.txt](docs/validation/BUILD-1.6.9.15.txt), [docs/validation/LINT-1.6.9.15.txt](docs/validation/LINT-1.6.9.15.txt) e [docs/validation/APK-1.6.9.15.txt](docs/validation/APK-1.6.9.15.txt).
+
 # ASCEND 1.6.9.10 — validação
 
 18/11/2026. Base `feat/ascend-1.6.9` (`bd58ab3`). Branch `feat/ascend-1.6.9.10`. GitHub Actions execução `44224838259` (commit `36653d0` / `f95dfec`): `testDebugUnitTest assembleDebug lintDebug`: BUILD SUCCESSFUL (`56` tarefas executadas). **135 testes aprovados**, zero falhas, erros ou ignorados; `lintDebug` com **0 erros e 22 avisos**.
