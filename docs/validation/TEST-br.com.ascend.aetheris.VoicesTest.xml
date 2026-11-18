@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.VoicesTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-18T04:43:46" hostname="runnervmccnms" time="0.365">
+<testsuite name="br.com.ascend.aetheris.VoicesTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-18T04:55:30" hostname="runnervmccnms" time="0.373">
   <properties/>
-  <testcase name="realV4MigrationAndLegacyBackupPreserveProgress" classname="br.com.ascend.aetheris.VoicesTest" time="0.05"/>
-  <testcase name="weeklySummaryUsesCivilWeekAndCorrections" classname="br.com.ascend.aetheris.VoicesTest" time="0.027"/>
-  <testcase name="recognizedConversationsAreSnapshotsAndMemoriesDoNotPay" classname="br.com.ascend.aetheris.VoicesTest" time="0.04"/>
-  <testcase name="soundPolicyAndLocalPreferences" classname="br.com.ascend.aetheris.VoicesTest" time="0.132"/>
-  <testcase name="completedArchiveKeepsSingleClaimAndNewAttemptExcludesOldWork" classname="br.com.ascend.aetheris.VoicesTest" time="0.05"/>
-  <testcase name="abandonedSagaFreezesAndCannotPayThenRestartsFresh" classname="br.com.ascend.aetheris.VoicesTest" time="0.045"/>
+  <testcase name="realV4MigrationAndLegacyBackupPreserveProgress" classname="br.com.ascend.aetheris.VoicesTest" time="0.053"/>
+  <testcase name="weeklySummaryUsesCivilWeekAndCorrections" classname="br.com.ascend.aetheris.VoicesTest" time="0.018"/>
+  <testcase name="recognizedConversationsAreSnapshotsAndMemoriesDoNotPay" classname="br.com.ascend.aetheris.VoicesTest" time="0.044"/>
+  <testcase name="soundPolicyAndLocalPreferences" classname="br.com.ascend.aetheris.VoicesTest" time="0.127"/>
+  <testcase name="completedArchiveKeepsSingleClaimAndNewAttemptExcludesOldWork" classname="br.com.ascend.aetheris.VoicesTest" time="0.066"/>
+  <testcase name="abandonedSagaFreezesAndCannotPayThenRestartsFresh" classname="br.com.ascend.aetheris.VoicesTest" time="0.042"/>
   <testcase name="weeklySagasAndRestDaysUseRecordedDates" classname="br.com.ascend.aetheris.VoicesTest" time="0.021"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>

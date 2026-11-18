@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.StabilityTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-11-18T04:43:42" hostname="runnervmccnms" time="0.359">
+<testsuite name="br.com.ascend.aetheris.StabilityTest" tests="11" skipped="0" failures="0" errors="0" timestamp="2026-11-18T04:55:27" hostname="runnervmccnms" time="0.337">
   <properties/>
-  <testcase name="pendingRecordUsesCurrentHabitButPreservesExistingSnapshots" classname="br.com.ascend.aetheris.StabilityTest" time="0.041"/>
-  <testcase name="focusStartRejectsAStaleHabitChangedToSimple" classname="br.com.ascend.aetheris.StabilityTest" time="0.032"/>
-  <testcase name="singleDayPeriodsAreBrazilianWithoutRepeatingTheDate" classname="br.com.ascend.aetheris.StabilityTest" time="0.023"/>
-  <testcase name="invalidFocusBackupIsRejectedBeforeReplacingProgress" classname="br.com.ascend.aetheris.StabilityTest" time="0.026"/>
-  <testcase name="invalidAmountCannotEraseAnExistingRecord" classname="br.com.ascend.aetheris.StabilityTest" time="0.026"/>
-  <testcase name="focusRespectsRestDayInItsHistoricalSnapshot" classname="br.com.ascend.aetheris.StabilityTest" time="0.039"/>
-  <testcase name="runningAndPausedFocusSurviveReloadWithoutDoublePayment" classname="br.com.ascend.aetheris.StabilityTest" time="0.046"/>
-  <testcase name="restoreFailureRollsBackDeletedTablesAndAValidBackupStillRestores" classname="br.com.ascend.aetheris.StabilityTest" time="0.037"/>
-  <testcase name="deletedHabitCannotStartANewFocusFromAnOldScreen" classname="br.com.ascend.aetheris.StabilityTest" time="0.026"/>
-  <testcase name="invalidCharacterDateIsRejectedByBackupValidation" classname="br.com.ascend.aetheris.StabilityTest" time="0.022"/>
-  <testcase name="complexWidgetRequestsRecheckDateTypeAndAvailability" classname="br.com.ascend.aetheris.StabilityTest" time="0.041"/>
+  <testcase name="pendingRecordUsesCurrentHabitButPreservesExistingSnapshots" classname="br.com.ascend.aetheris.StabilityTest" time="0.036"/>
+  <testcase name="focusStartRejectsAStaleHabitChangedToSimple" classname="br.com.ascend.aetheris.StabilityTest" time="0.027"/>
+  <testcase name="singleDayPeriodsAreBrazilianWithoutRepeatingTheDate" classname="br.com.ascend.aetheris.StabilityTest" time="0.024"/>
+  <testcase name="invalidFocusBackupIsRejectedBeforeReplacingProgress" classname="br.com.ascend.aetheris.StabilityTest" time="0.035"/>
+  <testcase name="invalidAmountCannotEraseAnExistingRecord" classname="br.com.ascend.aetheris.StabilityTest" time="0.02"/>
+  <testcase name="focusRespectsRestDayInItsHistoricalSnapshot" classname="br.com.ascend.aetheris.StabilityTest" time="0.024"/>
+  <testcase name="runningAndPausedFocusSurviveReloadWithoutDoublePayment" classname="br.com.ascend.aetheris.StabilityTest" time="0.04"/>
+  <testcase name="restoreFailureRollsBackDeletedTablesAndAValidBackupStillRestores" classname="br.com.ascend.aetheris.StabilityTest" time="0.039"/>
+  <testcase name="deletedHabitCannotStartANewFocusFromAnOldScreen" classname="br.com.ascend.aetheris.StabilityTest" time="0.037"/>
+  <testcase name="invalidCharacterDateIsRejectedByBackupValidation" classname="br.com.ascend.aetheris.StabilityTest" time="0.025"/>
+  <testcase name="complexWidgetRequestsRecheckDateTypeAndAvailability" classname="br.com.ascend.aetheris.StabilityTest" time="0.029"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

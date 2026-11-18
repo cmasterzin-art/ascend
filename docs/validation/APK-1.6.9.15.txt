@@ -1,6 +1,6 @@
 package: name='br.com.ascend.aetheris' versionCode='18' versionName='1.6.9.15' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'
 Bytes: 22914314
-SHA256: 44118471c07203ddbc73f75db002b9f35db4a39b6c4a5f4273f763b1e2fbf5b7
+SHA256: 43c70b08a1a5f970b34e25f7bcfef900236997e824526c673cf73ae84d609653
 Zipalign OK
 Verifies
 Verified using v1 scheme (JAR signing): false
