@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.InsightsTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-18T07:07:43" hostname="ip-10-0-141-67" time="0.029">
+<testsuite name="br.com.ascend.aetheris.InsightsTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:11:46" hostname="runnervmccnms" time="0.026">
   <properties/>
-  <testcase name="noPlanHasNoMisleadingPercentage" classname="br.com.ascend.aetheris.InsightsTest" time="0.005"/>
-  <testcase name="localDateRespectsTimeZoneAcrossMidnight" classname="br.com.ascend.aetheris.InsightsTest" time="0.022"/>
-  <testcase name="unplannedActivitiesAndRestAreExcludedFromRate" classname="br.com.ascend.aetheris.InsightsTest" time="0.0"/>
+  <testcase name="noPlanHasNoMisleadingPercentage" classname="br.com.ascend.aetheris.InsightsTest" time="0.007"/>
+  <testcase name="localDateRespectsTimeZoneAcrossMidnight" classname="br.com.ascend.aetheris.InsightsTest" time="0.009"/>
+  <testcase name="unplannedActivitiesAndRestAreExcludedFromRate" classname="br.com.ascend.aetheris.InsightsTest" time="0.002"/>
   <testcase name="historicalScheduleIsUsedAfterArchival" classname="br.com.ascend.aetheris.InsightsTest" time="0.001"/>
   <testcase name="restPreservesScheduledStreakAndHistoricalBest" classname="br.com.ascend.aetheris.InsightsTest" time="0.0"/>
   <system-out><![CDATA[]]></system-out>
