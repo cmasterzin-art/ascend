@@ -3,15 +3,15 @@ Daemon will be stopped at the end of the build
 > Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
 > Task :app:preBuild UP-TO-DATE
 > Task :app:preDebugBuild UP-TO-DATE
-> Task :app:checkDebugAarMetadata
 > Task :app:generateDebugResValues
+> Task :app:checkDebugAarMetadata
 > Task :app:mapDebugSourceSetPaths
 > Task :app:generateDebugResources
 > Task :app:packageDebugResources
-> Task :app:mergeDebugResources
+> Task :app:parseDebugLocalResources
 > Task :app:createDebugCompatibleScreenManifests
 > Task :app:extractDeepLinksDebug
-> Task :app:parseDebugLocalResources
+> Task :app:mergeDebugResources
 > Task :app:processDebugMainManifest
 > Task :app:processDebugManifest
 > Task :app:processDebugManifestForPackage
@@ -29,11 +29,7 @@ Daemon will be stopped at the end of the build
 > Task :app:checkDebugDuplicateClasses
 > Task :app:packageDebugUnitTestForUnitTest
 > Task :app:generateDebugUnitTestConfig
-
 > Task :app:kspDebugKotlin
-e: The daemon has terminated unexpectedly on startup attempt #1 with error code: 0. The daemon process output:
-    1. Kotlin compile daemon is ready
-
 > Task :app:mergeExtDexDebug
 > Task :app:mergeLibDexDebug
 > Task :app:mergeDebugJniLibFolders
@@ -48,35 +44,56 @@ Unable to strip the following libraries, packaging them as they are: libandroidx
 > Task :app:preDebugAndroidTestBuild SKIPPED
 > Task :app:generateDebugAndroidTestResValues
 > Task :app:extractProguardFiles
+> Task :app:compileDebugKotlin
+> Task :app:compileDebugJavaWithJavac
+> Task :app:bundleDebugClassesToCompileJar
+> Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:processDebugJavaRes
+> Task :app:kspDebugUnitTestKotlin
+> Task :app:dexBuilderDebug
+> Task :app:mergeDebugGlobalSynthetics
+> Task :app:mergeDebugJavaResource
+> Task :app:mergeProjectDexDebug
+> Task :app:packageDebug
+> Task :app:createDebugApkListingFileRedirect
+> Task :app:assembleDebug
+> Task :app:generateDebugAndroidTestLintModel
+> Task :app:generateDebugLintReportModel
+> Task :app:generateDebugUnitTestLintModel
+> Task :app:compileDebugUnitTestKotlin
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugUnitTestJavaRes
+> Task :app:lintAnalyzeDebug
+> Task :app:testDebugUnitTest
 
-> Task :app:compileDebugKotlin FAILED
-e: file:///home/runner/work/ascend/ascend/app/src/main/java/br/com/ascend/aetheris/Design.kt:106:35 @Composable invocations can only happen from the context of a @Composable function
-e: file:///home/runner/work/ascend/ascend/app/src/main/java/br/com/ascend/aetheris/ExplorationScreens.kt:83:148 Unresolved reference 'Obsidian'.
-e: file:///home/runner/work/ascend/ascend/app/src/main/java/br/com/ascend/aetheris/ExplorationScreens.kt:83:512 Unresolved reference 'Obsidian'.
-e: file:///home/runner/work/ascend/ascend/app/src/main/java/br/com/ascend/aetheris/WorldScreen.kt:40:34 Argument type mismatch: actual type is 'kotlin.String', but 'kotlin.Function0<kotlin.Unit>' was expected.
-e: file:///home/runner/work/ascend/ascend/app/src/main/java/br/com/ascend/aetheris/WorldScreen.kt:40:63 Argument type mismatch: actual type is 'kotlin.Function0<kotlin.Unit>', but 'kotlin.String' was expected.
-e: file:///home/runner/work/ascend/ascend/app/src/main/java/br/com/ascend/aetheris/WorldScreen.kt:40:92 Unresolved reference 'Village'.
-e: file:///home/runner/work/ascend/ascend/app/src/main/java/br/com/ascend/aetheris/WorldScreen.kt:40:100 No parameter with name 'confirm' found.
-e: file:///home/runner/work/ascend/ascend/app/src/main/java/br/com/ascend/aetheris/WorldScreen.kt:40:109 @Composable invocations can only happen from the context of a @Composable function
-e: file:///home/runner/work/ascend/ascend/app/src/main/java/br/com/ascend/aetheris/WorldScreen.kt:40:192 No parameter with name 'dismiss' found.
-e: file:///home/runner/work/ascend/ascend/app/src/main/java/br/com/ascend/aetheris/WorldScreen.kt:40:192 No value passed for parameter 'confirmButton'.
-e: file:///home/runner/work/ascend/ascend/app/src/main/java/br/com/ascend/aetheris/WorldScreen.kt:40:201 @Composable invocations can only happen from the context of a @Composable function
-e: file:///home/runner/work/ascend/ascend/app/src/main/java/br/com/ascend/aetheris/WorldScreen.kt:40:310 @Composable invocations can only happen from the context of a @Composable function
-e: file:///home/runner/work/ascend/ascend/app/src/main/java/br/com/ascend/aetheris/WorldScreen.kt:40:411 @Composable invocations can only happen from the context of a @Composable function
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1794975951448.json
+ExplorationUiTest > forestExpeditionsBossAndMemoriesArePlayable FAILED
+    java.lang.AssertionError at ExplorationUiTest.kt:32
+
+NorthUiTest > createSagaThroughEditorAndClaimConsolidatedReward FAILED
+    java.lang.AssertionError at NorthUiTest.kt:41
+
+OnboardingTest > customHabitsPreserveHistoricalXpAndUndoThroughInterface FAILED
+    java.lang.AssertionError at OnboardingTest.kt:67
+
+OnboardingTest > createMageAndRecordStudyThroughInterface FAILED
+    java.lang.AssertionError at OnboardingTest.kt:36
+
+ProductivityUiTest > actualFocusControlsCreateAPersistentSessionWithoutExtraXp FAILED
+    java.lang.AssertionError at ProductivityUiTest.kt:50
+
+135 tests completed, 5 failed
+
+> Task :app:testDebugUnitTest FAILED
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1794976239676.json
 
 FAILURE: Build failed with an exception.
 
 * What went wrong:
-Execution failed for task ':app:compileDebugKotlin'.
-> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
-   > Compilation error. See log for more details
+Execution failed for task ':app:testDebugUnitTest'.
+> There were failing tests. See the report at: file:///home/runner/work/ascend/ascend/app/build/reports/tests/testDebugUnitTest/index.html
 
 * Try:
-> Run with --stacktrace option to get the stack trace.
-> Run with --info or --debug option to get more log output.
 > Run with --scan to get full insights.
-> Get more help at https://help.gradle.org.
 
-BUILD FAILED in 38s
-34 actionable tasks: 34 executed
+BUILD FAILED in 3m 28s
+52 actionable tasks: 52 executed
