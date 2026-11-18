@@ -6,7 +6,7 @@
         </shape>
     </item>
     <item>
-        <bitmap android:src="@drawable/widget_slate" android:gravity="fill" android:alpha="0.20"/>
+        <bitmap android:src="@drawable/wid_plate_compact" android:gravity="fill" android:alpha="0.46"/>
     </item>
     <!-- 1.6.9.15: localized overhead cold light and deep basal shadow -->
     <item>

@@ -1,0 +1,37 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape>
+            <solid android:color="@color/widget_base"/>
+            <corners android:radius="6dp"/>
+        </shape>
+    </item>
+    <item>
+        <bitmap android:src="@drawable/wid_plate_expanded" android:gravity="fill" android:alpha="0.48"/>
+    </item>
+    <item>
+        <shape>
+            <gradient android:startColor="#24C8D4E2" android:centerColor="#00000000" android:endColor="#55000000" android:angle="270"/>
+            <corners android:radius="6dp"/>
+        </shape>
+    </item>
+    <item>
+        <shape>
+            <solid android:color="#00000000"/>
+            <corners android:radius="6dp"/>
+            <stroke android:width="1.4dp" android:color="@color/widget_stroke"/>
+        </shape>
+    </item>
+    <item android:top="3dp" android:bottom="3dp" android:left="3dp" android:right="3dp">
+        <shape>
+            <solid android:color="#00000000"/>
+            <corners android:radius="4dp"/>
+            <stroke android:width="0.7dp" android:color="@color/widget_accent"/>
+        </shape>
+    </item>
+    <item android:top="1dp" android:left="14dp" android:right="14dp" android:gravity="top">
+        <shape>
+            <size android:height="1dp"/>
+            <solid android:color="@color/widget_accent"/>
+        </shape>
+    </item>
+</layer-list>

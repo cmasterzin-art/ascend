@@ -15,6 +15,9 @@
                     <stroke android:width="0.9dp" android:color="@color/widget_accent"/>
                 </shape>
             </item>
+            <item>
+                <bitmap android:src="@drawable/ui_plate_primary" android:gravity="fill" android:alpha="0.32"/>
+            </item>
             <!-- 1.6.9.15: Left vertical forged bronze inlay bar marking an actionable ritual -->
             <item android:left="0dp" android:top="0dp" android:bottom="0dp" android:gravity="left">
                 <shape>

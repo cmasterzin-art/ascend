@@ -53,6 +53,7 @@ open class HabitWidget:AppWidgetProvider(){
   }
   fun views(c:Context,s:GameState,expanded:Boolean,maxHabits:Int=3,height:Int=if(expanded)340 else 140,width:Int=300):RemoteViews{
    val v=RemoteViews(c.packageName,R.layout.habit_widget);val date=today();val day=widgetDay(s,date);val space=widgetSpace(height,width,c.resources.configuration.fontScale,expanded);val remaining=day.due-day.complete;val pendingLabel=if(remaining==1)"1 pendente" else "$remaining pendentes"
+   v.setInt(R.id.widget_root,"setBackgroundResource",if(expanded)R.drawable.widget_surface_expanded else R.drawable.widget_surface)
    val open=PendingIntent.getActivity(c,500,Intent(c,MainActivity::class.java).putExtra("widget_journey",true).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP),PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
    v.setViewVisibility(R.id.widget_sigil,if(width<210)View.GONE else View.VISIBLE)
    v.setOnClickPendingIntent(R.id.widget_header,open);v.setOnClickPendingIntent(R.id.widget_open,open)

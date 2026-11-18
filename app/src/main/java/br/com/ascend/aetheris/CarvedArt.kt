@@ -103,36 +103,50 @@ enum class SealKind{Dormant,Mission,Oath,Saga,Reward,Expedition}
  }
 }
 
-/** Forged plate behind buttons: cropped, never stretched; bevel and corner chisel marks are drawn, not painted on. */
+/** 1.6.9.19 — Nine-slice draw helper so forged corner rivets, Urnes end-caps and L-brackets never deform when scaled. */
+fun DrawScope.drawNineSlice(image:ImageBitmap,capXRatio:Float=.18f,capYRatio:Float=.26f,alpha:Float=1f,colorFilter:ColorFilter?=null){
+ val sw=image.width;val sh=image.height;val dw=size.width.toInt().coerceAtLeast(4);val dh=size.height.toInt().coerceAtLeast(4)
+ val sx=(sw*capXRatio).toInt().coerceIn(1,sw/3);val sy=(sh*capYRatio).toInt().coerceIn(1,sh/3)
+ val dy=(dh*capYRatio).toInt().coerceIn(1,dh/3);val dx=(dy*(sx.toFloat()/sy.coerceAtLeast(1))).toInt().coerceIn(1,dw/3)
+ val sxCoords=intArrayOf(0,sx,sw-sx,sw);val syCoords=intArrayOf(0,sy,sh-sy,sh)
+ val dxCoords=intArrayOf(0,dx,dw-dx,dw);val dyCoords=intArrayOf(0,dy,dh-dy,dh)
+ for(r in 0..2)for(c in 0..2){
+  val sW=(sxCoords[c+1]-sxCoords[c]).coerceAtLeast(1);val sH=(syCoords[r+1]-syCoords[r]).coerceAtLeast(1)
+  val dW=(dxCoords[c+1]-dxCoords[c]).coerceAtLeast(1);val dH=(dyCoords[r+1]-dyCoords[r]).coerceAtLeast(1)
+  drawImage(image,IntOffset(sxCoords[c],syCoords[r]),IntSize(sW,sH),IntOffset(dxCoords[c],dyCoords[r]),IntSize(dW,dH),alpha=alpha,colorFilter=colorFilter,filterQuality=FilterQuality.Medium)
+ }
+}
+
+@Composable fun Modifier.pictorialFrame(resource:Int,capXRatio:Float=.18f,capYRatio:Float=.26f,alpha:Float=.85f,filter:ColorFilter?=null):Modifier{
+ val minimal=LocalAppearance.current.minimal
+ val img=if(minimal)null else ImageBitmap.imageResource(resource)
+ return drawWithCache{
+  onDrawBehind{if(img!=null)drawNineSlice(img,capXRatio,capYRatio,alpha,filter)}
+ }
+}
+
+/** 1.6.9.19 — Forged plate behind buttons: uses 9-slice pictorial plates (ui_plate_primary, ui_plate_secondary, ui_plate_ceremonial). */
 @Composable fun Modifier.plateMaterial(bronze:Boolean,enabled:Boolean=true,ceremonial:Boolean=false):Modifier{
  val appearance=LocalAppearance.current
- val plate=if(appearance.minimal)null else ImageBitmap.imageResource(if(bronze)R.drawable.plate_bronze else R.drawable.plate_iron)
+ val plate=if(appearance.minimal)null else ImageBitmap.imageResource(if(ceremonial)R.drawable.ui_plate_ceremonial else if(bronze)R.drawable.ui_plate_primary else R.drawable.ui_plate_secondary)
  val rim=if(bronze)Color(0xFFE5C88F) else Color(0xFFB8C7D9)
  return drawWithCache{
-  val ratio=size.width/size.height.coerceAtLeast(1f)
-  val sw=if(plate==null)1 else minOf(plate.width,(plate.height*ratio).toInt()).coerceAtLeast(1)
-  val sh=if(plate==null)1 else minOf(plate.height,(plate.width/ratio).toInt()).coerceAtLeast(1)
   onDrawBehind{
-   if(plate!=null)drawImage(plate,IntOffset((plate.width-sw)/2,(plate.height-sh)/2),IntSize(sw,sh),dstSize=IntSize(size.width.toInt().coerceAtLeast(1),size.height.toInt().coerceAtLeast(1)),alpha=if(enabled)1f else .32f,filterQuality=FilterQuality.Medium)
+   if(plate!=null)drawNineSlice(plate,capXRatio=if(ceremonial).2f else .15f,capYRatio=.28f,alpha=if(enabled)(if(ceremonial).78f else .72f) else .28f)
    val d=1.dp.toPx();val w=size.width;val h=size.height
-   drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha=if(enabled).1f else .03f),Color.Transparent,Color.Black.copy(alpha=.44f))))
+   drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha=if(enabled).08f else .02f),Color.Transparent,Color.Black.copy(alpha=.38f))))
    drawLine(rim.copy(alpha=if(enabled)(if(ceremonial).38f else .24f) else .07f),Offset(8*d,1.2f*d),Offset(w-8*d,1.2f*d),d)
    if(enabled){
-    // Subtle corner chisel marks and wear ticks characteristic of hand-forged Norse metalwork.
-    val tick=rim.copy(alpha=if(bronze).32f else .2f)
+    val tick=rim.copy(alpha=if(bronze).3f else .18f)
     drawLine(tick,Offset(3*d,6*d),Offset(8*d,2*d),d)
     drawLine(tick,Offset(w-8*d,h-2*d),Offset(w-3*d,h-6*d),d)
-    if(ceremonial){
-     drawLine(rim.copy(alpha=.28f),Offset(14*d,3.2f*d),Offset(w-14*d,3.2f*d),.8f*d)
-     drawLine(rim.copy(alpha=.28f),Offset(14*d,h-3.5f*d),Offset(w-14*d,h-3.5f*d),.8f*d)
-    }
    }
-   drawLine(Color.Black.copy(alpha=.7f),Offset(0f,h-d),Offset(w,h-d),2*d)
+   drawLine(Color.Black.copy(alpha=.65f),Offset(0f,h-d),Offset(w,h-d),2*d)
   }
  }
 }
 
-/** Carved niche frame around item paintings; centre is transparent. */
-@Composable fun ArtifactFrame(modifier:Modifier=Modifier){
- if(!LocalAppearance.current.minimal)AtlasCell(R.drawable.artifact_frame,0,1,1,modifier)
+/** 1.6.9.19 — Carved niche frames around item paintings by rarity tier (0=Iron, 1=Silver, 2=Bronze, 3=Gold); centre is transparent. */
+@Composable fun ArtifactFrame(modifier:Modifier=Modifier,rarity:Int=0){
+ if(!LocalAppearance.current.minimal)AtlasCell(R.drawable.orn_frames_rarity,rarity.coerceIn(0,3),2,2,modifier)
 }

@@ -42,7 +42,8 @@ val Sepia=Color(0xFF29251E)
         Box(Modifier.matchParentSize().padding(3.dp).alpha(if(dim).66f else 1f)){
             if(itemId=="mist-clasp")ArtTile(R.drawable.forest_atlas,8,3,Modifier.matchParentSize()) else ArtTile(if(variant!=null)R.drawable.relic_variants else R.drawable.relic_atlas,variant?:index,3,Modifier.matchParentSize())
         }
-        ArtifactFrame(Modifier.matchParentSize())
+        val tier=when(color){Gold->3;Violet->2;Blue,Green->1;else->0}
+        ArtifactFrame(Modifier.matchParentSize(),rarity=tier)
         Canvas(Modifier.matchParentSize()){
             drawRect(Brush.radialGradient(listOf(Color(0xFFD5E1EE).copy(alpha=if(dim).18f else .2f),Color.Transparent),center=Offset(size.width/2,0f),radius=size.width*.92f))
             drawRect(Brush.verticalGradient(listOf(Color.Transparent,Color.Black.copy(alpha=.28f))))

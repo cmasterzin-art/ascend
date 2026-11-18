@@ -44,7 +44,7 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
  val shape=CutCornerShape(topStart=8.dp,topEnd=3.dp,bottomEnd=8.dp,bottomStart=3.dp)
  AlertDialog(
   onDismissRequest=onDismissRequest,
-  modifier=Modifier.border(1.dp,accent.copy(alpha=.45f),shape),
+  modifier=Modifier.pictorialFrame(R.drawable.ui_frame_dialog,capXRatio=.18f,capYRatio=.18f,alpha=if(dark).9f else .18f).border(1.dp,accent.copy(alpha=.45f),shape),
   shape=shape,
   containerColor=container,
   titleContentColor=Ink,

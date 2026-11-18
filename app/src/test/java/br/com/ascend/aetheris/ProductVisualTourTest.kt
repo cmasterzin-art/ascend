@@ -59,6 +59,113 @@ class ProductVisualTourTest{
    f.outputStream().use{b.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it)}
    b.recycle()
   }
+  compose.runOnIdle{
+   compose.activity.setContent{AscendTheme("dark",reducedMotion=true,minimal=false){PictorialLibraryBoard16919()}}
+   val v=compose.activity.window.decorView
+   v.measure(View.MeasureSpec.makeMeasureSpec(920,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(1120,View.MeasureSpec.EXACTLY))
+   v.layout(0,0,920,1120)
+  }
+  compose.waitForIdle()
+  compose.runOnIdle{
+   val v=compose.activity.window.decorView
+   v.measure(View.MeasureSpec.makeMeasureSpec(920,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(1120,View.MeasureSpec.EXACTLY))
+   v.layout(0,0,920,1120)
+   val b=android.graphics.Bitmap.createBitmap(920,1120,android.graphics.Bitmap.Config.ARGB_8888)
+   v.draw(android.graphics.Canvas(b))
+   val f=java.io.File("build/reports/screenshots/prancha-biblioteca-16919.png")
+   f.parentFile!!.mkdirs()
+   f.outputStream().use{b.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it)}
+   b.recycle()
+  }
+ }
+}
+
+@Composable private fun PictorialLibraryBoard16919(){
+ Column(Modifier.fillMaxSize().background(Night).padding(22.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){
+  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+   Column(verticalArrangement=Arrangement.spacedBy(3.dp)){
+    Eyebrow("ASCEND 1.6.9.19 · A BIBLIOTECA DA FORJA",Gold)
+    Text("Nordic Pictorial Library — 19 Recursos Originais",fontFamily=SagaFont,fontSize=26.sp,color=Ink)
+    Text("Família I (6 materiais) · Família II (7 placas e controles UI) · Família III (4 atlas ornamentais) · Família IV (2 placas de widget).",color=Muted,fontSize=12.sp)
+   }
+   RuneSeal(4,Gold,Modifier.size(44.dp))
+  }
+  NorthDivider()
+  Eyebrow("FAMÍLIA I — MATERIAIS ORIGINAIS (512×512 WEBP)",Gold)
+  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)){
+   listOf(
+    ForgeMaterial.IronNordic to "Ferro Nórdico",
+    ForgeMaterial.BronzeAncient to "Bronze Antigo",
+    ForgeMaterial.SilverOxidized to "Prata Oxidada",
+    ForgeMaterial.SlateVolcanic to "Ardósia Vulcânica",
+    ForgeMaterial.LeatherCarved to "Couro Entalhado",
+    ForgeMaterial.VellumAged to "Velino Antigo"
+   ).forEach{(mat,label)->
+    Column(Modifier.weight(1f),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(4.dp)){
+     Image(androidx.compose.ui.res.painterResource(mat.resId),null,Modifier.fillMaxWidth().height(74.dp).border(1.dp,ColdIron.copy(alpha=.45f)),contentScale=androidx.compose.ui.layout.ContentScale.Crop)
+     Text(label,color=Ink,fontSize=10.sp)
+    }
+   }
+  }
+  NorthDivider(silver=true)
+  Row(Modifier.fillMaxWidth().weight(1f),horizontalArrangement=Arrangement.spacedBy(18.dp)){
+   Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(11.dp)){
+    Eyebrow("FAMÍLIA II — COMPONENTES DE INTERFACE (NOVE FATIAS)",Gold)
+    SagaButton("Placa Primária · Bronze Forjado (ui_plate_primary)",{},Modifier.fillMaxWidth())
+    SagaButton("Placa Secundária · Ferro Enegrecido (ui_plate_secondary)",{},Modifier.fillMaxWidth(),secondary=true)
+    SagaButton("Placa Cerimonial · Juramento (ui_plate_ceremonial)",{},Modifier.fillMaxWidth(),ceremonial=true)
+    FormField("Inscrição em Basalto (ui_field_inscription)",{},"Campo de Inscrição")
+    ChipRow(listOf("Tabuleta Ativa","Ardósia","Bronze"),0,{})
+    Toggle("Superfície de Controle (ui_control_surface)",true,{})
+    Box(Modifier.fillMaxWidth().height(118.dp).pictorialFrame(R.drawable.ui_frame_dialog,capXRatio=.18f,capYRatio=.18f,alpha=.95f).padding(16.dp)){
+     Column(verticalArrangement=Arrangement.spacedBy(4.dp)){
+      Eyebrow("MOLDURA DE DIÁLOGO (UI_FRAME_DIALOG)",Gold)
+      Text("Placa de basalto vulcânico com cantoneiras em L de bronze Urnes e rebites forjados.",color=Ink,fontSize=12.sp)
+     }
+    }
+   }
+   Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(11.dp)){
+    Eyebrow("FAMÍLIA III — ORNAMENTAÇÃO (DIVISORES, MOLDURAS, SELOS, TRILHOS)",Gold)
+    AetherSurface(SurfaceKind.Operational){
+     Text("Molduras de Artefatos por Raridade (orn_frames_rarity · 4 graus)",color=Muted,fontSize=11.sp)
+     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){
+      listOf("Comum" to Muted,"Raro" to Blue,"Épico" to Violet,"Lendário" to Gold).forEachIndexed{i,(lbl,col)->
+       Column(horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(4.dp)){
+        Box(Modifier.size(64.dp)){
+         ArtTile(R.drawable.relic_atlas,i,3,Modifier.matchParentSize().padding(6.dp))
+         ArtifactFrame(Modifier.matchParentSize(),rarity=i)
+        }
+        Text(lbl,color=col,fontSize=10.sp)
+       }
+      }
+     }
+    }
+    AetherSurface(SurfaceKind.Heroic){
+     Text("Medalhões Urnes e Selos Rúnicos (orn_medallions_seals · 6 células)",color=Muted,fontSize=11.sp)
+     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+      (0..5).forEach{i->AtlasCell(R.drawable.orn_medallions_seals,i,3,2,Modifier.size(46.dp))}
+     }
+     Text("Trilho Esculpido em Pedra e Metal (orn_track_progress)",color=Muted,fontSize=11.sp)
+     Meter(0.72f,Gold)
+    }
+    Eyebrow("FAMÍLIA IV — PLACAS PICTÓRICAS DE WIDGETS",Gold)
+    Box(Modifier.fillMaxWidth().height(64.dp).pictorialFrame(R.drawable.wid_plate_compact,capXRatio=.16f,capYRatio=.28f,alpha=.95f).padding(horizontal=16.dp,vertical=10.dp),contentAlignment=Alignment.CenterStart){
+     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+      Text("wid_plate_compact · Placa Compacta",color=Ink,fontFamily=SagaFont,fontSize=13.sp)
+      Text("628×140 WebP",color=Gold,fontSize=11.sp)
+     }
+    }
+    Box(Modifier.fillMaxWidth().height(110.dp).pictorialFrame(R.drawable.wid_plate_expanded,capXRatio=.16f,capYRatio=.22f,alpha=.95f).padding(16.dp)){
+     Column(verticalArrangement=Arrangement.spacedBy(4.dp)){
+      Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){
+       Text("wid_plate_expanded · Superfície Expandida",color=Ink,fontFamily=SagaFont,fontSize=13.sp)
+       Text("628×320 WebP",color=Gold,fontSize=11.sp)
+      }
+      Text("Ardósia vulcânica chanfrada com grampos diagonais de bronze nos quatro cantos (9-slice sem distorção).",color=Muted,fontSize=11.sp)
+     }
+    }
+   }
+  }
  }
 }
 

@@ -41,6 +41,10 @@ val Ember=Color(0xFF8D4B43)
         }.border(1.dp,accent.copy(alpha=.22f),CutCornerShape(6.dp))
 }
 @Composable fun SagaDivider(modifier:Modifier=Modifier,color:Color=Gold){
+    if(!LocalAppearance.current.minimal&&LocalContentColor.current!=Sepia){
+        AtlasCell(R.drawable.orn_divider_forged,if(color==Blue||color==ColdIron)1 else 0,1,2,modifier.fillMaxWidth().height(16.dp),alpha=.84f)
+        return
+    }
     Canvas(modifier.fillMaxWidth().height(12.dp)){
         val y=size.height/2;val x=size.width/2
         drawLine(color.copy(alpha=.4f),Offset(0f,y),Offset(x-8.dp.toPx(),y),1f)
@@ -50,7 +54,8 @@ val Ember=Color(0xFF8D4B43)
 }
 /** Rank 0–4 maps to dormant, codex, oath, saga and reward seals; engraving in minimal mode. */
 @Composable fun RuneSeal(rank:Int,color:Color,modifier:Modifier=Modifier){
-    if(LocalAppearance.current.minimal)RuneEngraving(rank,color,modifier.size(40.dp)) else CeremonialSeal(SealKind.entries[rank.coerceIn(0,4)],true,modifier.size(40.dp))
+    if(LocalAppearance.current.minimal)RuneEngraving(rank,color,modifier.size(40.dp))
+    else AtlasCell(R.drawable.orn_medallions_seals,when(rank){0->0;1->3;2->4;3->5;else->2},3,2,modifier.size(40.dp))
 }
 @Composable private fun RuneEngraving(rank:Int,color:Color,modifier:Modifier){
     Canvas(modifier){
