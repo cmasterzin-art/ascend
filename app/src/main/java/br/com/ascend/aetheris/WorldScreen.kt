@@ -37,6 +37,6 @@ import androidx.compose.ui.unit.*
     }
     chapter?.let{i->FullForm(chapterNames[i],{chapter=null},{chapter=null},"Fechar"){Eyebrow("Crônicas da Ascensão");Manuscript{RuneSeal(3,Sepia,Modifier.size(44.dp));Eyebrow("Capítulo ${i+1} de 9",Sepia)
  chapterTexts[i].split("\n\n").forEach{paragraph->Text(paragraph,fontFamily=if(paragraph.startsWith("—"))SagaFont else androidx.compose.ui.text.font.FontFamily.Default,fontSize=18.sp,lineHeight=29.sp,color=Sepia)}}}}
-    restore?.let{i->AetherDialog("Restaurar ${buildings[i]}?",{restore=null},seal=SealKind.Village,confirm={SagaButton("Restaurar",{vm.run{vm.repo.restore(i)};restore=null},ceremonial=true)},dismiss={SagaButton("Voltar",{restore=null},secondary=true)}){val stage=s.assets.find{it.id=="building:$i"}?.stage?:0;Text("Esta etapa custa ${(stage+1)*30} Fragmentos de Aether. A vila mudará com a restauração.",color=Muted)}}
+    restore?.let{i->AetherDialog(onDismissRequest={restore=null},title="Restaurar ${buildings[i]}?",kind=SurfaceKind.Ceremonial,seal=SealKind.Reward,confirmButton={SagaButton("Restaurar",{vm.run{vm.repo.restore(i)};restore=null},ceremonial=true)},dismissButton={SagaButton("Voltar",{restore=null},secondary=true)}){val stage=s.assets.find{it.id=="building:$i"}?.stage?:0;Text("Esta etapa custa ${(stage+1)*30} Fragmentos de Aether. A vila mudará com a restauração.",color=Muted)}}
 }
 

@@ -97,15 +97,15 @@ val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
 @Composable fun Action(text:String,onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boolean=true,completed:Boolean=false,ceremonial:Boolean=false,secondary:Boolean=false){SagaButton(text,onClick,modifier,enabled=enabled,completed=completed,ceremonial=ceremonial,secondary=secondary)}
 @Composable fun Empty(text:String){Row(Modifier.fillMaxWidth().materialSurface(accent=ColdIron).padding(18.dp),horizontalArrangement=Arrangement.spacedBy(14.dp),verticalAlignment=Alignment.CenterVertically){RuneSeal(0,Muted,Modifier.size(34.dp));Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)){Box(Modifier.width(24.dp).height(1.dp).background(Gold.copy(alpha=.45f)));Text(text,color=Muted,fontSize=14.sp,lineHeight=23.sp)}}}
 @Composable fun ChipRow(values:List<String>,selected:Int,onSelect:(Int)->Unit,scrollable:Boolean=true){
-    val dark=LocalAppearance.current.dark
+    val dark=LocalAppearance.current.dark;val gold=Gold
     Row(if(scrollable)Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()) else Modifier,horizontalArrangement=Arrangement.spacedBy(6.dp),verticalAlignment=Alignment.CenterVertically){
         values.forEachIndexed{i,v->val isSel=selected==i;val shape=CutCornerShape(topStart=5.dp,topEnd=2.dp,bottomEnd=5.dp,bottomStart=2.dp)
-            Box(Modifier.heightIn(min=34.dp).clip(shape).background(Brush.verticalGradient(if(isSel)listOf(Gold.copy(alpha=if(dark).24f else .18f),Gold.copy(alpha=.08f)) else listOf(Surface.copy(alpha=.75f),Surface.copy(alpha=.45f)))).border(1.dp,if(isSel)Gold.copy(alpha=.78f) else ColdIron.copy(alpha=.28f),shape).drawWithCache{onDrawBehind{
+            Box(Modifier.heightIn(min=34.dp).clip(shape).background(Brush.verticalGradient(if(isSel)listOf(gold.copy(alpha=if(dark).24f else .18f),gold.copy(alpha=.08f)) else listOf(Surface.copy(alpha=.75f),Surface.copy(alpha=.45f)))).border(1.dp,if(isSel)gold.copy(alpha=.78f) else ColdIron.copy(alpha=.28f),shape).drawWithCache{onDrawBehind{
                 val d=1.dp.toPx()
                 drawLine(Color.White.copy(alpha=if(isSel).18f else .06f),Offset(5*d,d),Offset(size.width-5*d,d),d)
-                if(isSel)drawLine(Gold,Offset(size.width*.22f,size.height-1.5f*d),Offset(size.width*.78f,size.height-1.5f*d),1.5f*d)
+                if(isSel)drawLine(gold,Offset(size.width*.22f,size.height-1.5f*d),Offset(size.width*.78f,size.height-1.5f*d),1.5f*d)
             }}.semantics(mergeDescendants=true){this.selected=isSel;role=Role.Tab}.clickable{onSelect(i)}.padding(horizontal=12.dp,vertical=6.dp),contentAlignment=Alignment.Center){
-                Text(v,color=if(isSel)Gold else Muted,fontSize=12.sp,letterSpacing=.2.sp,fontWeight=if(isSel)FontWeight.SemiBold else FontWeight.Normal)
+                Text(v,color=if(isSel)gold else Muted,fontSize=12.sp,letterSpacing=.2.sp,fontWeight=if(isSel)FontWeight.SemiBold else FontWeight.Normal)
             }
         }
     }
