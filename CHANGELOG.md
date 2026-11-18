@@ -1,3 +1,26 @@
+# 1.7.0 — Os Nove Caminhos
+
+Evolução funcional do ASCEND sobre a base `feat/ascend-1.6.9.19` (*Personal Projects & Advanced Productivity Update*), integrando gestão de projetos pessoais, agenda profissional e centralização de pendências sem alterar regras econômicas, progresso histórico de hábitos ou a Biblioteca da Forja (`1.6.9.19`). [Caminhos 1.7.0](docs/CAMINHOS-1.7.0.md) · [Agenda 2.0](docs/AGENDA-1.7.0.md) · [Visual 1.7.0](docs/VISUAL-1.7.0.md).
+
+## Projetos Pessoais (`Caminhos`)
+
+- **`PersonalPath`, `PathStage`, `PathTask`, `PathSubtask` e `PathHabitLink`:** gestão completa de projetos com estados (`Planejado`, `Em andamento`, `Pausado`, `Concluído`, `Arquivado`, `Cancelado`), prioridades, prazos, etapas com progresso derivado real, subtarefas reordenáveis, mover tarefa entre caminhos/etapas e duplicação de estrutura sem copiar foco ou memórias.
+- **Vínculo de hábitos e foco em projeto/tarefa:** associação organizacional com hábitos (sem XP duplicado) e sessões de foco persistidas em `focus_sessions` vinculadas a `pathId`/`taskId` com `0 XP` / `0 moedas` adicionais.
+- **Salão das Memórias (`Caminhos`):** conclusão de projeto gera registro real próprio e filtro dedicado em `Mundo → Salão das Memórias`.
+
+## Agenda Profissional 2.0, Entrada, Pendências e Jornada
+
+- **Planejador em Dia / Semana / Mês (`AgendaScreens.kt`):** visualização diária detalhada, seleção semanal e calendário mensal (`monthMarker`), mantendo integralmente as exceções `PlanException` da `1.6`.
+- **Blocos de Tempo e Compromissos (`TimeBlock`, `AgendaEvent`):** blocos com detecção automática de sobreposição e comparação planejado × foco real (`timeBlockActualMinutes`), além de compromissos pessoais sem XP.
+- **Caixa de Entrada e Central de Pendências (`InboxScreen`, `PendingCenterScreen`):** triagem transacional atômica para tarefa ou compromisso, e 6 recortes (`Hoje`, `Próximas`, `Atrasadas`, `Sem data`, `Alta prioridade`, `Concluídas`) excluindo projetos arquivados/cancelados.
+- **Jornada (`RumosDoDiaPanel` e `ShortcutStrip`):** atalhos diretos para `Caminhos`, `Entrada` e `Pendências`, além de painel expansível na tela inicial.
+
+## Persistência, Compatibilidade e Validação
+
+- **Room v7 (`MIGRATION_6_7`) e Backup v9:** migração explícita preservando esquemas `1.json` a `6.json`, leitura compatível de backups `v1` a `v8` e importação transacional com rollback atômico.
+- `versionCode 20`, `versionName 1.7.0`, `applicationId br.com.ascend.aetheris`, sem permissão `INTERNET`.
+- **143 testes aprovados** (`135` preservados + `8` novos em `PathsAndAgendaTest` e `PathsAndAgendaUiTest`) e Lint com **0 erros** (`22` avisos preexistentes).
+
 # 1.6.9.19 — A Biblioteca da Forja
 
 Criação e integração da nova biblioteca de recursos pictóricos originais (*Nordic Pictorial Library*) sobre a base `feat/ascend-1.6.9.15`, sem implementar funcionalidades, reformular layouts ou realizar alterações arquiteturais, preservando integralmente Room v6, backup v8, economia, narrativas, os 135 testes existentes e todos os recursos gráficos anteriores. [Catálogo completo, prancha e comparativos](docs/VISUAL-1.6.9.19.md) · [Inventário técnico](docs/art/README.md).

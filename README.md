@@ -1,32 +1,34 @@
-# ASCEND — Crônicas da Ascensão · 1.6.9.19
+# ASCEND — Crônicas da Ascensão · 1.7.0
 
-[**Baixar APK Android 1.6.9.19 (assinatura oficial preservada)**](downloads/ASCEND-1.6.9.19.apk?raw=true) · [APK 1.6.9.15](downloads/ASCEND-1.6.9.15.apk?raw=true) · [APK 1.6.9.10](downloads/ASCEND-1.6.9.10.apk?raw=true) · [APK 1.6.9](downloads/ASCEND-1.6.9.apk?raw=true)
+[**Baixar APK Android 1.7.0 (assinatura oficial preservada)**](downloads/ASCEND-1.7.0.apk?raw=true) · [APK 1.6.9.19](downloads/ASCEND-1.6.9.19.apk?raw=true) · [APK 1.6.9.15](downloads/ASCEND-1.6.9.15.apk?raw=true) · [APK 1.6.9](downloads/ASCEND-1.6.9.apk?raw=true)
 
-RPG de hábitos para Android 8.0 ou superior. **Tudo funciona localmente**, sem conta, internet, anúncios, assinatura ou serviços pagos. O GitHub distribui o código e o instalador; o aplicativo não tem permissão INTERNET.
+RPG de hábitos, projetos pessoais e agenda avançada para Android 8.0 ou superior. **Tudo funciona localmente**, sem conta, internet, anúncios, assinatura ou serviços pagos. O GitHub distribui o código e o instalador; o aplicativo não tem permissão INTERNET.
 
-A versão **1.6.9.19 — A Biblioteca da Forja** (*Nordic Pictorial Library*) introduz uma biblioteca de **20 novos recursos pictóricos originais** gerados via `image-generator` e integrados com recorte 9-slice (`drawNineSlice` / `pictorialFrame`) sobre o Design System Nórdico da `1.6.9.15`: seis estudos de materiais (`mat_iron_nordic`, `mat_bronze_ancient`, `mat_silver_oxidized`, `mat_slate_volcanic`, `mat_leather_carved`, `mat_vellum_aged`), sete placas e superfícies de interface (`ui_plate_primary`, `ui_plate_secondary`, `ui_plate_ceremonial`, `ui_field_inscription`, `ui_tablet_selector`, `ui_control_surface`, `ui_frame_dialog`), quatro atlas ornamentais (`orn_divider_forged`, `orn_frames_rarity`, `orn_medallions_seals`, `orn_track_progress`) e duas tábuas pictóricas para widgets (`wid_plate_compact`, `wid_plate_expanded`), preservando integralmente todos os recursos anteriores. [Prancha da biblioteca, catálogo técnico e comparativos reais](docs/VISUAL-1.6.9.19.md) · [Inventário de arte](docs/art/README.md).
+A versão **1.7.0 — Os Nove Caminhos** (*Personal Projects & Advanced Productivity Update*) expande o ASCEND para um sistema integrado de desenvolvimento pessoal preservando integralmente a Biblioteca da Forja (`1.6.9.19`), o RPG, as narrativas e a economia de XP/moedas:
+- **Caminhos (Projetos Pessoais):** projetos estruturados com etapas, tarefas, subtarefas reordenáveis, prazos, duplicação, vínculo opcional a hábitos (sem XP duplicado), sessões de foco dedicadas (`0 XP` extra) e registro de conclusões no `Salão das Memórias` (filtro `Caminhos`). [Documentação técnica de Caminhos](docs/CAMINHOS-1.7.0.md).
+- **Agenda Profissional 2.0:** visões **Dia**, **Semana** e **Mês**, blocos de tempo com detecção de sobreposição e comparação planejado × foco real, compromissos sem XP, **Caixa de Entrada** com triagem atômica e **Central de Pendências** com 6 recortes operacionais. [Documentação da Agenda 2.0](docs/AGENDA-1.7.0.md).
+- **Jornada ("Rumos do Dia"):** painel expansível na tela inicial com próximo compromisso, próximo bloco, tarefas prioritárias com conclusão rápida e caminhos próximos, além dos atalhos diretos `Caminhos`, `Entrada` e `Pendências`.
 
-**Planejador Semanal:** agenda real, inclusão/dispensa por data, descansos e programação compartilhada com widgets, métricas e lembretes. **Central de Análises:** períodos móveis/civis, comparações, gráficos, insights locais e detalhes por hábito. **Histórico de Foco:** sessões persistidas, duração/estado, consulta e totais, sem XP adicional.
+**143 testes aprovados** e Android Lint sem erros (22 avisos documentados). **Room v7** (`MIGRATION_6_7`) e **backup v9** têm migração explícita e leitura dos formatos anteriores (`v1`–`v8`). Pinturas, RPG, economia e dados existentes são preservados. [Visual 1.7.0](docs/VISUAL-1.7.0.md) · [Caminhos 1.7.0](docs/CAMINHOS-1.7.0.md) · [Agenda 2.0](docs/AGENDA-1.7.0.md) · [Biblioteca da Forja 1.6.9.19](docs/VISUAL-1.6.9.19.md) · [Design System](docs/DESIGN-SYSTEM-2.0.md).
 
-**135 testes aprovados** e Android Lint sem erros (22 avisos documentados). Room v6 e backup v8 têm migração explícita e leitura dos formatos anteriores. Pinturas, RPG, economia e dados existentes são preservados. [Comparações 1.6.9.15 × 1.6.9.19](docs/VISUAL-1.6.9.19.md) · [Legado da Forja 1.6.9.15](docs/VISUAL-1.6.9.15.md) · [Refinamento 1.6.9.10](docs/VISUAL-1.6.9.10.md) · [Consolidação 1.6.9](docs/VISUAL-1.6.9.md) · [Design System](docs/DESIGN-SYSTEM-2.0.md) · [Produtividade e regras](docs/PRODUTIVIDADE-1.6.md).
-
-**Atualização dos APKs 1.1, 1.2, 1.3, 1.3.1, 1.4, 1.4.5, 1.5.0, 1.5.1, 1.5.2, 1.6.0, 1.6.1, 1.6.8, 1.6.9, 1.6.9.10 ou 1.6.9.15:** a `1.6.9.19` (`versionCode 19`) mantém `applicationId` (`br.com.ascend.aetheris`), certificado oficial SHA-256 (`e1f003ef...`), Room v6 e backup v8; exporte um backup de segurança e instale por cima, **sem desinstalar**. A antiga 1.0 possui assinatura diferente; consulte [INSTALACAO.md](INSTALACAO.md).
+**Atualização dos APKs 1.1 a 1.6.9.19:** a `1.7.0` (`versionCode 20`) mantém `applicationId` (`br.com.ascend.aetheris`), certificado oficial SHA-256 (`e1f003ef...`), e migração aditiva Room `v6 → v7` / backup `v9`; exporte um backup de segurança e instale por cima, **sem desinstalar**. A antiga 1.0 possui assinatura diferente; consulte [INSTALACAO.md](INSTALACAO.md).
 
 - [Instalação e atualização](INSTALACAO.md)
 - [Funcionalidades e limites reais](PROGRESSO.md)
 - [Assinatura e preservação de atualizações](ASSINATURA.md)
 - [Validação](VALIDACAO.md)
+- [Caminhos 1.7.0](docs/CAMINHOS-1.7.0.md) · [Agenda 2.0](docs/AGENDA-1.7.0.md) · [Visual 1.7.0](docs/VISUAL-1.7.0.md)
 - [Biblioteca da Forja 1.6.9.19](docs/VISUAL-1.6.9.19.md) · [Legado da Forja 1.6.9.15](docs/VISUAL-1.6.9.15.md) · [Refinamento 1.6.9.10](docs/VISUAL-1.6.9.10.md) · [Consolidação 1.6.9](docs/VISUAL-1.6.9.md)
 - [Auditoria, correções e checklist físico da 1.5.2](docs/ESTABILIDADE-1.5.2.md)
 - [Exploração, fases, recompensas e widgets](docs/EXPLORACAO-1.5.md)
 
 ## Visual
 
-| Jornada | Herói | Arsenal |
+| Jornada + Rumos do Dia | Caminhos | Agenda 2.0 (Semana) |
 |---|---|---|
-| <img src="docs/screenshots/v1.6.9.19/tour-jornada.png" width="240" alt="Jornada nórdica 1.6.9.19 com ardósia vulcânica, placas forjadas e sulco de progresso"> | <img src="docs/screenshots/v1.6.9.19/tour-heroi.png" width="240" alt="Ficha do Herói 1.6.9.19 com medalhão Urnes e inscrições de atributos"> | <img src="docs/screenshots/v1.6.9.19/tour-inventario.png" width="240" alt="Arsenal 1.6.9.19 com prata oxidada e molduras de artefato entalhadas"> |
+| <img src="docs/screenshots/v1.7.0/tour-jornada-rumos-170.png" width="240" alt="Jornada 1.7.0 com Rumos do Dia e atalhos"> | <img src="docs/screenshots/v1.7.0/tour-caminhos-170.png" width="240" alt="Caminhos 1.7.0 com projetos, progresso e prazos"> | <img src="docs/screenshots/v1.7.0/tour-agenda-semana-170.png" width="240" alt="Planejador 1.7.0 com visões Dia, Semana e Mês"> |
 
-**[Prancha da biblioteca e comparações 1.6.9.15 × 1.6.9.19](docs/VISUAL-1.6.9.19.md)** · [Comparações 1.6.9.10 × 1.6.9.15](docs/VISUAL-1.6.9.15.md) · [Comparações 1.6.9 × 1.6.9.10](docs/VISUAL-1.6.9.10.md) · [Comparações 1.6.8 × 1.6.9](docs/VISUAL-1.6.9.md) · [Comparações reais e revisão da 1.5.1](docs/VISUAL-1.5.1.md) · [Expansão da 1.5](docs/VISUAL-1.5.md) · [Guia do Grimório e rotinas](docs/GRIMORIO.md) · [Comparação 1.2 → 1.3](docs/VISUAL-1.3.md) · [Missões](docs/screenshots/livro-missoes.png) · [Chefe](docs/screenshots/chefe.png) · [Crônicas](docs/screenshots/cronicas.png)
+**[Relatório visual e capturas 1.7.0](docs/VISUAL-1.7.0.md)** · [Prancha da biblioteca e comparações 1.6.9.19](docs/VISUAL-1.6.9.19.md) · [Comparações 1.6.9.15](docs/VISUAL-1.6.9.15.md) · [Comparações 1.6.9.10](docs/VISUAL-1.6.9.10.md) · [Comparações 1.6.9](docs/VISUAL-1.6.9.md) · [Guia do Grimório e rotinas](docs/GRIMORIO.md)
 
 Capturas dos testes de interface com personagens de teste. Nenhuma conclusão fictícia é incluída no aplicativo.
 
@@ -42,6 +44,6 @@ APK: `app/build/outputs/apk/debug/app-debug.apk`. Preparar as dependências de d
 
 Para usar a chave de depuração preservada, configure `ASCEND_KEYSTORE_PATH` com o caminho do arquivo antes da compilação. Sem essa variável, o Android Gradle Plugin usa a chave de depuração padrão do ambiente. Consulte `ASSINATURA.md` antes de gerar atualizações.
 
-O fluxo central continua: registro por hábito/dia → recompensa com chave determinística → ledger transacional → nível/atributos/moedas derivados. Recompensas são snapshots; editar um hábito não reescreve XP histórico. Reverter moedas já gastas gera compensação futura, com saldo disponível limitado a zero.
+O fluxo central continua: registro por hábito/dia → recompensa com chave determinística → ledger transacional → nível/atributos/moedas derivados. Recompensas são snapshots; editar um hábito não reescreve XP histórico. Reverter moedas já gastas gera compensação futura, com saldo disponível limitado a zero. Projetos (`Caminhos`), tarefas, blocos de tempo, compromissos e foco em projeto não inventam XP ou moedas.
 
-Banco Room v6, com migrações explícitas 1 → 2 → 3 → 4 → 5 → 6; backups v8 leem também arquivos v1–v7. A migração 5 → 6 acrescenta planejamento e histórico de foco sem reconstruir tabelas antigas. Nenhum fallback destrutivo é usado. Preferências de aparência, interesses e sugestões dispensadas ficam no aparelho e não são transferidas pelo backup.
+Banco **Room v7**, com migrações explícitas `1 → 2 → 3 → 4 → 5 → 6 → 7`; **backups v9** leem também arquivos `v1`–`v8`. A migração `6 → 7` acrescenta `paths`, `path_stages`, `path_tasks`, `path_subtasks`, `path_habit_links`, `time_blocks`, `agenda_events`, `inbox_items` e vínculo opcional em `focus`/`focus_sessions` sem reconstruir ou alterar dados históricos. Nenhum fallback destrutivo é usado. Preferências de aparência, interesses e sugestões dispensadas ficam no aparelho e não são transferidas pelo backup.

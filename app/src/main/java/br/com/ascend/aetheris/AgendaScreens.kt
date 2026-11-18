@@ -69,19 +69,38 @@ fun PlannerScreen(
                         Triple("Pendências ($pendingCount)", Glyph.Claims, onPending)
                     )
                 )
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    SagaButton(
-                        "+ Bloco de tempo",
-                        { blockEditor = TimeBlock(title = "", date = selected) },
-                        Modifier.weight(1f),
-                        secondary = true
-                    )
-                    SagaButton(
-                        "+ Compromisso",
-                        { eventEditor = AgendaEvent(title = "", date = selected) },
-                        Modifier.weight(1f),
-                        secondary = true
-                    )
+                BoxWithConstraints(Modifier.fillMaxWidth()) {
+                    if (maxWidth < 330.dp) {
+                        Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            SagaButton(
+                                "+ Bloco de tempo",
+                                { blockEditor = TimeBlock(title = "", date = selected) },
+                                Modifier.fillMaxWidth(),
+                                secondary = true
+                            )
+                            SagaButton(
+                                "+ Compromisso",
+                                { eventEditor = AgendaEvent(title = "", date = selected) },
+                                Modifier.fillMaxWidth(),
+                                secondary = true
+                            )
+                        }
+                    } else {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            SagaButton(
+                                "+ Bloco de tempo",
+                                { blockEditor = TimeBlock(title = "", date = selected) },
+                                Modifier.weight(1f),
+                                secondary = true
+                            )
+                            SagaButton(
+                                "+ Compromisso",
+                                { eventEditor = AgendaEvent(title = "", date = selected) },
+                                Modifier.weight(1f),
+                                secondary = true
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -879,11 +898,22 @@ fun PendingCenterScreen(
             AetherisTabs(labels, tab, { tab = it })
         }
         item {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                Text("${list.size} ${if (list.size == 1) "tarefa" else "tarefas"} em ${labels[tab]}", color = Muted, fontSize = 12.sp)
-                SagaButton("+ Nova tarefa", { quickTaskDialog = true }, secondary = true)
+            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "${list.size} ${if (list.size == 1) "tarefa" else "tarefas"} em ${labels[tab]}",
+                        Modifier.weight(1f),
+                        color = Muted,
+                        fontSize = 12.sp
+                    )
+                    SagaButton("+ Nova tarefa", { quickTaskDialog = true }, secondary = true)
+                }
+                Text("Projetos arquivados ou cancelados permanecem fora das pendências ativas.", color = Muted, fontSize = 11.sp)
             }
-            Text("Projetos arquivados ou cancelados permanecem fora das pendências ativas.", color = Muted, fontSize = 11.sp)
         }
         if (list.isEmpty()) {
             item { Empty("Nenhuma tarefa em ${labels[tab].lowercase()}.") }

@@ -1,3 +1,11 @@
+# ASCEND 1.7.0 — validação
+
+18/11/2026. Base `feat/ascend-1.6.9.19` (`448e7cd`). Branch `feat/ascend-1.7.0`. Validação local pré-CI (`testDebugUnitTest`, `assembleDebug`, `lintDebug`): **BUILD SUCCESSFUL**. **143 testes aprovados** (`135` preservados + `8` novos em `PathsAndAgendaTest` e `PathsAndAgendaUiTest`), zero falhas, erros ou ignorados; `lintDebug` com **0 erros e 22 avisos**.
+
+Manifesto e empacotamento verificados localmente via `aapt2`: `package: name='br.com.ascend.aetheris' versionCode='20' versionName='1.7.0'`, `minSdkVersion='26'`, `targetSdkVersion='35'`, sem permissão `INTERNET`. Room v7 (`MIGRATION_6_7` validada sobre esquema real `v6` em SQLite), backup v9 (compatibilidade v8 → v9, round-trip e rollback atômico validados em teste) e Biblioteca da Forja (`1.6.9.19`) integralmente preservados.
+
+Renderizações reais Robolectric de 26 telas/variantes em `docs/screenshots/v1.7.0`, incluindo as 11 capturas novas (`tour-jornada-rumos-170.png`, `tour-caminhos-170.png`, `tour-caminho-detalhe-170.png`, `tour-agenda-dia-170.png`, `tour-agenda-semana-170.png`, `tour-agenda-mes-170.png`, `tour-entrada-170.png`, `tour-pendencias-170.png`, `caminhos-320-170.png`, `agenda-320-170.png`, `pendencias-320-170.png` em `320 dp` / fonte `130%` / tema claro / minimalista). Sem teste físico de instalação em aparelho, launcher físico ou TalkBack. Documentação em [docs/CAMINHOS-1.7.0.md](docs/CAMINHOS-1.7.0.md), [docs/AGENDA-1.7.0.md](docs/AGENDA-1.7.0.md) e [docs/VISUAL-1.7.0.md](docs/VISUAL-1.7.0.md).
+
 # ASCEND 1.6.9.19 — validação
 
 18/11/2026. Base `feat/ascend-1.6.9.15` (`e85e7bc`). Branch `feat/ascend-1.6.9.19`. GitHub Actions execução `44256122496` (commit `5e92407` / `69de462`): `testDebugUnitTest assembleDebug lintDebug`: BUILD SUCCESSFUL (`56` tarefas executadas). **135 testes aprovados**, zero falhas, erros ou ignorados; `lintDebug` com **0 erros e 23 avisos**.

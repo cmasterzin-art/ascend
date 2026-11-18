@@ -1,15 +1,15 @@
-# Instalar ASCEND 1.6.8 no Android
+# Instalar ASCEND 1.7.0 no Android
 
 Android 8.0 (API 26) ou superior. O uso não exige internet, conta ou pagamento.
 
-## Atualizar os APKs 1.1, 1.2, 1.3, 1.3.1, 1.4, 1.4.5, 1.5.0, 1.5.1, 1.5.2, 1.6.0 ou 1.6.1 fornecidos neste repositório
+## Atualizar os APKs 1.1 a 1.6.9.19 fornecidos neste repositório
 
 1. Em Herói → Configurações, exporte um backup de segurança.
-2. [Baixe ASCEND-1.6.8.apk](downloads/ASCEND-1.6.8.apk?raw=true) e abra o arquivo.
-3. Confirme a atualização **sem desinstalar**. O pacote e o certificado são os mesmos; o versionCode passou para 15.
-4. Abra o app e confira seu personagem. A 1.6.8 mantém Room v6 e backup v8 da 1.6.0. Sobre a 1.5.2, a migração Room v5 → v6 continua aditiva, incluindo planejamento e histórico de foco. Não recria as tabelas antigas. As migrações anteriores são mantidas.
+2. [Baixe ASCEND-1.7.0.apk](downloads/ASCEND-1.7.0.apk?raw=true) e abra o arquivo.
+3. Confirme a atualização **sem desinstalar**. O pacote (`br.com.ascend.aetheris`) e o certificado oficial (`e1f003ef...`) são os mesmos; o `versionCode` passou para `20`.
+4. Abra o app e confira seu personagem. A `1.7.0` executa migração aditiva **Room v6 → v7** (`MIGRATION_6_7`), mantendo integralmente os dados das versões anteriores e leitura de backups **v1 a v9**.
 
-Se o Android indicar conflito de assinatura, sua instalação foi compilada com outra chave. Não desinstale antes de exportar os dados; consulte ASSINATURA.md.
+Se o Android indicar conflito de assinatura, sua instalação foi compilada com outra chave. Não desinstale antes de exportar os dados; consulte `ASSINATURA.md`.
 
 ## Se já usa a 1.0
 
@@ -18,28 +18,29 @@ Se o Android indicar conflito de assinatura, sua instalação foi compilada com 
 1. Na **versão 1.0 ainda instalada**, abra **Herói → Configurações → Exportar backup**.
 2. Salve o JSON em Downloads ou outra pasta fora do aplicativo. Confirme que o arquivo foi criado e guarde uma cópia.
 3. Desinstale a 1.0. Essa ação apaga o banco do aplicativo; o backup salvo no passo anterior será usado na restauração.
-4. [Baixe ASCEND-1.6.8.apk](downloads/ASCEND-1.6.8.apk?raw=true), abra pelo gerenciador de arquivos e instale.
-5. Na tela de boas-vindas, toque em **Já tenho uma jornada · Restaurar backup**, escolha o JSON e confirme. A 1.6.8 aceita backups v1/v2/v3/v4/v5/v6/v7/v8. Se já criou outro personagem, use **Herói → Configurações → Importar backup**; os dados atuais serão substituídos pelos do arquivo.
+4. [Baixe ASCEND-1.7.0.apk](downloads/ASCEND-1.7.0.apk?raw=true), abra pelo gerenciador de arquivos e instale.
+5. Na tela de boas-vindas, toque em **Já tenho uma jornada · Restaurar backup**, escolha o JSON e confirme. A `1.7.0` aceita backups `v1` a `v9`. Se já criou outro personagem, use **Herói → Configurações → Importar backup**; os dados atuais serão substituídos pelos do arquivo.
 6. Confira nome, hábitos e XP antes de apagar qualquer cópia de segurança.
 
-Se você tem a chave original, pode compilar a 1.6.8 com ela e instalar diretamente por cima da 1.0, sem desinstalar. A migração do banco preserva os dados. Veja `ASSINATURA.md`.
+Se você tem a chave original, pode compilar a `1.7.0` com ela e instalar diretamente por cima da 1.0, sem desinstalar. A migração do banco preserva os dados. Veja `ASSINATURA.md`.
 
 ## Primeira instalação
 
 1. Baixe o APK e abra-o em Downloads/Arquivos.
 2. Se solicitado pelo Android, permita **Instalar apps desconhecidos** para o gerenciador de arquivos ou navegador usado.
 3. Instale e abra ASCEND; escolha personagem, classe e hábitos iniciais.
-4. Na Jornada, use **+** para criar hábitos e registrar progresso. Hábitos simples são concluídos com um toque.
+4. Na Jornada, use **+** para criar hábitos e registrar progresso, ou abra **Caminhos**, **Planejador**, **Entrada** e **Pendências** pelos atalhos da tela inicial.
 
-O APK é uma compilação pessoal de depuração assinada, distribuída fora da Play Store. O checksum está em `downloads/ASCEND-1.6.8.apk.sha256`.
+O APK é uma compilação pessoal de depuração assinada com a chave preservada, distribuída fora da Play Store. O checksum está em `downloads/ASCEND-1.7.0.apk.sha256`.
 
-## Novidades da 1.6
+## Novidades da 1.7.0 e 1.6
 
-- **Jornada ou Hábitos → Planejador:** selecione um dia, ajuste atividades pontuais ou descanso. Exceções só podem ser editadas de hoje em diante e não concedem XP.
-- **Jornada ou Hábitos → Análises:** períodos, gráficos, comparação e indicadores. Nos detalhes do hábito, use **Análises deste hábito**.
-- **Hábito cronometrado → Foco:** configure o intervalo, pause/retome pela Jornada e registre ou descarte. **Jornada ou Hábitos → Foco** abre o histórico detalhado.
-- Sessões iniciadas antes da 1.6 não recebem detalhes inventados. Seus registros antigos de minutos continuam nas análises.
-- [Comparações visuais](docs/VISUAL-1.6.md) · [Regras e dados](docs/PRODUTIVIDADE-1.6.md).
+- **Caminhos (Projetos Pessoais):** organize projetos com etapas, tarefas, subtarefas reordenáveis, prazos, vínculo opcional a hábitos e sessões de foco sem alterar a economia de XP/moedas. Caminhos concluídos entram em **Mundo → Salão das Memórias**.
+- **Agenda Profissional 2.0 (Planejador):** alternância entre **Dia**, **Semana** e **Mês**, blocos de tempo com detecção de sobreposição e comparação planejado × foco real, além de compromissos sem XP.
+- **Caixa de Entrada e Central de Pendências:** capture ideias rapidamente e faça triagem atômica para tarefa ou compromisso; acompanhe tarefas em **Hoje**, **Próximas**, **Atrasadas**, **Sem data**, **Alta prioridade** e **Concluídas**.
+- **Jornada — Rumos do Dia:** painel expansível com próximo compromisso, bloco, tarefas prioritárias e caminhos próximos.
+- **Central de Análises e Histórico de Foco (`1.6`+):** períodos, gráficos, sessões em hábitos e projetos com duração efetiva e zero XP adicional.
+- [Caminhos 1.7.0](docs/CAMINHOS-1.7.0.md) · [Agenda 2.0](docs/AGENDA-1.7.0.md) · [Visual 1.7.0](docs/VISUAL-1.7.0.md) · [Produtividade e regras](docs/PRODUTIVIDADE-1.6.md).
 
 ## Correções da 1.5.2
 

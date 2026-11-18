@@ -191,7 +191,11 @@ fun PathsScreen(
                     }
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    FlowRow(
+                        Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
                         Text(
                             if (prog.total == 0) "Sem tarefas cadastradas" else "${prog.done}/${prog.total} tarefas (${prog.percent}%)",
                             color = if (prog.total > 0 && prog.done == prog.total) Green else accent,
@@ -605,16 +609,16 @@ fun PathDetailScreen(
                                 textDecoration = if (sub.done) TextDecoration.LineThrough else TextDecoration.None
                             )
                             if (idx > 0) {
-                                IconButton({ vm.run { vm.repo.reorderSubtask(sub.id, -1) } }, Modifier.size(36.dp)) {
+                                IconButton({ vm.run { vm.repo.reorderSubtask(sub.id, -1) } }, Modifier.size(44.dp)) {
                                     Icon(Icons.Default.KeyboardArrowUp, "Subir subtarefa", tint = Muted)
                                 }
                             }
                             if (idx < subs.lastIndex) {
-                                IconButton({ vm.run { vm.repo.reorderSubtask(sub.id, 1) } }, Modifier.size(36.dp)) {
+                                IconButton({ vm.run { vm.repo.reorderSubtask(sub.id, 1) } }, Modifier.size(44.dp)) {
                                     Icon(Icons.Default.KeyboardArrowDown, "Descer subtarefa", tint = Muted)
                                 }
                             }
-                            IconButton({ vm.run { vm.repo.deleteSubtask(sub.id) } }, Modifier.size(36.dp)) {
+                            IconButton({ vm.run { vm.repo.deleteSubtask(sub.id) } }, Modifier.size(44.dp)) {
                                 Icon(Icons.Default.Close, "Remover subtarefa", tint = Muted)
                             }
                         }

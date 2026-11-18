@@ -26,6 +26,11 @@
   - Implementado `AgendaScreens.kt` (`PlannerScreen` com modos `Dia`/`Semana`/`Mês`, blocos de tempo com detecção de sobreposição e comparação planejado vs foco real, compromissos sem XP, `InboxScreen` com triagem atômica e `PendingCenterScreen` com 6 recortes).
 - [x] **Fase 5 — Integração na Jornada ("Rumos do Dia"), Vínculo de Hábitos, Foco em Projeto/Tarefa e Salão das Memórias**
   - Adicionados `ShortcutStrip` (`Caminhos`, `Entrada`, `Pendências`) e `RumosDoDiaPanel` em `JourneyHome.kt`, foco em projeto/tarefa sem XP inventado em `MainActivity.kt` / `JourneyScreens.kt` / `ProductivityScreens.kt`, e navegação completa em `AetherisNavigation.kt` e `CarvedArt.kt`.
-- [ ] **Fase 6 — Acabamento visual, acessibilidade, tema claro/escuro, `320dp` / fonte `130%`, modo minimalista e redução de movimento**
-- [ ] **Fase 7 — Bateria abrangente de testes (135 preservados + novos testes 1.7.0) e capturas reais**
-- [ ] **Fase 8 — Build final, Lint 0 erros, documentação (`CAMINHOS-1.7.0.md`, `AGENDA-1.7.0.md`, `VISUAL-1.7.0.md`, `README.md`, `CHANGELOG.md`, `PROGRESSO.md`, `VALIDACAO.md`, `INSTALACAO.md`) e entrega CI assinada**
+- [x] **Fase 6 — Acabamento visual, acessibilidade, tema claro/escuro, `320dp` / fonte `130%`, modo minimalista e redução de movimento**
+  - Inspecionadas visualmente todas as 11 capturas novas (`411dp` e `320dp / 130%`), corrigindo empilhamento em telas estreitas (`PlannerScreen`), `FlowRow` no progresso (`PathsScreen`), alvos táteis (`44dp`/`48dp`) e alinhamento do cabeçalho (`PendingCenterScreen`).
+- [x] **Fase 7 — Bateria abrangente de testes (135 preservados + novos testes 1.7.0) e capturas reais**
+  - Criados [`PathsAndAgendaTest.kt`](../app/src/test/java/br/com/ascend/aetheris/PathsAndAgendaTest.kt) (5 testes de domínio, migração Room `v6 → v7`, foco sem XP extra e backup `v9` com rollback atômico) e [`PathsAndAgendaUiTest.kt`](../app/src/test/java/br/com/ascend/aetheris/PathsAndAgendaUiTest.kt) (3 testes de UI e capturas em `411dp` e `320dp / 130%`).
+  - Executada toda a suíte: **143 testes aprovados, 0 falhas, 0 erros, 0 ignorados**.
+- [x] **Fase 8 — Build final, Lint 0 erros, documentação e entrega CI assinada**
+  - Atualizado `versionCode = 20` / `versionName = "1.7.0"`, workflow `.github/workflows/android.yml`, `README.md`, `CHANGELOG.md`, `PROGRESSO.md`, `VALIDACAO.md`, `INSTALACAO.md`, `ASSINATURA.md`, `CAMINHOS-1.7.0.md`, `AGENDA-1.7.0.md` e `VISUAL-1.7.0.md`.
+  - Validado `lintDebug` (**0 erros, 22 avisos**) e `assembleDebug` (`aapt2`: `versionCode 20`, `versionName 1.7.0`, sem permissão `INTERNET`).
