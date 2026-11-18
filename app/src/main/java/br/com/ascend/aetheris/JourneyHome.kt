@@ -16,26 +16,50 @@ import androidx.compose.ui.semantics.*
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import kotlinx.coroutines.delay
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-/** A live device-local date also updates a screen left open across midnight. */
-@Composable fun currentDay():String {
-    var date by remember{mutableStateOf(today())}
-    LaunchedEffect(Unit){while(true){delay(15_000);date=today()}}
-    return date
+/** Reads the device clock rather than advancing an in-memory clock. */
+@Composable private fun currentLocalMinute(): LocalDateTime {
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    var now by remember { mutableStateOf(LocalDateTime.now().withSecond(0).withNano(0)) }
+    DisposableEffect(lifecycle) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) now = LocalDateTime.now().withSecond(0).withNano(0)
+        }
+        lifecycle.addObserver(observer)
+        onDispose { lifecycle.removeObserver(observer) }
+    }
+    LaunchedEffect(Unit) {
+        while (true) {
+            now = LocalDateTime.now().withSecond(0).withNano(0)
+            delay(1_000)
+        }
+    }
+    return now
 }
+
+@Composable fun currentDay(): String = currentLocalMinute().toLocalDate().toString()
+
 @Composable fun Journey(s:GameState,onProgress:(Habit,HabitRecord?)->Unit,onEdit:(Habit)->Unit,onFocus:(Habit)->Unit,onAdd:()->Unit,onJournal:()->Unit,vm:GameViewModel,relaxed:Boolean,onPlanner:()->Unit={},onAnalysis:()->Unit={},onHistory:()->Unit={},onPortrait:()->Unit={},onMissions:()->Unit={},onRegion:()->Unit={},onPaths:()->Unit={},onInbox:()->Unit={},onPending:()->Unit={},onOpenPath:(String)->Unit={}){
- val day=currentDay();val rested=day in s.restDates
+ val now=currentLocalMinute();val day=now.toLocalDate().toString();val rested=day in s.restDates
  val due=if(relaxed&&!rested)s.habits.filter{!it.deleted&&!it.archived&&!it.paused}.sortedBy{it.position} else s.due(day)
  val done=due.count{s.record(it.id,day)?.complete==true};var pendingOnly by remember{mutableStateOf(false)};var detail by remember{mutableStateOf<Habit?>(null)}
   val dialSize=if(LocalConfiguration.current.screenWidthDp<=340)56.dp else 66.dp
   val inboxCount=s.inboxItems.count{!it.archived}
-  val rumos=remember(s,day){rumosDoDia(s,day)}
-  val hasRumos=rumos.nextEvent!=null||rumos.nextBlock!=null||rumos.priorityTasks.isNotEmpty()||rumos.upcomingPaths.isNotEmpty()||rumos.inboxCount>0
+  val rumos=remember(s,now){rumosDoDia(s,day,now.toLocalTime())}
+  val hasRumos=rumos.nextEvent!=null||rumos.nextBlock!=null||rumos.untimedEvents.isNotEmpty()||rumos.priorityTasks.isNotEmpty()||rumos.upcomingPaths.isNotEmpty()||rumos.inboxCount>0
   var rumosExpanded by androidx.compose.runtime.saveable.rememberSaveable{mutableStateOf(false)}
-  androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxSize().testTag("journey_list").semantics{contentDescription="Central da Jornada"},contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
+  val listState = androidx.compose.foundation.lazy.rememberLazyListState()
+  LaunchedEffect(s.focus?.sessionId) {
+   if (s.focus != null) listState.scrollToItem(0)
+  }
+  androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxSize().testTag("journey_list").semantics{contentDescription="Central da Jornada"},state=listState,contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
+   s.focus?.let { focus -> item(key="active-focus") { FocusCard(focus,s,vm) } }
    item{Box(Modifier.fillMaxWidth()){
     CompactHero(s,onPortrait)
     // 1.6.9.10: the header floats over the sky of the fjord instead of occupying its own band.
@@ -47,7 +71,6 @@ import java.util.Locale
     ShortcutStrip(listOf(Triple("Caminhos",Glyph.Map,onPaths),Triple("Entrada${if(inboxCount>0)" ($inboxCount)" else ""}",Glyph.Chronicles,onInbox),Triple("Pendências",Glyph.Claims,onPending)))
    }}
   item{RumosDoDiaPanel(rumos,s,vm,expanded=rumosExpanded||hasRumos&&rumosExpanded,hasRumos=hasRumos,onToggle={rumosExpanded=!rumosExpanded},onPaths=onPaths,onOpenPath=onOpenPath,onPlanner=onPlanner,onInbox=onInbox,onPending=onPending)}
-  s.focus?.let{f->item{FocusCard(f,s,vm)}}
   item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){SectionHeader("Seus próximos passos","Conclua com um toque; detalhes ao selecionar o nome.")};IconButton(onAdd,Modifier.size(42.dp).clip(CutCornerShape(5.dp)).background(Gold.copy(alpha=.12f)).border(1.dp,Gold.copy(alpha=.45f),CutCornerShape(5.dp))){Icon(Icons.Default.Add,"Criar hábito",tint=Gold)}};if(due.size>1||done>0)ChipRow(listOf("Todos (${due.size})","Pendentes (${due.size-done})"),if(pendingOnly)1 else 0,{pendingOnly=it==1})}
   val visible=due.filter{!pendingOnly||s.record(it.id,day)?.complete!=true}.sortedBy{s.record(it.id,day)?.complete==true}
   if(visible.isEmpty())item{Empty(if(rested)"Este dia está reservado para descanso. Seus registros e recompensas anteriores continuam guardados." else if(due.isEmpty())"Nenhum hábito para hoje. Abra o Planejador ou crie seu primeiro passo." else "Tudo feito por hoje. Aetheris pode esperar pelo seu próximo passo.")}
@@ -84,22 +107,25 @@ import java.util.Locale
    }else{
     r.nextEvent?.let{ev->
      Row(Modifier.fillMaxWidth().clickable(onClick=onPlanner),horizontalArrangement=Arrangement.SpaceBetween){
-      Text("Próximo compromisso: ${ev.title}",Modifier.weight(1f),color=Ink,fontSize=13.sp)
+      Text("${if(r.eventInProgress) "Compromisso em andamento" else "Próximo compromisso"}: ${ev.title}",Modifier.weight(1f),color=Ink,fontSize=13.sp)
       if(ev.startTime.isNotBlank())Text(ev.startTime,color=Blue,fontSize=12.sp)
      }
     }
     r.nextBlock?.let{b->
      Row(Modifier.fillMaxWidth().clickable(onClick=onPlanner),horizontalArrangement=Arrangement.SpaceBetween){
-      Text("Próximo bloco: ${b.title}",Modifier.weight(1f),color=Ink,fontSize=13.sp)
+      Text("${if(r.blockInProgress) "Bloco em andamento" else "Próximo bloco"}: ${b.title}",Modifier.weight(1f),color=Ink,fontSize=13.sp)
       Text("${b.startTime}–${b.endTime}",color=Violet,fontSize=12.sp)
      }
+    }
+    if (r.untimedEvents.isNotEmpty()) {
+     TextButton(onPlanner) { Text("Compromissos sem horário (${r.untimedEvents.size})") }
     }
     if(r.priorityTasks.isNotEmpty()){
      Eyebrow("Tarefas prioritárias",Blue)
      r.priorityTasks.forEach{t->
       val parent=s.paths.find{it.id==t.pathId}
       Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){
-       Checkbox(checked=t.completed,onCheckedChange={vm.run{vm.repo.toggleTask(t.id)}},modifier=Modifier.size(48.dp).semantics{contentDescription="Alternar ${t.title}"})
+       Checkbox(checked=t.completed,onCheckedChange = { checked -> vm.run { vm.repo.toggleTask(t.id, checked) } },modifier=Modifier.size(48.dp).semantics{contentDescription="Alternar ${t.title}"})
        Column(Modifier.weight(1f).clickable(enabled=parent!=null){parent?.let{onOpenPath(it.id)}}){
         Text(t.title,color=Ink,fontSize=13.sp)
         Text("${parent?.name?:"Avulsa"}${if(t.deadline.isNotBlank())" · até ${displayDate(t.deadline)}" else ""}",color=if(isTaskOverdue(t))MaterialTheme.colorScheme.error else Muted,fontSize=11.sp)

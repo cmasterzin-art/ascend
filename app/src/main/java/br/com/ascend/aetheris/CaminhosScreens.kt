@@ -47,6 +47,37 @@ fun pathDeadlineSummary(path: PersonalPath, refDate: String = today()): String {
     }
 }
 
+@Composable
+private fun openTaskConfirmation(onConfirm: (Set<String>) -> Unit): (Set<String>) -> Unit {
+    var pending by remember { mutableStateOf<Set<String>?>(null) }
+    pending?.let { ids ->
+        AetherDialog(
+            onDismissRequest = { pending = null },
+            title = "Concluir com tarefas abertas?",
+            confirmButton = { SagaButton("Concluir caminho", { pending = null; onConfirm(ids) }) },
+            dismissButton = { TextButton({ pending = null }) { Text("Voltar às tarefas") } }
+        ) {
+            Text("Tarefas ainda abertas: ${ids.size}. Elas serão preservadas e sairão das pendências ativas. Você pode concluí-las antes ou reabrir o caminho depois.")
+        }
+    }
+    return { ids -> if (ids.isEmpty()) onConfirm(ids) else pending = ids }
+}
+
+private fun openTaskIds(s: GameState, pathId: String): Set<String> =
+    s.pathTasks.filter { it.pathId == pathId && !it.archived && !it.completed }.mapTo(mutableSetOf()) { it.id }
+
+@Composable
+private fun pathStateAction(s: GameState, vm: GameViewModel): (String, Int) -> Unit {
+    var pathId by remember { mutableStateOf("") }
+    val confirm = openTaskConfirmation { ids -> vm.run { vm.repo.setPathState(pathId, 3, ids) } }
+    return { id, state ->
+        if (state == 3 && s.paths.find { it.id == id }?.state != 3) {
+            pathId = id
+            confirm(openTaskIds(s, id))
+        } else vm.run { vm.repo.setPathState(id, state) }
+    }
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PathsScreen(
@@ -56,6 +87,7 @@ fun PathsScreen(
     onNewPath: () -> Unit,
     onEditPath: (PersonalPath) -> Unit
 ) {
+    val changePathState = pathStateAction(s, vm)
     val day = currentDay()
     var search by rememberSaveable { mutableStateOf("") }
     var stateFilter by rememberSaveable { mutableIntStateOf(0) } // 0=Ativos, 1=Todos, 2..7=pathStates
@@ -228,7 +260,7 @@ fun PathsScreen(
                         Text("Duplicar", fontSize = 12.sp)
                     }
                     if (p.state != 3) {
-                        TextButton({ vm.run { vm.repo.setPathState(p.id, 3) } }) {
+                        TextButton({ changePathState(p.id, 3) }) {
                             Text("Concluir", color = Green, fontSize = 12.sp)
                         }
                     }
@@ -265,7 +297,8 @@ fun PathsScreen(
 fun PathEditorDialog(
     initial: PersonalPath,
     onDismiss: () -> Unit,
-    onSave: (PersonalPath) -> Unit
+    openTasks: Set<String>,
+    onSave: (PersonalPath, Set<String>) -> Unit
 ) {
     var name by rememberSaveable(initial.id) { mutableStateOf(initial.name) }
     var description by rememberSaveable(initial.id) { mutableStateOf(initial.description) }
@@ -296,13 +329,14 @@ fun PathEditorDialog(
         notes = notes
     )
 
+    val confirmCompletion = openTaskConfirmation { ids -> onSave(draft(), ids) }
     val dirty = draft() != initial
     val close = { if (dirty) discard = true else onDismiss() }
 
     FullForm(
         if (initial.name.isBlank()) "Novo caminho" else "Editar caminho",
         close,
-        { onSave(draft()) }
+        { confirmCompletion(if (state == 3 && initial.state != 3) openTasks else emptySet()) }
     ) {
         Panel(accent = habitColor(color.coerceIn(0, 4))) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -361,6 +395,7 @@ fun PathDetailScreen(
     onEditPath: (PersonalPath) -> Unit,
     onStartFocus: (pathId: String, taskId: String, label: String) -> Unit
 ) {
+    val changePathState = pathStateAction(s, vm)
     val day = currentDay()
     val p = s.paths.find { it.id == pathId }
     if (p == null) {
@@ -453,7 +488,7 @@ fun PathDetailScreen(
                     Text("Critério: ${p.criteria}", color = Ink, fontSize = 13.sp)
                 }
                 Eyebrow("Alterar estado")
-                ChipRow(pathStates, p.state, { idx -> vm.run { vm.repo.setPathState(p.id, idx) } })
+                ChipRow(pathStates, p.state, { idx -> changePathState(p.id, idx) })
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Action("Iniciar foco", { onStartFocus(p.id, "", p.name) }, Modifier.weight(1f), enabled = s.focus == null)
                     SagaButton("Editar", { onEditPath(p) }, Modifier.weight(1f), secondary = true)
@@ -543,7 +578,7 @@ fun PathDetailScreen(
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     Checkbox(
                         checked = t.completed,
-                        onCheckedChange = { vm.run { vm.repo.toggleTask(t.id) } },
+                        onCheckedChange = { checked -> vm.run { vm.repo.toggleTask(t.id, checked) } },
                         modifier = Modifier.size(48.dp).semantics { contentDescription = "Alternar ${t.title}" },
                         colors = CheckboxDefaults.colors(checkedColor = Green, uncheckedColor = ColdIron)
                     )
@@ -738,8 +773,7 @@ fun PathDetailScreen(
             stages = s.pathStages,
             onDismiss = { taskEditor = null },
             onSave = { updated ->
-                vm.run { vm.repo.saveTask(updated) }
-                taskEditor = null
+                vm.run { vm.repo.saveTask(updated); taskEditor = null }
             }
         )
     }
@@ -901,7 +935,7 @@ fun TaskEditorDialog(
         deadline = deadline.trim(),
         scheduledDate = scheduledDate.trim(),
         scheduledTime = scheduledTime.trim(),
-        estimateMinutes = estimate.toIntOrNull()?.coerceIn(0, 1440) ?: 0,
+        estimateMinutes = estimate.trim().takeIf { it.isNotEmpty() }?.let { it.toIntOrNull() ?: -1 } ?: 0,
         notes = notes
     )
 

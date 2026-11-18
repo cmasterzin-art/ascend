@@ -154,7 +154,7 @@ class PathsAndAgendaTest {
         assertEquals(2, s().pathTasks.count { it.pathId == clone.id })
 
         // Complete path & check Salão das Memórias
-        repo.setPathState(p1.id, 3)
+        repo.setPathState(p1.id, 3, s().pathTasks.filter { it.pathId == p1.id && !it.completed }.map { it.id }.toSet())
         val completedPath = s().paths.first { it.id == p1.id }
         assertEquals(3, completedPath.state)
         assertTrue(completedPath.completedDate.isNotBlank())
@@ -260,6 +260,10 @@ class PathsAndAgendaTest {
         repo.startPathFocus(pathId = activePath.id, taskId = tToday.id, minutes = 25)
         db.dao().focus(s().focus!!.copy(elapsed = 240, startedAt = 0))
         repo.endFocus(true)
+        // Give the recorded fixture a real four-minute wall-clock window inside b1.
+        val atNine = LocalDate.parse(todayStr).atTime(9, 0).atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+        db.dao().focusSession(s().focusSessions.single().copy(startedAt = atNine, endedAt = atNine + 240_000))
+        repo.refresh()
         assertEquals(4L, timeBlockActualMinutes(s(), b1))
 
         // Agenda events grant 0 XP
@@ -361,5 +365,96 @@ class PathsAndAgendaTest {
 
         repo.importState(Backup.decode(Backup.encode(incoming)))
         assertEquals(incoming, s())
+    }
+
+    @Test fun activeFocusKeepsItsSnapshotAcrossEditsMovesAndDeletes() = runBlocking {
+        val a = PersonalPath(id = "a", name = "A")
+        val b = PersonalPath(id = "b", name = "B")
+        repo.savePath(a)
+        repo.savePath(b)
+        val task = PathTask(id = "task", title = "Trabalho")
+        repo.saveTask(task)
+        repo.startPathFocus(taskId = task.id, minutes = 60)
+        repo.moveTask(task.id, a.id)
+        db.dao().focus(s().focus!!.copy(elapsed = 180, startedAt = 0))
+        repo.endFocus(true)
+        assertEquals(3L, taskFocusMinutes(s(), task.id))
+        assertEquals(0L, pathFocusMinutes(s(), a.id))
+        assertTrue(runCatching { repo.startPathFocus(b.id, task.id, 60) }.isFailure)
+        repo.startPathFocus(taskId = task.id, minutes = 60)
+        repo.saveTask(s().pathTasks.single().copy(pathId = b.id))
+        db.dao().focus(s().focus!!.copy(elapsed = 3600, startedAt = 0))
+        repo.endFocus(true)
+        assertEquals(60L, pathFocusMinutes(s(), a.id))
+        assertEquals(0L, pathFocusMinutes(s(), b.id))
+        repo.deletePath(a.id)
+        assertEquals(0L, pathFocusMinutes(s(), b.id))
+        assertEquals(63L, taskFocusMinutes(s(), task.id))
+        repo.startPathFocus(taskId = task.id, minutes = 5)
+        repo.deleteTask(task.id)
+        repo.deletePath(b.id)
+        val restored = Backup.decode(Backup.encode(s()))
+        repo.importState(restored)
+        assertEquals("Trabalho", s().focus!!.targetLabel)
+        repo.endFocus(true)
+        assertEquals(3, s().focusSessions.size)
+        assertEquals(63L, s().focusSessions.sumOf { it.elapsedSeconds } / 60)
+        assertEquals(0L, s().xp)
+        assertEquals(0L, s().coins)
+    }
+
+    @Test fun closingWithOpenTasksRequiresCurrentConfirmationAndReopeningRestoresPending() = runBlocking {
+        val path = PersonalPath(id = "a", name = "A")
+        repo.savePath(path)
+        val task = PathTask(id = "task", pathId = path.id, title = "Trabalho", scheduledDate = today())
+        repo.saveTask(task)
+        repo.setPathState(path.id, 2)
+        assertTrue(agendaDay(s(), today()).tasks.isEmpty())
+        assertTrue(runCatching { repo.setPathState(path.id, 3) }.isFailure)
+        assertTrue(runCatching { repo.savePath(path.copy(state = 3)) }.isFailure)
+        repo.setPathState(path.id, 3, setOf(task.id))
+        assertTrue(pendingBuckets(s()).todayTasks.isEmpty())
+        assertTrue(hallMemories(s()).any { it.category == "Caminhos" })
+        assertFalse(s().pathTasks.single().completed)
+        repo.setPathState(path.id, 1)
+        assertEquals("", s().paths.single().completedDate)
+        assertEquals(listOf(task.id), agendaDay(s(), today()).tasks.map { it.id })
+        repo.toggleTask(task.id, true)
+        repo.toggleTask(task.id, true)
+        assertTrue(s().pathTasks.single().completed)
+    }
+
+    @Test fun triageAndStageEditsRejectInvalidWritesWithoutRemovingData() = runBlocking {
+        val a = PersonalPath(id = "a", name = "A")
+        val b = PersonalPath(id = "b", name = "B")
+        repo.savePath(a)
+        repo.savePath(b)
+        val stage = PathStage(id = "stage", pathId = a.id, name = "Etapa")
+        repo.saveStage(stage)
+        val task = PathTask(id = "t", pathId = a.id, stageId = stage.id, title = "Original")
+        repo.saveTask(task)
+        assertTrue(runCatching { repo.saveStage(stage.copy(pathId = b.id)) }.isFailure)
+        assertTrue(runCatching { repo.saveTask(task.copy(estimateMinutes = -1)) }.isFailure)
+        val item = InboxItem(id = "incoming", title = "Ideia")
+        repo.saveInboxItem(item)
+        assertTrue(runCatching { repo.triageInboxToTask(item.id, task.copy(title = "Sobrescrita")) }.isFailure)
+        assertEquals("Original", s().pathTasks.single().title)
+        assertEquals(item.id, s().inboxItems.single().id)
+        repo.triageInboxToEvent(item.id, AgendaEvent(title = "Agendado"))
+        assertTrue(runCatching { repo.triageInboxToEvent(item.id, AgendaEvent(title = "Repetido")) }.isFailure)
+        assertEquals(1, s().agendaEvents.size)
+    }
+
+    @Test fun activeSessionCannotOverwriteHistoryOnBackupRestore() = runBlocking {
+        val path = PersonalPath(id = "a", name = "A")
+        repo.savePath(path)
+        repo.startPathFocus(pathId = path.id, minutes = 5)
+        val active = s().focus!!
+        repo.endFocus(true)
+        val valid = s()
+        val invalid = valid.copy(focus = active)
+        assertTrue(runCatching { Backup.decode(Backup.encode(invalid)) }.isFailure)
+        assertTrue(runCatching { repo.importState(invalid) }.isFailure)
+        assertEquals(valid, s())
     }
 }

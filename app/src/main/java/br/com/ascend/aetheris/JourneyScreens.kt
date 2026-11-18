@@ -12,6 +12,8 @@ import androidx.compose.ui.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.draw.*
@@ -51,11 +53,14 @@ import java.util.Locale
     var now by remember{mutableLongStateOf(System.currentTimeMillis())};LaunchedEffect(f){while(f.startedAt>0){now=System.currentTimeMillis();delay(1000)}}
     val seconds=f.seconds(now);val remaining=(f.duration*60L-seconds).coerceAtLeast(0);val violet=Violet;val gold=Gold
     val label=s.habits.find{it.id==f.habitId}?.name ?: f.targetLabel.ifBlank{s.pathTasks.find{it.id==f.taskId}?.title ?: s.paths.find{it.id==f.pathId}?.name ?: "Sessão"}
-    val extraTag=if(f.habitId.isBlank())" · projeto (sem XP extra)" else ""
-    Panel(accent=violet){
-        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Eyebrow("Foco · $label$extraTag",violet);Text("${seconds/60} ${if(seconds/60==1L)"minuto efetivo" else "minutos efetivos"} · sessão de ${displayDate(f.date)}",color=Muted,fontSize=11.sp)}
-        Box(Modifier.fillMaxWidth().padding(vertical=8.dp),contentAlignment=Alignment.Center){
-            Canvas(Modifier.size(192.dp)){
+    val largePlate = LocalConfiguration.current.screenWidthDp >= 400 && LocalDensity.current.fontScale <= 1.1f
+    val footer = if (f.habitId.isBlank()) "Foco de projeto ou tarefa, sem XP adicional."
+        else "Minutos completos são registrados no hábito."
+    AetherSurface(modifier = Modifier.testTag("focus_card")) {
+        Eyebrow("Foco · $label", violet)
+        Text("${seconds/60} ${if(seconds/60==1L)"minuto efetivo" else "minutos efetivos"} · ${displayDate(f.date)}", color=Muted, fontSize=11.sp)
+        Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){
+            Canvas(Modifier.size(146.dp)){
                 val cx=size.width/2;val cy=size.height/2;val r=size.minDimension/2;val d=1.dp.toPx()
                 drawCircle(Brush.radialGradient(listOf(violet.copy(alpha=.18f),Color.Transparent)),radius=r)
                 drawCircle(gold.copy(alpha=.22f),radius=r-2*d,style=androidx.compose.ui.graphics.drawscope.Stroke(d))
@@ -65,11 +70,14 @@ import java.util.Locale
                     drawLine(if(i%3==0)gold.copy(alpha=.55f) else violet.copy(alpha=.35f),androidx.compose.ui.geometry.Offset(cx+(r1*kotlin.math.cos(ang)).toFloat(),cy+(r1*kotlin.math.sin(ang)).toFloat()),androidx.compose.ui.geometry.Offset(cx+(r2*kotlin.math.cos(ang)).toFloat(),cy+(r2*kotlin.math.sin(ang)).toFloat()),if(i%3==0)1.6f*d else d)
                 }
             }
-            DayDial(seconds.toFloat()/(f.duration*60),"%02d:%02d".format(remaining/60,remaining%60),168.dp)
+            DayDial(seconds.toFloat()/(f.duration*60),"%02d:%02d".format(remaining/60,remaining%60),126.dp)
         }
         Meter(seconds.toFloat()/(f.duration*60),violet,slim=true)
-        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp),verticalAlignment=Alignment.CenterVertically){SagaButton(if(f.startedAt>0)"Pausar" else "Retomar",{vm.run{vm.repo.pauseFocus()}},Modifier.weight(1f),secondary=true);Action("Registrar",{vm.run{vm.repo.endFocus(true)}},Modifier.weight(1f),ceremonial=true)}
-        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Text("O tempo continua fora desta tela. Ao registrar, conta apenas minutos completos e preserva o progresso manual já registrado.",Modifier.weight(1f),color=Muted,fontSize=11.sp,lineHeight=16.sp);TextButton({vm.run{vm.repo.endFocus(false)}}){Text("Descartar sessão",color=Muted,fontSize=12.sp)}}
+        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp),verticalAlignment=Alignment.CenterVertically){SagaButton(if(f.startedAt>0)"Pausar" else "Retomar",{vm.run{vm.repo.pauseFocus()}},Modifier.weight(1f),secondary=true);Action("Registrar",{vm.run{vm.repo.endFocus(true)}},Modifier.weight(1f),ceremonial=largePlate)}
+        TextButton({ vm.run { vm.repo.endFocus(false) } }, Modifier.align(Alignment.End)) {
+            Text("Descartar sessão", color = Muted, fontSize = 12.sp)
+        }
+        Text(footer, color = Muted, fontSize = 11.sp, lineHeight = 16.sp)
     }
 }
 @Composable fun HabitsScreen(s:GameState,vm:GameViewModel,onAdd:()->Unit,onEdit:(Habit)->Unit,onProgress:(Habit,HabitRecord?)->Unit,onFocus:(Habit)->Unit,onExplore:()->Unit={},onPlanner:()->Unit={},onAnalysis:()->Unit={},onHistory:()->Unit={}){

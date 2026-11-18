@@ -46,6 +46,7 @@ fun PlannerScreen(
     val start = LocalDate.parse(week)
     val days = (0..6).map { start.plusDays(it.toLong()).toString() }
     val daySummary = remember(s, selected) { agendaDay(s, selected) }
+    val blockFocus = remember(s.focusSessions, s.timeBlocks) { timeBlockFocus(s) }
     val due = daySummary.habits
     val done = due.count { s.record(it.id, selected)?.complete == true }
     val dayShape = CutCornerShape(topStart = 6.dp, topEnd = 2.dp, bottomEnd = 6.dp, bottomStart = 2.dp)
@@ -352,7 +353,8 @@ fun PlannerScreen(
             item { SectionHeader("Blocos de Tempo", "Tempo planejado comparado ao foco efetivo") }
             items(daySummary.blocks, key = { "block:${it.id}" }) { b ->
                 val plannedMin = timeBlockMinutes(b)
-                val actualMin = timeBlockActualMinutes(s, b)
+                val measured = blockFocus[b.id] ?: BlockFocus()
+                val actualMin = measured.minutes
                 val overlap = b.id in daySummary.overlappingBlockIds
                 val linkLabel = when {
                     b.taskId.isNotBlank() -> s.pathTasks.find { it.id == b.taskId }?.title
@@ -373,10 +375,11 @@ fun PlannerScreen(
                         }
                         if (overlap) StatusSeal("Sobreposto", Gold)
                     }
-                    Text("Planejado: $plannedMin min · Foco real: $actualMin min", color = if (actualMin > 0) Violet else Muted, fontSize = 12.sp)
+                    Text("Planejado: $plannedMin min · ${if (measured.uncertain) "Foco comprovado: ≥" else "Foco real: "}$actualMin min", color = if (actualMin > 0) Violet else Muted, fontSize = 12.sp)
+                    if (measured.uncertain) Text("Parte da sessão não tem horário efetivo comprovável.", color = Muted, fontSize = 11.sp)
                     FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (b.pathId.isNotBlank() || b.taskId.isNotBlank()) {
-                            TextButton({ onStartPathFocus(b.pathId, b.taskId, b.title) }, enabled = s.focus == null) {
+                            TextButton({ onStartPathFocus(b.pathId, b.taskId, b.title) }, enabled = s.focus == null && (b.taskId.isBlank() || s.pathTasks.any { it.id == b.taskId && !it.archived && (b.pathId.isBlank() || it.pathId == b.pathId) })) {
                                 Text("Iniciar foco", color = Violet, fontSize = 12.sp)
                             }
                         }
@@ -395,7 +398,7 @@ fun PlannerScreen(
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Checkbox(
                             checked = t.completed,
-                            onCheckedChange = { vm.run { vm.repo.toggleTask(t.id) } },
+                            onCheckedChange = { checked -> vm.run { vm.repo.toggleTask(t.id, checked) } },
                             modifier = Modifier.size(48.dp).semantics { contentDescription = "Alternar ${t.title}" }
                         )
                         Column(Modifier.weight(1f).clickable(enabled = parentPath != null) { parentPath?.let { onOpenPath(it.id) } }) {
@@ -527,8 +530,7 @@ fun PlannerScreen(
             s = s,
             onDismiss = { blockEditor = null },
             onSave = { updated ->
-                vm.run { vm.repo.saveTimeBlock(updated) }
-                blockEditor = null
+                vm.run { vm.repo.saveTimeBlock(updated); blockEditor = null }
             }
         )
     }
@@ -538,8 +540,7 @@ fun PlannerScreen(
             initial = ev,
             onDismiss = { eventEditor = null },
             onSave = { updated ->
-                vm.run { vm.repo.saveEvent(updated) }
-                eventEditor = null
+                vm.run { vm.repo.saveEvent(updated); eventEditor = null }
             }
         )
     }
@@ -765,9 +766,11 @@ fun InboxScreen(
             stages = s.pathStages,
             onDismiss = { triageTaskItem = null },
             onConfirm = { task, subtasks ->
-                vm.run { vm.repo.triageInboxToTask(item.id, task, subtasks) }
-                triageTaskItem = null
-                if (task.pathId.isNotBlank()) onOpenPath(task.pathId)
+                vm.run {
+                    vm.repo.triageInboxToTask(item.id, task, subtasks)
+                    triageTaskItem = null
+                    if (task.pathId.isNotBlank()) onOpenPath(task.pathId)
+                }
             }
         )
     }
@@ -777,8 +780,7 @@ fun InboxScreen(
             initial = AgendaEvent(title = item.title, description = item.notes, date = today()),
             onDismiss = { triageEventItem = null },
             onSave = { ev ->
-                vm.run { vm.repo.triageInboxToEvent(item.id, ev) }
-                triageEventItem = null
+                vm.run { vm.repo.triageInboxToEvent(item.id, ev); triageEventItem = null }
             }
         )
     }
@@ -932,7 +934,7 @@ fun PendingCenterScreen(
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Checkbox(
                         checked = t.completed,
-                        onCheckedChange = { vm.run { vm.repo.toggleTask(t.id) } },
+                        onCheckedChange = { checked -> vm.run { vm.repo.toggleTask(t.id, checked) } },
                         modifier = Modifier.size(48.dp).semantics { contentDescription = "Alternar ${t.title}" }
                     )
                     Column(Modifier.weight(1f).clickable(enabled = parent != null) { parent?.let { onOpenPath(it.id) } }) {
@@ -974,8 +976,7 @@ fun PendingCenterScreen(
             stages = s.pathStages,
             onDismiss = { quickTaskDialog = false },
             onSave = { task ->
-                vm.run { vm.repo.saveTask(task) }
-                quickTaskDialog = false
+                vm.run { vm.repo.saveTask(task); quickTaskDialog = false }
             }
         )
     }

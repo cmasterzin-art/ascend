@@ -295,4 +295,73 @@ class PathsAndAgendaUiTest {
         compose.onNodeWithText("Central de Pendências").assertIsDisplayed()
         shot("pendencias-320-170")
     }
+
+    @Test
+    fun habitFocusControlsAreVisibleInitiallyAndSurviveActivityRecreation() {
+        seedWorkspace()
+        val habit = Habit(id = "focus-1701", name = "Estudo em silêncio", type = 2, target = 25)
+        vm.run {
+            app.repository.habit(habit)
+            app.repository.startFocus(habit, 25)
+        }
+        wait { app.repository.state.value!!.focus != null }
+        compose.onNodeWithTag("focus_card").assertIsDisplayed()
+        compose.onNodeWithText("Pausar").assertIsDisplayed()
+        compose.onNodeWithText("Registrar").assertIsDisplayed()
+        shot("foco-habito-411-ativo-1701")
+        val id = app.repository.state.value!!.focus!!.sessionId
+        compose.onNodeWithText("Pausar").performClick()
+        wait { app.repository.state.value!!.focus?.startedAt == 0L }
+        compose.activityRule.scenario.recreate()
+        compose.onNodeWithText("Retomar").assertIsDisplayed()
+        assertEquals(id, app.repository.state.value!!.focus!!.sessionId)
+        shot("foco-habito-411-pausado-1701")
+        compose.onNodeWithText("Descartar sessão").performClick()
+        wait { app.repository.state.value!!.focus == null }
+        compose.onNodeWithTag("focus_card").assertDoesNotExist()
+    }
+
+    @Test
+    @Config(qualifiers = "w360dp-h800dp-mdpi")
+    fun pathFocusAt360DpShowsBothControls() {
+        seedWorkspace()
+        val path = app.repository.state.value!!.paths.first { it.state == 1 }
+        vm.run { app.repository.startPathFocus(pathId = path.id, minutes = 25) }
+        wait { app.repository.state.value!!.focus != null }
+        compose.onNodeWithText("Pausar").assertIsDisplayed()
+        compose.onNodeWithText("Registrar").assertIsDisplayed()
+        shot("foco-projeto-360-1701")
+        compose.activityRule.scenario.moveToState(androidx.lifecycle.Lifecycle.State.CREATED)
+        compose.activityRule.scenario.moveToState(androidx.lifecycle.Lifecycle.State.RESUMED)
+        compose.onNodeWithText("Pausar").assertIsDisplayed()
+        assertEquals(path.id, app.repository.state.value!!.focus!!.pathId)
+    }
+
+    @Test
+    @Config(qualifiers = "w320dp-h740dp-mdpi")
+    fun taskFocusAt320DpWithLargeTextCanBeRegistered() {
+        seedWorkspace()
+        vm.theme("light")
+        vm.setting("minimal", true)
+        wait { vm.appearance.value == "light" && vm.minimal.value }
+        compose.runOnIdle {
+            compose.activity.setContent {
+                val density = LocalDensity.current
+                CompositionLocalProvider(LocalDensity provides Density(density.density, 1.3f)) { Ascend() }
+            }
+        }
+        val title = "Planejar a arquitetura do guia nórdico e revisar os passos de preparação do próximo trimestre"
+        vm.run {
+            val task = app.repository.state.value!!.pathTasks.first()
+            app.repository.saveTask(task.copy(title = title))
+            app.repository.startPathFocus(taskId = task.id, minutes = 25)
+        }
+        wait { app.repository.state.value!!.focus?.targetLabel == title }
+        compose.onNodeWithTag("focus_card").assertIsDisplayed()
+        shot("foco-tarefa-320-fonte130-1701")
+        compose.onNodeWithText("Registrar").performScrollTo().performClick()
+        wait { app.repository.state.value!!.focus == null }
+        assertTrue(app.repository.state.value!!.focusSessions.single().registered)
+        shot("foco-tarefa-320-encerrado-1701")
+    }
 }
