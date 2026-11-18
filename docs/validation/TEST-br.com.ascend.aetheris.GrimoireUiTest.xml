@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.GrimoireUiTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-18T02:27:28" hostname="ip-10-0-129-75" time="8.344">
+<testsuite name="br.com.ascend.aetheris.GrimoireUiTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-18T02:42:21" hostname="runnervmccnms" time="11.148">
   <properties/>
-  <testcase name="personalizeTemplateCompleteEditAndKeepOriginalReward" classname="br.com.ascend.aetheris.GrimoireUiTest" time="3.267"/>
-  <testcase name="suggestionsCanBeSelectedDismissedAndRestored" classname="br.com.ascend.aetheris.GrimoireUiTest" time="1.258"/>
-  <testcase name="routinePreviewAndPartialSelectionWorkOnNarrowScreen" classname="br.com.ascend.aetheris.GrimoireUiTest" time="1.867"/>
-  <testcase name="buildingStagesHaveDifferentPaintingsAndPersistentState" classname="br.com.ascend.aetheris.GrimoireUiTest" time="1.95"/>
+  <testcase name="personalizeTemplateCompleteEditAndKeepOriginalReward" classname="br.com.ascend.aetheris.GrimoireUiTest" time="4.156"/>
+  <testcase name="suggestionsCanBeSelectedDismissedAndRestored" classname="br.com.ascend.aetheris.GrimoireUiTest" time="1.611"/>
+  <testcase name="routinePreviewAndPartialSelectionWorkOnNarrowScreen" classname="br.com.ascend.aetheris.GrimoireUiTest" time="2.85"/>
+  <testcase name="buildingStagesHaveDifferentPaintingsAndPersistentState" classname="br.com.ascend.aetheris.GrimoireUiTest" time="2.53"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

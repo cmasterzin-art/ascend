@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.ProgressionTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-18T02:28:06" hostname="ip-10-0-129-75" time="0.003">
+<testsuite name="br.com.ascend.aetheris.ProgressionTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-18T02:43:07" hostname="runnervmccnms" time="0.003">
   <properties/>
   <testcase name="questOccurrencesFilterRealRecords" classname="br.com.ascend.aetheris.ProgressionTest" time="0.001"/>
   <testcase name="proportionalRewardsAreAbsoluteAndOverflowSafe" classname="br.com.ascend.aetheris.ProgressionTest" time="0.0"/>

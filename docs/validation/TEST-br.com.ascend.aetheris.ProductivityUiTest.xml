@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.ProductivityUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-18T02:28:01" hostname="ip-10-0-129-75" time="4.958">
+<testsuite name="br.com.ascend.aetheris.ProductivityUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-18T02:43:01" hostname="runnervmccnms" time="5.494">
   <properties/>
-  <testcase name="narrowPlannerAndAnalyticsUseTheRealLightThemeWithLargeText" classname="br.com.ascend.aetheris.ProductivityUiTest" time="0.71"/>
-  <testcase name="plannerExceptionsFlowIntoJourneyWidgetAndAnalyses" classname="br.com.ascend.aetheris.ProductivityUiTest" time="2.147"/>
-  <testcase name="actualFocusControlsCreateAPersistentSessionWithoutExtraXp" classname="br.com.ascend.aetheris.ProductivityUiTest" time="2.101"/>
+  <testcase name="narrowPlannerAndAnalyticsUseTheRealLightThemeWithLargeText" classname="br.com.ascend.aetheris.ProductivityUiTest" time="0.908"/>
+  <testcase name="plannerExceptionsFlowIntoJourneyWidgetAndAnalyses" classname="br.com.ascend.aetheris.ProductivityUiTest" time="2.239"/>
+  <testcase name="actualFocusControlsCreateAPersistentSessionWithoutExtraXp" classname="br.com.ascend.aetheris.ProductivityUiTest" time="2.347"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

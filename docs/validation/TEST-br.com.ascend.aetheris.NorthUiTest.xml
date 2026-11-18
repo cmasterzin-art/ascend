@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.NorthUiTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-18T02:27:36" hostname="ip-10-0-129-75" time="3.53">
+<testsuite name="br.com.ascend.aetheris.NorthUiTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-18T02:42:32" hostname="runnervmccnms" time="4.274">
   <properties/>
-  <testcase name="createSagaThroughEditorAndClaimConsolidatedReward" classname="br.com.ascend.aetheris.NorthUiTest" time="2.334"/>
-  <testcase name="sagaWithLargeTextAndReducedMotion" classname="br.com.ascend.aetheris.NorthUiTest" time="1.196"/>
+  <testcase name="createSagaThroughEditorAndClaimConsolidatedReward" classname="br.com.ascend.aetheris.NorthUiTest" time="2.787"/>
+  <testcase name="sagaWithLargeTextAndReducedMotion" classname="br.com.ascend.aetheris.NorthUiTest" time="1.487"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
