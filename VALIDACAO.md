@@ -1,3 +1,11 @@
+# ASCEND 1.6.9.19 — validação
+
+18/11/2026. Base `feat/ascend-1.6.9.15` (`e85e7bc`). Branch `feat/ascend-1.6.9.19`. GitHub Actions execução `44256122496` (commit `5e92407` / `69de462`): `testDebugUnitTest assembleDebug lintDebug`: BUILD SUCCESSFUL (`56` tarefas executadas). **135 testes aprovados**, zero falhas, erros ou ignorados; `lintDebug` com **0 erros e 23 avisos**.
+
+APK publicado em [downloads/ASCEND-1.6.9.19.apk](downloads/ASCEND-1.6.9.19.apk?raw=true) com `23756298` bytes, `versionName 1.6.9.19` / `versionCode 19`, SHA-256 `918a78246d54a906114e07e59c11fdfb5e1dcbcadfb165b9a8a422d8f58dafcc`; `zipalign -c 4` aprovado; assinatura v2 válida com certificado oficial preservado `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`; sem `INTERNET`. Room v6, backup v8, repositórios e todos os recursos gráficos anteriores preservados.
+
+Biblioteca pictórica original com **20 novos recursos WebP** (`1` prancha conceitual em `docs/art/concepts/biblioteca-forja-16919.webp` e `19` recursos de produção em `app/src/main/res/drawable-nodpi/` somando `855.218` bytes) gerados via `image-generator` antes da integração em código. Renderizações reais Robolectric de 25 telas/variantes em `docs/screenshots/v1.6.9.19`, incluindo a prancha da biblioteca (`prancha-biblioteca-16919.png`), widgets claro/escuro/compacto/expandido e cenários `320 dp` / fonte `130%` (`jornada-320-texto130.png`, `inventario-320-texto130.png`, `saga-320-texto130.png`, `planejador-320-160.png`, `widget-estreito-130-151.png`). Sem teste físico de instalação, launcher ou TalkBack. Catálogo técnico, prancha, comparações `1.6.9.15 × 1.6.9.19` e limites em [docs/VISUAL-1.6.9.19.md](docs/VISUAL-1.6.9.19.md) e [docs/art/README.md](docs/art/README.md). Logs em [docs/validation/BUILD-1.6.9.19.txt](docs/validation/BUILD-1.6.9.19.txt), [docs/validation/LINT-1.6.9.19.txt](docs/validation/LINT-1.6.9.19.txt) e [docs/validation/APK-1.6.9.19.txt](docs/validation/APK-1.6.9.19.txt).
+
 # ASCEND 1.6.9.15 — validação
 
 18/11/2026. Base `feat/ascend-1.6.9.10` (`b13904c`). Branch `feat/ascend-1.6.9.15`. GitHub Actions execução `44240234101` (commit `954bbd0` / `e85e7bc`): `testDebugUnitTest assembleDebug lintDebug`: BUILD SUCCESSFUL (`52` tarefas executadas). **135 testes aprovados**, zero falhas, erros ou ignorados; `lintDebug` com **0 erros e 22 avisos**.
