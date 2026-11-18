@@ -3,6 +3,8 @@ package br.com.ascend.aetheris
 import androidx.room.*
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.Instant
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 
 val pathStates = listOf("Planejado", "Em andamento", "Pausado", "Concluído", "Arquivado", "Cancelado")
@@ -154,25 +156,21 @@ fun pathDeadlineDays(path: PersonalPath, refDate: String = today()): Long? =
     if (path.deadline.isBlank()) null
     else ChronoUnit.DAYS.between(LocalDate.parse(refDate), LocalDate.parse(path.deadline))
 
-fun pathFocusMinutes(s: GameState, pathId: String): Long {
-    val taskIds = s.pathTasks.filter { it.pathId == pathId }.mapTo(HashSet()) { it.id }
-    val seconds = s.focusSessions.filter {
-        it.registered && (it.pathId == pathId || (it.taskId.isNotBlank() && it.taskId in taskIds))
-    }.sumOf { it.elapsedSeconds }
-    return seconds / 60L
-}
+// A missing historical path is unassigned. A task's current parent is never a substitute.
+fun pathFocusMinutes(s: GameState, pathId: String): Long =
+    if (pathId.isBlank()) 0 else s.focusSessions
+        .filter { it.registered && it.pathId == pathId }.sumOf { it.elapsedSeconds } / 60
 
 fun taskFocusMinutes(s: GameState, taskId: String): Long =
-    s.focusSessions.filter { it.registered && it.taskId == taskId }.sumOf { it.elapsedSeconds } / 60L
+    if (taskId.isBlank()) 0 else s.focusSessions
+        .filter { it.registered && it.taskId == taskId }.sumOf { it.elapsedSeconds } / 60
 
-fun pathFocusMinutesOnDate(s: GameState, pathId: String, date: String): Long {
-    val taskIds = s.pathTasks.filter { it.pathId == pathId }.mapTo(HashSet()) { it.id }
-    return s.focusSessions.filter {
-        it.registered && it.date == date && (it.pathId == pathId || (it.taskId.isNotBlank() && it.taskId in taskIds))
-    }.sumOf { it.elapsedSeconds } / 60L
-}
+fun pathFocusMinutesOnDate(s: GameState, pathId: String, date: String): Long =
+    if (pathId.isBlank()) 0 else s.focusSessions
+        .filter { it.registered && it.date == date && it.pathId == pathId }
+        .sumOf { it.elapsedSeconds } / 60
 
-fun isPathInactiveForPending(state: Int): Boolean = state in listOf(4, 5)
+fun isPathInactiveForPending(state: Int): Boolean = state !in 0..1
 
 fun isTaskActivePending(s: GameState, t: PathTask): Boolean {
     if (t.archived) return false
@@ -233,16 +231,88 @@ fun timeBlockMinutes(b: TimeBlock): Int {
     return ChronoUnit.MINUTES.between(start, end).toInt().coerceAtLeast(0)
 }
 
-fun timeBlockActualMinutes(s: GameState, b: TimeBlock): Long {
-    val sessions = s.focusSessions.filter { it.registered && it.date == b.date }
-    val seconds = when {
-        b.taskId.isNotBlank() -> sessions.filter { it.taskId == b.taskId }.sumOf { it.elapsedSeconds }
-        b.habitId.isNotBlank() -> sessions.filter { it.habitId == b.habitId }.sumOf { it.elapsedSeconds }
-        b.pathId.isNotBlank() -> return pathFocusMinutesOnDate(s, b.pathId, b.date)
-        else -> 0L
-    }
-    return seconds / 60L
+data class BlockFocus(val seconds: Long = 0, val uncertain: Boolean = false) {
+    val minutes: Long get() = seconds / 60
 }
+
+private data class BlockWindow(val block: TimeBlock, val start: Long, val end: Long) {
+    val specificity: Int get() = if (block.taskId.isNotBlank() || block.habitId.isNotBlank()) 0 else 1
+
+    fun matches(session: FocusSession): Boolean = with(block) {
+        when {
+            taskId.isNotBlank() -> session.taskId == taskId && (pathId.isBlank() || session.pathId == pathId)
+            habitId.isNotBlank() -> session.habitId == habitId
+            pathId.isNotBlank() -> session.pathId == pathId
+            else -> false
+        }
+    }
+}
+
+/**
+ * Assign overlapping time to the most specific target, then earliest start and stable ID.
+ * Session v7 has a wall-clock envelope and total effective seconds, but no pause intervals.
+ * An allocated window can prove only its duration minus all potentially idle time.
+ */
+fun timeBlockFocus(s: GameState, zone: ZoneId = ZoneId.systemDefault()): Map<String, BlockFocus> {
+    fun boundary(date: LocalDate, text: String): Long? {
+        val local = date.atTime(LocalTime.parse(text))
+        val offset = zone.rules.getValidOffsets(local).singleOrNull() ?: return null
+        return local.toInstant(offset).toEpochMilli()
+    }
+    val totals = mutableMapOf<String, BlockFocus>()
+    val windows = s.timeBlocks.mapNotNull { block ->
+        if (block.taskId.isBlank() && block.habitId.isBlank() && block.pathId.isBlank()) return@mapNotNull null
+        val date = LocalDate.parse(block.date)
+        val start = boundary(date, block.startTime)
+        val end = boundary(date, block.endTime)
+        if (start == null || end == null) {
+            totals[block.id] = BlockFocus(uncertain = true)
+            return@mapNotNull null
+        }
+        if (start < end) BlockWindow(block, start, end) else null
+    }
+    val byDate = windows.groupBy { it.block.date }
+    for (session in s.focusSessions) {
+        if (!session.registered || session.elapsedSeconds <= 0 || session.startedAt <= 0) continue
+        val firstDay = Instant.ofEpochMilli(session.startedAt).atZone(zone).toLocalDate()
+        val lastDay = Instant.ofEpochMilli(session.endedAt).atZone(zone).toLocalDate()
+        val validClock = firstDay.toString() == session.date && session.endedAt >= session.startedAt &&
+            session.elapsedSeconds <= (session.endedAt - session.startedAt) / 1000
+        if (!validClock) {
+            byDate[session.date].orEmpty().filter { it.matches(session) }.forEach {
+                totals[it.block.id] = totals.getOrDefault(it.block.id, BlockFocus()).copy(uncertain = true)
+            }
+            continue
+        }
+        val days = if (firstDay == lastDay) byDate[session.date].orEmpty()
+        else byDate.filterKeys { it >= firstDay.toString() && it <= lastDay.toString() }.values.flatten()
+        val candidates = days.filter {
+            it.matches(session) && it.start < session.endedAt && it.end > session.startedAt
+        }.sortedWith(compareBy<BlockWindow> { it.specificity }.thenBy { it.start }.thenBy { it.block.id })
+        if (candidates.isEmpty()) continue
+
+        val cuts = candidates.flatMap {
+            listOf(maxOf(it.start, session.startedAt), minOf(it.end, session.endedAt))
+        }.distinct().sorted()
+        val assigned = mutableMapOf<String, Long>()
+        for ((from, to) in cuts.zipWithNext()) {
+            val owner = candidates.firstOrNull { it.start <= from && it.end >= to } ?: continue
+            assigned[owner.block.id] = assigned.getOrDefault(owner.block.id, 0L) + to - from
+        }
+        val idleMs = session.endedAt - session.startedAt - session.elapsedSeconds * 1000
+        for ((id, windowMs) in assigned) {
+            val guaranteed = (windowMs - idleMs).coerceAtLeast(0) / 1000
+            val possible = minOf(windowMs / 1000, session.elapsedSeconds)
+            val old = totals.getOrDefault(id, BlockFocus())
+            totals[id] = BlockFocus(old.seconds + guaranteed, old.uncertain || possible > guaranteed)
+        }
+    }
+    return totals
+}
+
+fun timeBlockActualMinutes(s: GameState, b: TimeBlock): Long =
+    timeBlockFocus(if (s.timeBlocks.any { it.id == b.id }) s else s.copy(timeBlocks = s.timeBlocks + b))
+        .getOrDefault(b.id, BlockFocus()).minutes
 
 fun timeBlockOverlaps(blocks: List<TimeBlock>): Set<String> {
     if (blocks.size < 2) return emptySet()
@@ -279,13 +349,13 @@ data class AgendaDaySummary(
 fun agendaDay(s: GameState, date: String): AgendaDaySummary {
     val habits = s.due(date).sortedWith(compareBy<Habit> { it.time.ifBlank { "99:99" } }.thenBy { it.position })
     val tasks = s.pathTasks.filter {
-        isTaskActivePending(s, it) && (it.scheduledDate == date || it.deadline == date)
+        (isTaskActivePending(s, it) || it.completed && !it.archived) && (it.scheduledDate == date || it.deadline == date)
     }.sortedWith(compareBy<PathTask> { it.completed }.thenBy { it.scheduledTime.ifBlank { "99:99" } }.thenByDescending { it.priority }.thenBy { it.position })
-    val blocks = s.timeBlocks.filter { it.date == date }.sortedBy { it.startTime }
+    val blocks = s.timeBlocks.filter { it.date == date }.sortedBy { LocalTime.parse(it.startTime) }
     val overlaps = timeBlockOverlaps(blocks)
     val events = s.agendaEvents.filter { !it.archived && it.date == date }
-        .sortedWith(compareBy<AgendaEvent> { it.completed }.thenBy { it.startTime.ifBlank { "99:99" } })
-    val deadlines = s.paths.filter { it.state !in listOf(3, 4, 5) && it.deadline == date }
+        .sortedWith(compareBy<AgendaEvent> { it.completed }.thenBy { if (it.startTime.isBlank()) LocalTime.MAX else LocalTime.parse(it.startTime) })
+    val deadlines = s.paths.filter { !isPathInactiveForPending(it.state) && it.deadline == date }
     return AgendaDaySummary(date, habits, tasks, blocks, overlaps, events, deadlines)
 }
 
@@ -309,7 +379,7 @@ fun monthMarker(s: GameState, date: String): MonthDayMarker {
     val tasks = s.pathTasks.count { isTaskActivePending(s, it) && !it.completed && (it.scheduledDate == date || it.deadline == date) }
     val blocks = s.timeBlocks.count { it.date == date }
     val events = s.agendaEvents.count { !it.archived && it.date == date }
-    val hasDeadline = s.paths.any { it.state !in listOf(3, 4, 5) && it.deadline == date }
+    val hasDeadline = s.paths.any { !isPathInactiveForPending(it.state) && it.deadline == date }
     return MonthDayMarker(date, habits.size, done, tasks, blocks, events, hasDeadline, date in s.restDates)
 }
 
@@ -321,14 +391,24 @@ data class RumosDoDia(
     val plannedBlocksCount: Int,
     val pendingTodayCount: Int,
     val overdueCount: Int,
-    val inboxCount: Int
+    val inboxCount: Int,
+    val eventInProgress: Boolean,
+    val blockInProgress: Boolean,
+    val untimedEvents: List<AgendaEvent>
 )
 
-fun rumosDoDia(s: GameState, refDate: String = today()): RumosDoDia {
+fun rumosDoDia(s: GameState, refDate: String = today(), now: LocalTime = LocalTime.now()): RumosDoDia {
     val day = agendaDay(s, refDate)
     val buckets = pendingBuckets(s, refDate)
-    val nextEvent = day.events.firstOrNull { !it.completed }
-    val nextBlock = day.blocks.firstOrNull()
+    val openEvents = day.events.filterNot { it.completed }
+    val nextEvent = openEvents.firstOrNull {
+        if (it.startTime.isBlank()) false else {
+            val start = LocalTime.parse(it.startTime)
+            val end = it.endTime.takeIf(String::isNotBlank)?.let(LocalTime::parse)
+            start >= now || end != null && now < end
+        }
+    }
+    val nextBlock = day.blocks.firstOrNull { LocalTime.parse(it.endTime) > now }
     val priorityTasks = (buckets.overdueTasks + buckets.todayTasks + buckets.highPriorityTasks)
         .distinctBy { it.id }
         .take(3)
@@ -346,6 +426,9 @@ fun rumosDoDia(s: GameState, refDate: String = today()): RumosDoDia {
         plannedBlocksCount = day.blocks.size,
         pendingTodayCount = pendingTodayCount,
         overdueCount = buckets.overdueTasks.size,
-        inboxCount = inboxCount
+        inboxCount = inboxCount,
+        eventInProgress = nextEvent?.let { it.endTime.isNotBlank() && LocalTime.parse(it.startTime) <= now && now < LocalTime.parse(it.endTime) } == true,
+        blockInProgress = nextBlock?.let { LocalTime.parse(it.startTime) <= now } == true,
+        untimedEvents = openEvents.filter { it.startTime.isBlank() }
     )
 }
