@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.ExplorationUiTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:02:21" hostname="ip-10-0-133-16" time="15.849">
+<testsuite name="br.com.ascend.aetheris.ExplorationUiTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:40:26" hostname="runnervmccnms" time="28.713">
   <properties/>
-  <testcase name="narrowLightRegionAndLockedPlace" classname="br.com.ascend.aetheris.ExplorationUiTest" time="4.898"/>
-  <testcase name="forestExpeditionsBossAndMemoriesArePlayable" classname="br.com.ascend.aetheris.ExplorationUiTest" time="10.951"/>
+  <testcase name="narrowLightRegionAndLockedPlace" classname="br.com.ascend.aetheris.ExplorationUiTest" time="12.656"/>
+  <testcase name="forestExpeditionsBossAndMemoriesArePlayable" classname="br.com.ascend.aetheris.ExplorationUiTest" time="16.057"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
