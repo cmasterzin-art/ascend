@@ -2,7 +2,7 @@ name: Compilar ASCEND
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'feat/ascend-1.6.9']
+    branches: [main, 'feat/ascend-1.6.9.10']
 permissions:
   contents: write
 jobs:
@@ -12,14 +12,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Conferir APK já compilado e testado
-        if: hashFiles('downloads/ASCEND-1.6.9.apk.sha256') != ''
+        if: hashFiles('downloads/ASCEND-1.6.9.10.apk.sha256') != ''
         working-directory: downloads
-        run: sha256sum -c ASCEND-1.6.9.apk.sha256
+        run: sha256sum -c ASCEND-1.6.9.10.apk.sha256
       - uses: actions/upload-artifact@v4
-        if: hashFiles('downloads/ASCEND-1.6.9.apk.sha256') != ''
+        if: hashFiles('downloads/ASCEND-1.6.9.10.apk.sha256') != ''
         with:
           name: ASCEND-Android
-          path: downloads/ASCEND-1.6.9.apk
+          path: downloads/ASCEND-1.6.9.10.apk
           retention-days: 30
           if-no-files-found: error
   apk:
@@ -102,7 +102,7 @@ jobs:
       - name: Consolidar relatórios, capturas e verificação do APK
         id: verify
         run: |
-          mkdir -p docs/validation docs/screenshots/v1.6.9
+          mkdir -p docs/validation docs/screenshots/v1.6.9.10
           python3 - <<'PY'
           import glob, xml.etree.ElementTree as ET
           totals = {'tests': 0, 'failures': 0, 'errors': 0, 'skipped': 0}
@@ -110,7 +110,7 @@ jobs:
               r = ET.parse(p).getroot()
               for k in totals:
                   totals[k] += int(r.attrib.get(k, 0))
-          with open('docs/validation/BUILD-1.6.9.txt', 'w') as out:
+          with open('docs/validation/BUILD-1.6.9.10.txt', 'w') as out:
               out.write(str(totals) + '\n')
               with open('build_log.txt') as log:
                   out.write(log.read())
@@ -118,7 +118,7 @@ jobs:
           PY
           cp app/build/test-results/testDebugUnitTest/TEST-*.xml docs/validation/
           if [ -f app/build/reports/lint-results-debug.txt ]; then
-            cp app/build/reports/lint-results-debug.txt docs/validation/LINT-1.6.9.txt
+            cp app/build/reports/lint-results-debug.txt docs/validation/LINT-1.6.9.10.txt
           fi
           BT="$ANDROID_HOME/build-tools/35.0.0"
           APK="app/build/outputs/apk/debug/app-debug.apk"
@@ -131,19 +131,19 @@ jobs:
             if "$BT/zipalign" -c 4 "$APK"; then echo "Zipalign OK"; else echo "Zipalign FAIL"; fi
             "$BT/apksigner" verify --verbose --print-certs "$APK"
             "$BT/aapt2" dump permissions "$APK"
-          } > docs/validation/APK-1.6.9.txt
-          cat docs/validation/APK-1.6.9.txt
+          } > docs/validation/APK-1.6.9.10.txt
+          cat docs/validation/APK-1.6.9.10.txt
           EXPECTED="e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4"
-          if grep -qi "$EXPECTED" docs/validation/APK-1.6.9.txt; then
+          if grep -qi "$EXPECTED" docs/validation/APK-1.6.9.10.txt; then
             echo "compatible=true" >> "$GITHUB_OUTPUT"
-            cp "$APK" downloads/ASCEND-1.6.9.apk
-            (cd downloads && sha256sum ASCEND-1.6.9.apk > ASCEND-1.6.9.apk.sha256)
+            cp "$APK" downloads/ASCEND-1.6.9.10.apk
+            (cd downloads && sha256sum ASCEND-1.6.9.10.apk > ASCEND-1.6.9.10.apk.sha256)
           else
             echo "compatible=false" >> "$GITHUB_OUTPUT"
           fi
           for f in tour-jornada.png tour-habitos.png tour-missoes.png tour-sagas.png tour-heroi.png tour-inventario.png tour-atlas.png tour-cronica.png tour-memorias.png tour-widget.png cronometro-165.png jornada-320-texto130.png planejador-160.png planejador-320-160.png analises-160.png inventario-320-texto130.png saga-320-texto130.png widget-compacto-150.png widget-expandido-150.png widget-escuro-150.png widget-estreito-130-151.png; do
             if [ -f "app/build/reports/screenshots/$f" ]; then
-              cp "app/build/reports/screenshots/$f" "docs/screenshots/v1.6.9/$f"
+              cp "app/build/reports/screenshots/$f" "docs/screenshots/v1.6.9.10/$f"
             fi
           done
       - uses: actions/upload-artifact@v4
@@ -162,35 +162,35 @@ jobs:
             app/build/reports/screenshots
           retention-days: 14
       - name: Publicar capturas e validação na branch
-        if: github.ref_name == 'feat/ascend-1.6.9'
+        if: github.ref_name == 'feat/ascend-1.6.9.10'
         run: |
           rm -f build_log.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm -f --ignore-unmatch assets_chunk_*.txt build_assets*.b64
-          git add app/src/main/res/drawable-nodpi docs/art/concepts docs/validation docs/screenshots/v1.6.9
+          git add app/src/main/res/drawable-nodpi docs/art/concepts docs/validation docs/screenshots/v1.6.9.10
           if [ "${{ steps.verify.outputs.compatible }}" = "true" ]; then
-            git add downloads/ASCEND-1.6.9.apk downloads/ASCEND-1.6.9.apk.sha256
+            git add downloads/ASCEND-1.6.9.10.apk downloads/ASCEND-1.6.9.10.apk.sha256
           fi
           if ! git diff --cached --quiet; then
-            git commit -m "ci: unpack 1.6.9 binary assets and record validation and screenshots [skip ci]"
-            git pull --rebase --autostash origin feat/ascend-1.6.9
-            git push origin feat/ascend-1.6.9
+            git commit -m "ci: record 1.6.9.10 assets and record validation and screenshots [skip ci]"
+            git pull --rebase --autostash origin feat/ascend-1.6.9.10
+            git push origin feat/ascend-1.6.9.10
           fi
       - name: Registrar log de erro na branch em caso de falha
-        if: failure() && github.ref_name == 'feat/ascend-1.6.9'
+        if: failure() && github.ref_name == 'feat/ascend-1.6.9.10'
         run: |
-          mkdir -p docs/validation docs/screenshots/v1.6.9
-          if [ -f build_log.txt ]; then cp build_log.txt docs/validation/BUILD-1.6.9.txt; fi
+          mkdir -p docs/validation docs/screenshots/v1.6.9.10
+          if [ -f build_log.txt ]; then cp build_log.txt docs/validation/BUILD-1.6.9.10.txt; fi
           cp app/build/test-results/testDebugUnitTest/TEST-*.xml docs/validation/ 2>/dev/null || true
-          if [ -f app/build/reports/lint-results-debug.txt ]; then cp app/build/reports/lint-results-debug.txt docs/validation/LINT-1.6.9.txt; fi
+          if [ -f app/build/reports/lint-results-debug.txt ]; then cp app/build/reports/lint-results-debug.txt docs/validation/LINT-1.6.9.10.txt; fi
           rm -f build_log.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git rm -f --ignore-unmatch assets_chunk_*.txt build_assets*.b64
-          git add app/src/main/res/drawable-nodpi docs/art/concepts docs/validation docs/screenshots/v1.6.9
+          git add app/src/main/res/drawable-nodpi docs/art/concepts docs/validation docs/screenshots/v1.6.9.10
           if ! git diff --cached --quiet; then
             git commit -m "ci: registrar log de falha da compilacao [skip ci]"
-            git pull --rebase --autostash origin feat/ascend-1.6.9
-            git push origin feat/ascend-1.6.9
+            git pull --rebase --autostash origin feat/ascend-1.6.9.10
+            git push origin feat/ascend-1.6.9.10
           fi

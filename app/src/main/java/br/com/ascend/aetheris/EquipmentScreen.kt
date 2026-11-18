@@ -18,7 +18,9 @@ import androidx.compose.ui.semantics.*
         AetherSurface(SurfaceKind.Artifact){
             Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Eyebrow("Câmara dos equipamentos")};RuneSeal(3,Gold,Modifier.size(28.dp))}
             BoxWithConstraints(Modifier.fillMaxWidth()){
-                val portraitSize=(maxWidth-144.dp).coerceAtMost(184.dp)
+                val portraitSize=(maxWidth-144.dp).coerceAtMost(184.dp);val cold=Color(0xFFB8C7D9)
+                // A single cold shaft of light falls on the portrait; niches sit in the half-light around it.
+                Canvas(Modifier.matchParentSize()){drawRect(Brush.radialGradient(listOf(cold.copy(alpha=.13f),Color.Transparent),center=androidx.compose.ui.geometry.Offset(size.width/2,size.height*.3f),radius=size.width*.55f))}
                 Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){
                     Column(verticalArrangement=Arrangement.spacedBy(22.dp)){equipmentSlots.take(2).forEach{(kind,label)->EquipmentSlot(kind,label,s){selected=it}}}
                     ForgePortrait(s,portraitSize)
@@ -26,9 +28,8 @@ import androidx.compose.ui.semantics.*
                 }
             }
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceEvenly){equipmentSlots.drop(4).forEach{(kind,label)->EquipmentSlot(kind,label,s){selected=it}}}
-            MetricPair("${s.assets.count{it.equipped}}","equipados","${s.assets.count{a->shopItems.any{it.id==a.id}}}","na coleção")
-            SagaDivider(color=OldBronze)
-            Text("${s.assets.count{it.equipped}} equipados · ${s.assets.count{a->shopItems.any{it.id==a.id}}} artefatos na coleção",color=Muted,fontSize=11.sp)
+            Hairline()
+            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(20.dp),verticalAlignment=Alignment.Bottom){Row(verticalAlignment=Alignment.Bottom,horizontalArrangement=Arrangement.spacedBy(6.dp)){Text("${s.assets.count{it.equipped}}",fontFamily=SagaFont,fontSize=22.sp);Text("equipados",color=Muted,fontSize=12.sp,modifier=Modifier.padding(bottom=3.dp))};Row(verticalAlignment=Alignment.Bottom,horizontalArrangement=Arrangement.spacedBy(6.dp)){Text("${s.assets.count{a->shopItems.any{it.id==a.id}}}",fontFamily=SagaFont,fontSize=22.sp);Text("na coleção",color=Muted,fontSize=12.sp,modifier=Modifier.padding(bottom=3.dp))}}
             Text("Seus artefatos ocupam nichos ao redor do retrato. Toque em um item equipado para inspecionar.",color=Muted,fontSize=11.sp)
         }
     }else{
@@ -64,10 +65,10 @@ import androidx.compose.ui.semantics.*
 }
 @Composable private fun EquipmentSlot(kind:String,label:String,s:GameState,select:(String)->Unit){
     val a=s.assets.find{it.kind==kind&&it.equipped};val item=shopItems.find{it.id==a?.id};val color=if(item!=null)rarityColor(rarity(item)) else ColdIron
-    Column(Modifier.width(64.dp).heightIn(min=74.dp).clip(CutCornerShape(5.dp)).background(Surface).forgeMaterial(SurfaceKind.Artifact).border(if(item!=null)1.5.dp else 1.dp,color.copy(alpha=if(item!=null).78f else .52f),CutCornerShape(5.dp)).clickable(enabled=item!=null,onClickLabel="Detalhes de ${item?.name?:label}"){select(item!!.id)}.padding(5.dp).semantics(mergeDescendants=true){contentDescription="$label: ${item?.name?:"vazio"}"},horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(3.dp)){
+    Column(Modifier.width(64.dp).heightIn(min=74.dp).clip(CutCornerShape(5.dp)).background(Brush.verticalGradient(listOf(Color(0xFF1F2327),Color(0xFF121415)))).border(if(item!=null)1.5.dp else 1.dp,color.copy(alpha=if(item!=null).8f else .4f),CutCornerShape(5.dp)).clickable(enabled=item!=null,onClickLabel="Detalhes de ${item?.name?:label}"){select(item!!.id)}.padding(5.dp).semantics(mergeDescendants=true){contentDescription="$label: ${item?.name?:"vazio"}"},horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(3.dp)){
         RelicArt(kind,color,Modifier.size(44.dp),item?.id,dim=item==null)
-        Text(when(kind){"companion"->"Aliado";"weapon"->"Arma";"outfit"->"Traje";else->label},color=if(item!=null)color else Muted,fontSize=9.sp,lineHeight=12.sp)
-        Text(if(a==null)"Vazio" else "Equipado",color=if(item!=null)color else ColdIron,fontSize=9.sp)
+        Text(when(kind){"companion"->"Aliado";"weapon"->"Arma";"outfit"->"Traje";else->label},color=if(item!=null)color else Color(0xFFC9CED4),fontSize=9.sp,lineHeight=12.sp)
+        Text(if(a==null)"Vazio" else "Equipado",color=if(item!=null)color else Color(0xFF8E98A4),fontSize=9.sp)
     }
 }
 @Composable fun SkillTree(s:GameState,vm:GameViewModel){

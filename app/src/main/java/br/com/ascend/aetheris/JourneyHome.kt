@@ -30,18 +30,17 @@ import java.util.Locale
  val day=currentDay();val rested=day in s.restDates
  val due=if(relaxed&&!rested)s.habits.filter{!it.deleted&&!it.archived&&!it.paused}.sortedBy{it.position} else s.due(day)
  val done=due.count{s.record(it.id,day)?.complete==true};var pendingOnly by remember{mutableStateOf(false)};var detail by remember{mutableStateOf<Habit?>(null)}
- val dialSize=if(LocalConfiguration.current.screenWidthDp<=340)68.dp else 78.dp
- androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxSize().testTag("journey_list").semantics{contentDescription="Central da Jornada"},contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
-  item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Eyebrow("ASCEND  /  MINHA JORNADA");Text(displayDate(day),color=Muted,fontSize=12.sp)};ClassEmblem(s.player!!.heroClass,Modifier.size(28.dp))}}
-  item{Column(Modifier.fillMaxWidth()){CompactHero(s,onPortrait);NorthDivider();Column(Modifier.fillMaxWidth().padding(top=2.dp,bottom=6.dp)){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){
-   DayDial(if(due.isEmpty())0f else done.toFloat()/due.size,if(due.isEmpty())"—" else "${done*100/due.size}%",dialSize)
-   Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)){Eyebrow(if(rested)"Dia de descanso" else "Jornada de hoje",Green);Text("$done de ${due.size}",style=MaterialTheme.typography.titleLarge);Text("${due.size-done} pendentes",fontSize=12.sp,color=Muted)}
-  };if(relaxed)Text("Modo livre · o widget mantém a agenda programada.",fontSize=11.sp,color=Muted)}}}
-  item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){listOf("Planejador" to onPlanner,"Análises" to onAnalysis,"Foco" to onHistory).forEachIndexed{i,(label,action)->
-   Column(Modifier.weight(1f).heightIn(min=48.dp).clip(CutCornerShape(4.dp)).background(if(LocalAppearance.current.dark)Color(0xFF151716) else Surface).forgeMaterial().border(1.dp,ColdIron.copy(alpha=.22f),CutCornerShape(4.dp)).clickable(onClick=action).padding(vertical=7.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(4.dp)){
-    CarvedGlyph(listOf(Glyph.Planner,Glyph.Analysis,Glyph.Focus)[i],Gold,size=18.dp);Text(label,color=Ink,fontSize=11.sp,letterSpacing=.3.sp)
-   }
-  }}}
+  val dialSize=if(LocalConfiguration.current.screenWidthDp<=340)56.dp else 66.dp
+  androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxSize().testTag("journey_list").semantics{contentDescription="Central da Jornada"},contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
+   item{Box(Modifier.fillMaxWidth()){
+    CompactHero(s,onPortrait)
+    // 1.6.9.10: the header floats over the sky of the fjord instead of occupying its own band.
+    Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Eyebrow("ASCEND  /  MINHA JORNADA");Text(displayDate(day),color=Muted,fontSize=12.sp)};ClassEmblem(s.player!!.heroClass,Modifier.size(26.dp))}
+   }}
+   item{Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(14.dp)){
+    DayLedger(done,due.size,rested,relaxed,dialSize)
+    ShortcutStrip(listOf(Triple("Planejador",Glyph.Planner,onPlanner),Triple("Análises",Glyph.Analysis,onAnalysis),Triple("Foco",Glyph.Focus,onHistory)))
+   }}
   s.focus?.let{f->item{FocusCard(f,s,vm)}}
   item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){SectionHeader("Seus próximos passos","Conclua com um toque; detalhes ao selecionar o nome.")};IconButton(onAdd){Icon(Icons.Default.Add,"Criar hábito")}};if(due.size>1||done>0)ChipRow(listOf("Todos (${due.size})","Pendentes (${due.size-done})"),if(pendingOnly)1 else 0,{pendingOnly=it==1})}
   val visible=due.filter{!pendingOnly||s.record(it.id,day)?.complete!=true}.sortedBy{s.record(it.id,day)?.complete==true}

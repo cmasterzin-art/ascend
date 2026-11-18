@@ -20,7 +20,8 @@ import kotlin.math.*
 val Parchment=Color(0xFFBDB196)
 val Sepia=Color(0xFF29251E)
 @Composable fun Manuscript(content:@Composable ColumnScope.()->Unit){AetherSurface(SurfaceKind.Parchment){content()}}
-@Composable fun SagaCover(count:Int){AetherSurface(SurfaceKind.Ceremonial){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){Box(Modifier.size(62.dp),contentAlignment=Alignment.Center){Image(painterResource(R.drawable.forge_brooch),null,Modifier.matchParentSize());CeremonialSeal(SealKind.Saga,true,Modifier.size(34.dp))};Column(Modifier.weight(1f)){Text("Livro de missões",style=MaterialTheme.typography.titleLarge);Text("$count recompensas resgatadas · contratos e sagas",color=Muted,fontSize=12.sp)}}}}
+/** 1.6.9.10 · The codex binding: one slim leather spine with the saga seal, instead of a full ceremonial panel. */
+@Composable fun SagaCover(count:Int){Row(Modifier.fillMaxWidth().clip(CutCornerShape(4.dp)).background(if(LocalAppearance.current.dark)Color(0xFF231B16) else Color(0xFFE1D5BF)).forgeMaterial(SurfaceKind.Ceremonial).padding(start=20.dp,end=14.dp,top=10.dp,bottom=10.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){Box(Modifier.size(44.dp),contentAlignment=Alignment.Center){Image(painterResource(R.drawable.forge_brooch),null,Modifier.matchParentSize());CeremonialSeal(SealKind.Saga,true,Modifier.size(24.dp))};Column(Modifier.weight(1f)){Text("Livro de missões",style=MaterialTheme.typography.titleLarge);Text("$count recompensas resgatadas · contratos e sagas",color=Muted,fontSize=12.sp)}}}
 @Composable fun rarityColor(n:Int)=listOf(Muted,Green,Blue,Violet,Gold)[n]
 /** A sprite atlas is sampled at draw time; original image files remain intact. */
 @Composable fun ArtTile(resource:Int,index:Int,rows:Int,modifier:Modifier=Modifier){
@@ -36,13 +37,16 @@ val Sepia=Color(0xFF29251E)
 @Composable fun RelicArt(kind:String,color:Color,modifier:Modifier=Modifier,itemId:String?=null,dim:Boolean=false){
     val index=when(kind){"head"->0;"outfit"->1;"accessory"->2;"weapon"->3;"companion"->when(itemId){"lyra"->5;"ignis"->6;else->4};"frame"->7;else->8}
     val variant=when(itemId){"will-helm"->0;"armor"->1;"ember-amulet"->2;"dawn-outfit"->3;"rune-frame"->4;"night"->5;"lantern"->6;"craft-blade"->7;"traveler-helm"->8;else->null}
-    Box(modifier.size(70.dp).clip(CutCornerShape(3.dp)).background(Color(0xFF0C0D0D))){
-        Box(Modifier.matchParentSize().padding(3.dp).alpha(if(dim).28f else 1f)){
+    // 1.6.9.10: niches are lit from above like a stone alcove; empty niches keep a legible carved silhouette.
+    Box(modifier.size(70.dp).clip(CutCornerShape(3.dp)).background(Brush.verticalGradient(listOf(Color(0xFF262B30),Color(0xFF111314),Color(0xFF0A0B0B))))){
+        Box(Modifier.matchParentSize().padding(3.dp).alpha(if(dim).5f else 1f)){
             if(itemId=="mist-clasp")ArtTile(R.drawable.forest_atlas,8,3,Modifier.matchParentSize()) else ArtTile(if(variant!=null)R.drawable.relic_variants else R.drawable.relic_atlas,variant?:index,3,Modifier.matchParentSize())
         }
         ArtifactFrame(Modifier.matchParentSize())
         Canvas(Modifier.matchParentSize()){
-            drawRect(Brush.verticalGradient(listOf(Color.Transparent,Color.Black.copy(alpha=.28f))))
+            drawRect(Brush.radialGradient(listOf(Color(0xFFCAD6E4).copy(alpha=if(dim).10f else .16f),Color.Transparent),center=Offset(size.width/2,0f),radius=size.width*.9f))
+            drawRect(Brush.verticalGradient(listOf(Color.Transparent,Color.Black.copy(alpha=.3f))))
+            if(!dim)drawRect(Brush.radialGradient(listOf(color.copy(alpha=.18f),Color.Transparent),center=Offset(size.width/2,size.height),radius=size.width*.7f))
             drawRect(color.copy(alpha=if(dim).25f else .45f),style=Stroke(1.dp.toPx()))
             drawLine(color.copy(alpha=if(dim).35f else .8f),Offset(6.dp.toPx(),size.height-1.dp.toPx()),Offset(size.width-6.dp.toPx(),size.height-1.dp.toPx()),1.5.dp.toPx())
         }

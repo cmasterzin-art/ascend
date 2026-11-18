@@ -58,9 +58,19 @@ val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal=20.dp).padding(top=14.dp,bottom=24.dp),verticalArrangement=Arrangement.spacedBy(16.dp),content=content)
     }
 }
-@Composable fun Meter(value:Float,color:Color=Blue,modifier:Modifier=Modifier,trackColor:Color=CardColor){
+@Composable fun Meter(value:Float,color:Color=Blue,modifier:Modifier=Modifier,trackColor:Color=CardColor,slim:Boolean=false){
     val fraction by animateFloatAsState(value.coerceIn(0f,1f),tween(if(LocalAppearance.current.reducedMotion)0 else AetherTokens.scene),label="progresso")
     val track=trackColor;val dark=LocalAppearance.current.dark
+    // 1.6.9.10: a hairline of cold metal for compositions where the groove would compete with the focal point.
+    if(slim){Canvas(modifier.fillMaxWidth().height(6.dp).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)}){
+        val w=size.width;val cy=size.height/2;val d=1.dp.toPx()
+        drawLine(Color.Black.copy(alpha=if(dark).7f else .18f),Offset(0f,cy),Offset(w,cy),3*d)
+        drawLine(track.copy(alpha=.9f),Offset(0f,cy),Offset(w,cy),d)
+        if(fraction>0f){val fw=w*fraction
+            drawLine(Brush.horizontalGradient(listOf(color.copy(alpha=.25f),color),endX=fw),Offset(0f,cy),Offset(fw,cy),2*d,cap=StrokeCap.Round)
+            drawCircle(Brush.radialGradient(listOf(color.copy(alpha=.55f),Color.Transparent),center=Offset(fw,cy),radius=7*d),7*d,Offset(fw,cy))
+            drawCircle(color,1.6f*d,Offset(fw,cy))}
+    };return}
     // A groove cut into stone; the value fills it like cooled metal with a single bright leading edge.
     Canvas(modifier.fillMaxWidth().height(10.dp).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)}){
         val w=size.width;val h=size.height;val d=1.dp.toPx();val tip=h*.55f

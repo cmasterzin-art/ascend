@@ -52,35 +52,49 @@ val mainNames=listOf("Jornada","Hábitos","Missões","Mundo","Herói")
   }
  }
 }
-/** Compact carved strip: whole options wrap in rows of one continuous surface; nothing is clipped or hidden. */
+/** 1.6.9.10 · Inscription ledger: options read as carved words on one line of stone, wrapping when needed.
+ *  No per-option boxes; the active word is warmed and underlined. Everything stays visible and selectable. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable fun AetherisTabs(values:List<String>,selected:Int,onSelect:(Int)->Unit){
- val glyphs=values.map{glyphForLabel(it)};val carved=glyphs.all{it!=null}
- val dark=LocalAppearance.current.dark;val gold=Gold
- BoxWithConstraints(Modifier.fillMaxWidth()){
-  val n=values.size.coerceAtLeast(1)
-  val perRow=(if(n<=4&&maxWidth/n>=78.dp)n else if(maxWidth>=380.dp)4 else if(maxWidth>=300.dp)3 else 2).coerceAtMost(n)
-  val showGlyph=carved&&(maxWidth/perRow>=108.dp)
-  val frame=CutCornerShape(4.dp);val seam=Color.Black.copy(alpha=if(dark).45f else .14f)
-  Column(Modifier.fillMaxWidth().clip(frame).background(if(dark)Color(0xFF121413) else Color(0xFFDDD7CB)).forgeMaterial().border(1.dp,ColdIron.copy(alpha=.24f),frame)){
-   values.chunked(perRow).forEachIndexed{row,labels->
-    if(row>0)Box(Modifier.fillMaxWidth().height(1.dp).background(seam))
-    Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)){
-     labels.forEachIndexed{col,label->val index=row*perRow+col;val active=index==selected
-      if(col>0)Box(Modifier.fillMaxHeight().width(1.dp).background(seam))
-      Box(Modifier.weight(1f).heightIn(min=48.dp).selectable(active,onClick={onSelect(index)},role=Role.Tab).drawBehind{
-        if(active){val d=1.dp.toPx()
-         drawRect(Brush.verticalGradient(listOf(Color.Transparent,gold.copy(alpha=.13f))))
-         drawLine(gold.copy(alpha=.9f),Offset(size.width*.22f,size.height-1.5f*d),Offset(size.width*.78f,size.height-1.5f*d),2*d)}
-       }.padding(horizontal=4.dp,vertical=6.dp),contentAlignment=Alignment.Center){
-       Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(5.dp,Alignment.CenterHorizontally)){
-        if(showGlyph)CarvedGlyph(glyphs[index]!!,if(active)gold else Muted,size=15.dp)
-        Text(label,Modifier.weight(1f,fill=false),color=if(active)gold else Ink,fontSize=12.sp,lineHeight=16.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis,textAlign=androidx.compose.ui.text.style.TextAlign.Center)
-       }
+ val glyphs=values.map{glyphForLabel(it)}
+ val dark=LocalAppearance.current.dark;val gold=Gold;val muted=Muted;val motion=LocalAppearance.current.reducedMotion
+ val hair=if(dark)Color.White.copy(alpha=.07f) else Color.Black.copy(alpha=.1f)
+ Column(Modifier.fillMaxWidth().padding(vertical=2.dp)){
+  Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent,hair,hair,Color.Transparent))))
+  FlowRow(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Start,verticalArrangement=Arrangement.spacedBy(0.dp)){
+   values.forEachIndexed{index,label->val active=index==selected
+    val light by animateFloatAsState(if(active)1f else 0f,tween(if(motion)0 else AetherTokens.quick),label="inscrição")
+    Row(verticalAlignment=Alignment.CenterVertically){
+     if(index>0)Canvas(Modifier.size(width=6.dp,height=48.dp)){drawCircle(muted.copy(alpha=.35f),1.2.dp.toPx(),Offset(size.width/2,size.height/2))}
+     Box(Modifier.heightIn(min=48.dp).selectable(active,onClick={onSelect(index)},role=Role.Tab).drawBehind{
+       if(light>0f){val d=1.dp.toPx()
+        drawCircle(Brush.radialGradient(listOf(gold.copy(alpha=.12f*light),Color.Transparent),center=Offset(size.width/2,size.height*.55f),radius=size.width*.6f),size.width*.6f,Offset(size.width/2,size.height*.55f))
+        drawLine(gold.copy(alpha=.9f*light),Offset(size.width*.18f,size.height-9*d),Offset(size.width*.82f,size.height-9*d),1.5f*d,cap=StrokeCap.Round)}
+      }.padding(horizontal=9.dp),contentAlignment=Alignment.Center){
+      Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(5.dp)){
+       if(active&&glyphs[index]!=null)CarvedGlyph(glyphs[index]!!,gold,size=13.dp)
+       Text(label,color=if(active)gold else muted,fontSize=13.sp,lineHeight=17.sp,letterSpacing=.3.sp,maxLines=1)
       }
      }
-     repeat(perRow-labels.size){Box(Modifier.fillMaxHeight().width(1.dp).background(seam));Spacer(Modifier.weight(1f))}
     }
    }
   }
+  Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent,hair,hair,Color.Transparent))))
+ }
+}
+/** 1.6.9.10 · Productivity shortcuts as one slim carved band with hairline seams instead of three heavy cards. */
+@Composable fun ShortcutStrip(items:List<Triple<String,Glyph,()->Unit>>){
+ val dark=LocalAppearance.current.dark;val hair=if(dark)Color.White.copy(alpha=.08f) else Color.Black.copy(alpha=.12f)
+ Column(Modifier.fillMaxWidth()){
+  Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent,hair,hair,Color.Transparent))))
+  Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)){
+   items.forEachIndexed{i,(label,glyph,action)->
+    if(i>0)Box(Modifier.width(1.dp).fillMaxHeight().padding(vertical=12.dp).background(hair))
+    Row(Modifier.weight(1f).heightIn(min=48.dp).clickable(onClick=action).padding(horizontal=4.dp,vertical=6.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(7.dp,Alignment.CenterHorizontally)){
+     CarvedGlyph(glyph,Gold,size=16.dp);Text(label,color=Ink,fontSize=12.sp,letterSpacing=.3.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+    }
+   }
+  }
+  Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent,hair,hair,Color.Transparent))))
  }
 }

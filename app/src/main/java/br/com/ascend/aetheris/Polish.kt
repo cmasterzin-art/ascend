@@ -23,8 +23,9 @@ fun displayPeriod(start:String,end:String)=if(start==end)displayDate(start) else
   text.split("\n\n").filter{it.isNotBlank()}.forEach{paragraph->Text(paragraph,color=color,fontSize=15.sp,lineHeight=25.sp)}
  }
 }
+/** 1.6.9.10 · Status as a small inscription with a lit rhombus, not a boxed badge. */
 @Composable fun StatusSeal(text:String,color:Color=Blue){
- Text(text,Modifier.background(color.copy(alpha=.10f),CutCornerShape(4.dp)).border(1.dp,color.copy(alpha=.25f),CutCornerShape(4.dp)).padding(horizontal=10.dp,vertical=7.dp),color=color,fontSize=12.sp,lineHeight=18.sp,fontWeight=FontWeight.Medium)
+ Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp),modifier=Modifier.padding(vertical=4.dp)){Text("◆",color=color.copy(alpha=.8f),fontSize=8.sp);Text(text,color=color,fontSize=12.sp,lineHeight=18.sp,fontWeight=FontWeight.Medium,letterSpacing=.3.sp)}
 }
 @Composable fun Spoils(xp:Int,coins:Int,item:String=""){
  Column(Modifier.fillMaxWidth().background(Gold.copy(alpha=.07f),CutCornerShape(5.dp)).padding(14.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){
