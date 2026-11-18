@@ -1,3 +1,21 @@
+# 1.6.9.19 — A Biblioteca da Forja
+
+Criação e integração da nova biblioteca de recursos pictóricos originais (*Nordic Pictorial Library*) sobre a base `feat/ascend-1.6.9.15`, sem implementar funcionalidades, reformular layouts ou realizar alterações arquiteturais, preservando integralmente Room v6, backup v8, economia, narrativas, os 135 testes existentes e todos os recursos gráficos anteriores. [Catálogo completo, prancha e comparativos](docs/VISUAL-1.6.9.19.md) · [Inventário técnico](docs/art/README.md).
+
+## Biblioteca Pictórica Nórdica (20 novos recursos WebP) e Integração 9-Slice
+
+- **Geração pictórica original (`image-generator` / Nano Banana):** prancha conceitual (`docs/art/concepts/biblioteca-forja-16919.webp`) e **19 recursos WebP** em `app/src/main/res/drawable-nodpi/` distribuídos em quatro famílias:
+  - **Família I — Materiais (`512 × 512` RGB):** `mat_iron_nordic.webp` (ferro nórdico enegrecido), `mat_bronze_ancient.webp` (bronze artesanal envelhecido), `mat_silver_oxidized.webp` (prata oxidada), `mat_slate_volcanic.webp` (ardósia vulcânica), `mat_leather_carved.webp` (couro cerimonial entalhado) e `mat_vellum_aged.webp` (velino envelhecido), integrados via `ForgeMaterial` e `Modifier.forgeMaterial` em `AetherSurface` (`ForgeArt.kt`).
+  - **Família II — Componentes de interface (RGBA com 9-slice):** `ui_plate_primary.webp`, `ui_plate_secondary.webp` e `ui_plate_ceremonial.webp` em `SagaButton` (`CarvedArt.kt`); `ui_field_inscription.webp` em `FormField` (`Forms.kt`); `ui_tablet_selector.webp` em `ChipRow` e `FilterChip` (`Design.kt`, `Forms.kt`); `ui_control_surface.webp` em `Toggle` (`Forms.kt`); e `ui_frame_dialog.webp` em `AetherDialog` (`DesignSystem2.kt`), renderizados por `DrawScope.drawNineSlice` / `Modifier.pictorialFrame` sem deformação de cantos ou rebites.
+  - **Família III — Ornamentação (atlas RGBA):** `orn_divider_forged.webp` (`1 × 2`) em `NorthDivider` e `SagaDivider`; `orn_frames_rarity.webp` (`2 × 2` por raridade `0..3`) em `ArtifactFrame` e `RelicArt`; `orn_medallions_seals.webp` (`3 × 2`) em `ForgeMedallion`, `DayDial` e `RuneSeal`; e `orn_track_progress.webp` (`1 × 2`, sulco em pedra e metal fundido) em `Meter` (`Design.kt`).
+  - **Família IV — Widgets (RGBA):** `wid_plate_compact.webp` (`widget_surface.xml`) e `wid_plate_expanded.webp` (`widget_surface_expanded.xml`), alternados dinamicamente conforme a altura do widget em `HabitWidget.kt`, além de `ui_plate_primary.webp` e `ui_plate_secondary.webp` nos botões de ação (`widget_complete.xml`, `widget_secondary.xml`).
+
+## Compatibilidade, assinatura e validação
+
+- `versionCode 19`, `versionName 1.6.9.19`, `applicationId br.com.ascend.aetheris`, sem permissão `INTERNET`.
+- Assinatura oficial preservada (`e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`) via `ASCEND_KEYSTORE_BASE64`, com APK publicado em `downloads/ASCEND-1.6.9.19.apk`.
+- `testDebugUnitTest assembleDebug lintDebug` aprovado com **135 testes** e **0 erros** no Lint. Prancha da biblioteca gerada em `docs/screenshots/v1.6.9.19/prancha-biblioteca-16919.png`.
+
 # 1.6.9.15 — O Legado da Forja
 
 Consolidação do Design System Nórdico (*Premium Nordic Experience*), Widgets 3.0 e acabamento individual dos componentes sobre a base `feat/ascend-1.6.9.10`, preservando integralmente regras de negócio, banco Room v6, backup v8, economia, narrativas e os 135 testes existentes. [Prancha de componentes, comparações reais e limites](docs/VISUAL-1.6.9.15.md).

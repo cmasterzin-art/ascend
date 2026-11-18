@@ -16,9 +16,6 @@
                     <stroke android:width="0.9dp" android:color="@color/widget_stroke"/>
                 </shape>
             </item>
-            <item>
-                <bitmap android:src="@drawable/ui_plate_secondary" android:gravity="fill" android:alpha="0.34"/>
-            </item>
             <item android:left="0dp" android:top="0dp" android:bottom="0dp" android:gravity="left">
                 <shape>
                     <size android:width="3dp"/>

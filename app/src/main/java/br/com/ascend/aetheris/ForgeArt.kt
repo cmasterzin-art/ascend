@@ -23,10 +23,11 @@ enum class ForgeMaterial(val resId:Int){
  LeatherCarved(R.drawable.mat_leather_carved),
  VellumAged(R.drawable.mat_vellum_aged)
 }
+internal val preservedPictorialArchive=intArrayOf(R.drawable.forge_iron,R.drawable.forge_leather,R.drawable.forge_vellum,R.drawable.forge_brooch,R.drawable.north_frame,R.drawable.north_stone,R.drawable.north_divider,R.drawable.plate_bronze,R.drawable.plate_iron,R.drawable.widget_slate,R.drawable.artifact_frame)
 
 /** 1.6.9.19 — A Biblioteca da Forja: high-definition original Nordic material studies. Crop, never tile/stretch; no per-frame noise. */
 @Composable fun Modifier.forgeMaterial(kind:SurfaceKind=SurfaceKind.Operational):Modifier{
- val appearance=LocalAppearance.current;val dark=appearance.dark;val minimal=appearance.minimal
+ val appearance=LocalAppearance.current;val dark=appearance.dark;val minimal=appearance.minimal||preservedPictorialArchive.isEmpty()
  val paper=kind==SurfaceKind.Parchment
  val metal=if(minimal)null else ImageBitmap.imageResource(when(kind){
   SurfaceKind.Parchment->R.drawable.mat_vellum_aged
@@ -42,7 +43,7 @@ enum class ForgeMaterial(val resId:Int){
   val sw=if(metal==null)1 else minOf(metal.width,(metal.height*ratio).toInt()).coerceAtLeast(1)
   val sh=if(metal==null)1 else minOf(metal.height,(metal.width/ratio).toInt()).coerceAtLeast(1)
   onDrawBehind{
-   if(metal!=null)drawImage(metal,srcOffset=IntOffset((metal.width-sw)/2,(metal.height-sh)/2),srcSize=IntSize(sw,sh),dstSize=IntSize(size.width.toInt().coerceAtLeast(1),size.height.toInt().coerceAtLeast(1)),alpha=if(paper).84f else if(!dark).12f else if(kind==SurfaceKind.Operational).58f else if(kind==SurfaceKind.Artifact).32f else .74f,filterQuality=FilterQuality.Medium)
+   if(metal!=null)drawImage(metal,srcOffset=IntOffset((metal.width-sw)/2,(metal.height-sh)/2),srcSize=IntSize(sw,sh),dstSize=IntSize(size.width.toInt().coerceAtLeast(1),size.height.toInt().coerceAtLeast(1)),alpha=if(paper).84f else if(!dark).1f else if(kind==SurfaceKind.Operational).26f else if(kind==SurfaceKind.Artifact).22f else .52f,filterQuality=FilterQuality.Medium)
    val d=1.dp.toPx();val w=size.width;val h=size.height
    when(kind){
     SurfaceKind.Ceremonial->{

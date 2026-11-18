@@ -112,8 +112,8 @@ class ProductVisualTourTest{
    Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(11.dp)){
     Eyebrow("FAMÍLIA II — COMPONENTES DE INTERFACE (NOVE FATIAS)",Gold)
     SagaButton("Placa Primária · Bronze Forjado (ui_plate_primary)",{},Modifier.fillMaxWidth())
-    SagaButton("Placa Secundária · Ferro Enegrecido (ui_plate_secondary)",{},Modifier.fillMaxWidth(),secondary=true)
-    SagaButton("Placa Cerimonial · Juramento (ui_plate_ceremonial)",{},Modifier.fillMaxWidth(),ceremonial=true)
+    SagaButton("Placa Secundária · Ferro Enegrecido",{},Modifier.fillMaxWidth(),secondary=true)
+    SagaButton("Placa Cerimonial · Juramento",{},Modifier.fillMaxWidth(),ceremonial=true)
     FormField("Inscrição em Basalto (ui_field_inscription)",{},"Campo de Inscrição")
     ChipRow(listOf("Tabuleta Ativa","Ardósia","Bronze"),0,{})
     Toggle("Superfície de Controle (ui_control_surface)",true,{})
@@ -149,13 +149,13 @@ class ProductVisualTourTest{
      Meter(0.72f,Gold)
     }
     Eyebrow("FAMÍLIA IV — PLACAS PICTÓRICAS DE WIDGETS",Gold)
-    Box(Modifier.fillMaxWidth().height(64.dp).pictorialFrame(R.drawable.wid_plate_compact,capXRatio=.16f,capYRatio=.28f,alpha=.95f).padding(horizontal=16.dp,vertical=10.dp),contentAlignment=Alignment.CenterStart){
+    Box(Modifier.fillMaxWidth().height(64.dp).background(Color(0xFF14181C),CutCornerShape(6.dp)).pictorialFrame(R.drawable.wid_plate_compact,capXRatio=.16f,capYRatio=.28f,alpha=1f).padding(horizontal=16.dp,vertical=10.dp),contentAlignment=Alignment.CenterStart){
      Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
       Text("wid_plate_compact · Placa Compacta",color=Ink,fontFamily=SagaFont,fontSize=13.sp)
       Text("628×140 WebP",color=Gold,fontSize=11.sp)
      }
     }
-    Box(Modifier.fillMaxWidth().height(110.dp).pictorialFrame(R.drawable.wid_plate_expanded,capXRatio=.16f,capYRatio=.22f,alpha=.95f).padding(16.dp)){
+    Box(Modifier.fillMaxWidth().height(110.dp).background(Color(0xFF14181C),CutCornerShape(6.dp)).pictorialFrame(R.drawable.wid_plate_expanded,capXRatio=.16f,capYRatio=.22f,alpha=1f).padding(16.dp)){
      Column(verticalArrangement=Arrangement.spacedBy(4.dp)){
       Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){
        Text("wid_plate_expanded · Superfície Expandida",color=Ink,fontFamily=SagaFont,fontSize=13.sp)

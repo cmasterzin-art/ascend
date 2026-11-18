@@ -82,11 +82,11 @@ val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
         val grooveTop=if(onParchment)Sepia.copy(alpha=.32f) else Color.Black.copy(alpha=if(dark).82f else .35f)
         val grooveBot=if(onParchment)Sepia.copy(alpha=.16f) else Color.Black.copy(alpha=if(dark).42f else .18f)
         drawPath(groove,Brush.verticalGradient(listOf(grooveTop,track.copy(alpha=.85f),grooveBot)))
-        if(trackImg!=null)drawImage(trackImg,IntOffset(0,0),IntSize(trackImg.width,trackImg.height/2),IntOffset(0,0),IntSize(w.toInt().coerceAtLeast(1),h.toInt().coerceAtLeast(1)),alpha=if(dark).68f else .28f)
+        if(trackImg!=null)drawImage(trackImg,IntOffset(0,0),IntSize(trackImg.width,trackImg.height/2),IntOffset(0,0),IntSize(w.toInt().coerceAtLeast(1),h.toInt().coerceAtLeast(1)),alpha=if(dark).38f else .18f)
         if(fraction>0f){val fw=(w*fraction).coerceAtLeast(tip*2)
             clipPath(groove){
                 drawRect(Brush.horizontalGradient(listOf(color.copy(alpha=.42f),color.copy(alpha=.85f),color),endX=fw),size=Size(fw,h))
-                if(trackImg!=null)drawImage(trackImg,IntOffset(0,trackImg.height/2),IntSize((trackImg.width*fraction).toInt().coerceAtLeast(1),trackImg.height/2),IntOffset(0,0),IntSize(fw.toInt().coerceAtLeast(1),h.toInt().coerceAtLeast(1)),alpha=if(dark).45f else .22f)
+                if(trackImg!=null)drawImage(trackImg,IntOffset(0,trackImg.height/2),IntSize((trackImg.width*fraction).toInt().coerceAtLeast(1),trackImg.height/2),IntOffset(0,0),IntSize(fw.toInt().coerceAtLeast(1),h.toInt().coerceAtLeast(1)),alpha=if(dark).32f else .16f)
                 drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha=.26f),Color.Transparent,Color.Black.copy(alpha=.34f))),size=Size(fw,h))
                 if(fraction<1f)drawRect(Brush.horizontalGradient(listOf(Color.Transparent,Color.White.copy(alpha=.52f)),startX=fw-7*d,endX=fw),topLeft=Offset(fw-7*d,0f),size=Size(7*d,h))
             }
@@ -116,8 +116,10 @@ val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
 }
 @Composable fun FormField(value:String,onChange:(String)->Unit,label:String,number:Boolean=false,multi:Boolean=false,modifier:Modifier=Modifier){
     val dark=LocalAppearance.current.dark;val gold=Gold;val iron=ColdIron;val shape=CutCornerShape(topStart=6.dp,topEnd=2.dp,bottomEnd=6.dp,bottomStart=2.dp)
-    Box(modifier.fillMaxWidth().pictorialFrame(R.drawable.ui_field_inscription,capXRatio=.14f,capYRatio=.28f,alpha=if(dark).58f else .14f).drawWithCache{onDrawBehind{
-        val d=1.dp.toPx();val w=size.width;val h=size.height
+    val fieldImg=if(LocalAppearance.current.minimal)null else ImageBitmap.imageResource(R.drawable.ui_field_inscription)
+    Box(modifier.fillMaxWidth().drawWithCache{onDrawBehind{
+        val d=1.dp.toPx();val w=size.width;val h=size.height;val topInset=7*d
+        if(fieldImg!=null&&h>topInset+8*d)withTransform({translate(0f,topInset);scale(1f,(h-topInset)/h,Offset.Zero)}){drawNineSlice(fieldImg,capXRatio=.14f,capYRatio=.28f,alpha=if(dark).58f else .14f)}
         drawLine(gold.copy(alpha=.42f),Offset(8*d,h-d),Offset(w-8*d,h-d),1.4f*d)
         drawLine(iron.copy(alpha=.35f),Offset(2*d,10*d),Offset(2*d,18*d),d)
         drawLine(iron.copy(alpha=.35f),Offset(w-2*d,h-10*d),Offset(w-2*d,h-3*d),d)

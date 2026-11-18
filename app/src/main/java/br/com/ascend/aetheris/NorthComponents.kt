@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.*
   }
   if(secondary&&enabled)drawLine(ColdIron.copy(alpha=.4f),Offset(cx-12*d,h-2.5f*d),Offset(cx+12*d,h-2.5f*d),d)
   if(pressed)drawRect(Color.Black.copy(alpha=.28f))
- }},enabled=enabled&&!loading,shape=shape,interactionSource=interaction,contentPadding=PaddingValues(horizontal=if(ceremonial)26.dp else 16.dp,vertical=11.dp),colors=ButtonDefaults.buttonColors(containerColor=Color.Transparent,contentColor=if(secondary)Color(0xFFD9DEE4) else Color(0xFFEFE6D5),disabledContainerColor=Color.Transparent,disabledContentColor=Color(0xFF889099))){
+ }},enabled=enabled&&!loading,shape=shape,interactionSource=interaction,contentPadding=PaddingValues(horizontal=if(ceremonial)32.dp else 16.dp,vertical=11.dp),colors=ButtonDefaults.buttonColors(containerColor=Color.Transparent,contentColor=if(secondary)Color(0xFFD9DEE4) else Color(0xFFEFE6D5),disabledContainerColor=Color.Transparent,disabledContentColor=Color(0xFF889099))){
  if(loading){CircularProgressIndicator(Modifier.size(16.dp),strokeWidth=2.dp);Spacer(Modifier.width(8.dp))}
  Text(if(completed)"◆ $text" else text,fontSize=14.sp,letterSpacing=if(ceremonial).5.sp else .3.sp,fontFamily=if(ceremonial)SagaFont else null)
  }

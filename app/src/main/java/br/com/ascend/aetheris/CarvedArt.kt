@@ -132,7 +132,7 @@ fun DrawScope.drawNineSlice(image:ImageBitmap,capXRatio:Float=.18f,capYRatio:Flo
  val rim=if(bronze)Color(0xFFE5C88F) else Color(0xFFB8C7D9)
  return drawWithCache{
   onDrawBehind{
-   if(plate!=null)drawNineSlice(plate,capXRatio=if(ceremonial).2f else .15f,capYRatio=.28f,alpha=if(enabled)(if(ceremonial).78f else .72f) else .28f)
+   if(plate!=null)drawNineSlice(plate,capXRatio=if(ceremonial).14f else .15f,capYRatio=if(ceremonial).34f else .28f,alpha=if(enabled)(if(ceremonial).78f else .72f) else .28f)
    val d=1.dp.toPx();val w=size.width;val h=size.height
    drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha=if(enabled).08f else .02f),Color.Transparent,Color.Black.copy(alpha=.38f))))
    drawLine(rim.copy(alpha=if(enabled)(if(ceremonial).38f else .24f) else .07f),Offset(8*d,1.2f*d),Offset(w-8*d,1.2f*d),d)
