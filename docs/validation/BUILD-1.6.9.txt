@@ -30,7 +30,11 @@ Daemon will be stopped at the end of the build
 > Task :app:checkDebugDuplicateClasses
 > Task :app:packageDebugUnitTestForUnitTest
 > Task :app:generateDebugUnitTestConfig
+
 > Task :app:kspDebugKotlin
+e: The daemon has terminated unexpectedly on startup attempt #1 with error code: 0. The daemon process output:
+    1. Kotlin compile daemon is ready
+
 > Task :app:mergeExtDexDebug
 > Task :app:mergeLibDexDebug
 > Task :app:mergeDebugJniLibFolders
@@ -47,8 +51,8 @@ Unable to strip the following libraries, packaging them as they are: libandroidx
 > Task :app:extractProguardFiles
 > Task :app:compileDebugKotlin
 > Task :app:compileDebugJavaWithJavac
-> Task :app:bundleDebugClassesToCompileJar
 > Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
 > Task :app:processDebugJavaRes
 > Task :app:kspDebugUnitTestKotlin
 > Task :app:dexBuilderDebug
@@ -59,21 +63,21 @@ Unable to strip the following libraries, packaging them as they are: libandroidx
 > Task :app:createDebugApkListingFileRedirect
 > Task :app:assembleDebug
 > Task :app:generateDebugAndroidTestLintModel
-> Task :app:generateDebugLintReportModel
-> Task :app:generateDebugUnitTestLintModel
 > Task :app:compileDebugUnitTestKotlin
+> Task :app:generateDebugLintReportModel
 > Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processDebugUnitTestJavaRes
-> Task :app:lintAnalyzeDebug
 > Task :app:testDebugUnitTest
+> Task :app:generateDebugUnitTestLintModel
 > Task :app:lintAnalyzeDebugAndroidTest
+> Task :app:lintAnalyzeDebug
 > Task :app:lintAnalyzeDebugUnitTest
 
 > Task :app:lintReportDebug
 Wrote HTML report to file:///home/runner/work/ascend/ascend/app/build/reports/lint-results-debug.html
 
 > Task :app:lintDebug
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1794954753725.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1794963354427.json
 
-BUILD SUCCESSFUL in 2m 42s
+BUILD SUCCESSFUL in 3m 2s
 56 actionable tasks: 56 executed

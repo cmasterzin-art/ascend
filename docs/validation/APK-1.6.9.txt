@@ -1,6 +1,6 @@
 package: name='br.com.ascend.aetheris' versionCode='16' versionName='1.6.9' platformBuildVersionName='15' platformBuildVersionCode='35' compileSdkVersion='35' compileSdkVersionCodename='15'
 Bytes: 22847850
-SHA256: 3b939a77125a2fa679a6eb4909f56efe376f6112c2a0077f85f1df50a6025a6b
+SHA256: 082459c5a160ae512cce2d5913f381f0deae005d46b708778b8846c6307bed81
 Zipalign OK
 Verifies
 Verified using v1 scheme (JAR signing): false
@@ -11,14 +11,14 @@ Verified using v4 scheme (APK Signature Scheme v4): false
 Verified for SourceStamp: false
 Number of signers: 1
 Signer #1 certificate DN: C=US, O=Android, CN=Android Debug
-Signer #1 certificate SHA-256 digest: 2af2b8789e804a3897403cd2de1029cfefa83c3c7858704549ffa31a8f0bc4f4
-Signer #1 certificate SHA-1 digest: e99bc000a66dd2b9066c37a616a797fa5e457baa
-Signer #1 certificate MD5 digest: aa1c1f3d83d0aa333182a42bc05aa476
+Signer #1 certificate SHA-256 digest: a3447ac9109f8aff3803d4d41de2a5e493ca694382d9bdf112abb49fc2800f4b
+Signer #1 certificate SHA-1 digest: b22e32a94affd6aaf17fa1728d8e4c8d5998bf23
+Signer #1 certificate MD5 digest: 606c3f502e6b25398d1522cef83f448e
 Signer #1 key algorithm: RSA
 Signer #1 key size (bits): 2048
-Signer #1 public key SHA-256 digest: 3faedf6658ae707cca5ae29b587f1f73f9312d0219791cdeb13199812e9d1489
-Signer #1 public key SHA-1 digest: ff35f5a64f5274bd643424bdd5ff348d2c837499
-Signer #1 public key MD5 digest: 7518599c435b372be8d31692c3cac8cc
+Signer #1 public key SHA-256 digest: 320ae9565a26c63de84db88bb2759078da55046ed7c7bf2b6df2b16ddd078ba7
+Signer #1 public key SHA-1 digest: e93fffb804dd6ee87fa38e3c1c890eda3cccbe91
+Signer #1 public key MD5 digest: 9630ebaaa586946f10ff09af45e598a1
 package: br.com.ascend.aetheris
 uses-permission: name='android.permission.POST_NOTIFICATIONS'
 uses-permission: name='android.permission.RECEIVE_BOOT_COMPLETED'
