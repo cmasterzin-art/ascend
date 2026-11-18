@@ -1,3 +1,21 @@
+# 1.6.9.10 — O Silêncio das Runas
+
+Refinamento cinematográfico e editorial (*Nordic Cinematic UI*) sobre a base `feat/ascend-1.6.9`, preservando integralmente regras de negócio, banco Room v6, backup v8, economia, narrativas e os 135 testes existentes. [Comparações reais e limites](docs/VISUAL-1.6.9.10.md).
+
+## Composição, iluminação e hierarquia visual
+
+- **Jornada (`DesignSystem2.kt`, `JourneyHome.kt`):** cabeçalho integrado diretamente ao céu do fiorde (`CompactHero`), transição longa de névoa e vinhetas laterais sem borda retangular, iluminação fria localizada atrás do retrato, barra de XP em filete (`Meter(..., slim = true)`), linha diária `DayLedger` aberta e faixa de atalhos compacta (`ShortcutStrip` com ocultação automática de glifos em `320 dp / 130%`).
+- **Navegação, abas e filtros (`AetherisNavigation.kt`, `Design.kt`):** `AetherisTabs` redesenhado como linha aberta de inscrições (`FlowRow`) com glifo ativo e sublinhado de bronze iluminado, substituindo grades de botões nas 7 opções do Herói, 6 opções de Missões e 4 de Hábitos; `ChipRow` compactado (`32 dp`) com suporte a faixa única sem truncamento lateral.
+- **Herói e Inventário (`HeroSheet.kt`, `CharacterScreen.kt`, `EquipmentScreen.kt`, `RpgDesign.kt`):** ficha em palco contínuo (`HeroStage` com sangria lateral de `-20 dp`), evolução em filete (`HeroEvolution`), atributos inscritos em livro contínuo (`AttributeInscriptions`) sem cartões repetidos e câmara de artefatos com luz fria localizada, chanfro nos nichos, maior contraste nas silhuetas vazias (`alpha = 0.50f`) e aura por raridade.
+- **Missões, Sagas, Hábitos, Planejador e Análises (`DesignSystem2.kt`, `SagaScreen.kt`, `JourneyScreens.kt`, `ProductivityScreens.kt`):** `SagaCover` em lombada de couro e bronze, contratos cotidianos compactados com ações lado a lado em `MissionCard2`, marcos `25% · 50% · 75% · 100%` conectados em `SagaBook`, ações secundárias em `FlowRow` sem quebra de palavras em `320 dp / 130%` e resumos abertos com `Hairline()` no Planejador e na Central de Análises.
+- **Memórias, Atlas, Expedições, Cronômetro e Widgets (`ChronicleScreens.kt`, `WorldScreen.kt`, `ExplorationScreens.kt`, `widget_*.xml`):** distinção entre marcos solenes (`Ceremonial` com `NorthDivider`) e inscrições cotidianas no Salão das Memórias; marcadores translúcidos e leitura aberta no Atlas; selos conectados nas Expedições; halo radial violeta no `FocusCard`; e iluminação superior fria na ardósia e botões dos widgets.
+
+## Compatibilidade, assinatura e validação
+
+- `versionCode 17`, `versionName 1.6.9.10`, `applicationId br.com.ascend.aetheris`, sem permissão `INTERNET`.
+- Assinatura oficial preservada (`e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`) via `ASCEND_KEYSTORE_BASE64`, com APKs publicados em `downloads/ASCEND-1.6.9.10.apk` e `downloads/ASCEND-1.6.9.apk`.
+- `testDebugUnitTest assembleDebug lintDebug` aprovado com **135 testes** e **0 erros** no Lint (`22` avisos). Detalhes em `ASSINATURA.md` e `VALIDACAO.md`.
+
 # 1.6.9 — O Último Entalhe
 
 Consolidação artística definitiva (*Nordic Cinematic UI*) preservando integralmente regras, banco Room v6, backup v8, economia, narrativas e os 135 testes existentes. [Escopo e limites](docs/VISUAL-1.6.9.md).
@@ -19,7 +37,7 @@ Consolidação artística definitiva (*Nordic Cinematic UI*) preservando integra
 ## Compatibilidade e validação
 
 - `versionCode 16`, `versionName 1.6.9`, `applicationId br.com.ascend.aetheris`, sem permissão `INTERNET`.
-- GitHub Actions execução `44190969728` (`b6bacbb` / `bd58ab3`): `testDebugUnitTest assembleDebug lintDebug` aprovado com **135 testes** e **0 erros** no Lint (`22` avisos). APK de CI assinado com chave temporária do runner aguardando publicação oficial após configuração de `ASCEND_KEYSTORE_BASE64`; detalhes em `ASSINATURA.md` e `VALIDACAO.md`.
+- GitHub Actions execução `44214011907` (`feat/ascend-1.6.9`): `testDebugUnitTest assembleDebug lintDebug` aprovado com **135 testes**, **0 erros** no Lint (`22` avisos) e APK oficial publicado em `downloads/ASCEND-1.6.9.apk` (`e1f003ef...`).
 
 # 1.6.8 — O Véu do Norte
 
