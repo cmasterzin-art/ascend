@@ -84,16 +84,19 @@ val mainNames=listOf("Jornada","Hábitos","Missões","Mundo","Herói")
 /** 1.6.9.10 · Productivity shortcuts as one slim carved band with hairline seams instead of three heavy cards. */
 @Composable fun ShortcutStrip(items:List<Triple<String,Glyph,()->Unit>>){
  val dark=LocalAppearance.current.dark;val hair=if(dark)Color.White.copy(alpha=.08f) else Color.Black.copy(alpha=.12f)
+ BoxWithConstraints(Modifier.fillMaxWidth()){val roomy=maxWidth/items.size.coerceAtLeast(1)>=112.dp
  Column(Modifier.fillMaxWidth()){
   Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent,hair,hair,Color.Transparent))))
   Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min)){
    items.forEachIndexed{i,(label,glyph,action)->
     if(i>0)Box(Modifier.width(1.dp).fillMaxHeight().padding(vertical=12.dp).background(hair))
     Row(Modifier.weight(1f).heightIn(min=48.dp).clickable(onClick=action).padding(horizontal=4.dp,vertical=6.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(7.dp,Alignment.CenterHorizontally)){
-     CarvedGlyph(glyph,Gold,size=16.dp);Text(label,color=Ink,fontSize=12.sp,letterSpacing=.3.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+     // Narrow screens keep the full word and drop the glyph rather than truncating the label.
+     if(roomy)CarvedGlyph(glyph,Gold,size=16.dp);Text(label,color=Ink,fontSize=12.sp,letterSpacing=.3.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis)
     }
    }
   }
   Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent,hair,hair,Color.Transparent))))
+ }
  }
 }

@@ -47,7 +47,7 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
   // Mist: sky stays readable, the valley sinks into the page colour with no visible edge.
   Box(Modifier.matchParentSize().background(Brush.verticalGradient(0f to night.copy(alpha=.78f),.18f to night.copy(alpha=.12f),.48f to night.copy(alpha=.3f),.78f to night.copy(alpha=.86f),1f to night)))
   Box(Modifier.matchParentSize().background(Brush.horizontalGradient(0f to night.copy(alpha=.55f),.22f to Color.Transparent,.78f to Color.Transparent,1f to night.copy(alpha=.6f))))
-  Column(Modifier.fillMaxWidth().padding(horizontal=20.dp).padding(top=if(narrow)52.dp else 74.dp,bottom=4.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
+  Column(Modifier.fillMaxWidth().padding(horizontal=20.dp).padding(top=if(narrow)66.dp else 74.dp,bottom=4.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
    Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){
     Box(Modifier.drawBehind{if(!minimal){val r=size.maxDimension*.95f;drawCircle(Brush.radialGradient(listOf(cold.copy(alpha=.2f),Color.Transparent),center=Offset(size.width/2,size.height*.4f),radius=r),r,Offset(size.width/2,size.height*.4f))}}.clickable(onClickLabel="Ampliar retrato",onClick=onPortrait)){ForgePortrait(s,portrait)}
     Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(3.dp)){
@@ -55,7 +55,8 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
      Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){ClassEmblem(p.heroClass,Modifier.size(18.dp));Text(classes[p.heroClass],color=Blue,fontSize=12.sp);Text("·",color=Muted,fontSize=12.sp);Text(p.title,color=Muted,fontSize=12.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis)}
      Spacer(Modifier.height(4.dp))
      Meter(Progression.current(s.xp).toFloat()/Progression.requirement(s.level),Blue,slim=true)
-     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("${Progression.current(s.xp)}/${Progression.requirement(s.level)} XP",color=Blue.copy(alpha=.9f),fontSize=11.sp,letterSpacing=.4.sp);Text("${s.coins} fragmentos",fontSize=11.sp,color=Muted)}
+     if(narrow){Text("${Progression.current(s.xp)}/${Progression.requirement(s.level)} XP",color=Blue.copy(alpha=.9f),fontSize=11.sp,maxLines=1);Text("${s.coins} fragmentos",fontSize=11.sp,color=Muted,maxLines=1)}
+     else Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("${Progression.current(s.xp)}/${Progression.requirement(s.level)} XP",color=Blue.copy(alpha=.9f),fontSize=11.sp,letterSpacing=.4.sp,maxLines=1);Text("${s.coins} fragmentos",fontSize=11.sp,color=Muted,maxLines=1)}
     }
     Box(Modifier.semantics(mergeDescendants=true){contentDescription="Nível ${s.level}"}){ForgeMedallion(s.level,Modifier.size(if(narrow)42.dp else 48.dp))}
    }
