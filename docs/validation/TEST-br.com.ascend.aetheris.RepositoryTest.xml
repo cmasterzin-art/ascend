@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.RepositoryTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-11-18T04:33:45" hostname="runnervmccnms" time="1.208">
+<testsuite name="br.com.ascend.aetheris.RepositoryTest" tests="12" skipped="0" failures="0" errors="0" timestamp="2026-11-18T04:43:41" hostname="runnervmccnms" time="0.509">
   <properties/>
-  <testcase name="explicitRecordCorrectionRecomputesLevel" classname="br.com.ascend.aetheris.RepositoryTest" time="0.117"/>
-  <testcase name="databaseFilePersistsAfterCloseAndReopen" classname="br.com.ascend.aetheris.RepositoryTest" time="0.14"/>
-  <testcase name="invalidImportLeavesDataUntouched" classname="br.com.ascend.aetheris.RepositoryTest" time="0.08"/>
-  <testcase name="pausedFocusPersistsAcrossRepositoryRecreation" classname="br.com.ascend.aetheris.RepositoryTest" time="0.078"/>
-  <testcase name="habitEditPreservesPreviousRewardSnapshot" classname="br.com.ascend.aetheris.RepositoryTest" time="0.088"/>
-  <testcase name="manualCompletionAndFocusCannotDuplicatePayment" classname="br.com.ascend.aetheris.RepositoryTest" time="0.107"/>
-  <testcase name="editingQuestDoesNotRewriteClaimedRewards" classname="br.com.ascend.aetheris.RepositoryTest" time="0.157"/>
-  <testcase name="proportionalProgressIsIdempotentAndUndoReversesXP" classname="br.com.ascend.aetheris.RepositoryTest" time="0.095"/>
-  <testcase name="backupRoundTripAndCorruptionRejection" classname="br.com.ascend.aetheris.RepositoryTest" time="0.061"/>
-  <testcase name="purchasesAreAtomicAndCannotOverdraw" classname="br.com.ascend.aetheris.RepositoryTest" time="0.066"/>
-  <testcase name="questClaimOnlyOnceAndInvalidationAfterUndo" classname="br.com.ascend.aetheris.RepositoryTest" time="0.093"/>
-  <testcase name="restorationAndInventorySurviveDatabaseReload" classname="br.com.ascend.aetheris.RepositoryTest" time="0.124"/>
+  <testcase name="explicitRecordCorrectionRecomputesLevel" classname="br.com.ascend.aetheris.RepositoryTest" time="0.042"/>
+  <testcase name="databaseFilePersistsAfterCloseAndReopen" classname="br.com.ascend.aetheris.RepositoryTest" time="0.085"/>
+  <testcase name="invalidImportLeavesDataUntouched" classname="br.com.ascend.aetheris.RepositoryTest" time="0.031"/>
+  <testcase name="pausedFocusPersistsAcrossRepositoryRecreation" classname="br.com.ascend.aetheris.RepositoryTest" time="0.026"/>
+  <testcase name="habitEditPreservesPreviousRewardSnapshot" classname="br.com.ascend.aetheris.RepositoryTest" time="0.036"/>
+  <testcase name="manualCompletionAndFocusCannotDuplicatePayment" classname="br.com.ascend.aetheris.RepositoryTest" time="0.044"/>
+  <testcase name="editingQuestDoesNotRewriteClaimedRewards" classname="br.com.ascend.aetheris.RepositoryTest" time="0.042"/>
+  <testcase name="proportionalProgressIsIdempotentAndUndoReversesXP" classname="br.com.ascend.aetheris.RepositoryTest" time="0.04"/>
+  <testcase name="backupRoundTripAndCorruptionRejection" classname="br.com.ascend.aetheris.RepositoryTest" time="0.035"/>
+  <testcase name="purchasesAreAtomicAndCannotOverdraw" classname="br.com.ascend.aetheris.RepositoryTest" time="0.034"/>
+  <testcase name="questClaimOnlyOnceAndInvalidationAfterUndo" classname="br.com.ascend.aetheris.RepositoryTest" time="0.036"/>
+  <testcase name="restorationAndInventorySurviveDatabaseReload" classname="br.com.ascend.aetheris.RepositoryTest" time="0.053"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

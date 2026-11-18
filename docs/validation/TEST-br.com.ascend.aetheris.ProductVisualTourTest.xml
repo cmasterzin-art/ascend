@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.ProductVisualTourTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-18T04:33:32" hostname="runnervmccnms" time="5.065">
+<testsuite name="br.com.ascend.aetheris.ProductVisualTourTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-18T04:43:31" hostname="runnervmccnms" time="3.822">
   <properties/>
-  <testcase name="captureActualMainScreensAndWidgetWithTheSameFixture" classname="br.com.ascend.aetheris.ProductVisualTourTest" time="5.065"/>
+  <testcase name="captureActualMainScreensAndWidgetWithTheSameFixture" classname="br.com.ascend.aetheris.ProductVisualTourTest" time="3.822"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

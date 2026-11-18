@@ -1,3 +1,4 @@
+{'tests': 135, 'failures': 0, 'errors': 0, 'skipped': 0}
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
 Daemon will be stopped at the end of the build 
 > Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
@@ -8,10 +9,10 @@ Daemon will be stopped at the end of the build
 > Task :app:mapDebugSourceSetPaths
 > Task :app:generateDebugResources
 > Task :app:packageDebugResources
-> Task :app:parseDebugLocalResources
+> Task :app:mergeDebugResources
 > Task :app:createDebugCompatibleScreenManifests
 > Task :app:extractDeepLinksDebug
-> Task :app:mergeDebugResources
+> Task :app:parseDebugLocalResources
 > Task :app:processDebugMainManifest
 > Task :app:processDebugManifest
 > Task :app:processDebugManifestForPackage
@@ -46,8 +47,8 @@ Unable to strip the following libraries, packaging them as they are: libandroidx
 > Task :app:extractProguardFiles
 > Task :app:compileDebugKotlin
 > Task :app:compileDebugJavaWithJavac
-> Task :app:bundleDebugClassesToCompileJar
 > Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
 > Task :app:processDebugJavaRes
 > Task :app:kspDebugUnitTestKotlin
 > Task :app:dexBuilderDebug
@@ -65,35 +66,14 @@ Unable to strip the following libraries, packaging them as they are: libandroidx
 > Task :app:processDebugUnitTestJavaRes
 > Task :app:lintAnalyzeDebug
 > Task :app:testDebugUnitTest
+> Task :app:lintAnalyzeDebugAndroidTest
+> Task :app:lintAnalyzeDebugUnitTest
 
-ExplorationUiTest > forestExpeditionsBossAndMemoriesArePlayable FAILED
-    java.lang.AssertionError at ExplorationUiTest.kt:32
+> Task :app:lintReportDebug
+Wrote HTML report to file:///home/runner/work/ascend/ascend/app/build/reports/lint-results-debug.html
 
-NorthUiTest > createSagaThroughEditorAndClaimConsolidatedReward FAILED
-    java.lang.AssertionError at NorthUiTest.kt:41
+> Task :app:lintDebug
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1794976831564.json
 
-OnboardingTest > customHabitsPreserveHistoricalXpAndUndoThroughInterface FAILED
-    java.lang.AssertionError at OnboardingTest.kt:67
-
-OnboardingTest > createMageAndRecordStudyThroughInterface FAILED
-    java.lang.AssertionError at OnboardingTest.kt:36
-
-ProductivityUiTest > actualFocusControlsCreateAPersistentSessionWithoutExtraXp FAILED
-    java.lang.AssertionError at ProductivityUiTest.kt:50
-
-135 tests completed, 5 failed
-
-> Task :app:testDebugUnitTest FAILED
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1794976239676.json
-
-FAILURE: Build failed with an exception.
-
-* What went wrong:
-Execution failed for task ':app:testDebugUnitTest'.
-> There were failing tests. See the report at: file:///home/runner/work/ascend/ascend/app/build/reports/tests/testDebugUnitTest/index.html
-
-* Try:
-> Run with --scan to get full insights.
-
-BUILD FAILED in 3m 28s
-52 actionable tasks: 52 executed
+BUILD SUCCESSFUL in 3m 42s
+56 actionable tasks: 56 executed

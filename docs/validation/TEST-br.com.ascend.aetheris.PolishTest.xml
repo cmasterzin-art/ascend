@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.PolishTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-18T04:33:28" hostname="runnervmccnms" time="0.023">
+<testsuite name="br.com.ascend.aetheris.PolishTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-11-18T04:43:27" hostname="runnervmccnms" time="0.008">
   <properties/>
-  <testcase name="brazilianDatesDoNotShiftWhenLocaleOrZoneChanges" classname="br.com.ascend.aetheris.PolishTest" time="0.02"/>
+  <testcase name="brazilianDatesDoNotShiftWhenLocaleOrZoneChanges" classname="br.com.ascend.aetheris.PolishTest" time="0.007"/>
   <testcase name="widgetCapacityAccountsForSpaceFontAndWidth" classname="br.com.ascend.aetheris.PolishTest" time="0.001"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
