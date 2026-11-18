@@ -22,7 +22,7 @@ val mainNames=listOf("Jornada","Hábitos","Missões","Mundo","Herói")
 /** The five areas share the carved glyph family. Decorative canvas; text provides tab semantics. */
 @Composable fun NavigationSigil(index:Int,color:Color,modifier:Modifier=Modifier){CarvedGlyph(listOf(Glyph.Journey,Glyph.Habits,Glyph.Missions,Glyph.World,Glyph.Hero)[index%5],color,modifier,26.dp)}
 @Composable fun AetherisNavigation(route:String,onSelect:(String)->Unit){
- val selected=if(route.startsWith("region/")||route.startsWith("location/")||route.startsWith("expedition/"))"world" else when(route){"grimoire","planner","analysis","focus_history"->"habits";"settings","journal","memories","portrait"->"character";"weekly"->"world";else->route}
+ val selected=if(route.startsWith("region/")||route.startsWith("location/")||route.startsWith("expedition/"))"world" else if(route.startsWith("path/")||route in listOf("paths","inbox","pending"))"journey" else when(route){"grimoire","planner","analysis","focus_history"->"habits";"settings","journal","memories","portrait"->"character";"weekly"->"world";else->route}
  val dark=LocalAppearance.current.dark;val motion=LocalAppearance.current.reducedMotion
  val bronze=Gold;val base=if(dark)Color(0xFF0F1110) else Color(0xFFE2DCD0)
  // One continuous basalt strip: no per-tab boxes, selection is a lit notch and a warmed glyph.

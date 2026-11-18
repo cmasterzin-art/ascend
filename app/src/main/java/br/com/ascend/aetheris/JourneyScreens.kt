@@ -50,8 +50,10 @@ import java.util.Locale
 @Composable fun FocusCard(f:Focus,s:GameState,vm:GameViewModel){
     var now by remember{mutableLongStateOf(System.currentTimeMillis())};LaunchedEffect(f){while(f.startedAt>0){now=System.currentTimeMillis();delay(1000)}}
     val seconds=f.seconds(now);val remaining=(f.duration*60L-seconds).coerceAtLeast(0);val violet=Violet;val gold=Gold
+    val label=s.habits.find{it.id==f.habitId}?.name ?: f.targetLabel.ifBlank{s.pathTasks.find{it.id==f.taskId}?.title ?: s.paths.find{it.id==f.pathId}?.name ?: "Sessão"}
+    val extraTag=if(f.habitId.isBlank())" · projeto (sem XP extra)" else ""
     Panel(accent=violet){
-        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Eyebrow("Foco · ${s.habits.find{it.id==f.habitId}?.name?:"Sessão"}",violet);Text("${seconds/60} ${if(seconds/60==1L)"minuto efetivo" else "minutos efetivos"} · sessão de ${displayDate(f.date)}",color=Muted,fontSize=11.sp)}
+        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Eyebrow("Foco · $label$extraTag",violet);Text("${seconds/60} ${if(seconds/60==1L)"minuto efetivo" else "minutos efetivos"} · sessão de ${displayDate(f.date)}",color=Muted,fontSize=11.sp)}
         Box(Modifier.fillMaxWidth().padding(vertical=8.dp),contentAlignment=Alignment.Center){
             Canvas(Modifier.size(192.dp)){
                 val cx=size.width/2;val cy=size.height/2;val r=size.minDimension/2;val d=1.dp.toPx()

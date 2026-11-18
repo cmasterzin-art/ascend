@@ -20,9 +20,12 @@
   - Backup v9 retrocompatível com versões v1..v8, validação estrita e importação transacional atômica com rollback.
   - Lógica pura de `Caminhos`, `Agenda 2.0` (Dia/Semana/Mês, sobreposição de blocos, planejado vs efetivo), `Central de Pendências`, `Rumos do Dia` e vínculo com `Salão das Memórias` / `Crônica`.
   - Validado `./gradlew testDebugUnitTest`: **135 testes aprovados, 0 falhas**.
-- [ ] **Fase 3 — Interface de Caminhos (Lista, Editor, Detalhes, Etapas, Tarefas, Subtarefas, Duplicação)**
-- [ ] **Fase 4 — Agenda Profissional 2.0 (Dia/Semana/Mês, Blocos de Tempo, Eventos, Caixa de Entrada, Pendências)**
-- [ ] **Fase 5 — Integração na Jornada ("Rumos do Dia"), Vínculo de Hábitos, Foco em Projeto/Tarefa e Salão das Memórias**
+- [x] **Fase 3 — Interface de Caminhos (Lista, Editor, Detalhes, Etapas, Tarefas, Subtarefas, Duplicação)**
+  - Implementado `CaminhosScreens.kt` (`PathsScreen`, `PathEditorDialog`, `PathDetailScreen`, `TaskEditorDialog`) com filtros por estado, busca, etapas com progresso real, tarefas, subtarefas reordenáveis, mover/duplicar e confirmações explícitas.
+- [x] **Fase 4 — Agenda Profissional 2.0 (Dia/Semana/Mês, Blocos de Tempo, Eventos, Caixa de Entrada, Pendências)**
+  - Implementado `AgendaScreens.kt` (`PlannerScreen` com modos `Dia`/`Semana`/`Mês`, blocos de tempo com detecção de sobreposição e comparação planejado vs foco real, compromissos sem XP, `InboxScreen` com triagem atômica e `PendingCenterScreen` com 6 recortes).
+- [x] **Fase 5 — Integração na Jornada ("Rumos do Dia"), Vínculo de Hábitos, Foco em Projeto/Tarefa e Salão das Memórias**
+  - Adicionados `ShortcutStrip` (`Caminhos`, `Entrada`, `Pendências`) e `RumosDoDiaPanel` em `JourneyHome.kt`, foco em projeto/tarefa sem XP inventado em `MainActivity.kt` / `JourneyScreens.kt` / `ProductivityScreens.kt`, e navegação completa em `AetherisNavigation.kt` e `CarvedArt.kt`.
 - [ ] **Fase 6 — Acabamento visual, acessibilidade, tema claro/escuro, `320dp` / fonte `130%`, modo minimalista e redução de movimento**
 - [ ] **Fase 7 — Bateria abrangente de testes (135 preservados + novos testes 1.7.0) e capturas reais**
 - [ ] **Fase 8 — Build final, Lint 0 erros, documentação (`CAMINHOS-1.7.0.md`, `AGENDA-1.7.0.md`, `VISUAL-1.7.0.md`, `README.md`, `CHANGELOG.md`, `PROGRESSO.md`, `VALIDACAO.md`, `INSTALACAO.md`) e entrega CI assinada**

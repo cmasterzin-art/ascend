@@ -56,7 +56,9 @@ enum class Glyph(internal val cuts:List<Any>){
 private val labelGlyphs=mapOf("Perfil" to Glyph.Hero,"Atributos" to Glyph.Attributes,"Inventário" to Glyph.Inventory,"Loja" to Glyph.Shop,"Conquistas" to Glyph.Achievements,"Estatísticas" to Glyph.Analysis,"Habilidades" to Glyph.Skills,
  "Hábitos" to Glyph.Habits,"Calendário" to Glyph.Planner,"Rotinas" to Glyph.Routines,"Histórico" to Glyph.History,"Modelos de rotina" to Glyph.Routines,
  "Diárias" to Glyph.Daily,"Semanais" to Glyph.Weekly,"Épicas" to Glyph.Epic,"Chefes" to Glyph.Boss,"Resgates" to Glyph.Claims,"Sagas" to Glyph.Sagas,
- "Mapa" to Glyph.Map,"Vila" to Glyph.Village,"Crônicas" to Glyph.Chronicles,"Planejador" to Glyph.Planner,"Análises" to Glyph.Analysis,"Foco" to Glyph.Focus,"Mundo" to Glyph.World,"Jornada" to Glyph.Journey,"Missões" to Glyph.Missions,"Herói" to Glyph.Hero)
+ "Mapa" to Glyph.Map,"Vila" to Glyph.Village,"Crônicas" to Glyph.Chronicles,"Planejador" to Glyph.Planner,"Análises" to Glyph.Analysis,"Foco" to Glyph.Focus,"Mundo" to Glyph.World,"Jornada" to Glyph.Journey,"Missões" to Glyph.Missions,"Herói" to Glyph.Hero,
+ "Caminhos" to Glyph.Map,"Entrada" to Glyph.Chronicles,"Pendências" to Glyph.Claims,"Dia" to Glyph.Daily,"Semana" to Glyph.Weekly,"Mês" to Glyph.Planner,
+ "Ativos" to Glyph.Journey,"Todos" to Glyph.Missions,"Hoje" to Glyph.Daily,"Próximos dias" to Glyph.Planner,"Atrasadas" to Glyph.Boss,"Sem data" to Glyph.Routines,"Alta prioridade" to Glyph.Epic,"Concluídas" to Glyph.Achievements)
 fun glyphForLabel(label:String):Glyph?=labelGlyphs[label]
 
 @Composable fun CarvedGlyph(glyph:Glyph,color:Color,modifier:Modifier=Modifier,size:Dp=24.dp){

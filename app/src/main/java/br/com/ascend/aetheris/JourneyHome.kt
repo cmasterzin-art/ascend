@@ -26,21 +26,27 @@ import java.util.Locale
     LaunchedEffect(Unit){while(true){delay(15_000);date=today()}}
     return date
 }
-@Composable fun Journey(s:GameState,onProgress:(Habit,HabitRecord?)->Unit,onEdit:(Habit)->Unit,onFocus:(Habit)->Unit,onAdd:()->Unit,onJournal:()->Unit,vm:GameViewModel,relaxed:Boolean,onPlanner:()->Unit={},onAnalysis:()->Unit={},onHistory:()->Unit={},onPortrait:()->Unit={},onMissions:()->Unit={},onRegion:()->Unit={}){
+@Composable fun Journey(s:GameState,onProgress:(Habit,HabitRecord?)->Unit,onEdit:(Habit)->Unit,onFocus:(Habit)->Unit,onAdd:()->Unit,onJournal:()->Unit,vm:GameViewModel,relaxed:Boolean,onPlanner:()->Unit={},onAnalysis:()->Unit={},onHistory:()->Unit={},onPortrait:()->Unit={},onMissions:()->Unit={},onRegion:()->Unit={},onPaths:()->Unit={},onInbox:()->Unit={},onPending:()->Unit={},onOpenPath:(String)->Unit={}){
  val day=currentDay();val rested=day in s.restDates
  val due=if(relaxed&&!rested)s.habits.filter{!it.deleted&&!it.archived&&!it.paused}.sortedBy{it.position} else s.due(day)
  val done=due.count{s.record(it.id,day)?.complete==true};var pendingOnly by remember{mutableStateOf(false)};var detail by remember{mutableStateOf<Habit?>(null)}
   val dialSize=if(LocalConfiguration.current.screenWidthDp<=340)56.dp else 66.dp
+  val inboxCount=s.inboxItems.count{!it.archived}
+  val rumos=remember(s,day){rumosDoDia(s,day)}
+  val hasRumos=rumos.nextEvent!=null||rumos.nextBlock!=null||rumos.priorityTasks.isNotEmpty()||rumos.upcomingPaths.isNotEmpty()||rumos.inboxCount>0
+  var rumosExpanded by androidx.compose.runtime.saveable.rememberSaveable{mutableStateOf(false)}
   androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxSize().testTag("journey_list").semantics{contentDescription="Central da Jornada"},contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
    item{Box(Modifier.fillMaxWidth()){
     CompactHero(s,onPortrait)
     // 1.6.9.10: the header floats over the sky of the fjord instead of occupying its own band.
     Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Eyebrow("ASCEND  /  MINHA JORNADA");Text(displayDate(day),color=Muted,fontSize=12.sp)};ClassEmblem(s.player!!.heroClass,Modifier.size(26.dp))}
    }}
-   item{Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(14.dp)){
+   item{Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(12.dp)){
     DayLedger(done,due.size,rested,relaxed,dialSize)
     ShortcutStrip(listOf(Triple("Planejador",Glyph.Planner,onPlanner),Triple("Análises",Glyph.Analysis,onAnalysis),Triple("Foco",Glyph.Focus,onHistory)))
+    ShortcutStrip(listOf(Triple("Caminhos",Glyph.Map,onPaths),Triple("Entrada${if(inboxCount>0)" ($inboxCount)" else ""}",Glyph.Chronicles,onInbox),Triple("Pendências",Glyph.Claims,onPending)))
    }}
+  item{RumosDoDiaPanel(rumos,s,vm,expanded=rumosExpanded||hasRumos&&rumosExpanded,hasRumos=hasRumos,onToggle={rumosExpanded=!rumosExpanded},onPaths=onPaths,onOpenPath=onOpenPath,onPlanner=onPlanner,onInbox=onInbox,onPending=onPending)}
   s.focus?.let{f->item{FocusCard(f,s,vm)}}
   item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){SectionHeader("Seus próximos passos","Conclua com um toque; detalhes ao selecionar o nome.")};IconButton(onAdd,Modifier.size(42.dp).clip(CutCornerShape(5.dp)).background(Gold.copy(alpha=.12f)).border(1.dp,Gold.copy(alpha=.45f),CutCornerShape(5.dp))){Icon(Icons.Default.Add,"Criar hábito",tint=Gold)}};if(due.size>1||done>0)ChipRow(listOf("Todos (${due.size})","Pendentes (${due.size-done})"),if(pendingOnly)1 else 0,{pendingOnly=it==1})}
   val visible=due.filter{!pendingOnly||s.record(it.id,day)?.complete!=true}.sortedBy{s.record(it.id,day)?.complete==true}
@@ -51,6 +57,75 @@ import java.util.Locale
   item{NarrativePanel(s,vm);TextButton(onJournal){Text("Escrever no diário")}}
  }
  detail?.let{h->HabitDetails(h,s,{detail=null},{detail=null;onEdit(h)},{r->detail=null;onProgress(h,r)})}
+}
+@OptIn(ExperimentalLayoutApi::class)
+@Composable fun RumosDoDiaPanel(r:RumosDoDia,s:GameState,vm:GameViewModel,expanded:Boolean,hasRumos:Boolean,onToggle:()->Unit,onPaths:()->Unit,onOpenPath:(String)->Unit,onPlanner:()->Unit,onInbox:()->Unit,onPending:()->Unit){
+ AetherSurface(if(r.overdueCount>0)SurfaceKind.Heroic else SurfaceKind.Operational,Modifier.testTag("rumos_do_dia")){
+  Row(Modifier.fillMaxWidth().clickable(onClick=onToggle),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){
+   Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(2.dp)){
+    Eyebrow("Rumos do Dia",Gold)
+    Text(
+     if(!hasRumos)"Sem compromissos, blocos ou tarefas urgentes hoje."
+     else "${r.pendingTodayCount} pendentes hoje · ${r.overdueCount} atrasadas · ${r.plannedBlocksCount} blocos · ${r.inboxCount} entrada",
+     color=if(r.overdueCount>0)Gold else Muted,
+     fontSize=12.sp
+    )
+   }
+   TextButton(onToggle){Text(if(expanded)"Recolher" else "Abrir rumos",fontSize=12.sp)}
+  }
+  if(expanded){
+   Hairline()
+   if(!hasRumos){
+    Text("Sua agenda e caminhos estão leves hoje. Capture uma ideia rápida ou planeje um novo caminho.",color=Muted,fontSize=12.sp)
+    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
+     SagaButton("Abrir Caminhos",onPaths,Modifier.weight(1f),secondary=true)
+     SagaButton("Capturar",onInbox,Modifier.weight(1f),secondary=true)
+    }
+   }else{
+    r.nextEvent?.let{ev->
+     Row(Modifier.fillMaxWidth().clickable(onClick=onPlanner),horizontalArrangement=Arrangement.SpaceBetween){
+      Text("Próximo compromisso: ${ev.title}",Modifier.weight(1f),color=Ink,fontSize=13.sp)
+      if(ev.startTime.isNotBlank())Text(ev.startTime,color=Blue,fontSize=12.sp)
+     }
+    }
+    r.nextBlock?.let{b->
+     Row(Modifier.fillMaxWidth().clickable(onClick=onPlanner),horizontalArrangement=Arrangement.SpaceBetween){
+      Text("Próximo bloco: ${b.title}",Modifier.weight(1f),color=Ink,fontSize=13.sp)
+      Text("${b.startTime}–${b.endTime}",color=Violet,fontSize=12.sp)
+     }
+    }
+    if(r.priorityTasks.isNotEmpty()){
+     Eyebrow("Tarefas prioritárias",Blue)
+     r.priorityTasks.forEach{t->
+      val parent=s.paths.find{it.id==t.pathId}
+      Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){
+       Checkbox(checked=t.completed,onCheckedChange={vm.run{vm.repo.toggleTask(t.id)}},modifier=Modifier.size(48.dp).semantics{contentDescription="Alternar ${t.title}"})
+       Column(Modifier.weight(1f).clickable(enabled=parent!=null){parent?.let{onOpenPath(it.id)}}){
+        Text(t.title,color=Ink,fontSize=13.sp)
+        Text("${parent?.name?:"Avulsa"}${if(t.deadline.isNotBlank())" · até ${displayDate(t.deadline)}" else ""}",color=if(isTaskOverdue(t))MaterialTheme.colorScheme.error else Muted,fontSize=11.sp)
+       }
+      }
+     }
+    }
+    if(r.upcomingPaths.isNotEmpty()){
+     Eyebrow("Caminhos em curso",Gold)
+     r.upcomingPaths.forEach{p->
+      val prog=pathProgress(s,p.id)
+      Row(Modifier.fillMaxWidth().clickable{onOpenPath(p.id)}.padding(vertical=4.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+       Text(p.name,Modifier.weight(1f),color=Ink,fontSize=13.sp)
+       Text("${prog.done}/${prog.total}",color=Gold,fontSize=12.sp)
+      }
+     }
+    }
+    FlowRow(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
+     TextButton(onPlanner){Text("Agenda 2.0",fontSize=12.sp)}
+     TextButton(onPending){Text("Pendências",fontSize=12.sp)}
+     TextButton(onPaths){Text("Caminhos",fontSize=12.sp)}
+     TextButton(onInbox){Text("Entrada (${r.inboxCount})",fontSize=12.sp)}
+    }
+   }
+  }
+ }
 }
 @Composable fun WeekStrip(s:GameState,day:String){
     val end=LocalDate.parse(day);val start=end.with(DayOfWeek.MONDAY)
