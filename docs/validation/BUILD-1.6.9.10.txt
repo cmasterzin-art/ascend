@@ -10,9 +10,9 @@ Daemon will be stopped at the end of the build
 > Task :app:generateDebugResources
 > Task :app:packageDebugResources
 > Task :app:mergeDebugResources
-> Task :app:parseDebugLocalResources
 > Task :app:createDebugCompatibleScreenManifests
 > Task :app:extractDeepLinksDebug
+> Task :app:parseDebugLocalResources
 > Task :app:processDebugMainManifest
 > Task :app:processDebugManifest
 > Task :app:processDebugManifestForPackage
@@ -47,8 +47,8 @@ Unable to strip the following libraries, packaging them as they are: libandroidx
 > Task :app:extractProguardFiles
 > Task :app:compileDebugKotlin
 > Task :app:compileDebugJavaWithJavac
-> Task :app:bundleDebugClassesToRuntimeJar
 > Task :app:bundleDebugClassesToCompileJar
+> Task :app:bundleDebugClassesToRuntimeJar
 > Task :app:processDebugJavaRes
 > Task :app:kspDebugUnitTestKotlin
 > Task :app:dexBuilderDebug
@@ -58,22 +58,22 @@ Unable to strip the following libraries, packaging them as they are: libandroidx
 > Task :app:packageDebug
 > Task :app:createDebugApkListingFileRedirect
 > Task :app:assembleDebug
-> Task :app:generateDebugAndroidTestLintModel
-> Task :app:generateDebugLintReportModel
-> Task :app:generateDebugUnitTestLintModel
 > Task :app:compileDebugUnitTestKotlin
+> Task :app:generateDebugAndroidTestLintModel
 > Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
 > Task :app:processDebugUnitTestJavaRes
-> Task :app:lintAnalyzeDebug
 > Task :app:testDebugUnitTest
+> Task :app:generateDebugLintReportModel
+> Task :app:generateDebugUnitTestLintModel
 > Task :app:lintAnalyzeDebugAndroidTest
+> Task :app:lintAnalyzeDebug
 > Task :app:lintAnalyzeDebugUnitTest
 
 > Task :app:lintReportDebug
 Wrote HTML report to file:///home/runner/work/ascend/ascend/app/build/reports/lint-results-debug.html
 
 > Task :app:lintDebug
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1794965910950.json
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1794966360585.json
 
-BUILD SUCCESSFUL in 3m 43s
+BUILD SUCCESSFUL in 3m 57s
 56 actionable tasks: 56 executed

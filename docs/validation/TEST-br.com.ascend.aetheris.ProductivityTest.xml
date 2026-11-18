@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.ProductivityTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:41:35" hostname="runnervmccnms" time="1.377">
+<testsuite name="br.com.ascend.aetheris.ProductivityTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:48:35" hostname="runnervmccnms" time="0.728">
   <properties/>
-  <testcase name="widgetCompletionHonorsIncludeAndRefusesDispense" classname="br.com.ascend.aetheris.ProductivityTest" time="0.284"/>
-  <testcase name="futureWeekAndPersistenceUseStableExceptionIds" classname="br.com.ascend.aetheris.ProductivityTest" time="0.172"/>
-  <testcase name="schemaFiveMigrationPreservesAllOldDataAndRunningLegacyFocus" classname="br.com.ascend.aetheris.ProductivityTest" time="0.165"/>
-  <testcase name="newPlanningAndSessionTablesSurviveClosingAndReopeningTheDatabaseFile" classname="br.com.ascend.aetheris.ProductivityTest" time="0.192"/>
-  <testcase name="archiveDeleteAndRenameDoNotEraseFinishedSessions" classname="br.com.ascend.aetheris.ProductivityTest" time="0.065"/>
-  <testcase name="remindersUseTheSameExceptionalSchedule" classname="br.com.ascend.aetheris.ProductivityTest" time="0.049"/>
-  <testcase name="focusHistoryIsAtomicAndDoesNotAddAnotherReward" classname="br.com.ascend.aetheris.ProductivityTest" time="0.082"/>
-  <testcase name="includeExcludeAndResetShareOneScheduleWithoutRewards" classname="br.com.ascend.aetheris.ProductivityTest" time="0.048"/>
-  <testcase name="v7BackupHasNoInventedSessionsOrExceptions" classname="br.com.ascend.aetheris.ProductivityTest" time="0.034"/>
-  <testcase name="analysisPeriodsCorrectionsAndEmptyInsightsAreDeterministic" classname="br.com.ascend.aetheris.ProductivityTest" time="0.041"/>
-  <testcase name="backupEightRoundTripAndInvalidRestoreAreAtomic" classname="br.com.ascend.aetheris.ProductivityTest" time="0.069"/>
-  <testcase name="cancelledAndCompletedSessionsHaveExplicitStates" classname="br.com.ascend.aetheris.ProductivityTest" time="0.044"/>
-  <testcase name="pastExceptionsAreRejectedAndExistingRecordKeepsItsSnapshot" classname="br.com.ascend.aetheris.ProductivityTest" time="0.049"/>
-  <testcase name="pausedSessionRetainsIdentityAcrossRepositoryRecreation" classname="br.com.ascend.aetheris.ProductivityTest" time="0.035"/>
-  <testcase name="restAndInactiveStateHavePriorityAndHistoryIsPreserved" classname="br.com.ascend.aetheris.ProductivityTest" time="0.047"/>
+  <testcase name="widgetCompletionHonorsIncludeAndRefusesDispense" classname="br.com.ascend.aetheris.ProductivityTest" time="0.082"/>
+  <testcase name="futureWeekAndPersistenceUseStableExceptionIds" classname="br.com.ascend.aetheris.ProductivityTest" time="0.037"/>
+  <testcase name="schemaFiveMigrationPreservesAllOldDataAndRunningLegacyFocus" classname="br.com.ascend.aetheris.ProductivityTest" time="0.056"/>
+  <testcase name="newPlanningAndSessionTablesSurviveClosingAndReopeningTheDatabaseFile" classname="br.com.ascend.aetheris.ProductivityTest" time="0.059"/>
+  <testcase name="archiveDeleteAndRenameDoNotEraseFinishedSessions" classname="br.com.ascend.aetheris.ProductivityTest" time="0.042"/>
+  <testcase name="remindersUseTheSameExceptionalSchedule" classname="br.com.ascend.aetheris.ProductivityTest" time="0.067"/>
+  <testcase name="focusHistoryIsAtomicAndDoesNotAddAnotherReward" classname="br.com.ascend.aetheris.ProductivityTest" time="0.044"/>
+  <testcase name="includeExcludeAndResetShareOneScheduleWithoutRewards" classname="br.com.ascend.aetheris.ProductivityTest" time="0.053"/>
+  <testcase name="v7BackupHasNoInventedSessionsOrExceptions" classname="br.com.ascend.aetheris.ProductivityTest" time="0.063"/>
+  <testcase name="analysisPeriodsCorrectionsAndEmptyInsightsAreDeterministic" classname="br.com.ascend.aetheris.ProductivityTest" time="0.045"/>
+  <testcase name="backupEightRoundTripAndInvalidRestoreAreAtomic" classname="br.com.ascend.aetheris.ProductivityTest" time="0.05"/>
+  <testcase name="cancelledAndCompletedSessionsHaveExplicitStates" classname="br.com.ascend.aetheris.ProductivityTest" time="0.041"/>
+  <testcase name="pastExceptionsAreRejectedAndExistingRecordKeepsItsSnapshot" classname="br.com.ascend.aetheris.ProductivityTest" time="0.025"/>
+  <testcase name="pausedSessionRetainsIdentityAcrossRepositoryRecreation" classname="br.com.ascend.aetheris.ProductivityTest" time="0.029"/>
+  <testcase name="restAndInactiveStateHavePriorityAndHistoryIsPreserved" classname="br.com.ascend.aetheris.ProductivityTest" time="0.034"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

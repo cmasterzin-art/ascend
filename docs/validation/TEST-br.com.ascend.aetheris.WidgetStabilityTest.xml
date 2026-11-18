@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.WidgetStabilityTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:41:54" hostname="runnervmccnms" time="1.087">
+<testsuite name="br.com.ascend.aetheris.WidgetStabilityTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-18T01:48:53" hostname="runnervmccnms" time="1.18">
   <properties/>
-  <testcase name="oldPendingIntentRefusesPaymentAndExplainsTheNewDay" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.109"/>
-  <testcase name="changedSchedulingAndInactiveHabitsCannotBeCompletedByAnOldAction" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.114"/>
-  <testcase name="hostRefreshesAfterScheduleChangesCorrectionAndBackupRestore" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.643"/>
-  <testcase name="emptyCompactHasNoMeaninglessProgressAndFitsItsMinimumWidth" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.098"/>
-  <testcase name="failedWidgetLoadKeepsARecoverableJourneyActionWithoutStaleButtons" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.123"/>
+  <testcase name="oldPendingIntentRefusesPaymentAndExplainsTheNewDay" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.092"/>
+  <testcase name="changedSchedulingAndInactiveHabitsCannotBeCompletedByAnOldAction" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.077"/>
+  <testcase name="hostRefreshesAfterScheduleChangesCorrectionAndBackupRestore" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.815"/>
+  <testcase name="emptyCompactHasNoMeaninglessProgressAndFitsItsMinimumWidth" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.092"/>
+  <testcase name="failedWidgetLoadKeepsARecoverableJourneyActionWithoutStaleButtons" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.103"/>
   <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[Intent = Intent { act=br.com.ascend.WIDGET_COMPLETE cmp=br.com.ascend.aetheris/.HabitWidget (has extras) }; Matching wrappers: [Wrapper[receiver=[br.com.ascend.aetheris.HabitWidget@67e3f0b6], context=[android.app.ContextImpl@3a4af271], intentFilter=[android.content.IntentFilter@75b53932]]]
+  <system-err><![CDATA[Intent = Intent { act=br.com.ascend.WIDGET_COMPLETE cmp=br.com.ascend.aetheris/.HabitWidget (has extras) }; Matching wrappers: [Wrapper[receiver=[br.com.ascend.aetheris.HabitWidget@10bee055], context=[android.app.ContextImpl@39fd37c], intentFilter=[android.content.IntentFilter@3bb01b6e]]]
 ]]></system-err>
 </testsuite>
