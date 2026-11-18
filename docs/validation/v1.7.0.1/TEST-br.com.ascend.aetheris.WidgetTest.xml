@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.WidgetTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:38:41" hostname="da0963ce0ccf" time="0.554">
+  <properties/>
+  <testcase name="darkWidgetAndResizingKeepActionsWithinSpace" classname="br.com.ascend.aetheris.WidgetTest" time="0.121"/>
+  <testcase name="remoteViewsHaveCompactExpandedAndUnconfiguredStates" classname="br.com.ascend.aetheris.WidgetTest" time="0.168"/>
+  <testcase name="actualPendingIntentCompletesSimpleHabitAndViewsUpdate" classname="br.com.ascend.aetheris.WidgetTest" time="0.16"/>
+  <testcase name="installedWidgetReceivesRepositoryChangesAndSchedulesDayRefresh" classname="br.com.ascend.aetheris.WidgetTest" time="0.104"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Intent = Intent { act=br.com.ascend.WIDGET_COMPLETE dat=ascend://widget/6caa71ce-fa8c-499b-acf7-8d1cde4ac0fa/2026-11-18 cmp=br.com.ascend.aetheris/.HabitWidget (has extras) }; Matching wrappers: [Wrapper[receiver=[br.com.ascend.aetheris.HabitWidget@15017c8d], context=[android.app.ContextImpl@cf422f1], intentFilter=[android.content.IntentFilter@32f72fae]]]
+Intent = Intent { act=br.com.ascend.WIDGET_COMPLETE dat=ascend://widget/6caa71ce-fa8c-499b-acf7-8d1cde4ac0fa/2026-11-18 cmp=br.com.ascend.aetheris/.HabitWidget (has extras) }; Matching wrappers: [Wrapper[receiver=[br.com.ascend.aetheris.HabitWidget@15017c8d], context=[android.app.ContextImpl@cf422f1], intentFilter=[android.content.IntentFilter@32f72fae]]]
+]]></system-err>
+</testsuite>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.RpgTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:38:26" hostname="da0963ce0ccf" time="0.312">
+  <properties/>
+  <testcase name="oneItemPerSlotAndUndoCannotFarmSkillPoints" classname="br.com.ascend.aetheris.RpgTest" time="0.06"/>
+  <testcase name="versionTwoBackupPreservesProgressAndOldEquipment" classname="br.com.ascend.aetheris.RpgTest" time="0.062"/>
+  <testcase name="lockedSkillAndDirectPurchaseCannotBypassProgression" classname="br.com.ascend.aetheris.RpgTest" time="0.035"/>
+  <testcase name="restoredVillageChangesDialogueAndSurvivesReload" classname="br.com.ascend.aetheris.RpgTest" time="0.051"/>
+  <testcase name="skillCostsOnePointAndGrantsPersistentEquippableCosmetic" classname="br.com.ascend.aetheris.RpgTest" time="0.104"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

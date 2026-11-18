@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.PolishUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:38:09" hostname="da0963ce0ccf" time="4.152">
+  <properties/>
+  <testcase name="widgetLinksAreConsumedAndReturningToHeroKeepsTheRoute" classname="br.com.ascend.aetheris.PolishUiTest" time="1.163"/>
+  <testcase name="dayTargetsAndHeroAreUsableWithLargeText" classname="br.com.ascend.aetheris.PolishUiTest" time="1.356"/>
+  <testcase name="memoryAndWeekUseReadableDatesAndEmptyFilters" classname="br.com.ascend.aetheris.PolishUiTest" time="1.633"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

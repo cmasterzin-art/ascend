@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.WidgetStabilityTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:38:40" hostname="da0963ce0ccf" time="0.927">
+  <properties/>
+  <testcase name="oldPendingIntentRefusesPaymentAndExplainsTheNewDay" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.124"/>
+  <testcase name="changedSchedulingAndInactiveHabitsCannotBeCompletedByAnOldAction" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.124"/>
+  <testcase name="hostRefreshesAfterScheduleChangesCorrectionAndBackupRestore" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.47"/>
+  <testcase name="emptyCompactHasNoMeaninglessProgressAndFitsItsMinimumWidth" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.098"/>
+  <testcase name="failedWidgetLoadKeepsARecoverableJourneyActionWithoutStaleButtons" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.111"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[Intent = Intent { act=br.com.ascend.WIDGET_COMPLETE cmp=br.com.ascend.aetheris/.HabitWidget (has extras) }; Matching wrappers: [Wrapper[receiver=[br.com.ascend.aetheris.HabitWidget@2cc2bbc4], context=[android.app.ContextImpl@551334a8], intentFilter=[android.content.IntentFilter@26613ee8]]]
+]]></system-err>
+</testsuite>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.ProductVisualTourTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:38:13" hostname="da0963ce0ccf" time="3.691">
+  <properties/>
+  <testcase name="captureActualMainScreensAndWidgetWithTheSameFixture" classname="br.com.ascend.aetheris.ProductVisualTourTest" time="3.691"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

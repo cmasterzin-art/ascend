@@ -1,15 +1,17 @@
-# ASCEND — Crônicas da Ascensão · 1.7.0
+# ASCEND — Crônicas da Ascensão · 1.7.0.1
 
-[**Baixar APK Android 1.7.0 (assinatura oficial preservada)**](downloads/ASCEND-1.7.0.apk?raw=true) · [APK 1.6.9.19](downloads/ASCEND-1.6.9.19.apk?raw=true) · [APK 1.6.9.15](downloads/ASCEND-1.6.9.15.apk?raw=true) · [APK 1.6.9](downloads/ASCEND-1.6.9.apk?raw=true)
+[**Baixar APK Android 1.7.0.1**](downloads/ASCEND-1.7.0.1.apk?raw=true) · [APK 1.7.0](downloads/ASCEND-1.7.0.apk?raw=true) · [APK 1.6.9.19](downloads/ASCEND-1.6.9.19.apk?raw=true) · [APK 1.6.9.15](downloads/ASCEND-1.6.9.15.apk?raw=true) · [APK 1.6.9](downloads/ASCEND-1.6.9.apk?raw=true)
 
 RPG de hábitos, projetos pessoais e agenda avançada para Android 8.0 ou superior. **Tudo funciona localmente**, sem conta, internet, anúncios, assinatura ou serviços pagos. O GitHub distribui o código e o instalador; o aplicativo não tem permissão INTERNET.
+
+A versão **1.7.0.1 — A Consolidação dos Caminhos** corrige a atribuição do foco a projetos e blocos, alinha os estados com as pendências e traz a sessão ativa ao topo da Jornada. Mantém Room v7, backup v9 e assinatura compatível. [Auditoria](docs/AUDITORIA-1.7.0.1.md) · [Validação](VALIDACAO.md) · [Comparativo visual](docs/VISUAL-1.7.0.1.md).
 
 A versão **1.7.0 — Os Nove Caminhos** (*Personal Projects & Advanced Productivity Update*) expande o ASCEND para um sistema integrado de desenvolvimento pessoal preservando integralmente a Biblioteca da Forja (`1.6.9.19`), o RPG, as narrativas e a economia de XP/moedas:
 - **Caminhos (Projetos Pessoais):** projetos estruturados com etapas, tarefas, subtarefas reordenáveis, prazos, duplicação, vínculo opcional a hábitos (sem XP duplicado), sessões de foco dedicadas (`0 XP` extra) e registro de conclusões no `Salão das Memórias` (filtro `Caminhos`). [Documentação técnica de Caminhos](docs/CAMINHOS-1.7.0.md).
 - **Agenda Profissional 2.0:** visões **Dia**, **Semana** e **Mês**, blocos de tempo com detecção de sobreposição e comparação planejado × foco real, compromissos sem XP, **Caixa de Entrada** com triagem atômica e **Central de Pendências** com 6 recortes operacionais. [Documentação da Agenda 2.0](docs/AGENDA-1.7.0.md).
 - **Jornada ("Rumos do Dia"):** painel expansível na tela inicial com próximo compromisso, próximo bloco, tarefas prioritárias com conclusão rápida e caminhos próximos, além dos atalhos diretos `Caminhos`, `Entrada` e `Pendências`.
 
-**143 testes aprovados** e Android Lint sem erros (22 avisos documentados). **Room v7** (`MIGRATION_6_7`) e **backup v9** têm migração explícita e leitura dos formatos anteriores (`v1`–`v8`). Pinturas, RPG, economia e dados existentes são preservados. [Visual 1.7.0](docs/VISUAL-1.7.0.md) · [Caminhos 1.7.0](docs/CAMINHOS-1.7.0.md) · [Agenda 2.0](docs/AGENDA-1.7.0.md) · [Biblioteca da Forja 1.6.9.19](docs/VISUAL-1.6.9.19.md) · [Design System](docs/DESIGN-SYSTEM-2.0.md).
+A base 1.7.0 teve **143 testes aprovados** e Android Lint sem erros (22 avisos documentados). **Room v7** (`MIGRATION_6_7`) e **backup v9** têm migração explícita e leitura dos formatos anteriores (`v1`–`v8`). Pinturas, RPG, economia e dados existentes são preservados. [Visual 1.7.0](docs/VISUAL-1.7.0.md) · [Caminhos 1.7.0](docs/CAMINHOS-1.7.0.md) · [Agenda 2.0](docs/AGENDA-1.7.0.md) · [Biblioteca da Forja 1.6.9.19](docs/VISUAL-1.6.9.19.md) · [Design System](docs/DESIGN-SYSTEM-2.0.md).
 
 **Atualização dos APKs 1.1 a 1.6.9.19:** a `1.7.0` (`versionCode 20`) mantém `applicationId` (`br.com.ascend.aetheris`), certificado oficial SHA-256 (`e1f003ef...`), e migração aditiva Room `v6 → v7` / backup `v9`; exporte um backup de segurança e instale por cima, **sem desinstalar**. A antiga 1.0 possui assinatura diferente; consulte [INSTALACAO.md](INSTALACAO.md).
 

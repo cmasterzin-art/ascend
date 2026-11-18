@@ -1,3 +1,18 @@
+# ASCEND 1.7.0.1 — Validação
+
+18/11/2026. Base `9365b39` (1.7.0) na branch `feat/ascend-1.7.0.1`.
+
+- `./gradlew testDebugUnitTest lintDebug assembleDebug --offline` concluiu com sucesso. Foram aprovados **155 testes**, incluindo os **143 anteriores e 12 novos**, com zero falhas, erros ou ignorados. Android Lint registrou **0 erros e 22 avisos**.
+- Os três primeiros testes de regressão falharam na base e passaram após a correção. Os testes de UI renderizaram foco de hábito, projeto e tarefa, incluindo pausa, encerramento, retorno ao app e recriação da Activity.
+- O APK tem **25529982 bytes**, versão 1.7.0.1, código 21, pacote `br.com.ascend.aetheris` e minSdk 26 (Android 8.0). O alinhamento e a assinatura passaram. O certificado é idêntico ao da 1.7.0 e as permissões são as mesmas, sem INTERNET.
+- SHA-256 do APK: `ddbbc50a3d3cb27a37ff0d6cb1df11f798111274be5da2eae7cdac98cad83548`.
+- Room v7 e backup v9 preservados. A suíte inclui migrações, leitura de backups antigos e rollback de importação e triagem.
+- Capturas em Robolectric. A instalação sobre a 1.7.0 foi conferida por pacote, certificado e incremento do código. O cenário de atualização em aparelho físico segue sem verificação.
+
+[APK](downloads/ASCEND-1.7.0.1.apk?raw=true) · [Build](docs/validation/BUILD-1.7.0.1.txt) · [Lint](docs/validation/LINT-1.7.0.1.txt) · [Certificado e manifesto](docs/validation/APK-1.7.0.1.txt) · [Resultados JUnit](docs/validation/v1.7.0.1/) · [Auditoria](docs/AUDITORIA-1.7.0.1.md) · [Capturas](docs/VISUAL-1.7.0.1.md)
+
+---
+
 # ASCEND 1.7.0 — validação
 
 18/11/2026. Base `feat/ascend-1.6.9.19` (`448e7cd`). Branch `feat/ascend-1.7.0`. GitHub Actions execução `44320889380` (commits `475da08` / `2d3ac9d`): `testDebugUnitTest assembleDebug lintDebug`: BUILD SUCCESSFUL (`56` tarefas executadas). **143 testes aprovados** (`135` preservados + `8` novos em `PathsAndAgendaTest` e `PathsAndAgendaUiTest`), zero falhas, erros ou ignorados; `lintDebug` com **0 erros e 23 avisos** (`22` localmente).

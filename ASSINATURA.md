@@ -1,6 +1,6 @@
 # Continuidade de assinatura
 
-Identificador estável: `br.com.ascend.aetheris`. Versão `1.7.0`, `versionCode 20` (sobre `1.6.9.19`, `versionCode 19`).
+Identificador estável: `br.com.ascend.aetheris`. Versão `1.7.0.1`, `versionCode 21`. O certificado do APK foi comparado com o da 1.7.0 e coincide. [Relatório de assinatura](docs/validation/APK-1.7.0.1.txt).
 
 ## Estado dos APKs 1.6.9 a 1.7.0 e preservação do certificado
 

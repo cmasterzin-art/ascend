@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.PathsAndAgendaUiTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:37:44" hostname="da0963ce0ccf" time="25.038">
+  <properties/>
+  <testcase name="agendaModesInboxTriageAndPendingCenterWorkEndToEnd" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="2.706"/>
+  <testcase name="pathsStagesTasksSubtasksFocusAndMemoryHallFlowWorks" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="4.599"/>
+  <testcase name="pathFocusAt360DpShowsBothControls" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="3.965"/>
+  <testcase name="habitFocusControlsAreVisibleInitiallyAndSurviveActivityRecreation" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="5.004"/>
+  <testcase name="narrow320DpLightThemeLargeTextAndMinimalModeStayReadable" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="3.735"/>
+  <testcase name="taskFocusAt320DpWithLargeTextCanBeRegistered" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="5.027"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

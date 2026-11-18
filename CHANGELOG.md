@@ -1,3 +1,10 @@
+# 1.7.0.1 — A Consolidação dos Caminhos
+
+- Foco pertence ao Caminho gravado na sessão. Blocos dividem o intervalo elegível e sinalizam tempo sem atribuição comprovável.
+- Rumos do Dia considera o relógio local. Caminhos pausados ou concluídos saem das pendências ativas, com confirmação quando ainda existem tarefas abertas.
+- Sessão ativa aparece no topo da Jornada. Validações de vínculos, backup e triagem preservam os dados quando uma operação falha.
+- Room v7, backup v9 e certificado preservados. [Auditoria](docs/AUDITORIA-1.7.0.1.md) · [Validação](VALIDACAO.md).
+
 # 1.7.0 — Os Nove Caminhos
 
 Evolução funcional do ASCEND sobre a base `feat/ascend-1.6.9.19` (*Personal Projects & Advanced Productivity Update*), integrando gestão de projetos pessoais, agenda profissional e centralização de pendências sem alterar regras econômicas, progresso histórico de hábitos ou a Biblioteca da Forja (`1.6.9.19`). [Caminhos 1.7.0](docs/CAMINHOS-1.7.0.md) · [Agenda 2.0](docs/AGENDA-1.7.0.md) · [Visual 1.7.0](docs/VISUAL-1.7.0.md).
