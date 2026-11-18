@@ -44,15 +44,15 @@ class ProductVisualTourTest{
   compose.runOnIdle{
    compose.activity.setContent{AscendTheme("dark",reducedMotion=true,minimal=false){DesignSystemBoard16915()}}
    val v=compose.activity.window.decorView
-   v.measure(View.MeasureSpec.makeMeasureSpec(860,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(1380,View.MeasureSpec.EXACTLY))
-   v.layout(0,0,860,1380)
+   v.measure(View.MeasureSpec.makeMeasureSpec(860,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(1020,View.MeasureSpec.EXACTLY))
+   v.layout(0,0,860,1020)
   }
   compose.waitForIdle()
   compose.runOnIdle{
    val v=compose.activity.window.decorView
-   v.measure(View.MeasureSpec.makeMeasureSpec(860,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(1380,View.MeasureSpec.EXACTLY))
-   v.layout(0,0,860,1380)
-   val b=android.graphics.Bitmap.createBitmap(860,1380,android.graphics.Bitmap.Config.ARGB_8888)
+   v.measure(View.MeasureSpec.makeMeasureSpec(860,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(1020,View.MeasureSpec.EXACTLY))
+   v.layout(0,0,860,1020)
+   val b=android.graphics.Bitmap.createBitmap(860,1020,android.graphics.Bitmap.Config.ARGB_8888)
    v.draw(android.graphics.Canvas(b))
    val f=java.io.File("build/reports/screenshots/prancha-componentes-16915.png")
    f.parentFile!!.mkdirs()

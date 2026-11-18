@@ -41,15 +41,15 @@ import androidx.compose.ui.unit.*
    val dm=Path().apply{moveTo(cx,h-4.5f*d);lineTo(cx+2.2f*d,h-2.5f*d);lineTo(cx,h-.5f*d);lineTo(cx-2.2f*d,h-2.5f*d);close()}
    drawPath(dm,accent.copy(alpha=.85f))
    if(ceremonial){
-    listOf(12*d,w-12*d).forEach{rx->
-     val sideDm=Path().apply{moveTo(rx,h*.5f-3*d);lineTo(rx+3*d,h*.5f);lineTo(rx,h*.5f+3*d);lineTo(rx-3*d,h*.5f);close()}
+    listOf(10*d,w-10*d).forEach{rx->
+     val sideDm=Path().apply{moveTo(rx,h*.5f-2.8f*d);lineTo(rx+2.8f*d,h*.5f);lineTo(rx,h*.5f+2.8f*d);lineTo(rx-2.8f*d,h*.5f);close()}
      drawPath(sideDm,accent.copy(alpha=.72f))
     }
    }
   }
   if(secondary&&enabled)drawLine(ColdIron.copy(alpha=.4f),Offset(cx-12*d,h-2.5f*d),Offset(cx+12*d,h-2.5f*d),d)
   if(pressed)drawRect(Color.Black.copy(alpha=.28f))
- }},enabled=enabled&&!loading,shape=shape,interactionSource=interaction,contentPadding=PaddingValues(horizontal=16.dp,vertical=11.dp),colors=ButtonDefaults.buttonColors(containerColor=Color.Transparent,contentColor=if(secondary)Color(0xFFD9DEE4) else Color(0xFFEFE6D5),disabledContainerColor=Color.Transparent,disabledContentColor=Color(0xFF889099))){
+ }},enabled=enabled&&!loading,shape=shape,interactionSource=interaction,contentPadding=PaddingValues(horizontal=if(ceremonial)26.dp else 16.dp,vertical=11.dp),colors=ButtonDefaults.buttonColors(containerColor=Color.Transparent,contentColor=if(secondary)Color(0xFFD9DEE4) else Color(0xFFEFE6D5),disabledContainerColor=Color.Transparent,disabledContentColor=Color(0xFF889099))){
  if(loading){CircularProgressIndicator(Modifier.size(16.dp),strokeWidth=2.dp);Spacer(Modifier.width(8.dp))}
  Text(if(completed)"◆ $text" else text,fontSize=14.sp,letterSpacing=if(ceremonial).5.sp else .3.sp,fontFamily=if(ceremonial)SagaFont else null)
  }

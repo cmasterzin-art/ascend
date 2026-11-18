@@ -83,7 +83,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
     Column(Modifier.fillMaxWidth().materialSurface(accent=color,leather=true).padding(16.dp).testTag(if(onDismiss==null)"template:${t.id}" else "suggest:${t.id}"),verticalArrangement=Arrangement.spacedBy(9.dp)){
         Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){
             AttributeEmblem(t.attribute,Modifier.size(36.dp))
-            Column(Modifier.weight(1f)){Eyebrow("${t.category} · ${attributes[t.attribute]}",color);Text(if(narrative)t.narrativeName else t.name,style=MaterialTheme.typography.titleLarge);if(narrative)Text(t.name,color=Muted,fontSize=12.sp)}
+            val catLabel=if(t.category.equals(attributes[t.attribute],ignoreCase=true))t.category else "${t.category} · ${attributes[t.attribute]}"
+            Column(Modifier.weight(1f)){Eyebrow(catLabel,color);Text(if(narrative)t.narrativeName else t.name,style=MaterialTheme.typography.titleLarge);if(narrative)Text(t.name,color=Muted,fontSize=12.sp)}
         }
         Text(t.description,color=Muted,fontSize=13.sp)
         Text("${t.target} ${t.unit} · ${difficultyNames[t.difficulty]} · ${frequencyLabel(t.days)} · ~${t.estimatedMinutes} min",color=color,fontSize=12.sp)
