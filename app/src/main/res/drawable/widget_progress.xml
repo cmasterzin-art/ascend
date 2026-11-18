@@ -3,7 +3,7 @@
         <shape>
             <solid android:color="@color/widget_track"/>
             <corners android:radius="2dp"/>
-            <stroke android:width="0.5dp" android:color="@color/widget_stroke"/>
+            <stroke android:width="0.8dp" android:color="@color/widget_stroke"/>
         </shape>
     </item>
     <item android:id="@android:id/progress">

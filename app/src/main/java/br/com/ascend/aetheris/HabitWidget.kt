@@ -65,7 +65,7 @@ open class HabitWidget:AppWidgetProvider(){
    if(height<(135*c.resources.configuration.fontScale).toInt())v.setTextViewText(R.id.widget_summary,if(s.player==null)"Abra o ASCEND para iniciar." else if(day.due==0)"Hoje, sem rituais." else "${day.complete}/${day.due} · $pendingLabel")
    v.setViewVisibility(R.id.widget_progress,if(s.player==null||day.due==0)View.GONE else View.VISIBLE)
    v.setProgressBar(R.id.widget_progress,day.due.coerceAtLeast(1),day.complete,false)
-   v.setTextViewText(R.id.widget_stats,if(s.player==null)"Tudo fica neste aparelho." else "Nível ${s.level} · ${s.xp} XP")
+   v.setTextViewText(R.id.widget_stats,if(s.player==null)"Tudo fica neste aparelho." else "${s.player.name} · Nível ${s.level} · ${s.xp} XP")
    v.setViewVisibility(R.id.widget_stats,if(expanded&&height>=160)View.VISIBLE else View.GONE)
    listOf(R.id.widget_habit1,R.id.widget_habit2,R.id.widget_habit3).forEachIndexed{i,viewId->val h=day.pending.getOrNull(i);v.setViewVisibility(viewId,if(expanded&&h!=null&&i<minOf(maxHabits,space.slots))View.VISIBLE else View.GONE)
     if(h!=null){v.setInt(viewId,"setBackgroundResource",if(h.type==0)R.drawable.widget_complete else R.drawable.widget_secondary);v.setTextColor(viewId,c.getColor(if(h.type==0)R.color.widget_action_text else R.color.widget_text));v.setContentDescription(viewId,"${if(h.type==0)"Concluir hábito simples" else "Abrir registro de progresso"}: ${h.name}");v.setTextViewText(viewId,"${if(h.type==0)"Concluir" else "Registrar"} · ${h.name}");val intent=if(h.type==0)Intent(c,HabitWidget::class.java).setAction("br.com.ascend.WIDGET_COMPLETE").putExtra("date",date) else Intent(c,MainActivity::class.java).putExtra("widget_journey",true).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)

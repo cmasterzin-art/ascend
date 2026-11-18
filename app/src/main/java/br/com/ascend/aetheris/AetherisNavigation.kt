@@ -52,33 +52,42 @@ val mainNames=listOf("Jornada","Hábitos","Missões","Mundo","Herói")
   }
  }
 }
-/** 1.6.9.10 · Inscription ledger: options read as carved words on one line of stone, wrapping when needed.
- *  No per-option boxes; the active word is warmed and underlined. Everything stays visible and selectable. */
+/** 1.6.9.15 · Inscription ledger: options read as carved words on stone, compacting gracefully on 320dp/130% when 6+ tabs exist.
+ *  No per-option boxes; the active word is warmed and underlined with a central chisel mark. Everything stays visible and selectable. */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable fun AetherisTabs(values:List<String>,selected:Int,onSelect:(Int)->Unit){
  val glyphs=values.map{glyphForLabel(it)}
  val dark=LocalAppearance.current.dark;val gold=Gold;val muted=Muted;val motion=LocalAppearance.current.reducedMotion
- val hair=if(dark)Color.White.copy(alpha=.07f) else Color.Black.copy(alpha=.1f)
- Column(Modifier.fillMaxWidth().padding(vertical=2.dp)){
-  Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent,hair,hair,Color.Transparent))))
-  FlowRow(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Start,verticalArrangement=Arrangement.spacedBy(0.dp)){
-   values.forEachIndexed{index,label->val active=index==selected
-    val light by animateFloatAsState(if(active)1f else 0f,tween(if(motion)0 else AetherTokens.quick),label="inscrição")
-    Row(verticalAlignment=Alignment.CenterVertically){
-     Box(Modifier.heightIn(min=48.dp).selectable(active,onClick={onSelect(index)},role=Role.Tab).drawBehind{
-       if(light>0f){val d=1.dp.toPx()
-        drawCircle(Brush.radialGradient(listOf(gold.copy(alpha=.12f*light),Color.Transparent),center=Offset(size.width/2,size.height*.55f),radius=size.width*.6f),size.width*.6f,Offset(size.width/2,size.height*.55f))
-        drawLine(gold.copy(alpha=.9f*light),Offset(size.width*.18f,size.height-9*d),Offset(size.width*.82f,size.height-9*d),1.5f*d,cap=StrokeCap.Round)}
-      }.padding(horizontal=11.dp),contentAlignment=Alignment.Center){
-      Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(5.dp)){
-       if(active&&glyphs[index]!=null)CarvedGlyph(glyphs[index]!!,gold,size=13.dp)
-       Text(label,color=if(active)gold else muted,fontSize=13.sp,lineHeight=17.sp,letterSpacing=.3.sp,maxLines=1)
+ val hair=if(dark)Color.White.copy(alpha=.08f) else Color.Black.copy(alpha=.12f)
+ BoxWithConstraints(Modifier.fillMaxWidth().padding(vertical=2.dp)){
+  val compact=maxWidth<360.dp&&values.size>=6
+  val hPad=if(compact)6.dp else 11.dp
+  val minH=if(compact)38.dp else 46.dp
+  val fSize=if(compact)11.sp else 13.sp
+  Column(Modifier.fillMaxWidth()){
+   Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent,hair,hair,Color.Transparent))))
+   FlowRow(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Start,verticalArrangement=Arrangement.spacedBy(0.dp)){
+    values.forEachIndexed{index,label->val active=index==selected
+     val light by animateFloatAsState(if(active)1f else 0f,tween(if(motion)0 else AetherTokens.quick),label="inscrição")
+     Row(verticalAlignment=Alignment.CenterVertically){
+      Box(Modifier.heightIn(min=minH).selectable(active,onClick={onSelect(index)},role=Role.Tab).drawBehind{
+        if(light>0f){val d=1.dp.toPx();val cy=size.height-7*d;val cx=size.width*.5f
+         drawCircle(Brush.radialGradient(listOf(gold.copy(alpha=.14f*light),Color.Transparent),center=Offset(cx,size.height*.52f),radius=size.width*.58f),size.width*.58f,Offset(cx,size.height*.52f))
+         drawLine(gold.copy(alpha=.92f*light),Offset(size.width*.16f,cy),Offset(size.width*.84f,cy),1.5f*d,cap=StrokeCap.Round)
+         val dm=Path().apply{moveTo(cx,cy-2.2f*d);lineTo(cx+2.2f*d,cy);lineTo(cx,cy+2.2f*d);lineTo(cx-2.2f*d,cy);close()}
+         drawPath(dm,gold.copy(alpha=light))
+        }
+       }.padding(horizontal=hPad),contentAlignment=Alignment.Center){
+       Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(if(compact)3.dp else 5.dp)){
+        if(active&&glyphs[index]!=null)CarvedGlyph(glyphs[index]!!,gold,size=if(compact)11.dp else 13.dp)
+        Text(label,color=if(active)gold else muted,fontSize=fSize,lineHeight=(fSize.value+4).sp,letterSpacing=if(compact).1.sp else .3.sp,maxLines=1)
+       }
       }
      }
     }
    }
+   Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent,hair,hair,Color.Transparent))))
   }
-  Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(Color.Transparent,hair,hair,Color.Transparent))))
  }
 }
 /** 1.6.9.10 · Productivity shortcuts as one slim carved band with hairline seams instead of three heavy cards. */

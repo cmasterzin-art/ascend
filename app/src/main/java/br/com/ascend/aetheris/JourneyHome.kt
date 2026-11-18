@@ -42,7 +42,7 @@ import java.util.Locale
     ShortcutStrip(listOf(Triple("Planejador",Glyph.Planner,onPlanner),Triple("Análises",Glyph.Analysis,onAnalysis),Triple("Foco",Glyph.Focus,onHistory)))
    }}
   s.focus?.let{f->item{FocusCard(f,s,vm)}}
-  item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){SectionHeader("Seus próximos passos","Conclua com um toque; detalhes ao selecionar o nome.")};IconButton(onAdd){Icon(Icons.Default.Add,"Criar hábito")}};if(due.size>1||done>0)ChipRow(listOf("Todos (${due.size})","Pendentes (${due.size-done})"),if(pendingOnly)1 else 0,{pendingOnly=it==1})}
+  item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){SectionHeader("Seus próximos passos","Conclua com um toque; detalhes ao selecionar o nome.")};IconButton(onAdd,Modifier.size(42.dp).clip(CutCornerShape(5.dp)).background(Gold.copy(alpha=.12f)).border(1.dp,Gold.copy(alpha=.45f),CutCornerShape(5.dp))){Icon(Icons.Default.Add,"Criar hábito",tint=Gold)}};if(due.size>1||done>0)ChipRow(listOf("Todos (${due.size})","Pendentes (${due.size-done})"),if(pendingOnly)1 else 0,{pendingOnly=it==1})}
   val visible=due.filter{!pendingOnly||s.record(it.id,day)?.complete!=true}.sortedBy{s.record(it.id,day)?.complete==true}
   if(visible.isEmpty())item{Empty(if(rested)"Este dia está reservado para descanso. Seus registros e recompensas anteriores continuam guardados." else if(due.isEmpty())"Nenhum hábito para hoje. Abra o Planejador ou crie seu primeiro passo." else "Tudo feito por hoje. Aetheris pode esperar pelo seu próximo passo.")}
   items(visible.size,key={visible[it].id}){i->val h=visible[i];HabitCard(h,s.record(h.id,day),{if(h.type==0&&s.record(h.id,day)?.complete!=true)vm.run{vm.repo.progress(h,day,1)}else onProgress(h,s.record(h.id,day))},{detail=h},{onFocus(h)})}
@@ -57,9 +57,10 @@ import java.util.Locale
     Panel(accent=Green){
         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Eyebrow("Sua semana",Green);Text("Consistência, sem pressa",color=Muted,fontSize=10.sp)}
         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)){
-            repeat(7){i->val d=start.plusDays(i.toLong()).toString();val due=s.due(d);val done=due.count{s.record(it.id,d)?.complete==true};val rest=d in s.restDates;val color=if(d==day)Gold else if(done>0)Green else Muted
-                Column(Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(if(d==day)Gold.copy(alpha=.1f) else CardColor.copy(alpha=.45f)).padding(vertical=10.dp).semantics(mergeDescendants=true){contentDescription="$d: $done de ${due.size} hábitos${if(rest)", descanso" else ""}"},horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(7.dp)){
-                    Text(weekdays[i],color=Muted,fontSize=10.sp);Text(start.plusDays(i.toLong()).dayOfMonth.toString(),color=color,fontWeight=FontWeight.SemiBold,fontSize=14.sp)
+            repeat(7){i->val d=start.plusDays(i.toLong()).toString();val due=s.due(d);val done=due.count{s.record(it.id,d)?.complete==true};val rest=d in s.restDates;val isToday=d==day;val color=if(isToday)Gold else if(done>0)Green else Muted
+                val cellShape=CutCornerShape(topStart=5.dp,topEnd=2.dp,bottomEnd=5.dp,bottomStart=2.dp)
+                Column(Modifier.weight(1f).clip(cellShape).background(if(isToday)Gold.copy(alpha=.14f) else if(done>0)Green.copy(alpha=.08f) else CardColor.copy(alpha=.45f)).border(1.dp,if(isToday)Gold.copy(alpha=.65f) else if(done>0)Green.copy(alpha=.35f) else ColdIron.copy(alpha=.22f),cellShape).padding(vertical=10.dp).semantics(mergeDescendants=true){contentDescription="$d: $done de ${due.size} hábitos${if(rest)", descanso" else ""}"},horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(7.dp)){
+                    Text(weekdays[i],color=if(isToday)Gold else Muted,fontSize=10.sp);Text(start.plusDays(i.toLong()).dayOfMonth.toString(),color=color,fontWeight=FontWeight.SemiBold,fontSize=14.sp)
                     Text(if(rest)"☽" else if(done==due.size&&done>0)"✓" else if(done>0)"·" else "—",color=color,fontSize=12.sp)
                 }
             }

@@ -15,22 +15,38 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.unit.*
 
-@Composable fun SagaButton(text:String,onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boolean=true,secondary:Boolean=false,destructive:Boolean=false,loading:Boolean=false,completed:Boolean=false){
+@Composable fun SagaButton(text:String,onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boolean=true,secondary:Boolean=false,destructive:Boolean=false,loading:Boolean=false,completed:Boolean=false,ceremonial:Boolean=false){
  val interaction=remember{MutableInteractionSource()};val pressed by interaction.collectIsPressedAsState();val reduced=LocalAppearance.current.reducedMotion
- val depth by animateFloatAsState(if(pressed).6f else 0f,tween(if(reduced)0 else 90),label="pressão")
- // Bronze is reserved for the primary act; iron for everything secondary. Ember and moss mark consequence and completion.
- val accent=if(destructive)MaterialTheme.colorScheme.error else if(completed)Green else if(secondary)ColdIron else Gold
+ val depth by animateFloatAsState(if(pressed).8f else 0f,tween(if(reduced)0 else 90),label="pressão")
+ // Bronze is reserved for primary and ceremonial acts; blackened iron and slate for secondary actions; ember and moss for consequence and completion.
+ val accent=if(destructive)MaterialTheme.colorScheme.error else if(completed)Green else if(secondary)ColdIron else if(ceremonial)Color(0xFFD9B878) else Gold
  val bronze=!secondary&&!destructive&&!completed
- val base=if(!enabled)listOf(Color(0xFF2E3134),Color(0xFF1F2225)) else if(destructive)listOf(Color(0xFF4A2A27),Color(0xFF241716)) else if(bronze)listOf(Color(0xFF5C4A30),Color(0xFF2E2416)) else listOf(Color(0xFF2A2E31),Color(0xFF15181A))
- val shape=CutCornerShape(topStart=7.dp,topEnd=2.dp,bottomEnd=7.dp,bottomStart=2.dp)
- Button(onClick,modifier.heightIn(min=48.dp).offset{IntOffset(0,depth.dp.roundToPx())}.clip(shape).background(Brush.verticalGradient(base)).plateMaterial(bronze=bronze,enabled=enabled).border(1.dp,accent.copy(alpha=if(enabled).42f else .12f),shape).drawWithCache{onDrawBehind{
-  val d=1.dp.toPx()
-  if(destructive)drawRect(Brush.horizontalGradient(listOf(accent.copy(alpha=.22f),Color.Transparent)))
-  if(completed)drawLine(accent.copy(alpha=.7f),Offset(10*d,size.height-3*d),Offset(size.width-10*d,size.height-3*d),d)
-  if(bronze&&enabled)drawLine(accent.copy(alpha=.6f),Offset(size.width*.5f-14*d,size.height-3*d),Offset(size.width*.5f+14*d,size.height-3*d),d)
-  if(pressed)drawRect(Color.Black.copy(alpha=.25f))
- }},enabled=enabled&&!loading,shape=shape,interactionSource=interaction,contentPadding=PaddingValues(horizontal=16.dp,vertical=12.dp),colors=ButtonDefaults.buttonColors(containerColor=Color.Transparent,contentColor=Color(0xFFEAE2CF),disabledContainerColor=Color.Transparent,disabledContentColor=Color(0xFF8E959E))){
- if(loading){CircularProgressIndicator(Modifier.size(16.dp),strokeWidth=2.dp);Spacer(Modifier.width(8.dp))};Text(if(completed)"◆ $text" else text,fontSize=14.sp,letterSpacing=.3.sp)
+ val base=when{
+  !enabled->listOf(Color(0xFF282B2E),Color(0xFF1A1D20))
+  destructive->listOf(Color(0xFF4C2926),Color(0xFF241514))
+  completed->listOf(Color(0xFF273328),Color(0xFF161D17))
+  ceremonial->listOf(Color(0xFF6B5434),Color(0xFF362917))
+  bronze->listOf(Color(0xFF5A482E),Color(0xFF2B2215))
+  else->listOf(Color(0xFF272B2F),Color(0xFF14171A))
+ }
+ val shape=CutCornerShape(topStart=if(ceremonial)8.dp else 7.dp,topEnd=2.dp,bottomEnd=if(ceremonial)8.dp else 7.dp,bottomStart=2.dp)
+ val borderAlpha=if(!enabled).14f else if(pressed).78f else if(ceremonial).68f else if(bronze).5f else .38f
+ Button(onClick,modifier.heightIn(min=48.dp).offset{IntOffset(0,depth.dp.roundToPx())}.clip(shape).background(Brush.verticalGradient(base)).plateMaterial(bronze=bronze,enabled=enabled,ceremonial=ceremonial).border(1.dp,accent.copy(alpha=borderAlpha),shape).drawWithCache{onDrawBehind{
+  val d=1.dp.toPx();val w=size.width;val h=size.height;val cx=w*.5f
+  if(destructive)drawRect(Brush.horizontalGradient(listOf(accent.copy(alpha=.24f),Color.Transparent)))
+  if(completed)drawLine(accent.copy(alpha=.72f),Offset(10*d,h-2.5f*d),Offset(w-10*d,h-2.5f*d),1.2f*d)
+  if(bronze&&enabled){
+   val span=if(ceremonial)24*d else 16*d
+   drawLine(accent.copy(alpha=if(ceremonial).8f else .62f),Offset(cx-span,h-2.5f*d),Offset(cx+span,h-2.5f*d),d)
+   val dm=Path().apply{moveTo(cx,h-4.5f*d);lineTo(cx+2.2f*d,h-2.5f*d);lineTo(cx,h-.5f*d);lineTo(cx-2.2f*d,h-2.5f*d);close()}
+   drawPath(dm,accent.copy(alpha=.85f))
+  }
+  if(secondary&&enabled)drawLine(ColdIron.copy(alpha=.4f),Offset(cx-12*d,h-2.5f*d),Offset(cx+12*d,h-2.5f*d),d)
+  if(pressed)drawRect(Color.Black.copy(alpha=.28f))
+ }},enabled=enabled&&!loading,shape=shape,interactionSource=interaction,contentPadding=PaddingValues(horizontal=16.dp,vertical=11.dp),colors=ButtonDefaults.buttonColors(containerColor=Color.Transparent,contentColor=if(secondary)Color(0xFFD9DEE4) else Color(0xFFEFE6D5),disabledContainerColor=Color.Transparent,disabledContentColor=Color(0xFF889099))){
+ if(loading){CircularProgressIndicator(Modifier.size(16.dp),strokeWidth=2.dp);Spacer(Modifier.width(8.dp))}
+ val label=when{completed->"◆ $text";ceremonial&&enabled->"✦ $text";else->text}
+ Text(label,fontSize=14.sp,letterSpacing=if(ceremonial).5.sp else .3.sp,fontFamily=if(ceremonial)SagaFont else null)
  }
 }
 /** Five carved class medallions (raster), each with its own motif; vector engraving in minimal mode. */

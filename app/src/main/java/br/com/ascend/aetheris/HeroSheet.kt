@@ -58,13 +58,13 @@ private val hairline:Color @Composable get()=if(LocalAppearance.current.dark)Col
 /** Attributes inscribed like a ledger page: emblem, name, rank, hairline progress. No independent cards. */
 @Composable fun AttributeInscriptions(s:GameState){
  Column(Modifier.fillMaxWidth()){
-  Eyebrow("Inscrições dos atributos",Muted.copy(alpha=.8f))
-  attributes.forEachIndexed{i,a->val pts=s.points(i)
+  Eyebrow("Inscrições dos atributos",Muted.copy(alpha=.85f))
+  attributes.forEachIndexed{i,a->val pts=s.points(i);val col=habitColor(i)
    Row(Modifier.fillMaxWidth().padding(vertical=8.dp).semantics(mergeDescendants=true){},verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){
-    AttributeEmblem(i,Modifier.size(30.dp))
+    Box(Modifier.size(34.dp).drawBehind{drawCircle(Brush.radialGradient(listOf(col.copy(alpha=.2f),Color.Transparent)))},contentAlignment=Alignment.Center){AttributeEmblem(i,Modifier.size(30.dp))}
     Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)){
-     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.Bottom){Text(a,fontFamily=SagaFont,fontSize=16.sp,color=Ink);Text("nível ${1+pts/50}",color=habitColor(i),fontSize=12.sp)}
-     Meter((pts%50)/50f,habitColor(i),slim=true)
+     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.Bottom){Text(a,fontFamily=SagaFont,fontSize=16.sp,color=Ink);Text("nível ${1+pts/50} · ${pts%50}/50",color=col,fontSize=12.sp)}
+     Meter((pts%50)/50f,col,slim=true)
     }
    }
    if(i<attributes.lastIndex)Hairline()

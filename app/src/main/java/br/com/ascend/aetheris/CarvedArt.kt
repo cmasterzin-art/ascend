@@ -103,20 +103,31 @@ enum class SealKind{Dormant,Mission,Oath,Saga,Reward,Expedition}
  }
 }
 
-/** Forged plate behind buttons: cropped, never stretched; bevel is drawn, not painted on. */
-@Composable fun Modifier.plateMaterial(bronze:Boolean,enabled:Boolean=true):Modifier{
+/** Forged plate behind buttons: cropped, never stretched; bevel and corner chisel marks are drawn, not painted on. */
+@Composable fun Modifier.plateMaterial(bronze:Boolean,enabled:Boolean=true,ceremonial:Boolean=false):Modifier{
  val appearance=LocalAppearance.current
  val plate=if(appearance.minimal)null else ImageBitmap.imageResource(if(bronze)R.drawable.plate_bronze else R.drawable.plate_iron)
+ val rim=if(bronze)Color(0xFFE5C88F) else Color(0xFFB8C7D9)
  return drawWithCache{
   val ratio=size.width/size.height.coerceAtLeast(1f)
   val sw=if(plate==null)1 else minOf(plate.width,(plate.height*ratio).toInt()).coerceAtLeast(1)
   val sh=if(plate==null)1 else minOf(plate.height,(plate.width/ratio).toInt()).coerceAtLeast(1)
   onDrawBehind{
-   if(plate!=null)drawImage(plate,IntOffset((plate.width-sw)/2,(plate.height-sh)/2),IntSize(sw,sh),dstSize=IntSize(size.width.toInt().coerceAtLeast(1),size.height.toInt().coerceAtLeast(1)),alpha=if(enabled)1f else .35f,filterQuality=FilterQuality.Medium)
+   if(plate!=null)drawImage(plate,IntOffset((plate.width-sw)/2,(plate.height-sh)/2),IntSize(sw,sh),dstSize=IntSize(size.width.toInt().coerceAtLeast(1),size.height.toInt().coerceAtLeast(1)),alpha=if(enabled)1f else .32f,filterQuality=FilterQuality.Medium)
    val d=1.dp.toPx();val w=size.width;val h=size.height
-   drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha=.07f),Color.Transparent,Color.Black.copy(alpha=.38f))))
-   drawLine(Color.White.copy(alpha=if(enabled).2f else .06f),Offset(7*d,d),Offset(w-7*d,d),d)
-   drawLine(Color.Black.copy(alpha=.65f),Offset(0f,h-d),Offset(w,h-d),2*d)
+   drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha=if(enabled).1f else .03f),Color.Transparent,Color.Black.copy(alpha=.44f))))
+   drawLine(rim.copy(alpha=if(enabled)(if(ceremonial).38f else .24f) else .07f),Offset(8*d,1.2f*d),Offset(w-8*d,1.2f*d),d)
+   if(enabled){
+    // Subtle corner chisel marks and wear ticks characteristic of hand-forged Norse metalwork.
+    val tick=rim.copy(alpha=if(bronze).32f else .2f)
+    drawLine(tick,Offset(3*d,6*d),Offset(8*d,2*d),d)
+    drawLine(tick,Offset(w-8*d,h-2*d),Offset(w-3*d,h-6*d),d)
+    if(ceremonial){
+     drawLine(rim.copy(alpha=.28f),Offset(14*d,3.2f*d),Offset(w-14*d,3.2f*d),.8f*d)
+     drawLine(rim.copy(alpha=.28f),Offset(14*d,h-3.5f*d),Offset(w-14*d,h-3.5f*d),.8f*d)
+    }
+   }
+   drawLine(Color.Black.copy(alpha=.7f),Offset(0f,h-d),Offset(w,h-d),2*d)
   }
  }
 }

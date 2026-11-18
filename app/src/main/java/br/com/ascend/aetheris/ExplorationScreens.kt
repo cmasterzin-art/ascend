@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.*
   if(index==1){
    item{ForestPainting(forestStage(s),"Floresta · estado ${forestStage(s)}");ReadingBlock(regionDescriptions[1])}
    item{val marks=forestExpeditions.sumOf{e->e.phases.indices.count{expeditionClaimValid(s,e,it)}}
-    Column(verticalArrangement=Arrangement.spacedBy(10.dp)){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column{Eyebrow("Exploração",Blue);Text("$marks de 7 marcos confirmados",color=Muted,fontSize=13.sp)};Text("${forestProgress(s)}%",fontFamily=SagaFont,fontSize=32.sp,color=Blue)};Meter(forestProgress(s)/100f,Blue,slim=true);Text("Trilha · Santuário · Vigília. Cada marco vem das suas atividades; correções podem rever o progresso.",color=Muted,fontSize=12.sp,lineHeight=20.sp);Hairline()}
+    Column(verticalArrangement=Arrangement.spacedBy(10.dp)){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column{Eyebrow("Exploração",Blue);Text("$marks de 7 ${if(marks==1)"marco confirmado" else "marcos confirmados"}",color=Muted,fontSize=13.sp)};Text("${forestProgress(s)}%",fontFamily=SagaFont,fontSize=32.sp,color=Blue)};Meter(forestProgress(s)/100f,Blue,slim=true);Text("Trilha · Santuário · Vigília. Cada marco vem das suas atividades; correções podem rever o progresso.",color=Muted,fontSize=12.sp,lineHeight=20.sp);Hairline()}
    }
    items(forestExpeditions,key={it.id}){e->val available=expeditionAvailable(s,e);val complete=expeditionComplete(s,e)
     Panel(accent=if(complete)Green else ColdIron){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){RegionStone(forestExpeditions.indexOf(e),available,complete);Column(Modifier.weight(1f)){Eyebrow(if(complete)"Descoberta confirmada" else if(available)"Vestígios conhecidos" else "Local velado",if(complete)Green else Muted);Text(if(available||complete)e.location else "Inscrição sob a névoa",style=MaterialTheme.typography.titleLarge)}}
@@ -48,19 +48,20 @@ import androidx.compose.ui.unit.*
  StatusSeal(expeditionState(s,e),if(expeditionComplete(s,e))Green else Blue)
  ReadingBlock(e.premise,"Vestígios do lugar")
  if(index==2){Eyebrow("O Guardião da Névoa",MaterialTheme.colorScheme.error);Text("Três provações narrativas. Não há combate, mortes ou perdas por ausência.",color=Muted,fontSize=13.sp)}
- Column(Modifier.fillMaxWidth().background(Blue.copy(alpha=.06f),CutCornerShape(5.dp)).padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){Eyebrow("O próximo juramento",Blue);Text("${e.phases.sumOf{it.target}} conclusões · ${e.phases.size} ${if(e.phases.size==1)"etapa" else "etapas"}",color=Ink,fontSize=16.sp);Text("Você escolhe os hábitos ativos que vão contribuir.",color=Muted,fontSize=13.sp);Action("Abrir expedição",onExpedition)}
+ Column(Modifier.fillMaxWidth().background(Blue.copy(alpha=.06f),CutCornerShape(5.dp)).border(1.dp,Blue.copy(alpha=.28f),CutCornerShape(5.dp)).padding(16.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){Eyebrow("O próximo juramento",Blue);Text("${e.phases.sumOf{it.target}} conclusões · ${e.phases.size} ${if(e.phases.size==1)"etapa" else "etapas"}",color=Ink,fontSize=16.sp);Text("Você escolhe os hábitos ativos que vão contribuir.",color=Muted,fontSize=13.sp);Action("Abrir expedição",onExpedition)}
  if(expeditionComplete(s,e)){SagaDivider();ReadingBlock(e.consequence,"Uma marca preservada")}
  }
 }
 @Composable private fun ExpeditionObjective(e:ExpeditionDef,phase:Int,q:Quest,s:GameState,vm:GameViewModel){
  val color=if(e.id=="vigil")MaterialTheme.colorScheme.error else Blue
  Panel(accent=color){Eyebrow("Objetivo desta etapa",color);val progress=questProgress(q,s)
- Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(e.phases[phase].name,style=MaterialTheme.typography.titleLarge);Text("${progress.coerceAtMost(q.target.toLong())} / ${q.target} conclusões",color=color,fontSize=14.sp)};CeremonialSeal(SealKind.Expedition,progress>=q.target,Modifier.size(38.dp))}
+ Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Text(e.phases[phase].name,style=MaterialTheme.typography.titleLarge);Text("${progress.coerceAtMost(q.target.toLong())} / ${q.target} ${if(q.target==1)"conclusão" else "conclusões"}",color=color,fontSize=14.sp)};CeremonialSeal(SealKind.Expedition,progress>=q.target,Modifier.size(38.dp))}
  Meter(progress.toFloat()/q.target,color,slim=true)
  ReadingBlock(e.phases[phase].text)
  Text("Contribuem: "+s.habits.filter{it.id in q.habitIds.split(',')}.joinToString{it.name},color=Muted,fontSize=12.sp,lineHeight=20.sp)
  if(s.claims.any{it.questId==q.id}&&!validClaim(s.claims.first{it.questId==q.id},s))Text("Registro corrigido: recupere a condição para revalidar este mesmo marco, sem novo resgate.",color=Muted,fontSize=12.sp)
- Action(if(phase==e.phases.lastIndex)"Resgatar expedição" else "Confirmar marco",{vm.run{vm.repo.advanceExpedition(e.id)}},Modifier.fillMaxWidth(),enabled=progress>=q.target)
+ val isFinal=phase==e.phases.lastIndex
+ Action(if(isFinal)"Resgatar expedição" else "Confirmar marco",{vm.run{vm.repo.advanceExpedition(e.id)}},Modifier.fillMaxWidth(),enabled=progress>=q.target,ceremonial=isFinal&&progress>=q.target)
  }
 }
 @Composable fun ExpeditionScreen(e:ExpeditionDef,s:GameState,vm:GameViewModel){
@@ -79,7 +80,7 @@ import androidx.compose.ui.unit.*
   item{Eyebrow("Hábitos que podem contribuir");Text("Escolha os rituais que levará na jornada. Tempo e quantidade contam ao atingir a meta; nenhum hábito é criado automaticamente.",color=Muted,fontSize=14.sp,lineHeight=23.sp)}
   val active=s.habits.filter{!it.deleted&&!it.archived&&!it.paused}
   if(active.isEmpty())item{Empty("Nenhum hábito ativo. Escolha rituais no Grimório ou crie um hábito antes de partir.")}
-  items(active,key={"select:${it.id}"}){h->Row(Modifier.fillMaxWidth().background(Blue.copy(alpha=if(h.id in selected).09f else .025f),CutCornerShape(5.dp)).padding(end=12.dp),verticalAlignment=Alignment.CenterVertically){Checkbox(h.id in selected,{selected=if(it)selected+h.id else selected-h.id},modifier=Modifier.semantics{contentDescription="Vincular ${h.name}"});Column(Modifier.weight(1f)){Text(h.name,fontSize=15.sp);Text("Meta ${h.target} ${h.unit}",color=Muted,fontSize=12.sp)}}}
+  items(active,key={"select:${it.id}"}){h->val chosen=h.id in selected;Row(Modifier.fillMaxWidth().background(if(chosen)Gold.copy(alpha=.10f) else Obsidian.copy(alpha=.60f),CutCornerShape(5.dp)).border(1.dp,if(chosen)Gold.copy(alpha=.55f) else ColdIron.copy(alpha=.30f),CutCornerShape(5.dp)).padding(end=12.dp),verticalAlignment=Alignment.CenterVertically){Checkbox(chosen,{selected=if(it)selected+h.id else selected-h.id},colors=CheckboxDefaults.colors(checkedColor=Gold,uncheckedColor=ColdIron,checkmarkColor=Obsidian),modifier=Modifier.semantics{contentDescription="Vincular ${h.name}"});Column(Modifier.weight(1f)){Text(h.name,fontSize=15.sp,color=if(chosen)Gold else Ink);Text("Meta ${h.target} ${h.unit}",color=Muted,fontSize=12.sp)}}}
   item{error?.let{Text(it,color=MaterialTheme.colorScheme.error)};Action(if(busy)"Inscrevendo…" else "Iniciar expedição",{busy=true;vm.run{try{vm.repo.startExpedition(e.id,selected.toList())}catch(ex:IllegalArgumentException){error=ex.message}finally{busy=false}}},Modifier.fillMaxWidth(),enabled=selected.isNotEmpty()&&!busy);Text("${selected.size} ${if(selected.size==1)"hábito selecionado" else "hábitos selecionados"}. A seleção e a fotografia inicial ficam preservadas ao partir.",Modifier.padding(top=8.dp),color=Muted,fontSize=12.sp,lineHeight=20.sp)}
  }
  item{Eyebrow("Marcos da expedição",Muted)}

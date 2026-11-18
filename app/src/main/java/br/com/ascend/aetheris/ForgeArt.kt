@@ -20,32 +20,47 @@ import androidx.compose.ui.semantics.*
  val appearance=LocalAppearance.current;val dark=appearance.dark;val minimal=appearance.minimal
  val paper=kind==SurfaceKind.Parchment
  val metal=if(minimal)null else ImageBitmap.imageResource(when(kind){SurfaceKind.Parchment->R.drawable.forge_vellum;SurfaceKind.Ceremonial->R.drawable.forge_leather;SurfaceKind.Operational,SurfaceKind.Artifact->R.drawable.north_stone;else->R.drawable.forge_iron})
- val edge=if(paper)Sepia else if(kind==SurfaceKind.Ceremonial)Gold else ColdIron
+ val edge=when(kind){SurfaceKind.Parchment->Sepia;SurfaceKind.Ceremonial->Gold;SurfaceKind.Heroic->Color(0xFF9EB4D3);SurfaceKind.Artifact->Color(0xFFB4A1C7);else->ColdIron}
  return drawWithCache{
   val ratio=size.width/size.height.coerceAtLeast(1f)
   val sw=if(metal==null)1 else minOf(metal.width,(metal.height*ratio).toInt()).coerceAtLeast(1)
   val sh=if(metal==null)1 else minOf(metal.height,(metal.width/ratio).toInt()).coerceAtLeast(1)
   onDrawBehind{
-   if(metal!=null)drawImage(metal,srcOffset=IntOffset((metal.width-sw)/2,(metal.height-sh)/2),srcSize=IntSize(sw,sh),dstSize=IntSize(size.width.toInt().coerceAtLeast(1),size.height.toInt().coerceAtLeast(1)),alpha=if(paper).8f else if(!dark).09f else if(kind==SurfaceKind.Operational).55f else .78f,filterQuality=FilterQuality.Medium)
+   if(metal!=null)drawImage(metal,srcOffset=IntOffset((metal.width-sw)/2,(metal.height-sh)/2),srcSize=IntSize(sw,sh),dstSize=IntSize(size.width.toInt().coerceAtLeast(1),size.height.toInt().coerceAtLeast(1)),alpha=if(paper).82f else if(!dark).1f else if(kind==SurfaceKind.Operational).56f else .78f,filterQuality=FilterQuality.Medium)
    val d=1.dp.toPx();val w=size.width;val h=size.height
-   // Material-specific construction replaces repeated decorative ribbons and rivets.
+   // Five coherent Nordic material families: distinct edge joinery and localized lighting without visual clutter.
    when(kind){
     SurfaceKind.Ceremonial->{
-     drawRect(Brush.horizontalGradient(listOf(Color.Black.copy(alpha=.55f),Color.Transparent)),size=Size(14*d,h))
-     drawLine(edge.copy(alpha=.4f),Offset(5*d,0f),Offset(5*d,h),d)
-     drawLine(Color.Black.copy(alpha=.65f),Offset(10*d,0f),Offset(10*d,h),2*d)
+     drawRect(Brush.horizontalGradient(listOf(Color.Black.copy(alpha=.58f),Color.Transparent)),size=Size(16*d,h))
+     drawLine(edge.copy(alpha=.45f),Offset(5*d,0f),Offset(5*d,h),d)
+     drawLine(edge.copy(alpha=.2f),Offset(8*d,6*d),Offset(8*d,h-6*d),d)
+     drawLine(Color.Black.copy(alpha=.65f),Offset(11*d,0f),Offset(11*d,h),2*d)
+     drawLine(edge.copy(alpha=.3f),Offset(14*d,d),Offset(w-8*d,d),d)
     }
     SurfaceKind.Parchment->{
-     drawLine(edge.copy(alpha=.18f),Offset(w-5*d,8*d),Offset(w-5*d,h-8*d),d)
-     drawLine(edge.copy(alpha=.15f),Offset(w-8*d,11*d),Offset(w-8*d,h-11*d),d)
+     drawLine(edge.copy(alpha=.22f),Offset(5*d,8*d),Offset(5*d,h-8*d),d)
+     drawLine(edge.copy(alpha=.22f),Offset(w-5*d,8*d),Offset(w-5*d,h-8*d),d)
+     drawLine(edge.copy(alpha=.14f),Offset(w-8*d,12*d),Offset(w-8*d,h-12*d),d)
+     drawLine(edge.copy(alpha=.18f),Offset(10*d,3*d),Offset(w-10*d,3*d),d)
+    }
+    SurfaceKind.Heroic->{
+     drawRect(Brush.verticalGradient(listOf(edge.copy(alpha=if(dark).08f else .04f),Color.Transparent,Color.Black.copy(alpha=.35f))))
+     drawLine(edge.copy(alpha=.38f),Offset(8*d,d),Offset(w-8*d,d),d)
+     drawLine(edge.copy(alpha=.22f),Offset(12*d,h-2.5f*d),Offset(w-12*d,h-2.5f*d),d)
     }
     SurfaceKind.Artifact->{
-     drawRect(Brush.verticalGradient(listOf(Color.Black.copy(alpha=.35f),Color.Transparent,Color.Black.copy(alpha=.45f))))
+     drawRect(Brush.verticalGradient(listOf(Color.Black.copy(alpha=.4f),Color.Transparent,Color.Black.copy(alpha=.48f))))
+     drawCircle(Brush.radialGradient(listOf(edge.copy(alpha=if(dark).09f else .04f),Color.Transparent),center=Offset(w*.5f,h*.42f),radius=w*.55f),radius=w*.55f,center=Offset(w*.5f,h*.42f))
+     drawLine(edge.copy(alpha=.42f),Offset(8*d,d),Offset(w-8*d,d),d)
      drawLine(edge.copy(alpha=.45f),Offset(8*d,h-2*d),Offset(w-8*d,h-2*d),d)
     }
-    else->{drawLine(Color.White.copy(alpha=if(dark).12f else .4f),Offset(8*d,d),Offset(w-8*d,d),d)}
+    SurfaceKind.Operational->{
+     drawLine(Color.White.copy(alpha=if(dark).13f else .42f),Offset(6*d,d),Offset(w-6*d,d),d)
+     drawLine(edge.copy(alpha=.22f),Offset(3*d,8*d),Offset(3*d,2*d),d)
+     drawLine(edge.copy(alpha=.22f),Offset(w-3*d,h-8*d),Offset(w-3*d,h-2*d),d)
+    }
    }
-   drawLine(Color.Black.copy(alpha=.35f),Offset(0f,h-d),Offset(w,h-d),2*d)
+   drawLine(Color.Black.copy(alpha=.38f),Offset(0f,h-d),Offset(w,h-d),2*d)
   }
  }
 }

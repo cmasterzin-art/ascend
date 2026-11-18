@@ -44,31 +44,32 @@ import androidx.compose.ui.semantics.*
     if(items.isEmpty())Empty("Nenhuma relíquia nesta seleção. Conquiste fragmentos ou desperte uma habilidade para ampliar sua coleção.")
     items.chunked(2).forEach{row->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp)){
         row.forEach{item->val r=rarity(item);val color=rarityColor(r);val owned=s.assets.find{it.id==item.id}
-            AetherSurface(SurfaceKind.Artifact,Modifier.weight(1f).border(1.dp,color.copy(alpha=if(owned?.equipped==true).65f else .24f),CutCornerShape(6.dp)).clickable{selected=item.id}){
-                Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){CeremonialSeal(SealKind.entries[r.coerceIn(0,4)],owned!=null,Modifier.size(26.dp));Text(rarityNames[r].uppercase(),Modifier.weight(1f),color=color,fontSize=11.sp,letterSpacing=.7.sp)}
-                Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){RelicArt(item.kind,color,Modifier.size(94.dp),item.id)}
+            AetherSurface(SurfaceKind.Artifact,Modifier.weight(1f).border(1.dp,color.copy(alpha=if(owned?.equipped==true).72f else .3f),CutCornerShape(6.dp)).clickable{selected=item.id}){
+                Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){CeremonialSeal(SealKind.entries[r.coerceIn(0,4)],owned!=null,Modifier.size(26.dp));Text(rarityNames[r].uppercase(),Modifier.weight(1f),color=color,fontSize=10.sp,letterSpacing=.8.sp)}
+                Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){RelicArt(item.kind,color,Modifier.size(96.dp),item.id)}
                 SagaDivider(color=color)
                 Text(item.name,style=MaterialTheme.typography.titleMedium)
-                Text(if(owned?.equipped==true)"◆ Equipado" else if(owned!=null)"Na coleção" else "◈ ${item.cost} fragmentos",color=color,fontSize=11.sp)
+                Text(if(owned?.equipped==true)"◆ Equipado" else if(owned!=null)"◆ Na coleção" else "◈ ${item.cost} fragmentos",color=color,fontSize=11.sp)
             }
         };if(row.size==1)Spacer(Modifier.weight(1f))
     }}
     if(!store)s.assets.filter{it.kind=="trophy"}.forEach{a->Panel{RuneSeal(4,Gold,Modifier.size(36.dp));Eyebrow("Troféu de missão");Text(s.quests.find{q->s.claims.any{it.questId==q.id&&"quest:${it.id}"==a.id}}?.special?:"Memória da jornada")}}
     selected?.let{id->val item=shopItems.first{it.id==id};val owned=s.assets.find{it.id==id};val color=rarityColor(rarity(item))
-        AlertDialog(onDismissRequest={selected=null},title={Text(item.name,fontFamily=SagaFont)},text={Column(verticalArrangement=Arrangement.spacedBy(12.dp)){
+        AetherDialog(onDismissRequest={selected=null},title=item.name,kind=SurfaceKind.Artifact,confirmButton={Action(if(owned!=null)if(owned.equipped)"Desequipar" else "Equipar" else "Adquirir · ${item.cost}",{vm.run{if(owned!=null)vm.repo.equip(owned) else vm.repo.buy(item);selected=null}},enabled=owned!=null||s.coins>=item.cost,ceremonial=owned==null)},dismissButton={TextButton({selected=null}){Text("Fechar")}}){
             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center){RelicArt(item.kind,color,Modifier.size(182.dp),item.id)}
             Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){RuneSeal(rarity(item),color,Modifier.size(28.dp));Eyebrow(rarityNames[rarity(item)],color)}
-            Text(if(owned?.equipped==true)"Equipado" else if(owned!=null)"Na coleção" else "Disponível no arsenal",color=color,fontSize=12.sp)
+            Text(if(owned?.equipped==true)"◆ Equipado" else if(owned!=null)"Na coleção" else "Disponível no arsenal",color=color,fontSize=12.sp)
             Text(item.description);SagaDivider(color=color);Eyebrow("Procedência",color);Text(itemOrigin(item),color=Muted,fontSize=13.sp);if(owned!=null)Text("Guardado na coleção em ${displayDate(owned.date)}",color=Muted,fontSize=12.sp)
-        }},confirmButton={Action(if(owned!=null)if(owned.equipped)"Desequipar" else "Equipar" else "Adquirir · ${item.cost}",{vm.run{if(owned!=null)vm.repo.equip(owned) else vm.repo.buy(item);selected=null}},enabled=owned!=null||s.coins>=item.cost)},dismissButton={TextButton({selected=null}){Text("Fechar")}})
+        }
     }
 }
 @Composable private fun EquipmentSlot(kind:String,label:String,s:GameState,select:(String)->Unit){
-    val a=s.assets.find{it.kind==kind&&it.equipped};val item=shopItems.find{it.id==a?.id};val color=if(item!=null)rarityColor(rarity(item)) else ColdIron
-    Column(Modifier.width(64.dp).heightIn(min=74.dp).clip(CutCornerShape(5.dp)).background(Brush.verticalGradient(listOf(Color(0xFF1F2327),Color(0xFF121415)))).border(if(item!=null)1.5.dp else 1.dp,color.copy(alpha=if(item!=null).8f else .4f),CutCornerShape(5.dp)).clickable(enabled=item!=null,onClickLabel="Detalhes de ${item?.name?:label}"){select(item!!.id)}.padding(5.dp).semantics(mergeDescendants=true){contentDescription="$label: ${item?.name?:"vazio"}"},horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(3.dp)){
+    val a=s.assets.find{it.kind==kind&&it.equipped};val item=shopItems.find{it.id==a?.id};val color=if(item!=null)rarityColor(rarity(item)) else Color(0xFF9EB0C2)
+    val slotShape=CutCornerShape(topStart=6.dp,topEnd=2.dp,bottomEnd=6.dp,bottomStart=2.dp)
+    Column(Modifier.width(66.dp).heightIn(min=76.dp).clip(slotShape).background(Brush.verticalGradient(listOf(Color(0xFF23282E),Color(0xFF131618)))).border(if(item!=null)1.5.dp else 1.dp,color.copy(alpha=if(item!=null).82f else .52f),slotShape).clickable(enabled=item!=null,onClickLabel="Detalhes de ${item?.name?:label}"){select(item!!.id)}.padding(5.dp).semantics(mergeDescendants=true){contentDescription="$label: ${item?.name?:"vazio"}"},horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(3.dp)){
         RelicArt(kind,color,Modifier.size(44.dp),item?.id,dim=item==null)
-        Text(when(kind){"companion"->"Aliado";"weapon"->"Arma";"outfit"->"Traje";else->label},color=if(item!=null)color else Color(0xFFC9CED4),fontSize=9.sp,lineHeight=12.sp)
-        Text(if(a==null)"Vazio" else "Equipado",color=if(item!=null)color else Color(0xFF8E98A4),fontSize=9.sp)
+        Text(when(kind){"companion"->"Aliado";"weapon"->"Arma";"outfit"->"Traje";else->label},color=if(item!=null)color else Color(0xFFD5DCE4),fontSize=9.sp,lineHeight=12.sp)
+        Text(if(a==null)"Vazio" else "Equipado",color=if(item!=null)color else Color(0xFF9BA6B2),fontSize=9.sp)
     }
 }
 @Composable fun SkillTree(s:GameState,vm:GameViewModel){

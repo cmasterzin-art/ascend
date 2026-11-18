@@ -24,13 +24,45 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
 @Composable fun AetherSurface(kind:SurfaceKind=SurfaceKind.Operational,modifier:Modifier=Modifier,content:@Composable ColumnScope.()->Unit){
  val dark=LocalAppearance.current.dark
  val accent=when(kind){SurfaceKind.Heroic->Blue;SurfaceKind.Ceremonial->Gold;SurfaceKind.Parchment->Sepia;SurfaceKind.Artifact->Violet;else->ColdIron}
- val base=when(kind){SurfaceKind.Parchment->if(dark)Color(0xFFD0C3A5) else Color(0xFFF2E5C7);SurfaceKind.Ceremonial->if(dark)Color(0xFF29211C) else Color(0xFFE1D5BF);SurfaceKind.Artifact->if(dark)Color(0xFF211D25) else Color(0xFFE8E0D5);else->Surface}
- val shades=if(kind==SurfaceKind.Parchment)listOf(if(dark)Color(0xFFB7AA8D) else Color(0xFFE0CDA6),base,if(dark)Color(0xFFDBCEB0) else Color(0xFFF2E5C7)) else listOf(base,base.copy(alpha=.7f))
- val shape=androidx.compose.foundation.shape.CutCornerShape(if(kind==SurfaceKind.Operational)3.dp else 6.dp)
- Column(modifier.fillMaxWidth().clip(shape).background(Brush.linearGradient(shades)).forgeMaterial(kind).border(1.dp,accent.copy(alpha=.18f),shape).padding(AetherTokens.inset),verticalArrangement=Arrangement.spacedBy(12.dp)){
-  if(kind!=SurfaceKind.Operational&&kind!=SurfaceKind.Parchment)Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){Text(when(kind){SurfaceKind.Heroic->"SAGA PESSOAL";SurfaceKind.Ceremonial->"MARCA DE AETHERIS";SurfaceKind.Parchment->"ARQUIVO DO CRONISTA";else->"COLEÇÃO DE ARTEFATOS"},color=accent,fontSize=9.sp,letterSpacing=2.sp)}
+ val base=when(kind){SurfaceKind.Parchment->if(dark)Color(0xFFD0C3A5) else Color(0xFFF2E5C7);SurfaceKind.Ceremonial->if(dark)Color(0xFF29211C) else Color(0xFFE1D5BF);SurfaceKind.Heroic->if(dark)Color(0xFF1A2026) else Color(0xFFE3E7EC);SurfaceKind.Artifact->if(dark)Color(0xFF211D25) else Color(0xFFE8E0D5);else->Surface}
+ val shades=if(kind==SurfaceKind.Parchment)listOf(if(dark)Color(0xFFB7AA8D) else Color(0xFFE0CDA6),base,if(dark)Color(0xFFDBCEB0) else Color(0xFFF2E5C7)) else listOf(base,base.copy(alpha=.74f))
+ val shape=androidx.compose.foundation.shape.CutCornerShape(if(kind==SurfaceKind.Operational)4.dp else 6.dp)
+ val borderAlpha=when(kind){SurfaceKind.Ceremonial->.32f;SurfaceKind.Heroic->.28f;SurfaceKind.Artifact->.26f;SurfaceKind.Parchment->.24f;else->.2f}
+ Column(modifier.fillMaxWidth().clip(shape).background(Brush.linearGradient(shades)).forgeMaterial(kind).border(1.dp,accent.copy(alpha=borderAlpha),shape).padding(AetherTokens.inset),verticalArrangement=Arrangement.spacedBy(12.dp)){
+  if(kind!=SurfaceKind.Operational&&kind!=SurfaceKind.Parchment)Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)){
+   Box(Modifier.width(12.dp).height(1.dp).background(accent.copy(alpha=.55f)))
+   Text(when(kind){SurfaceKind.Heroic->"SAGA PESSOAL";SurfaceKind.Ceremonial->"MARCA DE AETHERIS";SurfaceKind.Parchment->"ARQUIVO DO CRONISTA";else->"COLEÇÃO DE ARTEFATOS"},color=accent,fontSize=9.sp,letterSpacing=2.sp,fontWeight=FontWeight.SemiBold)
+  }
   CompositionLocalProvider(LocalContentColor provides if(kind==SurfaceKind.Parchment)Sepia else Ink){content()}
  }
+}
+/** Shared Nordic dialog plate: preserves AlertDialog window semantics for Robolectric while replacing M3 rounded cards with forged stone/iron/ceremonial surfaces. */
+@Composable fun AetherDialog(onDismissRequest:()->Unit,title:String,kind:SurfaceKind=SurfaceKind.Operational,seal:SealKind?=null,confirmButton:@Composable ()->Unit,dismissButton:(@Composable ()->Unit)?=null,content:@Composable ColumnScope.()->Unit){
+ val dark=LocalAppearance.current.dark
+ val accent=when(kind){SurfaceKind.Ceremonial->Gold;SurfaceKind.Heroic->Blue;SurfaceKind.Artifact->Violet;SurfaceKind.Parchment->Sepia;else->ColdIron}
+ val container=when(kind){SurfaceKind.Ceremonial->if(dark)Color(0xFF231C17) else Color(0xFFE8DEC9);SurfaceKind.Artifact->if(dark)Color(0xFF1D1A22) else Color(0xFFE8E2D8);else->if(dark)Color(0xFF16191B) else Color(0xFFECE6DA)}
+ val shape=CutCornerShape(topStart=8.dp,topEnd=3.dp,bottomEnd=8.dp,bottomStart=3.dp)
+ AlertDialog(
+  onDismissRequest=onDismissRequest,
+  modifier=Modifier.border(1.dp,accent.copy(alpha=.45f),shape),
+  shape=shape,
+  containerColor=container,
+  titleContentColor=Ink,
+  textContentColor=Ink,
+  title={
+   Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
+    Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){
+     if(seal!=null)CeremonialSeal(seal,true,Modifier.size(34.dp))
+     else Box(Modifier.width(3.dp).height(20.dp).background(accent))
+     Text(title,style=MaterialTheme.typography.titleLarge,color=if(kind==SurfaceKind.Ceremonial)Gold else Ink)
+    }
+    Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(accent.copy(alpha=.45f),accent.copy(alpha=.12f),Color.Transparent))))
+   }
+  },
+  text={Column(verticalArrangement=Arrangement.spacedBy(10.dp),content=content)},
+  confirmButton=confirmButton,
+  dismissButton=dismissButton
+ )
 }
 @Composable fun MetricPair(a:String,al:String,b:String,bl:String){val muted=if(LocalContentColor.current==Sepia)Sepia.copy(alpha=.75f) else Muted;Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(16.dp)){Column(Modifier.weight(1f)){Text(a,fontSize=30.sp,lineHeight=36.sp,fontFamily=SagaFont);Text(al,color=muted,fontSize=12.sp,lineHeight=18.sp)};Column(Modifier.weight(1f)){Text(b,fontSize=30.sp,lineHeight=36.sp,fontFamily=SagaFont);Text(bl,color=muted,fontSize=12.sp,lineHeight=18.sp)}}}
 @Composable fun SectionHeader(title:String,sub:String=""){
@@ -65,11 +97,12 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
 }
 /** 1.6.9.10 · Daily progress read as a line of a chronicle, not as a panel. */
 @Composable fun DayLedger(done:Int,total:Int,rested:Boolean,relaxed:Boolean,dial:Dp){
+ val pending=(total-done).coerceAtLeast(0)
  Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(14.dp)){
   DayDial(if(total==0)0f else done.toFloat()/total,if(total==0)"—" else "${done*100/total}%",dial)
   Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(2.dp)){
    Eyebrow(if(rested)"Dia de descanso" else "Jornada de hoje",Green)
-   Row(verticalAlignment=Alignment.Bottom,horizontalArrangement=Arrangement.spacedBy(8.dp)){Text("$done de $total",style=MaterialTheme.typography.titleLarge);Text("${total-done} pendentes",fontSize=12.sp,color=Muted,modifier=Modifier.padding(bottom=3.dp))}
+   Row(verticalAlignment=Alignment.Bottom,horizontalArrangement=Arrangement.spacedBy(8.dp)){Text("$done de $total",style=MaterialTheme.typography.titleLarge);Text("$pending ${if(pending==1)"pendente" else "pendentes"}",fontSize=12.sp,color=Muted,modifier=Modifier.padding(bottom=3.dp))}
    if(relaxed)Text("Modo livre · o widget mantém a agenda programada.",fontSize=11.sp,color=Muted)
   }
  }
@@ -107,7 +140,7 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
   }
   if(q.special.isNotBlank())Text("Troféu: ${q.special}",color=Gold,fontSize=13.sp)
   Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){
-   Action(if(claimed)"Recompensa resgatada" else "Resgatar recompensa",{vm.run{vm.repo.claim(q)}},Modifier.weight(1f),enabled=!claimed&&value>=q.target,completed=claimed)
+   Action(if(claimed)"Recompensa resgatada" else "Resgatar recompensa",{vm.run{vm.repo.claim(q)}},Modifier.weight(1f),enabled=!claimed&&value>=q.target,completed=claimed,ceremonial=!claimed&&value>=q.target)
    TextButton(onEdit){Text("Editar missão",color=contractMuted)}
   }
  }

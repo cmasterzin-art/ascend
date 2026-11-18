@@ -17,7 +17,7 @@ import androidx.compose.ui.semantics.*
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable fun FullForm(title:String,onDismiss:()->Unit,onSave:()->Unit,saveLabel:String="Salvar",content:@Composable ColumnScope.()->Unit){
     Dialog(onDismiss,properties=DialogProperties(usePlatformDefaultWidth=false,decorFitsSystemWindows=false)){
-        Scaffold(topBar={TopAppBar(title={Text(title)},navigationIcon={IconButton(onDismiss){Icon(Icons.AutoMirrored.Filled.ArrowBack,"Voltar")}},actions={SagaButton(saveLabel,onSave)})}){padding->Box(Modifier.padding(padding).imePadding()){Page(content)}}
+        Scaffold(topBar={Column{TopAppBar(title={Text(title,fontFamily=SagaFont)},navigationIcon={IconButton(onDismiss){Icon(Icons.AutoMirrored.Filled.ArrowBack,"Voltar")}},actions={SagaButton(saveLabel,onSave)});Box(Modifier.fillMaxWidth().height(1.dp).background(Gold.copy(alpha=.28f)))}}){padding->Box(Modifier.padding(padding).imePadding()){Page(content)}}
     }
 }
 @Composable fun HabitEditor(h:Habit,onDismiss:()->Unit,onSave:(Habit)->Unit){
@@ -44,7 +44,7 @@ import androidx.compose.ui.semantics.*
         Eyebrow("Dias programados")
         Column(verticalArrangement=Arrangement.spacedBy(4.dp)){
             (1..7).toList().chunked(4).forEach{row->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)){
-                row.forEach{day->FilterChip(day in days,{days=if(day in days)days-day else days+day},label={Text(listOf("Seg","Ter","Qua","Qui","Sex","Sáb","Dom")[day-1])},modifier=Modifier.weight(1f).heightIn(min=48.dp).semantics{contentDescription=listOf("Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo")[day-1]},shape=androidx.compose.foundation.shape.CutCornerShape(3.dp))};repeat(4-row.size){Spacer(Modifier.weight(1f))}
+                row.forEach{day->val sel=day in days;FilterChip(sel,{days=if(sel)days-day else days+day},label={Text(listOf("Seg","Ter","Qua","Qui","Sex","Sáb","Dom")[day-1],color=if(sel)Gold else Muted)},modifier=Modifier.weight(1f).heightIn(min=48.dp).semantics{contentDescription=listOf("Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo")[day-1]},shape=androidx.compose.foundation.shape.CutCornerShape(4.dp),colors=FilterChipDefaults.filterChipColors(containerColor=Surface.copy(alpha=.6f),selectedContainerColor=Gold.copy(alpha=.18f),labelColor=Muted,selectedLabelColor=Gold),border=FilterChipDefaults.filterChipBorder(enabled=true,selected=sel,borderColor=ColdIron.copy(alpha=.32f),selectedBorderColor=Gold.copy(alpha=.78f)))};repeat(4-row.size){Spacer(Modifier.weight(1f))}
             }}
         }
         Text("Dias sem seleção são descanso. Não quebram sua sequência.",color=Muted,fontSize=12.sp)
@@ -86,9 +86,9 @@ import androidx.compose.ui.semantics.*
         Text("Meta deste registro: ${r?.target?:h.target} ${r?.unit?:h.unit}",color=Gold)
         FormField(amount,{amount=it;inputError=null},"Progresso total nesta data",number=true)
         if(h.type!=0)Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
-            (if(h.type==2)listOf(5,15,25) else listOf(1,5,10)).forEach{step->OutlinedButton({amount=((amount.toIntOrNull()?:0).coerceAtLeast(0).toLong()+step).coerceAtMost((r?.target?:h.target).toLong()).toString()}){Text("+$step")}}
+            (if(h.type==2)listOf(5,15,25) else listOf(1,5,10)).forEach{step->SagaButton("+$step",{amount=((amount.toIntOrNull()?:0).coerceAtLeast(0).toLong()+step).coerceAtMost((r?.target?:h.target).toLong()).toString()},secondary=true)}
         }
-        Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){OutlinedButton({amount="0"}){Text("Desfazer")};Action("Atingir meta",{amount=(r?.target?:h.target).toString()})}
+        Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){SagaButton("Desfazer",{amount="0"},secondary=true);Action("Atingir meta",{amount=(r?.target?:h.target).toString()})}
         Text("Informe o total realizado no dia. O aplicativo concede apenas a diferença de recompensa.",color=Muted,fontSize=13.sp)
         if(r!=null){Toggle("Corrigir recompensas deste registro",correct,{correct=it});if(correct){FormField(xp,{xp=it},"XP da meta",true);FormField(coins,{coins=it},"Fragmentos da meta",true);FormField(points,{points=it},"Pontos da meta",true)}}
         Text("Se fragmentos de um registro desfeito já tiverem sido gastos, a diferença será compensada pelos próximos ganhos. O saldo disponível permanece em zero até a compensação.",color=Muted,fontSize=12.sp)
@@ -96,7 +96,7 @@ import androidx.compose.ui.semantics.*
     if(discard)DiscardEdits(onDismiss,{discard=false})
 }
 @Composable private fun DiscardEdits(onDiscard:()->Unit,onKeep:()->Unit){
-    AlertDialog(onDismissRequest=onKeep,title={Text("Descartar alterações?")},text={Text("As mudanças deste formulário ainda não foram salvas.")},confirmButton={SagaButton("Descartar",onDiscard,destructive=true)},dismissButton={TextButton(onKeep){Text("Continuar editando")}})
+    AetherDialog(onDismissRequest=onKeep,title="Descartar alterações?",confirmButton={SagaButton("Descartar",onDiscard,destructive=true)},dismissButton={TextButton(onKeep){Text("Continuar editando")}}){Text("As mudanças deste formulário ainda não foram salvas.")}
 }
 @Composable fun Onboarding(onRestore:(()->Unit)?=null,onCreate:(Player,List<Habit>)->Unit){
     var step by remember{mutableIntStateOf(0)};var name by remember{mutableStateOf("")};var cls by remember{mutableIntStateOf(1)};var color by remember{mutableIntStateOf(1)};var face by remember{mutableIntStateOf(0)};var outfit by remember{mutableIntStateOf(0)};var frame by remember{mutableIntStateOf(0)};var title by remember{mutableIntStateOf(0)};var goals by remember{mutableStateOf(setOf("Aprender"))};var starters by remember{mutableStateOf(setOf(0))}
@@ -111,9 +111,9 @@ import androidx.compose.ui.semantics.*
             2->{Title("Sua vida, sua jornada.","Selecione propósitos e os primeiros hábitos. Tudo poderá ser editado depois.");listOf("Aprender","Cuidar do corpo","Organizar a rotina","Encontrar equilíbrio","Criar projetos").forEach{g->Toggle(g,g in goals,{goals=if(it)goals+g else goals-g})};Eyebrow("Primeiras brasas");listOf("Estudar Direito · 60 minutos · 60 XP","Ler · 20 páginas · 25 XP","Mover o corpo · 30 minutos · 70 XP").forEachIndexed{i,label->Toggle(label,i in starters,{starters=if(it)starters+i else starters-i})};Text("Nenhum registro fictício será criado. Sua história começa com suas ações.",color=Muted,fontSize=12.sp);Action("Entrar em Aetheris",{
                 val hs=listOf(Habit(name="Estudar Direito",type=2,target=60,unit="minutos",xp=60,points=5,coins=5,proportional=true),Habit(name="Ler",type=1,target=20,unit="páginas",xp=25,points=3,category="Leitura",proportional=true,icon=4),Habit(name="Mover o corpo",type=2,target=30,unit="minutos",xp=70,attribute=1,color=3,category="Movimento",icon=3))
                 onCreate(p,hs.filterIndexed{i,_->i in starters}.mapIndexed{i,h->h.copy(position=i)})
-            },Modifier.fillMaxWidth())}
+            },Modifier.fillMaxWidth(),ceremonial=true)}
         }
-        if(step==0&&onRestore!=null)OutlinedButton(onRestore,Modifier.fillMaxWidth()){Text("Já tenho uma jornada · Restaurar backup")}
+        if(step==0&&onRestore!=null)SagaButton("Já tenho uma jornada · Restaurar backup",onRestore,Modifier.fillMaxWidth(),secondary=true)
         if(step>0)TextButton({step--}){Text("Voltar")}
     }
 }
@@ -134,5 +134,5 @@ import androidx.compose.ui.semantics.*
 }
 @Composable fun JournalEditor(j:Journal?,onDismiss:()->Unit,onSave:(Journal)->Unit){
     var title by remember{mutableStateOf(j?.title?:"")};var text by remember{mutableStateOf(j?.text?:"")}
-    FullForm("Diário do aventureiro",onDismiss,{onSave(Journal(j?.id?:uid(),title,text,j?.date?:today()))}){Eyebrow(displayDate(j?.date?:today()));FormField(title,{title=it},"Título");OutlinedTextField(text,{text=it},Modifier.fillMaxWidth().heightIn(min=320.dp),label={Text("O que este dia deixou em você?")});Text("Esta página fica somente neste aparelho e no backup local que você exportar.",color=Muted,fontSize=12.sp)}
+    FullForm("Diário do aventureiro",onDismiss,{onSave(Journal(j?.id?:uid(),title,text,j?.date?:today()))}){Eyebrow(displayDate(j?.date?:today()));FormField(title,{title=it},"Título");FormField(text,{text=it},"O que este dia deixou em você?",multi=true,modifier=Modifier.heightIn(min=320.dp));Text("Esta página fica somente neste aparelho e no backup local que você exportar.",color=Muted,fontSize=12.sp)}
 }

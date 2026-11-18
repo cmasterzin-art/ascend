@@ -2,8 +2,15 @@ package br.com.ascend.aetheris
 
 import android.view.View
 import android.widget.FrameLayout
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.*
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.unit.*
 import androidx.datastore.preferences.core.edit
 import androidx.lifecycle.ViewModelProvider
 import kotlinx.coroutines.runBlocking
@@ -34,5 +41,103 @@ class ProductVisualTourTest{
   compose.onNodeWithTag("nav:character").performClick();shot("heroi");compose.onNodeWithText("Inventário").performClick();shot("inventario")
   compose.onNodeWithTag("nav:world").performClick();shot("atlas");compose.onNodeWithText("Crônicas").performClick();compose.onNodeWithText("Crônica da Semana").performScrollTo().performClick();shot("cronica");back();compose.onNodeWithText("Salão das Memórias").performScrollTo().performClick();shot("memorias")
   compose.runOnIdle{val v=HabitWidget.views(app,app.repository.state.value!!,true).apply(app,FrameLayout(app));v.measure(View.MeasureSpec.makeMeasureSpec(340,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(340,View.MeasureSpec.EXACTLY));v.layout(0,0,340,340);save(v,"widget")}
+  compose.runOnIdle{
+   compose.activity.setContent{AetherisTheme(dark=true,minimal=false,reducedMotion=true){DesignSystemBoard16915()}}
+   val v=compose.activity.window.decorView
+   v.measure(View.MeasureSpec.makeMeasureSpec(860,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(1380,View.MeasureSpec.EXACTLY))
+   v.layout(0,0,860,1380)
+  }
+  compose.waitForIdle()
+  compose.runOnIdle{
+   val v=compose.activity.window.decorView
+   v.measure(View.MeasureSpec.makeMeasureSpec(860,View.MeasureSpec.EXACTLY),View.MeasureSpec.makeMeasureSpec(1380,View.MeasureSpec.EXACTLY))
+   v.layout(0,0,860,1380)
+   val b=android.graphics.Bitmap.createBitmap(860,1380,android.graphics.Bitmap.Config.ARGB_8888)
+   v.draw(android.graphics.Canvas(b))
+   val f=java.io.File("build/reports/screenshots/prancha-componentes-16915.png")
+   f.parentFile!!.mkdirs()
+   f.outputStream().use{b.compress(android.graphics.Bitmap.CompressFormat.PNG,100,it)}
+   b.recycle()
+  }
+ }
+}
+
+@Composable private fun DesignSystemBoard16915(){
+ Column(Modifier.fillMaxSize().background(Obsidian).padding(24.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
+  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+   Column(verticalArrangement=Arrangement.spacedBy(4.dp)){
+    Eyebrow("ASCEND 1.6.9.15 · O LEGADO DA FORJA",AgedGold)
+    Text("Prancha do Design System Nórdico",fontFamily=SagaFont,fontSize=28.sp,color=ParchmentText)
+    Text("Metais forjados, ardósia vulcânica, filigrana cerimonial, pergaminho escandinavo e entalhes rúnicos.",color=MistGray,fontSize=13.sp)
+   }
+   CeremonialSeal(SealKind.Saga,true,Modifier.size(44.dp))
+  }
+  NorthDivider()
+  Row(Modifier.fillMaxWidth().weight(1f),horizontalArrangement=Arrangement.spacedBy(20.dp)){
+   Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(14.dp)){
+    Eyebrow("1 · Botões Forjados e Estados (SagaButton)",AgedGold)
+    SagaButton("Iniciar ritual · Primário Forjado",{},Modifier.fillMaxWidth())
+    SagaButton("Resgatar recompensa · Cerimonial",{},Modifier.fillMaxWidth(),ceremonial=true)
+    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)){
+     SagaButton("Secundário · Ferro",{},Modifier.weight(1f),secondary=true)
+     SagaButton("Concluído",{},Modifier.weight(1f),done=true)
+    }
+    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)){
+     SagaButton("Destrutivo · Brasa",{},Modifier.weight(1f),destructive=true)
+     SagaButton("Sob a névoa",{},Modifier.weight(1f),enabled=false)
+    }
+    NorthDivider()
+    Eyebrow("2 · Inscrições, Seletores e Controles",AgedGold)
+    FormField("Nome do ritual","Caminhar ao amanhecer",{})
+    ChipRow(listOf("Diário","Quantidade","Tempo"),2,{})
+    Toggle("Modo minimalista · entalhes discretos",true,{})
+    NorthDivider()
+    Eyebrow("3 · Abas Editoriais e Trilhos de Progresso",AgedGold)
+    AetherisTabs(listOf("Resumo","Atributos","Inventário","Loja"),0,{})
+    Column(verticalArrangement=Arrangement.spacedBy(6.dp)){
+     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("Trilho entalhado (25% / 50% / 75%)",color=MistGray,fontSize=12.sp);Text("68%",color=AgedGold,fontSize=12.sp)}
+     Meter(0.68f,AgedGold)
+     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text("Trilho compacto · Gelo e Prata",color=MistGray,fontSize=12.sp);Text("45%",color=GlacierBlue,fontSize=12.sp)}
+     Meter(0.45f,GlacierBlue,slim=true)
+    }
+   }
+   Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(12.dp)){
+    Eyebrow("4 · Emblemas de Classe, Atributos e Selos",AgedGold)
+    AetherSurface(SurfaceKind.Operational){
+     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+      (0..2).forEach{ClassEmblem(it,Modifier.size(34.dp))}
+      (0..4).forEach{AttributeEmblem(it,Modifier.size(28.dp))}
+      SealKind.entries.forEach{CeremonialSeal(it,true,Modifier.size(30.dp))}
+     }
+    }
+    Eyebrow("5 · Cinco Famílias de Superfície (AetherSurface)",AgedGold)
+    AetherSurface(SurfaceKind.Operational){
+     Eyebrow("Operacional · Ardósia e Ferro Frio",GlacierBlue)
+     Text("Hábitos, Planejador, Central de Análises e Configurações.",color=ParchmentText,fontSize=13.sp)
+    }
+    AetherSurface(SurfaceKind.Heroic){
+     Eyebrow("Heroica · Basalto e Bronze Envelhecido",AgedGold)
+     Text("Herói, Retrato, Atributos e Progressão de Nível.",color=ParchmentText,fontSize=13.sp)
+    }
+    AetherSurface(SurfaceKind.Ceremonial){
+     Eyebrow("Cerimonial · Ouro Oxidado e Filigrana Dupla",AgedGold)
+     Text("Sagas Pessoais, Marcos de Expedição e Recompensas.",color=ParchmentText,fontSize=13.sp)
+    }
+    AetherSurface(SurfaceKind.Parchment){
+     Eyebrow("Pergaminho · Manuscrito Escandinavo e Sépia",Sepia)
+     Text("Crônica da Semana, Capítulos do Mundo e Diário.",color=Sepia,fontSize=13.sp)
+     Meter(0.75f,Sepia,slim=true)
+    }
+    AetherSurface(SurfaceKind.Artifact){
+     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(12.dp),verticalAlignment=Alignment.CenterVertically){
+      RelicArt("traveler-helm",Modifier.size(44.dp))
+      Column(Modifier.weight(1f)){
+       Eyebrow("Artefato · Nicho de Pedra e Engaste",AgedGold)
+       Text("Inventário, Relíquias Equipadas e Mercador.",color=ParchmentText,fontSize=13.sp)
+      }
+     }
+    }
+   }
+  }
  }
 }

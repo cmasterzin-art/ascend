@@ -15,7 +15,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable fun FilterPicker(label:String,options:List<String>,selected:Int,onSelect:(Int)->Unit,modifier:Modifier=Modifier){
     var open by remember{mutableStateOf(false)}
-    Box(modifier){OutlinedButton({open=true},Modifier.fillMaxWidth().heightIn(min=48.dp),shape=CutCornerShape(5.dp)){Column(Modifier.fillMaxWidth()){Text(label,color=Muted,fontSize=10.sp);Text(options[selected.coerceIn(options.indices)],fontSize=12.sp)}}
+    val shape=CutCornerShape(topStart=6.dp,topEnd=2.dp,bottomEnd=6.dp,bottomStart=2.dp)
+    Box(modifier){
+        Row(Modifier.fillMaxWidth().heightIn(min=48.dp).background(Surface.copy(alpha=.7f),shape).border(1.dp,ColdIron.copy(alpha=.4f),shape).clickable{open=true}.padding(horizontal=12.dp,vertical=6.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){
+            Column(Modifier.weight(1f)){Text(label,color=Muted,fontSize=10.sp);Text(options[selected.coerceIn(options.indices)],color=Ink,fontSize=12.sp)}
+            Text("▾",color=Gold,fontSize=12.sp)
+        }
         DropdownMenu(open,{open=false}){options.forEachIndexed{i,v->DropdownMenuItem(text={Text(v)},onClick={onSelect(i);open=false})}}
     }
 }
@@ -30,8 +35,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
             if(tab==0)FormField(filter.query,{filter=filter.copy(query=it)},"Buscar nome ou palavra-chave")
         }}
             if(tab==0){
-                item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
-                    OutlinedButton({expanded=!expanded},Modifier.weight(1f)){Text(if(expanded)"Recolher filtros" else "Filtros e ordem",fontSize=12.sp)}
+                item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp),verticalAlignment=Alignment.CenterVertically){
+                    SagaButton(if(expanded)"Recolher filtros" else "Filtros e ordem",{expanded=!expanded},Modifier.weight(1f),secondary=true)
                     TextButton({filter=CatalogFilter()}){Text("Limpar")}
                 }}
                 item{ChipRow(listOf("Todas")+catalogCategories,if(filter.category==null)0 else catalogCategories.indexOf(filter.category)+1,{filter=filter.copy(category=if(it==0)null else catalogCategories[it-1])})}
@@ -57,13 +62,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
                         Eyebrow("Sugestões para sua Jornada")
                         Text("Escolha interesses. Mostramos até quatro modelos dessas categorias que você ainda não adicionou nem dispensou. Tudo é calculado neste aparelho.",color=Muted,fontSize=12.sp)
                         TextButton({interestsOpen=!interestsOpen}){Text("Escolher interesses")}
-                        if(interestsOpen)catalogCategories.forEach{category->Row(verticalAlignment=Alignment.CenterVertically){Checkbox(category in interests,{vm.interest(category)},modifier=Modifier.semantics{contentDescription="Interesse: $category"});Text(category,Modifier.weight(1f),fontSize=13.sp)}}
+                        if(interestsOpen)catalogCategories.forEach{category->Row(verticalAlignment=Alignment.CenterVertically){Checkbox(category in interests,{vm.interest(category)},modifier=Modifier.semantics{contentDescription="Interesse: $category"},colors=CheckboxDefaults.colors(checkedColor=Gold,uncheckedColor=ColdIron,checkmarkColor=androidx.compose.ui.graphics.Color(0xFF17140E)));Text(category,Modifier.weight(1f),fontSize=13.sp)}}
                         if(dismissed.isNotEmpty())TextButton({vm.resetSuggestions()}){Text("Reexibir sugestões dispensadas")}
                     }}
                     val suggestions=recommendations(interests,dismissed,s.habits)
                     items(suggestions,key={"suggest:${it.id}"}){t->CatalogCard(t,s,narrative,{onAdd(t.instantiate(s.habits.size))},{vm.dismissSuggestion(t.id)})}
                 }
-                item{Eyebrow("${found.size} sugestões no catálogo");if(filter.category=="Vigor")Text("Duração e intensidade são sugestões editáveis. Adapte-as às suas condições; não são recomendações médicas universais.",color=Muted,fontSize=12.sp);if(filter.category=="Equilíbrio")Text("Descanso é um convite. Estes modelos começam sem contagem de sequências; você pode ajustar essa opção.",color=Muted,fontSize=12.sp)}
+                item{Eyebrow("${found.size} ${if(found.size==1)"sugestão no catálogo" else "sugestões no catálogo"}");if(filter.category=="Vigor")Text("Duração e intensidade são sugestões editáveis. Adapte-as às suas condições; não são recomendações médicas universais.",color=Muted,fontSize=12.sp);if(filter.category=="Equilíbrio")Text("Descanso é um convite. Estes modelos começam sem contagem de sequências; você pode ajustar essa opção.",color=Muted,fontSize=12.sp)}
                 if(found.isEmpty())item{Empty("Nenhum ritual encontrado. Experimente outro termo ou limpe os filtros.")}
                 items(found,key={"catalog:${it.id}"}){t->CatalogCard(t,s,narrative,{onAdd(t.instantiate(s.habits.size))})}
             }else{
@@ -77,13 +82,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
     val existing=matchingHabit(s.habits,t.instantiate());val color=habitColor(t.attribute)
     Column(Modifier.fillMaxWidth().materialSurface(accent=color,leather=true).padding(16.dp).testTag(if(onDismiss==null)"template:${t.id}" else "suggest:${t.id}"),verticalArrangement=Arrangement.spacedBy(9.dp)){
         Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){
-            RuneSeal(t.attribute,color,Modifier.size(36.dp))
-            Column(Modifier.weight(1f)){Text(if(narrative)t.narrativeName else t.name,style=MaterialTheme.typography.titleLarge);if(narrative)Text(t.name,color=Muted,fontSize=12.sp)}
+            AttributeEmblem(t.attribute,Modifier.size(36.dp))
+            Column(Modifier.weight(1f)){Eyebrow("${t.category} · ${attributes[t.attribute]}",color);Text(if(narrative)t.narrativeName else t.name,style=MaterialTheme.typography.titleLarge);if(narrative)Text(t.name,color=Muted,fontSize=12.sp)}
         }
         Text(t.description,color=Muted,fontSize=13.sp)
-        Text("${t.target} ${t.unit} · ${difficultyNames[t.difficulty]} · ${attributes[t.attribute]}",color=color,fontSize=12.sp)
-        Text("${frequencyLabel(t.days)} · cerca de ${t.estimatedMinutes} min",color=Muted,fontSize=11.sp)
-        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)){Text("${t.xp} XP  ·  ◈ ${t.coins}",Modifier.weight(1f),color=Gold,fontFamily=SagaFont,fontSize=15.sp);Action(if(existing!=null)"Já na jornada" else "Adicionar",onAdd,enabled=existing==null)}
+        Text("${t.target} ${t.unit} · ${difficultyNames[t.difficulty]} · ${frequencyLabel(t.days)} · ~${t.estimatedMinutes} min",color=color,fontSize=12.sp)
+        Hairline()
+        Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)){Text("${t.xp} XP  ·  ◈ ${t.coins}",Modifier.weight(1f),color=Gold,fontFamily=SagaFont,fontSize=15.sp);Action(if(existing!=null)"Já na jornada" else "Adicionar",onAdd,enabled=existing==null,completed=existing!=null)}
         if(existing?.archived==true||existing?.paused==true)Text("O hábito existente está arquivado ou pausado. Reative-o em Hábitos.",color=Muted,fontSize=11.sp)
         if(onDismiss!=null)TextButton(onDismiss){Text("Dispensar sugestão",fontSize=12.sp)}
     }
@@ -99,14 +104,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
         if(selectionError&&selected.isEmpty())Text("Selecione pelo menos um hábito para adicionar.",color=MaterialTheme.colorScheme.error)
         Text(r.description,color=Muted);Text("Selecione e personalize antes de salvar. Hábitos existentes serão reutilizados sem alterações e podem ser editados depois em Hábitos.",fontSize=13.sp,color=Muted)
         candidates.forEach{h->val existing=matchingHabit(s.habits,h)
-            Panel{Row(verticalAlignment=Alignment.CenterVertically){Checkbox(h.templateId in selected,{selected=if(it)selected+h.templateId else selected-h.templateId},modifier=Modifier.semantics{contentDescription="Incluir ${h.name}"});Text(h.name,Modifier.weight(1f),style=MaterialTheme.typography.titleLarge)}
+            Panel{Row(verticalAlignment=Alignment.CenterVertically){Checkbox(h.templateId in selected,{selected=if(it)selected+h.templateId else selected-h.templateId},modifier=Modifier.semantics{contentDescription="Incluir ${h.name}"},colors=CheckboxDefaults.colors(checkedColor=Gold,uncheckedColor=ColdIron,checkmarkColor=androidx.compose.ui.graphics.Color(0xFF17140E)));Text(h.name,Modifier.weight(1f),style=MaterialTheme.typography.titleLarge)}
                 val shown=existing?:h
                 Text("${shown.target} ${shown.unit} · ${shown.xp} XP · ${frequencyLabel(shown.days)}",color=Muted,fontSize=12.sp)
                 if(existing!=null)Text("Reutilizar existente${if(existing.archived||existing.paused)" · arquivado/pausado" else ""}",color=Gold,fontSize=12.sp)
                 else TextButton({editing=h}){Text("Personalizar ${h.name}")}
             }
         }
-        Text("${selected.size} selecionados · nenhum XP por adicionar ou agrupar",color=Muted,fontSize=12.sp)
+        Text("${selected.size} ${if(selected.size==1)"selecionado" else "selecionados"} · nenhum XP por adicionar ou agrupar",color=Muted,fontSize=12.sp)
     }
     editing?.let{h->HabitEditor(h,{editing=null},{updated->vm.run{validateHabitInput(updated);candidates=candidates.map{if(it.id==updated.id)updated else it};editing=null}})}
 }

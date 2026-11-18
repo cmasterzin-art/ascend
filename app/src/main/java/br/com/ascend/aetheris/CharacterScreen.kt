@@ -56,23 +56,28 @@ import java.time.*
  }
 }
 @Composable private fun XpPlot(values:List<Float>){
-    val blue=Blue;val grid=CardColor
+    val blue=Blue;val gold=Gold;val grid=ColdIron.copy(alpha=.24f)
     val description="XP por dia: "+values.mapIndexed{i,x->"dia ${i+1}: ${x.toLong()}"}.joinToString(", ")
     Canvas(Modifier.fillMaxWidth().height(150.dp).semantics{contentDescription=description}){
-        val margin=8.dp.toPx();val height=size.height-margin*2;val width=size.width-margin*2
-        repeat(4){i->val y=margin+height*i/3;drawLine(grid,Offset(margin,y),Offset(size.width-margin,y),1.dp.toPx())}
+        val margin=8.dp.toPx();val height=size.height-margin*2;val width=size.width-margin*2;val d=1.dp.toPx()
+        repeat(4){i->val y=margin+height*i/3;drawLine(if(i==3)gold.copy(alpha=.38f) else grid,Offset(margin,y),Offset(size.width-margin,y),d)}
         val max=(values.maxOrNull()?:0f).coerceAtLeast(1f)
         val points=values.mapIndexed{i,v->Offset(margin+width*i/(values.size-1).coerceAtLeast(1),margin+height*(1-v/max))}
+        points.forEach{pt->drawLine(grid.copy(alpha=.14f),Offset(pt.x,margin),Offset(pt.x,size.height-margin),d)}
         val line=Path().apply{points.forEachIndexed{i,p->if(i==0)moveTo(p.x,p.y) else lineTo(p.x,p.y)}}
         val area=Path().apply{addPath(line);lineTo(points.last().x,size.height-margin);lineTo(points.first().x,size.height-margin);close()}
-        drawPath(area,Brush.verticalGradient(listOf(blue.copy(alpha=.27f),blue.copy(alpha=.01f))))
-        drawPath(line,blue,style=androidx.compose.ui.graphics.drawscope.Stroke(2.5.dp.toPx(),cap=StrokeCap.Round,join=StrokeJoin.Round))
-        if(values.size<=7)points.forEach{drawCircle(blue,3.5.dp.toPx(),it)}
+        drawPath(area,Brush.verticalGradient(listOf(blue.copy(alpha=.32f),gold.copy(alpha=.08f),Color.Transparent)))
+        drawPath(line,blue,style=androidx.compose.ui.graphics.drawscope.Stroke(2.4.dp.toPx(),cap=StrokeCap.Round,join=StrokeJoin.Round))
+        if(values.size<=7)points.forEach{
+            drawCircle(blue.copy(alpha=.28f),6.dp.toPx(),it)
+            drawCircle(gold,3.2.dp.toPx(),it)
+            drawCircle(Color(0xFF0E1216),1.4.dp.toPx(),it)
+        }
     }
 }
 @Composable fun JournalScreen(s:GameState,vm:GameViewModel){
     var search by remember{mutableStateOf("")};var editor by remember{mutableStateOf(false)};var editing by remember{mutableStateOf<Journal?>(null)};var deleting by remember{mutableStateOf<Journal?>(null)}
     Page{Title("Diário do aventureiro","Nem tudo o que importa cabe em uma barra de XP.");Action("+ Escrever uma página",{editor=true});FormField(search,{search=it},"Pesquisar suas páginas");val entries=s.journal.filter{it.title.contains(search,true)||it.text.contains(search,true)};if(entries.isEmpty())Empty("As páginas estão em silêncio. Escreva quando quiser.");entries.forEach{j->Manuscript{Eyebrow(displayDate(j.date),Sepia);Text(j.title,style=MaterialTheme.typography.titleLarge);Text(j.text,color=Sepia,fontSize=15.sp,lineHeight=25.sp);Row{TextButton({editing=j;editor=true}){Text("Editar")};TextButton({deleting=j}){Text("Excluir",color=Muted)}}}}}
     if(editor)JournalEditor(editing,{editor=false;editing=null},{j->vm.run{vm.repo.journal(j);editor=false;editing=null}})
-    deleting?.let{j->AlertDialog(onDismissRequest={deleting=null},title={Text("Excluir esta página?")},text={Text("A página será removida do diário local.")},confirmButton={TextButton({vm.run{vm.repo.deleteJournal(j.id)};deleting=null}){Text("Excluir")}},dismissButton={TextButton({deleting=null}){Text("Cancelar")}})}
+    deleting?.let{j->AetherDialog(onDismissRequest={deleting=null},title="Excluir esta página?",confirmButton={SagaButton("Excluir",{vm.run{vm.repo.deleteJournal(j.id)};deleting=null},destructive=true)},dismissButton={TextButton({deleting=null}){Text("Cancelar")}}){Text("A página será removida do diário local.")}}
 }

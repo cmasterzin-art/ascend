@@ -1,12 +1,12 @@
 <resources>
-    <color name="widget_base">#E4DFD4</color>
-    <color name="widget_text">#1E232A</color>
-    <color name="widget_accent">#6E5227</color>
-    <color name="widget_button">#D6CFC0</color>
-    <color name="widget_muted">#4E565E</color>
-    <color name="widget_track">#C5BEB0</color>
-    <color name="widget_glacier">#4E6A85</color>
-    <color name="widget_primary">#B89C6A</color>
-    <color name="widget_action_text">#1C1914</color>
-    <color name="widget_stroke">#8B7D65</color>
+    <color name="widget_base">#EAE3D5</color>
+    <color name="widget_text">#1A1F24</color>
+    <color name="widget_accent">#7A5926</color>
+    <color name="widget_button">#DCD4C4</color>
+    <color name="widget_muted">#4A525A</color>
+    <color name="widget_track">#C9C0AF</color>
+    <color name="widget_glacier">#3B5E7C</color>
+    <color name="widget_primary">#E0D7C5</color>
+    <color name="widget_action_text">#171B20</color>
+    <color name="widget_stroke">#8C7B60</color>
 </resources>
