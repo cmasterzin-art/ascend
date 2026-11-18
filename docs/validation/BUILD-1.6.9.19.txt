@@ -1,3 +1,4 @@
+{'tests': 135, 'failures': 0, 'errors': 0, 'skipped': 0}
 To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.9/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
 Daemon will be stopped at the end of the build 
 > Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
@@ -7,8 +8,8 @@ Daemon will be stopped at the end of the build
 > Task :app:checkDebugAarMetadata
 > Task :app:mapDebugSourceSetPaths
 > Task :app:generateDebugResources
-> Task :app:packageDebugResources
 > Task :app:mergeDebugResources
+> Task :app:packageDebugResources
 > Task :app:createDebugCompatibleScreenManifests
 > Task :app:extractDeepLinksDebug
 > Task :app:parseDebugLocalResources
@@ -46,8 +47,8 @@ Unable to strip the following libraries, packaging them as they are: libandroidx
 > Task :app:extractProguardFiles
 > Task :app:compileDebugKotlin
 > Task :app:compileDebugJavaWithJavac
-> Task :app:bundleDebugClassesToCompileJar
 > Task :app:bundleDebugClassesToRuntimeJar
+> Task :app:bundleDebugClassesToCompileJar
 > Task :app:processDebugJavaRes
 > Task :app:kspDebugUnitTestKotlin
 > Task :app:dexBuilderDebug
@@ -57,28 +58,22 @@ Unable to strip the following libraries, packaging them as they are: libandroidx
 > Task :app:packageDebug
 > Task :app:createDebugApkListingFileRedirect
 > Task :app:assembleDebug
-
-> Task :app:compileDebugUnitTestKotlin FAILED
-e: file:///home/runner/work/ascend/ascend/app/src/test/java/br/com/ascend/aetheris/ProductVisualTourTest.kt:152:58 Unresolved reference 'Color'.
-e: file:///home/runner/work/ascend/ascend/app/src/test/java/br/com/ascend/aetheris/ProductVisualTourTest.kt:152:76 Unresolved reference 'CutCornerShape'.
-e: file:///home/runner/work/ascend/ascend/app/src/test/java/br/com/ascend/aetheris/ProductVisualTourTest.kt:158:59 Unresolved reference 'Color'.
-e: file:///home/runner/work/ascend/ascend/app/src/test/java/br/com/ascend/aetheris/ProductVisualTourTest.kt:158:77 Unresolved reference 'CutCornerShape'.
-
 > Task :app:generateDebugAndroidTestLintModel
-gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1794985237852.json
+> Task :app:generateDebugLintReportModel
+> Task :app:generateDebugUnitTestLintModel
+> Task :app:compileDebugUnitTestKotlin
+> Task :app:compileDebugUnitTestJavaWithJavac NO-SOURCE
+> Task :app:processDebugUnitTestJavaRes
+> Task :app:lintAnalyzeDebug
+> Task :app:testDebugUnitTest
+> Task :app:lintAnalyzeDebugAndroidTest
+> Task :app:lintAnalyzeDebugUnitTest
 
-FAILURE: Build failed with an exception.
+> Task :app:lintReportDebug
+Wrote HTML report to file:///home/runner/work/ascend/ascend/app/build/reports/lint-results-debug.html
 
-* What went wrong:
-Execution failed for task ':app:compileDebugUnitTestKotlin'.
-> A failure occurred while executing org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction
-   > Compilation error. See log for more details
+> Task :app:lintDebug
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1794985543198.json
 
-* Try:
-> Run with --stacktrace option to get the stack trace.
-> Run with --info or --debug option to get more log output.
-> Run with --scan to get full insights.
-> Get more help at https://help.gradle.org.
-
-BUILD FAILED in 1m 39s
-47 actionable tasks: 47 executed
+BUILD SUCCESSFUL in 2m 58s
+56 actionable tasks: 56 executed
