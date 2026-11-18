@@ -1,10 +1,10 @@
 # Continuidade de assinatura
 
-Identificador estável: `br.com.ascend.aetheris`. Versão `1.6.9.15`, `versionCode 18` (sobre `1.6.9.10`, `versionCode 17`).
+Identificador estável: `br.com.ascend.aetheris`. Versão `1.6.9.19`, `versionCode 19` (sobre `1.6.9.15`, `versionCode 18`).
 
-## Estado dos APKs 1.6.9, 1.6.9.10 e 1.6.9.15 e preservação do certificado
+## Estado dos APKs 1.6.9, 1.6.9.10, 1.6.9.15 e 1.6.9.19 e preservação do certificado
 
-Os APKs publicados em `downloads/ASCEND-1.6.9.15.apk`, `downloads/ASCEND-1.6.9.10.apk`, `downloads/ASCEND-1.6.9.apk` e `downloads/ASCEND-1.6.8.apk` reutilizam a chave privada oficial das versões `1.1` a `1.6.8` (`ascend-1.1.keystore`), com certificado SHA-256 verificado por `apksigner verify --verbose --print-certs`:
+Os APKs publicados em `downloads/ASCEND-1.6.9.19.apk`, `downloads/ASCEND-1.6.9.15.apk`, `downloads/ASCEND-1.6.9.10.apk`, `downloads/ASCEND-1.6.9.apk` e `downloads/ASCEND-1.6.8.apk` reutilizam a chave privada oficial das versões `1.1` a `1.6.8` (`ascend-1.1.keystore`), com certificado SHA-256 verificado por `apksigner verify --verbose --print-certs`:
 
 `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`
 
@@ -12,7 +12,7 @@ O secret `ASCEND_KEYSTORE_BASE64` está configurado no repositório GitHub (`cma
 
 ## APKs publicados e migração de dados
 
-Instale a `1.6.9.15` (ou a `1.6.9.10` / `1.6.9`) diretamente por cima dos APKs `1.1`, `1.2`, `1.3`, `1.3.1`, `1.4`, `1.4.5`, `1.5.0`, `1.5.1`, `1.5.2`, `1.6.0`, `1.6.1`, `1.6.2`, `1.6.5`, `1.6.8`, `1.6.9` ou `1.6.9.10` fornecidos no repositório. A identidade de assinatura é a mesma; as versões `1.6.x` mantêm Room v6 / backup v8 da `1.6.0` e a migração aditiva 5 → 6 sobre a `1.5.2`. As migrações anteriores continuam testadas. A atualização em telefone físico não foi executada. A chave permanece fora do Git público, no arquivo privado preservado `ascend-1.1.keystore`.
+Instale a `1.6.9.19` (ou a `1.6.9.15` / `1.6.9.10` / `1.6.9`) diretamente por cima dos APKs `1.1`, `1.2`, `1.3`, `1.3.1`, `1.4`, `1.4.5`, `1.5.0`, `1.5.1`, `1.5.2`, `1.6.0`, `1.6.1`, `1.6.2`, `1.6.5`, `1.6.8`, `1.6.9`, `1.6.9.10` ou `1.6.9.15` fornecidos no repositório. A identidade de assinatura é a mesma; as versões `1.6.x` mantêm Room v6 / backup v8 da `1.6.0` e a migração aditiva 5 → 6 sobre a `1.5.2`. As migrações anteriores continuam testadas. A atualização em telefone físico não foi executada. A chave permanece fora do Git público, no arquivo privado preservado `ascend-1.1.keystore`.
 
 A chave original da 1.0 não está disponível; seu certificado é diferente. Para sair da 1.0, exporte um backup e siga [INSTALACAO.md](INSTALACAO.md). Se possui a chave da sua instalação, pode recompilar a atualização com ela.
 
