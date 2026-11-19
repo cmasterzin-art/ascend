@@ -15,9 +15,9 @@ Além das métricas originais de hábitos (`0 = conclusões`, `1 = minutos`, `2 
 | Código | Constante | Métrica e proteção anti-spam |
 |---|---|---|
 | `0` | `EXPEDITION_METRIC_HABITS` | Conclusões de hábitos selecionados (baseline real) |
-| `4` | `EXPEDITION_METRIC_FOCUS_SESSIONS` | Sessões de Foco registradas (`focus_sessions` concluídas com `actualSeconds > 0`; sessões canceladas ou com `0s` são ignoradas; dias de descanso nunca penalizam) |
+| `4` | `EXPEDITION_METRIC_FOCUS_SESSIONS` | Sessões de Foco registradas (`focus_sessions` concluídas com `elapsedSeconds >= 300L`, i.e., duração mínima efetiva de 5 min na `1.7.3`, preservando claims legados válidos da `1.7.2`; sessões canceladas ou abaixo do mínimo são ignoradas; dias de descanso nunca penalizam) |
 | `5` | `EXPEDITION_METRIC_FLASHCARD_DAYS` | Dias distintos com revisões na Biblioteca de Mímir (`flashcard_reviews`; proteção anti-spam: múltiplos flashcards no mesmo dia contam como `1` dia) |
-| `6` | `EXPEDITION_METRIC_PATH_TASKS` | Tarefas de Caminhos concluídas após o início da fase (`path_tasks`; fallback disponível para hábitos) |
+| `6` | `EXPEDITION_METRIC_PATH_TASKS` | Tarefas de Caminhos concluídas após o início da fase (`path_tasks`; a partir da `1.7.3`, arquivar administrativamente uma tarefa concluída preserva o crédito, enquanto reabrir ou excluir remove o progresso; fallback disponível para hábitos) |
 
 ## 3. Biblioteca das Eras (Nível 5)
 
@@ -28,7 +28,7 @@ Além das métricas originais de hábitos (`0 = conclusões`, `1 = minutos`, `2 
   1. *O Primeiro Manuscrito* (`lib_portico`, *O Pórtico dos Escribas*, 2 fases — `Tarefas de Caminhos` ou hábitos)
   2. *As Páginas do Silêncio* (`lib_acervo`, *O Acervo Submerso*, 3 fases — `Dias com revisões em Mímir` ou hábitos; relíquia *Anel do Escriba*)
   3. *O Juramento da Sabedoria* (`lib_camara`, *A Câmara de Mímir*, 3 fases — `Dias com revisões em Mímir` ou hábitos; guardião *O Vigia das Eras*; relíquia *Medalhão da Memória Eterna*)
-- **Transformação visual em 3 estágios (`realm_library_atlas.webp`):** *Abandonada* (`0–32%`), *Em restauração* (`33–99%`) e *Restaurada* (`100%`).
+- **Transformação visual em 3 estágios (`realm_library_atlas.webp`, `regionRestorationStage`):** estágio `0` *Abandonada* (`< 2` marcos confirmados e 1ª expedição incompleta), estágio `1` *Em restauração* (1ª expedição concluída ou `>= 2` marcos confirmados) e estágio `2` *Restaurada* (expedição final concluída, `8/8` marcos = `100%`).
 - **Recompensas:** relíquias *Anel do Escriba* (`scribes-ring`) e *Medalhão da Memória Eterna* (`eternal-memory-medallion`), título **Guardião das Eras** e conquistas regionais.
 
 ## 4. Montanhas da Disciplina (Nível 8)
@@ -38,7 +38,7 @@ Além das métricas originais de hábitos (`0 = conclusões`, `1 = minutos`, `2 
   1. *O Caminho dos Antigos* (`mnt_trilha`, *A Trilha de Ferro*, 2 fases — `Tarefas de Caminhos` ou hábitos)
   2. *A Chama que Não Cessa* (`mnt_torre`, *A Torre da Vigília*, 3 fases — `Sessões de Foco registradas` ou hábitos; relíquia *Broche da Vigília Boreal*)
   3. *O Silêncio dos Cumes* (`mnt_observatorio`, *O Observatório do Norte*, 3 fases — `Sessões de Foco registradas` ou hábitos; guardião *O Guardião de Granito*; relíquia *Bússola do Firmamento*)
-- **Transformação visual em 3 estágios (`realm_mountains_atlas.webp`):** *Abandonada* (`0–32%`), *Em restauração* (`33–99%`) e *Restaurada* (`100%`).
+- **Transformação visual em 3 estágios (`realm_mountains_atlas.webp`, `regionRestorationStage`):** estágio `0` *Abandonada* (`< 2` marcos confirmados e 1ª expedição incompleta), estágio `1` *Em restauração* (1ª expedição concluída ou `>= 2` marcos confirmados) e estágio `2` *Restaurada* (expedição final concluída, `8/8` marcos = `100%`).
 - **Recompensas:** relíquias *Broche da Vigília Boreal* (`boreal-vigil-brooch`) e *Bússola do Firmamento* (`firmament-compass`), título **Testemunha dos Cumes** e conquistas regionais.
 
 ## 5. Relíquias Colecionáveis (4 novas peças)

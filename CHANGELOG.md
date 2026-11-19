@@ -1,3 +1,23 @@
+# 1.7.3 — A Forja das Lendas
+
+Retrato Vivo, A Forja de Darian e Arsenal dos Nove Reinos (*Living Hero, Runic Crafting & Nordic Viking Arsenal Update*) sobre a base `feat/ascend-1.7.2`, preservando integralmente os três retratos pintados originais, o Atlas 2.0, as regiões exploráveis, a Biblioteca de Mímir, os Arquétipos, os Caminhos, a Agenda 2.0, a economia de XP/moedas e os 181 testes anteriores. [Retrato Vivo](docs/RETRATO-VIVO-1.7.3.md) · [Forja de Darian](docs/FORJA-DARIAN-1.7.3.md) · [Arsenal 1.7.3](docs/ARSENAL-1.7.3.md) · [Visual 1.7.3](docs/VISUAL-1.7.3.md).
+
+## Módulo I — Retrato Vivo (`LivingPortrait.kt`)
+
+- **Composição 2D em camadas calibradas:** sobrepõe trajes/armaduras (`living_armor_atlas.webp`), elmos/coroas abertos acima dos olhos (`living_helms_atlas.webp`), fíbulas/amuletos no manto (`living_artifacts_atlas.webp`), cenários de fundo (`hero_background_atlas.webp`) e molduras pictóricas (`hero_frames_atlas.webp`) preservando 100% da fisionomia dos 3 tons originais (`wanderer_light`, `wanderer_medium`, `wanderer_dark`).
+- **10 especializações com identidade visual própria:** `SpecializationVisualTheme` atribui cor de aura e runa histórica *Elder Futhark* verificada a todas as 10 especializações, unificado em Jornada, Herói, Arsenal, Estúdio, Forja e Zoom (`PortraitScreen`), com suporte a modo minimalista e redução de movimento.
+
+## Módulo II — A Forja de Darian (`ForgeCrafting.kt`, `ForgeScreen.kt`, `WorldScreen.kt`)
+
+- **Integração à construção `A Forja` (`building:1`):** preserva as 2 etapas históricas de restauração e adiciona oficina de fabricação cosmética com **8 receitas exclusivas** (*Elmo do Juramento*, *Cota do Norte*, *Vestes do Escriba*, *Fíbula de Yggdrasil*, *Coroa Rúnica de Mímir*, *Manto das Runas*, *Armadura da Vigília* e *Moldura dos Nove Reinos*).
+- **Integridade econômica:** somente Fragmentos de Aether (`craft:<recipeId>`), `0 XP`, fora da Loja (`Repository.buy` bloqueia `forgeItemIds`), idempotência concorrente em transação Room, prévia ao vivo na bigorna e diálogo/selo exclusivos para `mestre_da_forja` sem desconto ou bônus econômico.
+
+## Módulo III — Arsenal dos Nove Reinos, Estúdio, 3 Conjuntos & Estabilidade
+
+- **Arsenal, Estúdio e 3 Conjuntos (`EquipmentScreen.kt`):** 7 nichos forjados (`viking_arsenal_ui_atlas.webp`), 5 níveis de raridade diferenciados por brasão e runa, **Estúdio de Personalização** com prévia segura de itens bloqueados (sem conceder posse, desfazer, salvar, restaurar) e **3 conjuntos configuráveis** (`Jornada`, `Conselho`, `Expedição`) com sinalização de itens ausentes.
+- **Room v9 (`MIGRATION_8_9`) & Backup v11:** tabela aditiva `equipment_loadouts` (`schemas/9.json`), leitura retrocompatível de backups `v1`–`v10` e rollback atômico.
+- **Correções da 1.7.2 & Validação:** mínimo efetivo de 5 minutos (`>= 300s`) para sessões de Foco em expedições preservando claims legados; arquivar tarefa concluída preserva crédito na expedição enquanto reabrir/excluir remove; alinhamento da documentação (`DESIGN-SYSTEM-3.0.md`, `EXPLORACAO-1.7.2.md`); **8 novos recursos pictóricos** (`606,5 KB` no APK + prancha conceitual fora do APK); **191 testes aprovados** (`181` preservados + `10` novos), Lint com **0 erros**, `versionCode 24`.
+
 # 1.7.2 — Além das Fronteiras
 
 Expansão do mundo de Aetheris, Design System 3.0 e Renascimento Rúnico (*World Expansion & Nordic Viking Renaissance Update*) sobre a base `feat/ascend-1.7.1`, preservando integralmente Room v8, backup v10, a Biblioteca de Mímir, a Ascensão dos Arquétipos, os Caminhos, a Agenda 2.0, o Foco, a economia de XP/moedas e os 167 testes anteriores. [Exploração 1.7.2](docs/EXPLORACAO-1.7.2.md) · [Atlas 2.0](docs/ATLAS-2.0.md) · [Design System 3.0](docs/DESIGN-SYSTEM-3.0.md) · [Renascimento Rúnico](docs/RENASCIMENTO-RUNICO.md) · [Visual 1.7.2](docs/VISUAL-1.7.2.md).

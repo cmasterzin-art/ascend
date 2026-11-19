@@ -6,11 +6,11 @@ O **Design System 3.0** ([`VikingDesignSystem.kt`](../app/src/main/java/br/com/a
 
 Todas as variantes são renderizadas a partir de células individuais do atlas `viking_button_atlas.webp` (`2 × 3` RGBA) via recorte **9-slice por célula (`drawAtlasCellNineSlice`)**, garantindo que rebites, chanfros e extremidades nunca estiquem ou vazem de células vizinhas:
 
-1. **`FerroRunico`** — Ação principal operacional em ferro escurecido batido a martelo.
-2. **`BronzeForjado`** — Ação secundária em bronze nórdico envelhecido.
-3. **`CerimonialViking`** — Ações solenes (resgates, início/avanço de expedições, restauração, ascensão).
-4. **`Confirmacao`** — Estados concluídos ou confirmação positiva em verde musgo oxidado.
-5. **`Destrutivo`** — Ações irreversíveis (excluir, abandonar, cancelar) em ferro avermelhado.
+1. **`BronzeForjado`** — Ação principal padrão (`secondary = false` em `SagaButton`) em bronze nórdico envelhecido.
+2. **`FerroRunico`** — Ação secundária operacional (`secondary = true` em `SagaButton`) em ferro escurecido batido a martelo.
+3. **`CerimonialViking`** — Ações solenes (`ceremonial = true`: resgates, início/avanço de expedições, restauração, ascensão, fabricação na Forja).
+4. **`Confirmacao`** — Estados concluídos ou confirmação positiva (`completed = true`) em verde musgo oxidado.
+5. **`Destrutivo`** — Ações irreversíveis (`destructive = true`: excluir, abandonar, cancelar) em ferro avermelhado.
 6. **`CompactoRunico`** — Controles densos (zoom do Atlas, filtros compactos, atalhos), preservando área de toque acessível (`>= 48 dp` quando interativo).
 
 ## 2. Separação Explícita: Runas Históricas vs. Selos Fictícios de Aetheris

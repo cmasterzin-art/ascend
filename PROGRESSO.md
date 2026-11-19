@@ -1,3 +1,11 @@
+# 1.7.3 — A Forja das Lendas
+
+Retrato Vivo, A Forja de Darian e Arsenal dos Nove Reinos sobre a base `feat/ascend-1.7.2`, preservando os três retratos originais, o Atlas 2.0, as regiões exploráveis, a Biblioteca de Mímir, os Arquétipos, a economia e os 181 testes anteriores:
+- **Retrato Vivo (`LivingPortrait.kt`):** composição em camadas calibradas de trajes, elmos/coroas abertos, fíbulas no manto, fundos nórdicos, molduras pictóricas e identidade visual distinta (luz + runa *Elder Futhark*) para todas as **10 especializações**, unificado em Jornada, Herói, Arsenal, Estúdio, Forja e Zoom (`PortraitScreen`), com modo minimalista e redução de movimento.
+- **A Forja de Darian (`ForgeCrafting.kt`, `ForgeScreen.kt`):** integrada à construção `A Forja` (`building:1`, preservando as 2 etapas), com **8 receitas cosméticas exclusivas** em Fragmentos (`craft:<recipeId>`, `0 XP`, fora da Loja, idempotência concorrente), prévia ao vivo na bigorna e diálogo/selo exclusivos para `mestre_da_forja` sem vantagem econômica.
+- **Arsenal dos Nove Reinos, Estúdio & 3 Conjuntos (`EquipmentScreen.kt`):** 7 nichos forjados, 5 níveis de raridade diferenciados por brasão e runa, **Estúdio de Personalização** com prévia segura de itens bloqueados (sem conceder posse), **3 conjuntos configuráveis** (`Jornada`, `Conselho`, `Expedição`) persistidos em **Room v9 (`MIGRATION_8_9`)** e **Backup v11** (`v1`–`v11`) com rollback atômico.
+- **Acervo pictórico, correções da 1.7.2 e validação:** **8 novos recursos pictóricos originais** (`606,5 KB / 0,59 MB` no APK + prancha conceitual fora do APK), mínimo de 5 min (`>= 300s`) nas expedições de Foco preservando claims legados, preservação de crédito ao arquivar tarefas concluídas (reabrir/excluir remove), **191 testes aprovados** (`181` preservados + `10` novos), `lintDebug` com **0 erros**, `versionCode 24`, assinatura oficial `e1f003ef...`. [Retrato Vivo](docs/RETRATO-VIVO-1.7.3.md) · [Forja de Darian](docs/FORJA-DARIAN-1.7.3.md) · [Arsenal 1.7.3](docs/ARSENAL-1.7.3.md) · [Visual 1.7.3](docs/VISUAL-1.7.3.md).
+
 # 1.7.2 — Além das Fronteiras
 
 Expansão do mundo de Aetheris, Design System 3.0 e Renascimento Rúnico sobre a base `feat/ascend-1.7.1`, preservando Room v8, backup v10, a Biblioteca de Mímir, a Ascensão dos Arquétipos, a economia e os 167 testes anteriores:
