@@ -1,3 +1,11 @@
+# 1.7.2 — Além das Fronteiras
+
+Expansão do mundo de Aetheris, Design System 3.0 e Renascimento Rúnico sobre a base `feat/ascend-1.7.1`, preservando Room v8, backup v10, a Biblioteca de Mímir, a Ascensão dos Arquétipos, a economia e os 167 testes anteriores:
+- **Atlas de Aetheris 2.0 & Exploração Regional (`Exploration.kt`, `ExplorationScreens.kt`, `RpgDesign.kt`, `WorldScreen.kt`):** zoom por pinça/arrasto com limites (`100%`–`240%`), controles acessíveis (`FlowRow` compatível com `320 dp / 130%`), lista acessível de regiões, 6 estados reais (`RegionAtlasState`), **Biblioteca das Eras** (nível 5, Eydis, 3 expedições / 8 fases) e **Montanhas da Disciplina** (nível 8, Haldor, 3 expedições / 8 fases), com integração opcional a Caminhos, Mímir (anti-spam por dia) e sessões reais de Foco + fallback para hábitos. Santuário do Equilíbrio (nível 12) e Fortaleza da Vontade (nível 20) exibem aviso honesto *"Sem conteúdo interativo ainda"*.
+- **Relíquias, Conquistas e Títulos:** 4 relíquias exclusivas da exploração (`scribes-ring`, `eternal-memory-medallion`, `boreal-vigil-brooch`, `firmament-compass`, fora da Loja, equipáveis no Inventário), 4 conquistas regionais e 2 títulos (*Guardião das Eras*, *Testemunha dos Cumes*).
+- **Design System 3.0 & Renascimento Rúnico (`VikingDesignSystem.kt`, `NorthComponents.kt`, `Design.kt`):** 6 famílias de botões viking em 9-slice por célula, separação entre 12 runas históricas *Elder Futhark* vetoriais e 12 selos fictícios de Aetheris, 16 ícones funcionais, controles forjados e **10 novos recursos pictóricos** (`0,81 MB` no APK + 1 prancha conceitual fora do APK).
+- **Estabilidade & Validação:** correções em rascunhos/retry da Biblioteca de Mímir, **181 testes aprovados** (`167` preservados + `14` novos), `lintDebug` com **0 erros**, Room v8 / backup v10 preservados, `versionCode 23`, assinatura oficial `e1f003ef...`. [Exploração 1.7.2](docs/EXPLORACAO-1.7.2.md) · [Atlas 2.0](docs/ATLAS-2.0.md) · [Design System 3.0](docs/DESIGN-SYSTEM-3.0.md) · [Visual 1.7.2](docs/VISUAL-1.7.2.md).
+
 # 1.7.1 — A Sabedoria dos Nove Reinos
 
 Expansão de conhecimento pessoal e evolução de arquétipos sobre a base `feat/ascend-1.7.0.1`, preservando a Biblioteca da Forja (`1.6.9.19`), o foco consolidado (`1.7.0.1`), a economia de XP/moedas e os 155 testes anteriores:

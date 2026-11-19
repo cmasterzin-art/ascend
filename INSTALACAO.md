@@ -1,13 +1,13 @@
-# Instalar ASCEND 1.7.1 no Android
+# Instalar ASCEND 1.7.2 no Android
 
 Android 8.0 (API 26) ou superior. O uso não exige internet, conta ou pagamento.
 
-## Atualizar os APKs 1.1 a 1.7.0.1 fornecidos neste repositório
+## Atualizar os APKs 1.1 a 1.7.1 fornecidos neste repositório
 
 1. Em Herói → Configurações, exporte um backup de segurança.
-2. [Baixe ASCEND-1.7.1.apk](downloads/ASCEND-1.7.1.apk?raw=true) e abra o arquivo.
-3. Confirme a atualização **sem desinstalar**. O pacote (`br.com.ascend.aetheris`) e o certificado oficial (`e1f003ef...`) são os mesmos; o `versionCode` passou para `22`.
-4. Abra o app e confira seu personagem. A `1.7.1` executa a migração aditiva **Room v7 → v8** (`MIGRATION_7_8`), preservando integralmente todos os dados anteriores (hábitos, foco, Caminhos, Agenda 2.0, inventário e memórias) e lendo backups **v1 a v10**.
+2. [Baixe ASCEND-1.7.2.apk](downloads/ASCEND-1.7.2.apk?raw=true) e abra o arquivo.
+3. Confirme a atualização **sem desinstalar**. O pacote (`br.com.ascend.aetheris`) e o certificado oficial (`e1f003ef...`) são os mesmos; o `versionCode` passou para `23`.
+4. Abra o app e confira seu personagem. A `1.7.2` preserva integralmente o banco **Room v8** e o **backup v10** (compatível com `v1`–`v10`), mantendo todos os dados anteriores (hábitos, foco, Caminhos, Agenda 2.0, Biblioteca de Mímir, especializações, inventário e memórias).
 
 Se o Android indicar conflito de assinatura, sua instalação foi compilada com outra chave. Não desinstale antes de exportar os dados; consulte `ASSINATURA.md`.
 
@@ -18,23 +18,24 @@ Se o Android indicar conflito de assinatura, sua instalação foi compilada com 
 1. Na **versão 1.0 ainda instalada**, abra **Herói → Configurações → Exportar backup**.
 2. Salve o JSON em Downloads ou outra pasta fora do aplicativo. Confirme que o arquivo foi criado e guarde uma cópia.
 3. Desinstale a 1.0. Essa ação apaga o banco do aplicativo; o backup salvo no passo anterior será usado na restauração.
-4. [Baixe ASCEND-1.7.1.apk](downloads/ASCEND-1.7.1.apk?raw=true), abra pelo gerenciador de arquivos e instale.
-5. Na tela de boas-vindas, toque em **Já tenho uma jornada · Restaurar backup**, escolha o JSON e confirme. A `1.7.1` aceita backups `v1` a `v10`. Se já criou outro personagem, use **Herói → Configurações → Importar backup**; os dados atuais serão substituídos pelos do arquivo.
+4. [Baixe ASCEND-1.7.2.apk](downloads/ASCEND-1.7.2.apk?raw=true), abra pelo gerenciador de arquivos e instale.
+5. Na tela de boas-vindas, toque em **Já tenho uma jornada · Restaurar backup**, escolha o JSON e confirme. A `1.7.2` aceita backups `v1` a `v10`. Se já criou outro personagem, use **Herói → Configurações → Importar backup**; os dados atuais serão substituídos pelos do arquivo.
 6. Confira nome, hábitos e XP antes de apagar qualquer cópia de segurança.
 
-Se você tem a chave original, pode compilar a `1.7.1` com ela e instalar diretamente por cima da 1.0, sem desinstalar. A migração do banco preserva os dados. Veja `ASSINATURA.md`.
+Se você tem a chave original, pode compilar a `1.7.2` com ela e instalar diretamente por cima da 1.0, sem desinstalar. A migração do banco preserva os dados. Veja `ASSINATURA.md`.
 
 ## Primeira instalação
 
 1. Baixe o APK e abra-o em Downloads/Arquivos.
 2. Se solicitado pelo Android, permita **Instalar apps desconhecidos** para o gerenciador de arquivos ou navegador usado.
 3. Instale e abra ASCEND; escolha personagem, classe e hábitos iniciais.
-4. Na Jornada, use **+** para criar hábitos e registrar progresso, abra **Caminhos**, **Planejador**, **Entrada** e **Pendências** pelos atalhos da tela inicial, e acesse **Mundo → Crônicas → Biblioteca de Mímir** para cadernos, notas em Markdown e flashcards SM-2.
+4. Na Jornada, use **+** para criar hábitos e registrar progresso, abra **Caminhos**, **Planejador**, **Entrada** e **Pendências** pelos atalhos da tela inicial, explore o **Atlas de Aetheris 2.0** em **Mundo → Mapa** (Biblioteca das Eras no nível 5 e Montanhas da Disciplina no nível 8) e acesse **Mundo → Crônicas → Biblioteca de Mímir** para cadernos, notas em Markdown e flashcards SM-2.
 
-O APK é uma compilação pessoal de depuração assinada com a chave preservada, distribuída fora da Play Store. O checksum está em `downloads/ASCEND-1.7.1.apk.sha256`.
+O APK é uma compilação pessoal de depuração assinada com a chave preservada, distribuída fora da Play Store. O checksum está em `downloads/ASCEND-1.7.2.apk.sha256`.
 
-## Novidades da 1.7.1, 1.7.0 e 1.6
+## Novidades da 1.7.2, 1.7.1, 1.7.0 e 1.6
 
+- **Atlas 2.0, Biblioteca das Eras & Montanhas da Disciplina (`1.7.2`):** zoom e lista acessível no Atlas, 2 novas regiões exploráveis com 3 expedições cada (Eydis e Haldor), integração opcional com Caminhos, Mímir e Foco (com fallback para hábitos), 4 relíquias colecionáveis fora da Loja, 2 títulos e **Design System 3.0** com 6 famílias de botões viking e 10 novos recursos pictóricos (`0,81 MB`). [Exploração 1.7.2](docs/EXPLORACAO-1.7.2.md) · [Atlas 2.0](docs/ATLAS-2.0.md) · [Visual 1.7.2](docs/VISUAL-1.7.2.md).
 - **Biblioteca de Mímir & Runas da Memória (`1.7.1`):** cadernos temáticos, páginas em Markdown (editar/visualizar), tags, favoritos, busca, ligações entre páginas + backlinks, referências bibliográficas, vínculo opcional com Caminhos/Tarefas e flashcards com revisão espaçada SM-2 (`0 XP` / `0 moedas` extras).
 - **Ascensão dos Arquétipos (`1.7.1`):** 10 especializações (2 por classe a partir do nível 3, trocáveis sem apagar habilidades), 10 novas habilidades de classe + 6 universais preservadas e 5 Marcos de Sabedoria (`0` moedas). [Biblioteca de Mímir](docs/BIBLIOTECA-MIMIR-1.7.1.md) · [Arquétipos](docs/ARQUETIPOS-1.7.1.md) · [Visual 1.7.1](docs/VISUAL-1.7.1.md).
 - **Caminhos (Projetos Pessoais):** organize projetos com etapas, tarefas, subtarefas reordenáveis, prazos, vínculo opcional a hábitos e sessões de foco sem alterar a economia de XP/moedas. Caminhos concluídos entram em **Mundo → Salão das Memórias**.

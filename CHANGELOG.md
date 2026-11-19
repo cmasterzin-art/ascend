@@ -1,3 +1,19 @@
+# 1.7.2 — Além das Fronteiras
+
+Expansão do mundo de Aetheris, Design System 3.0 e Renascimento Rúnico (*World Expansion & Nordic Viking Renaissance Update*) sobre a base `feat/ascend-1.7.1`, preservando integralmente Room v8, backup v10, a Biblioteca de Mímir, a Ascensão dos Arquétipos, os Caminhos, a Agenda 2.0, o Foco, a economia de XP/moedas e os 167 testes anteriores. [Exploração 1.7.2](docs/EXPLORACAO-1.7.2.md) · [Atlas 2.0](docs/ATLAS-2.0.md) · [Design System 3.0](docs/DESIGN-SYSTEM-3.0.md) · [Renascimento Rúnico](docs/RENASCIMENTO-RUNICO.md) · [Visual 1.7.2](docs/VISUAL-1.7.2.md).
+
+## Expansão do Mundo de Aetheris & Motor Regional
+
+- **Atlas de Aetheris 2.0 (`RpgDesign.kt`, `WorldScreen.kt`):** zoom interativo por pinça/arrasto (`100%`–`240%`) com limites de deslocamento, controles acessíveis (`−`, `Centralizar`, `+` em `FlowRow` responsivo para `320 dp / 130%`), lista acessível de regiões (`atlas_accessible_list`), 6 estados explícitos (`RegionAtlasState`) e aviso honesto *"Sem conteúdo interativo ainda"* para Santuário do Equilíbrio (nível 12) e Fortaleza da Vontade (nível 20).
+- **Motor regional extensível (`Exploration.kt`, `ExplorationScreens.kt`):** preservação integral da Floresta da Persistência (`roots`, `sanctuary`, `vigil`) e abertura de **Biblioteca das Eras** (nível 5, guardiã **Eydis**, 3 expedições / 8 fases) e **Montanhas da Disciplina** (nível 8, guardião **Haldor**, 3 expedições / 8 fases), cada uma com 3 estágios visuais de restauração e diálogos sensíveis à especialização ativa.
+- **Métricas integradas e relíquias:** novas métricas `4` (sessões reais de Foco concluídas, ignorando canceladas/`0s` e sem punir descanso), `5` (dias distintos de revisão em Mímir com proteção anti-spam) e `6` (tarefas de Caminhos), todas com fallback explícito para hábitos; **4 relíquias exclusivas da exploração** (*Anel do Escriba*, *Medalhão da Memória Eterna*, *Broche da Vigília Boreal*, *Bússola do Firmamento*, `price = 0`, fora da Loja), 4 conquistas regionais e 2 títulos (*Guardião das Eras* e *Testemunha dos Cumes*).
+
+## Design System 3.0, Renascimento Rúnico & Estabilidade
+
+- **Design System 3.0 (`VikingDesignSystem.kt`, `NorthComponents.kt`, `Design.kt`, `AetherisNavigation.kt`):** 6 famílias de botões viking (`FerroRunico`, `BronzeForjado`, `CerimonialViking`, `Confirmacao`, `Destrutivo`, `CompactoRunico`) renderizadas por 9-slice por célula (`drawAtlasCellNineSlice`), separação explícita entre 12 runas históricas *Elder Futhark* vetoriais e 12 selos fictícios de Aetheris, 16 ícones funcionais, amuleto de navegação e controles forjados refinados após inspeção visual real.
+- **10 recursos pictóricos originais (`845.042 bytes` / `0,81 MB` no APK):** 1 prancha conceitual fora do APK (`docs/art/concepts/nordic-viking-ui-172.webp`) e 9 atlas WebP em `drawable-nodpi/`.
+- **Estabilidade da 1.7.1 e validação:** correções prioritárias em rascunhos/retry de Mímir, **181 testes aprovados** (`167` preservados + `14` novos), Lint com **0 erros**, Room v8 e backup v10 preservados, `versionCode 23`.
+
 # 1.7.1 — A Sabedoria dos Nove Reinos
 
 Expansão de conhecimento pessoal e evolução de arquétipos (*Knowledge & Character Ascension Update*) sobre a base `feat/ascend-1.7.0.1`, preservando integralmente a Biblioteca da Forja (`1.6.9.19`), as correções da `1.7.0.1`, a economia de XP/moedas e os 155 testes anteriores. [Biblioteca de Mímir](docs/BIBLIOTECA-MIMIR-1.7.1.md) · [Arquétipos](docs/ARQUETIPOS-1.7.1.md) · [Visual 1.7.1](docs/VISUAL-1.7.1.md).
