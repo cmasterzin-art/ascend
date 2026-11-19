@@ -1,3 +1,19 @@
+# 1.7.1 — A Sabedoria dos Nove Reinos
+
+Expansão de conhecimento pessoal e evolução de arquétipos (*Knowledge & Character Ascension Update*) sobre a base `feat/ascend-1.7.0.1`, preservando integralmente a Biblioteca da Forja (`1.6.9.19`), as correções da `1.7.0.1`, a economia de XP/moedas e os 155 testes anteriores. [Biblioteca de Mímir](docs/BIBLIOTECA-MIMIR-1.7.1.md) · [Arquétipos](docs/ARQUETIPOS-1.7.1.md) · [Visual 1.7.1](docs/VISUAL-1.7.1.md).
+
+## A Biblioteca de Mímir & Runas da Memória
+
+- **Cadernos e páginas em Markdown (`KnowledgeNotebook`, `KnowledgePage`, `MimirScreens.kt`):** gestão local de cadernos temáticos com 6 capas pictóricas, alternância `Visualizar` / `Editar`, pré-visualização Markdown local (`#`, `##`, `###`, negrito, itálico, código inline/bloco, listas, citações e links), tags normalizadas, favoritos, busca global/local, ordenação, duplicação, movimentação, arquivamento e exclusão em cascata segura.
+- **Ligações, backlinks e referências (`KnowledgePageLink`, `KnowledgeReference`):** ligações direcionadas entre páginas com seção `Referenciada por`, preservação ao renomear títulos, referências bibliográficas estruturadas e integração opcional com `PersonalPath` e `PathTask` (sem apagar conhecimento ao excluir projeto/tarefa).
+- **Runas da Memória (`Flashcard`, `FlashcardReview`):** revisão espaçada SM-2 determinística (`Errei`, `Difícil`, `Bom`, `Fácil`), sanitização de `easeFactor`, sessão interrompível com persistência por cartão, proteção contra revisão repetida no mesmo dia, `0 XP` / `0 moedas` extras e atalho discreto em `Rumos do Dia`.
+
+## Ascensão dos Arquétipos & O Acervo de Mímir
+
+- **10 especializações (2 por classe, nível 3) e 10 habilidades de ascensão:** escolha, troca e remoção seguras sem apagar habilidades obtidas; `SkillTree` com filtro de classe mantendo intactas as 6 constelações universais originais e o sistema `skillPoints(s)`; 5 Marcos de Sabedoria idempotentes (`0` moedas).
+- **3 recursos pictóricos originais (`generate_image`, `351,1 KB`):** `mimir_library.webp`, `archetype_seals_atlas.webp` (`5 × 2` RGBA) e `mimir_codex_atlas.webp` (`3 × 2` RGB).
+- **Room v8 (`MIGRATION_7_8`) e Backup v10:** migração explícita aditiva (`8.json`), retrocompatibilidade `v1`–`v9`, rollback atômico e **167 testes aprovados** (`155` preservados + `12` novos), Lint com **0 erros**, `versionCode 22`.
+
 # 1.7.0.1 — A Consolidação dos Caminhos
 
 - Foco pertence ao Caminho gravado na sessão. Blocos dividem o intervalo elegível e sinalizam tempo sem atribuição comprovável.

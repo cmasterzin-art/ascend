@@ -1,3 +1,11 @@
+# 1.7.1 — A Sabedoria dos Nove Reinos
+
+Expansão de conhecimento pessoal e evolução de arquétipos sobre a base `feat/ascend-1.7.0.1`, preservando a Biblioteca da Forja (`1.6.9.19`), o foco consolidado (`1.7.0.1`), a economia de XP/moedas e os 155 testes anteriores:
+- **Biblioteca de Mímir (`MimirScreens.kt`):** cadernos temáticos com 6 capas pictóricas, páginas Markdown com alternância `Visualizar` / `Editar`, tags normalizadas, favoritos, busca, ordenação, duplicação, movimentação, ligações explícitas + backlinks, referências bibliográficas e vínculo opcional a `Caminhos`/`Tarefas` (sem apagar conhecimento ao remover projetos).
+- **Runas da Memória (`FlashcardReviewScreen`):** flashcards com repetição espaçada SM-2 determinística (`Errei`/`Difícil`/`Bom`/`Fácil`), sessão interrompível com persistência por cartão, bloqueio de revisão duplicada no mesmo dia, `0 XP` / `0 moedas` extras e atalho discreto em `Rumos do Dia`.
+- **Ascensão dos Arquétipos (`CharacterScreen.kt`, `EquipmentScreen.kt`, `HeroSheet.kt`):** 10 especializações (2 por classe, nível 3, troca/remoção sem apagar habilidades), 10 novas habilidades de classe + 6 universais preservadas usando `skillPoints(s)`, 5 Marcos de Sabedoria idempotentes (`0` moedas) e 3 novos recursos pictóricos originais (`O Acervo de Mímir`, `351,1 KB`).
+- **Room v8 (`MIGRATION_7_8`) e Backup v10:** esquema `8.json` aditivo e retrocompatível com `v1`–`v9`, rollback atômico comprovado em teste, **167 testes aprovados** (`155` preservados + `12` novos), `lintDebug` com **0 erros** (`23` avisos), `versionCode 22`, assinatura oficial `e1f003ef...`. [Biblioteca de Mímir](docs/BIBLIOTECA-MIMIR-1.7.1.md) · [Arquétipos](docs/ARQUETIPOS-1.7.1.md) · [Visual 1.7.1](docs/VISUAL-1.7.1.md).
+
 # 1.7.0.1 — A Consolidação dos Caminhos
 
 - Foco pertence ao Caminho gravado na sessão. Blocos dividem o intervalo elegível e sinalizam tempo sem atribuição comprovável.

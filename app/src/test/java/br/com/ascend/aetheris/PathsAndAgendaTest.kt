@@ -60,7 +60,7 @@ class PathsAndAgendaTest {
         val dbName = "migration-v6-to-v7.db"
         legacyDatabase(context, dbName, 6, before)
         val migratedDb = Room.databaseBuilder(context, GameDatabase::class.java, dbName)
-            .addMigrations(MIGRATION_6_7)
+            .addMigrations(MIGRATION_6_7,MIGRATION_7_8)
             .build()
         try {
             val migratedRepo = GameRepository(migratedDb)
@@ -330,7 +330,7 @@ class PathsAndAgendaTest {
 
         val before = s()
         val encoded = Backup.encode(before)
-        assertTrue(encoded.contains("\"version\":9"))
+        assertTrue(encoded.contains("\"version\":10"))
         assertEquals(before, Backup.decode(encoded))
 
         // Backward compatibility with v8 envelope (without 1.7.0 fields)

@@ -1,13 +1,13 @@
-# Instalar ASCEND 1.7.0.1 no Android
+# Instalar ASCEND 1.7.1 no Android
 
 Android 8.0 (API 26) ou superior. O uso não exige internet, conta ou pagamento.
 
-## Atualizar os APKs 1.1 a 1.7.0 fornecidos neste repositório
+## Atualizar os APKs 1.1 a 1.7.0.1 fornecidos neste repositório
 
 1. Em Herói → Configurações, exporte um backup de segurança.
-2. [Baixe ASCEND-1.7.0.1.apk](downloads/ASCEND-1.7.0.1.apk?raw=true) e abra o arquivo.
-3. Confirme a atualização **sem desinstalar**. O pacote (`br.com.ascend.aetheris`) e o certificado oficial (`e1f003ef...`) são os mesmos; o `versionCode` passou para `21`.
-4. Abra o app e confira seu personagem. A `1.7.0.1` já usa Room v7. Ao atualizar de Room v6, executa migração aditiva **Room v6 → v7** (`MIGRATION_6_7`), mantendo integralmente os dados das versões anteriores e leitura de backups **v1 a v9**.
+2. [Baixe ASCEND-1.7.1.apk](downloads/ASCEND-1.7.1.apk?raw=true) e abra o arquivo.
+3. Confirme a atualização **sem desinstalar**. O pacote (`br.com.ascend.aetheris`) e o certificado oficial (`e1f003ef...`) são os mesmos; o `versionCode` passou para `22`.
+4. Abra o app e confira seu personagem. A `1.7.1` executa a migração aditiva **Room v7 → v8** (`MIGRATION_7_8`), preservando integralmente todos os dados anteriores (hábitos, foco, Caminhos, Agenda 2.0, inventário e memórias) e lendo backups **v1 a v10**.
 
 Se o Android indicar conflito de assinatura, sua instalação foi compilada com outra chave. Não desinstale antes de exportar os dados; consulte `ASSINATURA.md`.
 
@@ -18,27 +18,29 @@ Se o Android indicar conflito de assinatura, sua instalação foi compilada com 
 1. Na **versão 1.0 ainda instalada**, abra **Herói → Configurações → Exportar backup**.
 2. Salve o JSON em Downloads ou outra pasta fora do aplicativo. Confirme que o arquivo foi criado e guarde uma cópia.
 3. Desinstale a 1.0. Essa ação apaga o banco do aplicativo; o backup salvo no passo anterior será usado na restauração.
-4. [Baixe ASCEND-1.7.0.1.apk](downloads/ASCEND-1.7.0.1.apk?raw=true), abra pelo gerenciador de arquivos e instale.
-5. Na tela de boas-vindas, toque em **Já tenho uma jornada · Restaurar backup**, escolha o JSON e confirme. A `1.7.0.1` aceita backups `v1` a `v9`. Se já criou outro personagem, use **Herói → Configurações → Importar backup**; os dados atuais serão substituídos pelos do arquivo.
+4. [Baixe ASCEND-1.7.1.apk](downloads/ASCEND-1.7.1.apk?raw=true), abra pelo gerenciador de arquivos e instale.
+5. Na tela de boas-vindas, toque em **Já tenho uma jornada · Restaurar backup**, escolha o JSON e confirme. A `1.7.1` aceita backups `v1` a `v10`. Se já criou outro personagem, use **Herói → Configurações → Importar backup**; os dados atuais serão substituídos pelos do arquivo.
 6. Confira nome, hábitos e XP antes de apagar qualquer cópia de segurança.
 
-Se você tem a chave original, pode compilar a `1.7.0.1` com ela e instalar diretamente por cima da 1.0, sem desinstalar. A migração do banco preserva os dados. Veja `ASSINATURA.md`.
+Se você tem a chave original, pode compilar a `1.7.1` com ela e instalar diretamente por cima da 1.0, sem desinstalar. A migração do banco preserva os dados. Veja `ASSINATURA.md`.
 
 ## Primeira instalação
 
 1. Baixe o APK e abra-o em Downloads/Arquivos.
 2. Se solicitado pelo Android, permita **Instalar apps desconhecidos** para o gerenciador de arquivos ou navegador usado.
 3. Instale e abra ASCEND; escolha personagem, classe e hábitos iniciais.
-4. Na Jornada, use **+** para criar hábitos e registrar progresso, ou abra **Caminhos**, **Planejador**, **Entrada** e **Pendências** pelos atalhos da tela inicial.
+4. Na Jornada, use **+** para criar hábitos e registrar progresso, abra **Caminhos**, **Planejador**, **Entrada** e **Pendências** pelos atalhos da tela inicial, e acesse **Mundo → Crônicas → Biblioteca de Mímir** para cadernos, notas em Markdown e flashcards SM-2.
 
-O APK é uma compilação pessoal de depuração assinada com a chave preservada, distribuída fora da Play Store. O checksum está em `downloads/ASCEND-1.7.0.1.apk.sha256`.
+O APK é uma compilação pessoal de depuração assinada com a chave preservada, distribuída fora da Play Store. O checksum está em `downloads/ASCEND-1.7.1.apk.sha256`.
 
-## Novidades da 1.7.0 e 1.6
+## Novidades da 1.7.1, 1.7.0 e 1.6
 
+- **Biblioteca de Mímir & Runas da Memória (`1.7.1`):** cadernos temáticos, páginas em Markdown (editar/visualizar), tags, favoritos, busca, ligações entre páginas + backlinks, referências bibliográficas, vínculo opcional com Caminhos/Tarefas e flashcards com revisão espaçada SM-2 (`0 XP` / `0 moedas` extras).
+- **Ascensão dos Arquétipos (`1.7.1`):** 10 especializações (2 por classe a partir do nível 3, trocáveis sem apagar habilidades), 10 novas habilidades de classe + 6 universais preservadas e 5 Marcos de Sabedoria (`0` moedas). [Biblioteca de Mímir](docs/BIBLIOTECA-MIMIR-1.7.1.md) · [Arquétipos](docs/ARQUETIPOS-1.7.1.md) · [Visual 1.7.1](docs/VISUAL-1.7.1.md).
 - **Caminhos (Projetos Pessoais):** organize projetos com etapas, tarefas, subtarefas reordenáveis, prazos, vínculo opcional a hábitos e sessões de foco sem alterar a economia de XP/moedas. Caminhos concluídos entram em **Mundo → Salão das Memórias**.
 - **Agenda Profissional 2.0 (Planejador):** alternância entre **Dia**, **Semana** e **Mês**, blocos de tempo com detecção de sobreposição e comparação planejado × foco real, além de compromissos sem XP.
 - **Caixa de Entrada e Central de Pendências:** capture ideias rapidamente e faça triagem atômica para tarefa ou compromisso; acompanhe tarefas em **Hoje**, **Próximas**, **Atrasadas**, **Sem data**, **Alta prioridade** e **Concluídas**.
-- **Jornada — Rumos do Dia:** painel expansível com próximo compromisso, bloco, tarefas prioritárias e caminhos próximos.
+- **Jornada — Rumos do Dia:** painel expansível com próximo compromisso, bloco, tarefas prioritárias, caminhos próximos e atalho discreto para **Runas da Memória** quando houver flashcards pendentes.
 - **Central de Análises e Histórico de Foco (`1.6`+):** períodos, gráficos, sessões em hábitos e projetos com duração efetiva e zero XP adicional.
 - [Caminhos 1.7.0](docs/CAMINHOS-1.7.0.md) · [Agenda 2.0](docs/AGENDA-1.7.0.md) · [Visual 1.7.0](docs/VISUAL-1.7.0.md) · [Produtividade e regras](docs/PRODUTIVIDADE-1.6.md).
 
