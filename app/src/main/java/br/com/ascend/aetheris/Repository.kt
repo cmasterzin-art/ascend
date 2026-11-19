@@ -16,7 +16,7 @@ import java.security.MessageDigest
 
 val Context.preferences by preferencesDataStore("ascend_settings")
 class AscendApp:Application(){
-    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8,MIGRATION_8_9).build() }
+    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8,MIGRATION_8_9,MIGRATION_9_10).build() }
     val repository by lazy { GameRepository(database){s->HabitWidget.refresh(this,s)} }
 }
 data class GameEvent(val message:String,val level:Int=0,val xp:Long=0,val coins:Long=0,val points:List<Long> = emptyList(),val highlights:List<String> = emptyList())
@@ -24,7 +24,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     private val d=db.dao(); private val lock=Mutex()
     val state=MutableStateFlow<GameState?>(null)
     val events=MutableSharedFlow<GameEvent>(extraBufferCapacity=10)
-    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus(),d.restDays(),d.plans(),d.focusSessions(),d.paths(),d.pathStages(),d.pathTasks(),d.pathSubtasks(),d.pathHabitLinks(),d.timeBlocks(),d.agendaEvents(),d.inboxItems(),d.notebooks(),d.knowledgePages(),d.knowledgeLinks(),d.knowledgeReferences(),d.flashcards(),d.flashcardReviews(),d.loadouts())
+    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus(),d.restDays(),d.plans(),d.focusSessions(),d.paths(),d.pathStages(),d.pathTasks(),d.pathSubtasks(),d.pathHabitLinks(),d.timeBlocks(),d.agendaEvents(),d.inboxItems(),d.notebooks(),d.knowledgePages(),d.knowledgeLinks(),d.knowledgeReferences(),d.flashcards(),d.flashcardReviews(),d.loadouts(),d.heraldry())
     suspend fun refresh()=lock.withLock { state.value=read() }
     private suspend fun change(message:String="Salvo",block:suspend ()->Unit){
         lock.withLock {
@@ -51,6 +51,14 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
             if(achievementProgress(a,s)>=a.target && s.achievements.none{it.id==a.id}){
                 d.unlock(Unlocked(a.id))
                 if(a.coins>0L) d.reward(Reward("achievement:${a.id}",coins=a.coins,label="Conquista · ${a.name}"))
+            }
+        }
+        // 1.7.3.1: Idempotent Legendary Collection completion trophies (0 XP, 0 economic multipliers)
+        s=read()
+        legendaryCollections.forEach{col ->
+            val trophyId="collection:${col.id}"
+            if(isCollectionComplete(s,col) && s.assets.none{it.id==trophyId}){
+                d.asset(Asset(trophyId,"trophy",stage=1,equipped=false))
             }
         }
     }
@@ -203,7 +211,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         val phase=expeditionPhaseIndex(s,e);val q=requireNotNull(s.quests.find{it.id==expeditionQuestId(e,phase)})
         require(questProgress(q,s)>=q.target){"A etapa ainda está em andamento."}
         val claimId="${q.id}@once"
-        if(s.claims.none{it.id==claimId})d.claim(Claim(claimId,q.id,"once",xp=q.xp,coins=q.coins,target=q.target,metric=q.metric,habitIds=q.habitIds,period=2,sagaStart=q.sagaStart,sagaBaseline=q.sagaBaseline))
+        if(s.claims.none{it.id==claimId})d.claim(Claim(claimId,q.id,"once",xp=q.xp,coins=q.coins,target=q.target,metric=q.metric,habitIds=q.habitIds,period=2,sagaStart=q.sagaStart,sagaBaseline=q.sagaBaseline,focusRuleVersion=q.focusRuleVersion))
         if(phase<e.phases.lastIndex){
             if(s.quests.none{it.id==expeditionQuestId(e,phase+1)}){
                 val ids=q.habitIds.split(',').filter{it.isNotBlank()}
@@ -248,7 +256,38 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         require(missing.isEmpty()){missing.first()}
         require(s.rawCoins>=recipe.cost){"São necessários ${recipe.cost} Fragmentos de Aether."}
         d.reward(Reward("forge:${recipe.id}",xp=0L,coins=-recipe.cost.toLong(),label="Forja de Darian · ${recipe.name}"))
-        d.asset(Asset(item.id,item.kind))
+        d.asset(Asset(item.id,item.kind,stage=FORGE_STAGE_FORGED))
+    }
+    suspend fun upgradeForgeItem(itemId:String,targetStage:Int)=change("Peça aprimorada na Forja de Darian"){
+        val recipe=requireNotNull(forgeRecipeById(itemId)){"Apenas peças fabricadas na Forja podem ser aprimoradas."}
+        val s=read()
+        val missing=forgeUpgradeMissingReasons(s,recipe,targetStage)
+        require(missing.isEmpty()){missing.first()}
+        val cost=forgeUpgradeCost(recipe,targetStage)
+        require(s.rawCoins>=cost){"São necessários $cost Fragmentos de Aether."}
+        val existing=requireNotNull(s.assets.find{it.id==recipe.id})
+        val stageLabel=forgeUpgradeStageDef(targetStage).name
+        d.reward(Reward("forge-upgrade:${recipe.id}:$targetStage",xp=0L,coins=-cost.toLong(),label="Forja · ${recipe.name} ($stageLabel)"))
+        d.asset(existing.copy(stage=targetStage))
+    }
+    suspend fun claimCollectionReward(collectionId:String)=change("Coleção lendária reconhecida"){
+        val col=requireNotNull(legendaryCollectionById(collectionId)){"Coleção lendária desconhecida."}
+        val s=read()
+        require(isCollectionComplete(s,col)){"Reúna as quatro peças de ${col.name} antes de resgatar o selo."}
+        val trophyId="collection:${col.id}"
+        if(s.assets.none{it.id==trophyId}){
+            d.asset(Asset(trophyId,"trophy",stage=1,equipped=false))
+        }
+    }
+    suspend fun saveHeraldry(profile:HeraldryProfile)=change("Brasão heráldico salvo"){
+        validateHeraldryProfile(profile.copy(id=1,updated=today()))
+        val clean=profile.copy(id=1,inscriptionRunes=parseHeraldryInscription(profile.inscriptionRunes).joinToString(","){it.name},updated=today())
+        val s=read()
+        require(heraldrySymbolUnlocked(s,clean.symbolId)){"Símbolo '${heraldrySymbolById(clean.symbolId).name}' ainda está bloqueado."}
+        require(heraldryMetalUnlocked(s,clean.metalId)){"Metal '${heraldryMetalById(clean.metalId).name}' ainda está bloqueado."}
+        require(heraldryOrnamentUnlocked(s,clean.ornamentId)){"Ornamento '${heraldryOrnamentById(clean.ornamentId).name}' ainda está bloqueado."}
+        require(heraldryBannerUnlocked(s,clean.bannerId)){"Estandarte '${heraldryBannerById(clean.bannerId).name}' ainda está bloqueado."}
+        d.saveHeraldry(clean)
     }
     suspend fun applyStudioSelection(selectedByKind:Map<String,String?>)=change("Aparência atualizada no Estúdio"){
         val validKinds=equipmentSlots.map{it.first}.toSet()
@@ -315,14 +354,25 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         val loadout=resolvedLoadouts(s).first{it.id==loadoutId}
         validateLoadoutInput(loadout)
         val ownedById=s.assets.associateBy{it.id}
-        val slotKinds=equipmentSlots.map{it.first}
-        slotKinds.forEach{kind->
-            s.assets.filter{it.kind==kind}.forEach{d.asset(it.copy(equipped=false))}
-        }
-        loadout.slotMap().forEach{(kind,itemId)->
-            val asset=ownedById[itemId]
-            if(asset!=null && asset.kind==kind){
-                d.asset(asset.copy(equipped=true))
+        val missing=loadoutMissingItems(loadout,s)
+        val slotMap=loadout.slotMap()
+        if(missing.isEmpty()){
+            // Full valid loadout: synchronize all 7 equipment slots atomically.
+            equipmentSlots.map{it.first}.forEach{kind->
+                s.assets.filter{it.kind==kind}.forEach{d.asset(it.copy(equipped=false))}
+            }
+            slotMap.forEach{(kind,itemId)->
+                val asset=ownedById[itemId]
+                if(asset!=null && asset.kind==kind) d.asset(asset.copy(equipped=true))
+            }
+        } else {
+            // 1.7.3.1 (6.3): Partial loadout with missing items MUST NOT silently wipe unrelated valid equipped slots.
+            slotMap.forEach{(kind,itemId)->
+                val asset=ownedById[itemId]
+                if(asset!=null && asset.kind==kind){
+                    s.assets.filter{it.kind==kind}.forEach{d.asset(it.copy(equipped=false))}
+                    d.asset(asset.copy(equipped=true))
+                }
             }
         }
     }
@@ -331,6 +381,29 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         val s=read()
         val existing=resolvedLoadouts(s).first{it.id==loadoutId}
         d.loadout(EquipmentLoadout(id=loadoutId,name=existing.name,updated=today()))
+    }
+    suspend fun equipItem(itemId:String)=change("Item equipado"){
+        val s=read()
+        val owned=requireNotNull(s.assets.find{it.id==itemId}){"Você não possui este item."}
+        require(shopItems.any{it.id==owned.id && it.kind==owned.kind}){"Este item não é um equipamento."}
+        s.assets.filter{it.kind==owned.kind}.forEach{d.asset(it.copy(equipped=it.id==owned.id))}
+    }
+    suspend fun unequipItem(itemId:String)=change("Item removido"){
+        val s=read()
+        val owned=requireNotNull(s.assets.find{it.id==itemId}){"Você não possui este item."}
+        require(shopItems.any{it.id==owned.id && it.kind==owned.kind}){"Este item não é um equipamento."}
+        if(owned.equipped) d.asset(owned.copy(equipped=false))
+    }
+    suspend fun setEquipment(slot:String,itemId:String?)=change(if(itemId.isNullOrBlank()) "Espaço liberado" else "Item equipado"){
+        require(equipmentSlots.any{it.first==slot} || slot=="decoration"){"Espaço de equipamento inválido."}
+        val s=read()
+        if(itemId.isNullOrBlank()){
+            s.assets.filter{it.kind==slot && it.equipped}.forEach{d.asset(it.copy(equipped=false))}
+        }else{
+            val item=requireNotNull(shopItems.find{it.id==itemId && it.kind==slot}){"Item incompatível com o espaço $slot."}
+            val owned=requireNotNull(s.assets.find{it.id==item.id && it.kind==slot}){"Você não possui ${item.name}."}
+            s.assets.filter{it.kind==slot}.forEach{d.asset(it.copy(equipped=it.id==owned.id))}
+        }
     }
     suspend fun equip(a:Asset)=change(if(a.equipped) "Item removido" else "Item equipado"){
         val s=read();val owned=requireNotNull(s.assets.find{it.id==a.id})
@@ -786,6 +859,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     }
     suspend fun importState(s:GameState)=change("Backup restaurado"){
         validateState(s)
+        d.clearHeraldry()
         d.clearLoadouts()
         d.clearFlashcardReviews();d.clearFlashcards();d.clearKnowledgeReferences();d.clearKnowledgeLinks();d.clearKnowledgePages();d.clearNotebooks()
         d.clearPathHabitLinks();d.clearPathSubtasks();d.clearPathTasks();d.clearPathStages();d.clearPaths();d.clearTimeBlocks();d.clearAgendaEvents();d.clearInboxItems()
@@ -795,6 +869,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         s.paths.forEach{d.path(it)};s.pathStages.forEach{d.pathStage(it)};s.pathTasks.forEach{d.pathTask(it)};s.pathSubtasks.forEach{d.pathSubtask(it)};s.pathHabitLinks.forEach{d.pathHabitLink(it)};s.timeBlocks.forEach{d.timeBlock(it)};s.agendaEvents.forEach{d.agendaEvent(it)};s.inboxItems.forEach{d.inboxItem(it)}
         s.notebooks.forEach{d.notebook(it)};s.knowledgePages.forEach{d.knowledgePage(it)};s.knowledgeLinks.forEach{d.knowledgeLink(it)};s.knowledgeReferences.forEach{d.knowledgeReference(it)};s.flashcards.forEach{d.flashcard(it)};s.flashcardReviews.forEach{d.flashcardReview(it)}
         s.loadouts.forEach{d.loadout(it)}
+        s.heraldry?.let{d.saveHeraldry(it)}
         s.focusSessions.forEach{d.focusSession(it)};s.focus?.let{d.focus(it.copy(elapsed=it.seconds(),startedAt=0))}
     }
 }
@@ -849,7 +924,7 @@ fun validateHabitInput(h:Habit){
     require(h.difficulty in 0..2 && h.icon in glyphs.indices && h.color in palette.indices){"Revise a dificuldade, o ícone e a cor."}
     require(h.templateId.length<=100 && h.narrativeName.length<=200){"Nome narrativo muito longo."}
 }
-data class BackupEnvelope(val format:String="ASCEND",val version:Int=11,val sha256:String,val payload:String)
+data class BackupEnvelope(val format:String="ASCEND",val version:Int=12,val sha256:String,val payload:String)
 object Backup {
     private val gson=Gson()
     private fun digest(s:String)=MessageDigest.getInstance("SHA-256").digest(s.toByteArray(Charsets.UTF_8)).joinToString(""){"%02x".format(it)}
@@ -857,10 +932,10 @@ object Backup {
     fun decode(text:String):GameState {
         require(text.length<=20_000_000){"Backup muito grande (máximo 20 MB)."}
         val b=gson.fromJson(text,BackupEnvelope::class.java)
-        require(b.format=="ASCEND" && b.version in 1..11 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
+        require(b.format=="ASCEND" && b.version in 1..12 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
         val json=com.google.gson.JsonParser.parseString(b.payload).asJsonObject
         json["player"]?.takeIf{it.isJsonObject}?.asJsonObject?.let{p->if(!p.has("specialization"))p.addProperty("specialization","")}
-        listOf("quests","claims").forEach{table->json.getAsJsonArray(table)?.forEach{row->listOf("sagaStart","sagaBaseline").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}}
+        listOf("quests","claims").forEach{table->json.getAsJsonArray(table)?.forEach{row->val obj=row.asJsonObject;listOf("sagaStart","sagaBaseline").forEach{key->if(!obj.has(key))obj.addProperty(key,"")};if(!obj.has("focusRuleVersion"))obj.addProperty("focusRuleVersion",0)}}
         json.getAsJsonArray("quests")?.forEach{row->val obj=row.asJsonObject;if(!obj.has("sagaState"))obj.addProperty("sagaState",0);if(!obj.has("sagaEnd"))obj.addProperty("sagaEnd","");if(!obj.has("sagaStopped"))obj.addProperty("sagaStopped",0)}
         json.getAsJsonArray("assets")?.forEach{row->listOf("memorySpeaker","memoryText").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}
         listOf("plans","focusSessions","paths","pathStages","pathTasks","pathSubtasks","pathHabitLinks","timeBlocks","agendaEvents","inboxItems","notebooks","knowledgePages","knowledgeLinks","knowledgeReferences","flashcards","flashcardReviews","loadouts").forEach{if(!json.has(it))json.add(it,com.google.gson.JsonArray())}
@@ -880,6 +955,7 @@ fun validateState(s:GameState){
     require(s.loadouts.size<=3)
     distinct(s.loadouts.map{it.id})
     s.loadouts.forEach{validateLoadoutInput(it)}
+    s.heraldry?.let{validateHeraldryProfile(it)}
     require(s.restDays.size<=36600)
     distinct(s.restDays.map{it.date});s.restDays.forEach{LocalDate.parse(it.date)}
     s.habits.forEach{h->require(h.name.isNotBlank() && h.target in 1..1000000 && h.attribute in 0..4 && h.color in 0..4 && h.icon in glyphs.indices && h.type in 0..3 && h.xp in 0..1000000 && h.coins in 0..1000000 && h.points in 0..1000000 && h.days.split(',').all{it.toIntOrNull() in 1..7});LocalDate.parse(h.created);if(h.time.isNotBlank())LocalTime.parse(h.time)
@@ -888,21 +964,24 @@ fun validateState(s:GameState){
     s.records.forEach{r->require(s.habits.any{it.id==r.habitId} && r.id=="${r.habitId}@${r.date}" && r.target in 1..1000000 && r.progress in 0..r.target && r.attribute in 0..4 && r.type in 0..3 && r.xp in 0..1000000 && r.coins in 0..1000000 && r.points in 0..1000000 && r.date<=today());LocalDate.parse(r.date)}
     s.ledger.forEach{require(kotlin.math.abs(it.xp)<=1000000000L && kotlin.math.abs(it.coins)<=1000000000L && kotlin.math.abs(it.points)<=1000000000L && it.attribute in -1..4);LocalDate.parse(it.date)}
     s.quests.filter{it.sagaStart.isNotBlank()}.forEach{validateSaga(it,s);LocalDate.parse(it.sagaStart);parseBaseline(it.sagaBaseline)}
-    s.quests.forEach{val maxMetric=if(isExpedition(it)) 6 else 3;require(it.sagaState in 0..3 && it.sagaStopped>=0);if(it.sagaEnd.isNotBlank())LocalDate.parse(it.sagaEnd);require(it.attribute in -1..4 && it.name.isNotBlank() && it.target in 1..1000000 && it.xp in 0..1000000 && it.coins in 0..1000000 && it.period in 0..3 && it.metric in 0..maxMetric);if(it.deadline.isNotEmpty())LocalDate.parse(it.deadline)}
+    s.quests.forEach{val maxMetric=if(isExpedition(it)) 6 else 3;require(it.sagaState in 0..3 && it.sagaStopped>=0 && it.focusRuleVersion in 0..1);if(it.sagaEnd.isNotBlank())LocalDate.parse(it.sagaEnd);require(it.attribute in -1..4 && it.name.isNotBlank() && it.target in 1..1000000 && it.xp in 0..1000000 && it.coins in 0..1000000 && it.period in 0..3 && it.metric in 0..maxMetric);if(it.deadline.isNotEmpty())LocalDate.parse(it.deadline)}
     s.assets.forEach{a->
         require(a.memorySpeaker.length<=200 && a.memoryText.length<=10000)
         require(a.kind in setOf("building","outfit","frame","background","companion","decoration","trophy","head","accessory","weapon","skill","memory"))
         if(a.kind=="building") require(a.id.removePrefix("building:").toIntOrNull() in buildings.indices && a.stage in 1..2)
         else if(a.kind=="memory") require(a.id.startsWith("memory:") && a.id.length<=250)
         else if(a.kind=="skill") require(skillDefs.any{"skill:${it.id}"==a.id})
-        else if(a.kind!="trophy") require(shopItems.any{it.id==a.id && it.kind==a.kind})
+        else if(a.kind!="trophy") {
+            require(shopItems.any{it.id==a.id && it.kind==a.kind})
+            if(a.id in forgeItemIds) require(a.stage in FORGE_STAGE_FORGED..FORGE_STAGE_CONSECRATED) else require(a.stage==1)
+        }
         LocalDate.parse(a.date)
     }
     require(s.assets.filter{it.equipped}.groupBy{it.kind}.all{it.value.size<=1})
     s.achievements.forEach{a->require(achievementDefs.any{it.id==a.id});LocalDate.parse(a.date)}
     s.journal.forEach{require(it.title.length<=100000 && it.text.length<=1000000);LocalDate.parse(it.date)}
     s.routines.forEach{r->require(r.name.isNotBlank() && r.habitIds.split(',').all{id->s.habits.any{it.id==id}});LocalTime.parse(r.time)}
-    s.claims.forEach{c->val maxMetric=if(expeditionRef(c.questId)!=null) 6 else 3;if(c.sagaStart.isNotBlank()){LocalDate.parse(c.sagaStart);parseBaseline(c.sagaBaseline)};require(s.quests.any{it.id==c.questId} && c.id=="${c.questId}@${c.occurrence}" && c.xp in 0..1000000 && c.coins in 0..1000000 && c.target in 1..1000000 && c.metric in 0..maxMetric && c.period in 0..3 && c.attribute in -1..4);LocalDate.parse(c.date);if(c.period!=2)LocalDate.parse(c.occurrence)}
+    s.claims.forEach{c->val maxMetric=if(expeditionRef(c.questId)!=null) 6 else 3;if(c.sagaStart.isNotBlank()){LocalDate.parse(c.sagaStart);parseBaseline(c.sagaBaseline)};require(s.quests.any{it.id==c.questId} && c.id=="${c.questId}@${c.occurrence}" && c.xp in 0..1000000 && c.coins in 0..1000000 && c.target in 1..1000000 && c.metric in 0..maxMetric && c.period in 0..3 && c.attribute in -1..4 && c.focusRuleVersion in 0..1);LocalDate.parse(c.date);if(c.period!=2)LocalDate.parse(c.occurrence)}
     require(s.plans.size<=200000 && s.focusSessions.size<=200000)
     distinct(s.plans.map{it.id});distinct(s.focusSessions.map{it.id})
     s.plans.forEach{p->LocalDate.parse(p.date);require(p.id=="${p.habitId}@${p.date}"&&s.habits.any{it.id==p.habitId&&p.date>=it.created})}

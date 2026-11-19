@@ -33,22 +33,67 @@ enum class VikingButtonStyle(val cellIndex: Int, val label: String) {
 }
 
 /**
- * Verified historical Elder Futhark glyphs rendered via crisp vector chisel geometry.
+ * Complete 24 historical Elder Futhark glyphs rendered via crisp vector chisel geometry.
  * Strictly historical linguistic runes; zero extremist or ideological symbology.
+ *
+ * IMPORTANT: The original 12 identifiers and their initial order (0..11) are preserved
+ * for full backward compatibility; use [canonicalElderFuthark] for historical Ættir order (1..24)
+ * and [sealFallbackRune] for explicit seal-to-rune mapping.
  */
-enum class HistoricalFutharkRune(val runeName: String, val unicode: String, val domain: String) {
- Fehu("Fehu", "ᚠ", "Conquista e recompensa"),
- Ansuz("Ansuz", "ᚨ", "Sabedoria e memória"),
- Raido("Raido", "ᚱ", "Jornada e caminho"),
- Kenaz("Kenaz", "ᚲ", "Foco e chama"),
- Gebo("Gebo", "ᚷ", "Aliança e vínculo"),
- Wunjo("Wunjo", "ᚹ", "Descanso e equilíbrio"),
- Isa("Isa", "ᛁ", "Firmeza e disciplina"),
- Berkano("Berkano", "ᛒ", "Hábito e crescimento"),
- Ehwaz("Ehwaz", "ᛖ", "Progresso e expedição"),
- Mannaz("Mannaz", "ᛗ", "Herói e identidade"),
- Laguz("Laguz", "ᛚ", "Fluxo e crônica"),
- Dagaz("Dagaz", "ᛞ", "Renovação e horizonte")
+enum class HistoricalFutharkRune(
+ val runeName: String,
+ val unicode: String,
+ val domain: String,
+ val futharkOrder: Int,
+ val transliteration: String
+) {
+ // Original 12 runes preserved at indices 0..11
+ Fehu("Fehu", "ᚠ", "Conquista e recompensa", 1, "f"),
+ Ansuz("Ansuz", "ᚨ", "Sabedoria e memória", 4, "a"),
+ Raido("Raidho", "ᚱ", "Jornada e caminho", 5, "r"),
+ Kenaz("Kenaz", "ᚲ", "Foco e chama", 6, "k"),
+ Gebo("Gebo", "ᚷ", "Aliança e vínculo", 7, "g"),
+ Wunjo("Wunjo", "ᚹ", "Descanso e equilíbrio", 8, "w"),
+ Isa("Isa", "ᛁ", "Firmeza e disciplina", 11, "i"),
+ Berkano("Berkano", "ᛒ", "Hábito e crescimento", 18, "b"),
+ Ehwaz("Ehwaz", "ᛖ", "Progresso e expedição", 19, "e"),
+ Mannaz("Mannaz", "ᛗ", "Herói e identidade", 20, "m"),
+ Laguz("Laguz", "ᛚ", "Fluxo e crônica", 21, "l"),
+ Dagaz("Dagaz", "ᛞ", "Renovação e horizonte", 23, "d"),
+ // 1.7.3.1: Remaining 12 historical Elder Futhark runes completing the 24-rune row
+ Uruz("Uruz", "ᚢ", "Vigor e resistência", 2, "u"),
+ Thurisaz("Thurisaz", "ᚦ", "Fronteira e defesa", 3, "þ (th)"),
+ Hagalaz("Hagalaz", "ᚺ", "Provação e tempera", 9, "h"),
+ Nauthiz("Nauthiz", "ᚾ", "Necessidade e constância", 10, "n"),
+ Jera("Jera", "ᛃ", "Ciclo e colheita", 12, "j"),
+ Eihwaz("Eihwaz", "ᛇ", "Raiz e continuidade", 13, "ï"),
+ Perthro("Perthro", "ᛈ", "Mistério e estudo", 14, "p"),
+ Algiz("Algiz", "ᛉ", "Vigília e abrigo", 15, "z / R"),
+ Sowilo("Sowilo", "ᛊ", "Clareza e orientação", 16, "s"),
+ Tiwaz("Tiwaz", "ᛏ", "Juramento e retidão", 17, "t"),
+ Ingwaz("Ingwaz", "ᛜ", "Semente e legado", 22, "ŋ (ng)"),
+ Othala("Othala", "ᛟ", "Lar e herança", 24, "o");
+
+ companion object {
+  val canonicalOrder: List<HistoricalFutharkRune> by lazy { entries.sortedBy { it.futharkOrder } }
+  fun byStableId(id: String): HistoricalFutharkRune? = entries.find { it.name.equals(id, ignoreCase = true) }
+ }
+}
+
+/** Explicit stable mapping for minimal-mode fallback of Aetheris seals (never depends on enum size/ordinal). */
+fun sealFallbackRune(seal: AetherisSealKind): HistoricalFutharkRune = when (seal) {
+ AetherisSealKind.CompassStar, AetherisSealKind.OpenBook -> HistoricalFutharkRune.Fehu
+ AetherisSealKind.MountainPeaks, AetherisSealKind.Hourglass -> HistoricalFutharkRune.Ansuz
+ AetherisSealKind.OceanWaves, AetherisSealKind.TwinChevrons -> HistoricalFutharkRune.Raido
+ AetherisSealKind.ArchedDoorway, AetherisSealKind.RisingSun -> HistoricalFutharkRune.Kenaz
+ AetherisSealKind.CrescentMoon, AetherisSealKind.LaurelWreath -> HistoricalFutharkRune.Gebo
+ AetherisSealKind.PineBough, AetherisSealKind.Anchor -> HistoricalFutharkRune.Wunjo
+ AetherisSealKind.LanternFlame, AetherisSealKind.StoneTower -> HistoricalFutharkRune.Isa
+ AetherisSealKind.DiamondKnot, AetherisSealKind.HearthCampfire -> HistoricalFutharkRune.Berkano
+ AetherisSealKind.TwinStaves, AetherisSealKind.StoneBridge -> HistoricalFutharkRune.Ehwaz
+ AetherisSealKind.ShieldCrest, AetherisSealKind.NorthernStar -> HistoricalFutharkRune.Mannaz
+ AetherisSealKind.CrossroadsStar, AetherisSealKind.OakLeaf -> HistoricalFutharkRune.Laguz
+ AetherisSealKind.SpiralWhorl, AetherisSealKind.ConcentricSeal -> HistoricalFutharkRune.Dagaz
 }
 
 /**
@@ -201,17 +246,29 @@ fun FutharkRuneGlyph(
    }
    when (rune) {
     HistoricalFutharkRune.Fehu -> { seg(7f, 3f, 7f, 21f); seg(7f, 11f, 17f, 4f); seg(7f, 16f, 16f, 10f) }
+    HistoricalFutharkRune.Uruz -> { seg(7f, 3f, 7f, 21f); seg(7f, 4f, 16f, 10f); seg(16f, 10f, 17f, 21f) }
+    HistoricalFutharkRune.Thurisaz -> { seg(7f, 3f, 7f, 21f); seg(7f, 7.5f, 16.5f, 12f); seg(16.5f, 12f, 7f, 16.5f) }
     HistoricalFutharkRune.Ansuz -> { seg(7f, 3f, 7f, 21f); seg(7f, 5f, 17f, 10f); seg(7f, 11f, 16f, 16f) }
     HistoricalFutharkRune.Raido -> { seg(7f, 3f, 7f, 21f); seg(7f, 4f, 16f, 9f); seg(16f, 9f, 7f, 13.5f); seg(10.5f, 12f, 17f, 21f) }
     HistoricalFutharkRune.Kenaz -> { seg(16f, 5f, 7f, 12f); seg(7f, 12f, 16f, 19f) }
     HistoricalFutharkRune.Gebo -> { seg(6f, 4f, 18f, 20f); seg(18f, 4f, 6f, 20f) }
     HistoricalFutharkRune.Wunjo -> { seg(7f, 3f, 7f, 21f); seg(7f, 4f, 17f, 9.5f); seg(17f, 9.5f, 7f, 14.5f) }
+    HistoricalFutharkRune.Hagalaz -> { seg(7f, 3f, 7f, 21f); seg(17f, 3f, 17f, 21f); seg(7f, 8f, 17f, 16f) }
+    HistoricalFutharkRune.Nauthiz -> { seg(12f, 3f, 12f, 21f); seg(7f, 9f, 17f, 15f) }
     HistoricalFutharkRune.Isa -> { seg(12f, 3f, 12f, 21f) }
+    HistoricalFutharkRune.Jera -> { seg(12f, 4f, 7f, 9f); seg(7f, 9f, 12f, 13.5f); seg(12f, 10.5f, 17f, 15f); seg(17f, 15f, 12f, 20f) }
+    HistoricalFutharkRune.Eihwaz -> { seg(12f, 3f, 12f, 21f); seg(12f, 4f, 17f, 8.5f); seg(12f, 20f, 7f, 15.5f) }
+    HistoricalFutharkRune.Perthro -> { seg(7f, 3f, 7f, 21f); seg(7f, 4f, 16f, 4f); seg(16f, 4f, 12.5f, 8.5f); seg(7f, 20f, 16f, 20f); seg(16f, 20f, 12.5f, 15.5f) }
+    HistoricalFutharkRune.Algiz -> { seg(12f, 3f, 12f, 21f); seg(12f, 11f, 6.5f, 4.5f); seg(12f, 11f, 17.5f, 4.5f) }
+    HistoricalFutharkRune.Sowilo -> { seg(15.5f, 4f, 8.5f, 11f); seg(8.5f, 11f, 15.5f, 13.5f); seg(15.5f, 13.5f, 8.5f, 20f) }
+    HistoricalFutharkRune.Tiwaz -> { seg(12f, 4f, 12f, 21f); seg(12f, 4f, 6.5f, 9.5f); seg(12f, 4f, 17.5f, 9.5f) }
     HistoricalFutharkRune.Berkano -> { seg(7f, 3f, 7f, 21f); seg(7f, 4f, 16f, 8f); seg(16f, 8f, 7f, 12f); seg(7f, 12f, 16f, 16.5f); seg(16f, 16.5f, 7f, 20.5f) }
     HistoricalFutharkRune.Ehwaz -> { seg(6f, 3f, 6f, 21f); seg(18f, 3f, 18f, 21f); seg(6f, 7f, 12f, 12f); seg(18f, 7f, 12f, 12f) }
     HistoricalFutharkRune.Mannaz -> { seg(6f, 3f, 6f, 21f); seg(18f, 3f, 18f, 21f); seg(6f, 4f, 18f, 13f); seg(18f, 4f, 6f, 13f) }
     HistoricalFutharkRune.Laguz -> { seg(8f, 3f, 8f, 21f); seg(8f, 4f, 17f, 10f) }
+    HistoricalFutharkRune.Ingwaz -> { seg(12f, 6f, 17.5f, 12f); seg(17.5f, 12f, 12f, 18f); seg(12f, 18f, 6.5f, 12f); seg(6.5f, 12f, 12f, 6f) }
     HistoricalFutharkRune.Dagaz -> { seg(5f, 5f, 5f, 19f); seg(19f, 5f, 19f, 19f); seg(5f, 5f, 19f, 19f); seg(19f, 5f, 5f, 19f) }
+    HistoricalFutharkRune.Othala -> { seg(12f, 4f, 17.5f, 10f); seg(17.5f, 10f, 7.5f, 20f); seg(12f, 4f, 6.5f, 10f); seg(6.5f, 10f, 16.5f, 20f) }
    }
   }
   if (!minimal) drawRune(shadow, .6f * u, .8f * u)
@@ -231,7 +288,7 @@ fun AetherisSeal(
 ) {
  val minimal = LocalAppearance.current.minimal
  if (minimal || size < 16.dp) {
-  val rune = HistoricalFutharkRune.entries[seal.cellIndex % HistoricalFutharkRune.entries.size]
+  val rune = sealFallbackRune(seal)
   FutharkRuneGlyph(rune, if (lit) fallbackColor else Muted, modifier, size)
  } else {
   AtlasCell(

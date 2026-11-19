@@ -13,6 +13,8 @@ const val EXPEDITION_METRIC_FOCUS_SESSIONS = 4
 const val EXPEDITION_METRIC_FLASHCARD_DAYS = 5
 const val EXPEDITION_METRIC_PATH_TASKS = 6
 const val EXPEDITION_MIN_FOCUS_SECONDS = 300L // 1.7.3 (16.1): duração mínima efetiva de 5 minutos por sessão de Foco
+const val EXPEDITION_FOCUS_RULE_LEGACY_1S = 0 // Fases/claims iniciados antes da 1.7.3.1 (> 0s)
+const val EXPEDITION_FOCUS_RULE_V1_300S = 1   // Fases/claims com regra explícita >= 300s (5 min)
 
 data class ExpeditionPhase(
  val name: String,
@@ -506,14 +508,17 @@ fun expeditionBaselineFor(metric: Int, ids: List<String>, s: GameState): String 
   .joinToString(";") { "${it.id}=${it.progress}" }
 }
 
+fun expeditionMinFocusSecondsFor(q: Quest): Long =
+ if (q.focusRuleVersion >= EXPEDITION_FOCUS_RULE_V1_300S) EXPEDITION_MIN_FOCUS_SECONDS else 1L
+
 /**
- * Evaluates expanded expedition metrics (4=Focus Sessions >= 5 min, 5=Mímir Flashcard Days, 6=Path Tasks).
+ * Evaluates expanded expedition metrics (4=Focus Sessions with versioned minimum, 5=Mímir Flashcard Days, 6=Path Tasks).
  * Archiving a completed PathTask preserves expedition credit (16.2); reopening or deleting removes it.
  */
 fun expeditionMetricProgress(
  q: Quest,
  s: GameState,
- minFocusSeconds: Long = EXPEDITION_MIN_FOCUS_SECONDS
+ minFocusSeconds: Long = expeditionMinFocusSecondsFor(q)
 ): Long {
  val baseline = parseBaseline(q.sagaBaseline)
  return when (q.metric) {
@@ -558,7 +563,8 @@ fun expeditionPhaseQuest(
   xp = if (final) e.xp else 0,
   coins = if (final) e.coins else 0,
   sagaStart = today(),
-  sagaBaseline = expeditionBaselineFor(effectiveMetric, ids, s)
+  sagaBaseline = expeditionBaselineFor(effectiveMetric, ids, s),
+  focusRuleVersion = if (effectiveMetric == EXPEDITION_METRIC_FOCUS_SESSIONS) EXPEDITION_FOCUS_RULE_V1_300S else 0
  )
 }
 

@@ -16,7 +16,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.*
 
 @OptIn(ExperimentalLayoutApi::class)
-@Composable fun WorldScreen(s:GameState,vm:GameViewModel,onWeekly:()->Unit={},onMemories:()->Unit={},onRegion:(Int)->Unit={},onMimir:()->Unit={},onForge:()->Unit={}){
+@Composable fun WorldScreen(s:GameState,vm:GameViewModel,onWeekly:()->Unit={},onMemories:()->Unit={},onRegion:(Int)->Unit={},onMimir:()->Unit={},onForge:()->Unit={},onCodex:()->Unit={}){
     var tab by rememberSaveable{mutableIntStateOf(0)};var region by remember{mutableIntStateOf(0)};var chapter by remember{mutableStateOf<Int?>(null)};var restore by remember{mutableStateOf<Int?>(null)}
     val Gold=Gold;val Green=Green
     val context=androidx.compose.ui.platform.LocalContext.current
@@ -198,8 +198,10 @@ import androidx.compose.ui.unit.*
                             Text("Conhecimento e Runas da Memória",style=MaterialTheme.typography.titleMedium)
                             Text("$nbCount ${if(nbCount==1)"caderno" else "cadernos"} · ${s.knowledgePages.count{!it.archived}} páginas${if(dueCount>0)" · $dueCount revisões pendentes" else ""}",color=if(dueCount>0)Blue else Muted,fontSize=12.sp)
                         }
+                        HeraldicCrest(resolvedHeraldry(s),size=36.dp)
                     }
                     Action("Abrir Biblioteca de Mímir",onMimir,Modifier.fillMaxWidth())
+                    SagaButton("Codex Rúnico (24 runas)",onCodex,Modifier.fillMaxWidth(),style=VikingButtonStyle.BronzeForjado,leadingRune=HistoricalFutharkRune.Ansuz)
                 }
                 Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){Action("Crônica da Semana",onWeekly,Modifier.weight(1f));SagaButton("Salão das Memórias",onMemories,Modifier.weight(1f),secondary=true)}
                 NarrativePanel(s,vm);val revChap=chapterNames.indices.count{chapterUnlocked(it,s)};Text("$revChap de 9 ${if(revChap==1)"capítulo revelado" else "capítulos revelados"}",color=Blue);Meter(revChap/9f,Blue,slim=true);Column(Modifier.fillMaxWidth().padding(vertical=4.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){Eyebrow("O Cronista");Text("“Registrei o que caiu. Agora registro aquilo que se levanta.”",style=MaterialTheme.typography.titleLarge)};Hairline();chapterNames.forEachIndexed{i,name->val open=chapterUnlocked(i,s);Panel(accent=if(open)Gold else Muted){Text(name,style=MaterialTheme.typography.titleLarge);Text(when(i){0->"O encontro que inicia sua jornada.";1->"Liberado ao concluir seu primeiro hábito.";2->"Liberado ao restaurar a primeira etapa de uma construção.";3->"Liberado no nível 3.";4->"Liberado no nível 5.";5->"Liberado no nível 10.";6->"Liberado no nível 15.";7->"Liberado no nível 20.";else->"Liberado no nível 30."},color=Muted,fontSize=12.sp);Action(if(open)"Abrir capítulo" else "Ainda sob a névoa",{chapter=i},enabled=open)}}

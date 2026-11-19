@@ -46,6 +46,7 @@ private val hairline:Color @Composable get()=if(LocalAppearance.current.dark)Col
      if(spec!=null){
       Box(Modifier.semantics(mergeDescendants=true){contentDescription="Especialização ${spec.name}"}){ArchetypeSealArt(spec.atlasIndex,Modifier.size(38.dp))}
      }
+     HeraldicCrest(resolvedHeraldry(s),size=36.dp)
      Column{Text("${s.coins}",fontFamily=SagaFont,fontSize=18.sp,lineHeight=22.sp);Text("fragmentos",color=Muted,fontSize=11.sp)}
     }
    }

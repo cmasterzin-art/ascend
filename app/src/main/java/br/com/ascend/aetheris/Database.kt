@@ -107,6 +107,10 @@ interface GameDao {
     @Query("DELETE FROM equipment_loadouts WHERE id=:id") suspend fun deleteLoadout(id:String)
     @Query("DELETE FROM equipment_loadouts") suspend fun clearLoadouts()
 
+    @Query("SELECT * FROM heraldry_profile LIMIT 1") suspend fun heraldry():HeraldryProfile?
+    @Upsert suspend fun saveHeraldry(v:HeraldryProfile)
+    @Query("DELETE FROM heraldry_profile") suspend fun clearHeraldry()
+
     @Query("DELETE FROM diary WHERE id=:id") suspend fun deleteJournal(id:String)
     @Query("DELETE FROM routines WHERE id=:id") suspend fun deleteRoutine(id:String)
     @Query("DELETE FROM player") suspend fun clearPlayer()
@@ -132,7 +136,7 @@ val MIGRATION_2_3 = object : androidx.room.migration.Migration(2,3) {
         db.execSQL("ALTER TABLE habits ADD COLUMN trackStreak INTEGER NOT NULL DEFAULT 1")
     }
 }
-@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class,PlanException::class,FocusSession::class,PersonalPath::class,PathStage::class,PathTask::class,PathSubtask::class,PathHabitLink::class,TimeBlock::class,AgendaEvent::class,InboxItem::class,KnowledgeNotebook::class,KnowledgePage::class,KnowledgePageLink::class,KnowledgeReference::class,Flashcard::class,FlashcardReview::class,EquipmentLoadout::class],version=9,exportSchema=true)
+@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class,PlanException::class,FocusSession::class,PersonalPath::class,PathStage::class,PathTask::class,PathSubtask::class,PathHabitLink::class,TimeBlock::class,AgendaEvent::class,InboxItem::class,KnowledgeNotebook::class,KnowledgePage::class,KnowledgePageLink::class,KnowledgeReference::class,Flashcard::class,FlashcardReview::class,EquipmentLoadout::class,HeraldryProfile::class],version=10,exportSchema=true)
 abstract class GameDatabase:RoomDatabase(){abstract fun dao():GameDao}
 
 val MIGRATION_3_4 = object : androidx.room.migration.Migration(3,4) {
@@ -234,5 +238,13 @@ val MIGRATION_7_8=object:androidx.room.migration.Migration(7,8){
 val MIGRATION_8_9=object:androidx.room.migration.Migration(8,9){
  override fun migrate(db:androidx.sqlite.db.SupportSQLiteDatabase){
   db.execSQL("CREATE TABLE IF NOT EXISTS `equipment_loadouts` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `headId` TEXT NOT NULL, `outfitId` TEXT NOT NULL, `accessoryId` TEXT NOT NULL, `weaponId` TEXT NOT NULL, `companionId` TEXT NOT NULL, `frameId` TEXT NOT NULL, `backgroundId` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`))")
+ }
+}
+
+val MIGRATION_9_10=object:androidx.room.migration.Migration(9,10){
+ override fun migrate(db:androidx.sqlite.db.SupportSQLiteDatabase){
+  db.execSQL("ALTER TABLE `quests` ADD COLUMN `focusRuleVersion` INTEGER NOT NULL DEFAULT 0")
+  db.execSQL("ALTER TABLE `claims` ADD COLUMN `focusRuleVersion` INTEGER NOT NULL DEFAULT 0")
+  db.execSQL("CREATE TABLE IF NOT EXISTS `heraldry_profile` (`id` INTEGER NOT NULL, `symbolId` TEXT NOT NULL, `shapeId` TEXT NOT NULL, `metalId` TEXT NOT NULL, `secondaryColorId` TEXT NOT NULL, `inscriptionRunes` TEXT NOT NULL, `ornamentId` TEXT NOT NULL, `bannerId` TEXT NOT NULL, `showOnPortrait` INTEGER NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`))")
  }
 }

@@ -325,7 +325,8 @@ fun MimirLibraryScreen(
     vm: GameViewModel,
     onOpenNotebook: (String) -> Unit,
     onOpenPage: (String) -> Unit,
-    onStartReview: (String) -> Unit
+    onStartReview: (String) -> Unit,
+    onOpenCodex: (() -> Unit)? = null
 ) {
     val day = currentDay()
     var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -355,6 +356,15 @@ fun MimirLibraryScreen(
             dueCount = dueCards.size,
             onStartReview = { onStartReview("") }
         )
+        if (onOpenCodex != null) {
+            SagaButton(
+                text = "Codex Rúnico · 24 runas do Elder Futhark",
+                onClick = onOpenCodex,
+                modifier = Modifier.fillMaxWidth().testTag("open_codex_from_mimir"),
+                style = VikingButtonStyle.BronzeForjado,
+                leadingRune = HistoricalFutharkRune.Ansuz
+            )
+        }
         FormField(search, { search = it }, "Buscar páginas por título, texto ou tag", modifier = Modifier.testTag("mimir_search"))
         AetherisTabs(listOf("Cadernos", "Recentes", "Favoritos", "Tags", "Revisões"), tab, { tab = it })
 

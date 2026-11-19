@@ -47,6 +47,7 @@ fun specializationTitles(s:GameState):List<String> = buildList {
     if(expeditionComplete(s,forestExpeditions.last()))add("Testemunha das Raízes")
     if(expeditionComplete(s,libraryExpeditions.last()))add("Guardião das Eras")
     if(expeditionComplete(s,mountainsExpeditions.last()))add("Testemunha dos Cumes")
+    legendaryCollections.forEach{col->if(isCollectionComplete(s,col))add(col.rewardTitle)}
     val names=listOf("Aprendiz das Runas","Caminhante de Ferro","Guardião dos Rituais","Voz do Santuário","Mãos da Aurora")
     names.forEachIndexed{i,n->if(1+s.points(i)/50>=10)add(n)}
     if(s.level>=50)add("Lenda do Primeiro Sol")

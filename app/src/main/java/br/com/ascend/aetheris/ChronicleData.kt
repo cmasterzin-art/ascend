@@ -5,10 +5,10 @@ import java.time.LocalDate
 data class WeekChronicle(val start:String,val end:String,val summary:PeriodSummary,val coins:Long,val points:List<Long>,val missions:List<String>,val sagasAdvanced:List<String>,val sagasCompleted:List<String>,val achievements:List<String>,val restored:List<String>,val narrative:String)
 fun rawClaimValid(c:Claim,s:GameState):Boolean{
  val q=s.quests.find{it.id==c.questId}?:return false
- val snap=q.copy(target=c.target,metric=c.metric,habitIds=c.habitIds,period=c.period,attribute=c.attribute,deadline=c.deadline,sagaStart=c.sagaStart,sagaBaseline=c.sagaBaseline)
+ val snap=q.copy(target=c.target,metric=c.metric,habitIds=c.habitIds,period=c.period,attribute=c.attribute,deadline=c.deadline,sagaStart=c.sagaStart,sagaBaseline=c.sagaBaseline,focusRuleVersion=c.focusRuleVersion)
  if(snap.sagaStart.isNotBlank()&&snap.metric==EXPEDITION_METRIC_FOCUS_SESSIONS){
-  // Preserva claims legados válidos da 1.7.2 (> 0s) enquanto novas etapas exigem >= EXPEDITION_MIN_FOCUS_SECONDS (300s).
-  return expeditionMetricProgress(snap,s,minFocusSeconds=1L)>=c.target
+  // 1.7.3.1 (6.2): Respeita a versão de elegibilidade gravada no claim/fase (0 = legado >0s, 1 = >= 300s).
+  return expeditionMetricProgress(snap,s)>=c.target
  }
  return questProgress(snap,s,c.occurrence)>=c.target
 }

@@ -214,6 +214,59 @@ val forgeRecipes: List<ForgeRecipe> = listOf(
         lore = "A obra-prima de Darian: enquadra o retrato do herói sob o brasão da árvore dos reinos.",
         requirementLabel = "A Forja restaurada (etapa 2) · Nível 10+",
         rune = HistoricalFutharkRune.Dagaz
+    ),
+    // 1.7.3.1 — O Legado das Runas (4 novas peças completando as 12 obras da Forja e as 3 coleções lendárias)
+    ForgeRecipe(
+        id = "vigil-axe",
+        name = "Machado da Vigília",
+        kind = "weapon",
+        rarity = 3,
+        cost = 95,
+        minForgeStage = 1,
+        minLevel = 5,
+        narrativeMaterials = "Ferro escurecido martelado, freixo entalhado e couro trançado no cabo.",
+        lore = "Machado barbado cosmético gravado com nós escandinavos; honra o peso firme da palavra cumprida.",
+        requirementLabel = "A Forja (etapa 1+) · Nível 5+",
+        rune = HistoricalFutharkRune.Thurisaz
+    ),
+    ForgeRecipe(
+        id = "runic-staff",
+        name = "Cajado Rúnico",
+        kind = "weapon",
+        rarity = 3,
+        cost = 105,
+        minForgeStage = 2,
+        requiredAchievementId = "mimir_first_rune",
+        narrativeMaterials = "Madeira ancestral, anéis de bronze envelhecido e pedra rúnica polida.",
+        lore = "Bordão cerimonial dos escribas da Biblioteca das Eras; carrega memória, nunca combate.",
+        requirementLabel = "A Forja restaurada (etapa 2) · Conquista 'A Primeira Runa'",
+        rune = HistoricalFutharkRune.Perthro
+    ),
+    ForgeRecipe(
+        id = "northern-blade",
+        name = "Lâmina do Norte",
+        kind = "weapon",
+        rarity = 4,
+        cost = 130,
+        minForgeStage = 2,
+        requiredAchievementId = "mountains_discipline",
+        narrativeMaterials = "Aço escurecido forjado a frio, guarda em prata oxidada e pomo lobulado.",
+        lore = "Espada cerimonial de inspiração nórdica forjada para testemunhas dos cumes boreais.",
+        requirementLabel = "A Forja restaurada (etapa 2) · Conquista 'Testemunha dos Cumes'",
+        rune = HistoricalFutharkRune.Tiwaz
+    ),
+    ForgeRecipe(
+        id = "constellation-brooch",
+        name = "Broche das Constelações",
+        kind = "accessory",
+        rarity = 3,
+        cost = 100,
+        minForgeStage = 2,
+        minLevel = 7,
+        narrativeMaterials = "Prata oxidada, filigrana de bronze antigo e pedra azul boreal.",
+        lore = "Fíbula escandinava que prende o manto sob a estrela fria do firmamento de Aetheris.",
+        requirementLabel = "A Forja restaurada (etapa 2) · Nível 7+",
+        rune = HistoricalFutharkRune.Sowilo
     )
 )
 
@@ -263,21 +316,33 @@ fun isForgeMasterSpecialization(s: GameState): Boolean =
 fun darianWorkshopDialogue(s: GameState): Pair<String, String> {
     val stage = forgeStage(s)
     val craftedCount = s.assets.count { it.id in forgeItemIds }
+    val consecratedCount = s.assets.count { it.id in forgeItemIds && it.stage >= FORGE_STAGE_CONSECRATED }
+    val engravedCount = s.assets.count { it.id in forgeItemIds && it.stage >= FORGE_STAGE_ENGRAVED }
+    val completedCols = legendaryCollections.count { isCollectionComplete(s, it) }
+    val hasCustomHeraldry = s.heraldry != null
     val isMaster = isForgeMasterSpecialization(s)
     return when {
         stage == 0 -> "Darian · Ferreiro da Vila" to
             "A bigorna está fria e o fole ainda partido. Restaure a primeira etapa da Forja na Vila do Despertar antes de aquecermos o ferro."
         isMaster && stage == 2 -> "Darian · Entre Mestres da Forja" to
             if (craftedCount == forgeRecipes.size)
-                "Você carrega o olhar de quem entende o peso do martelo. Todas as peças da forja já vestem sua jornada — o preço do ferro continua o mesmo para todos, mas o respeito é entre iguais."
+                "Você carrega o olhar de quem entende o peso do martelo. Todas as doze peças da forja já vestem sua jornada — o preço do ferro continua o mesmo para todos, mas o respeito é entre iguais."
             else
                 "Reconheço o compasso de um Mestre da Forja. O custo em fragmentos não muda diante do fogo, mas minha bigorna e meus moldes mais antigos estão abertos ao seu ofício."
         isMaster -> "Darian · Entre Mestres da Forja" to
             "Um Mestre da Forja conhece o valor de um fole firme. Com a primeira etapa de pé já podemos bater ferro e bronze; quando terminarmos a oficina, as obras maiores nos aguardam."
         stage == 1 -> "Darian · Ferreiro da Vila" to
-            "As brasas despertaram. Já posso forjar peças de viagem e estudo; conclua a restauração completa da Forja na Vila para trabalhar obras épicas e lendárias."
+            "As brasas despertaram. Já posso forjar peças de viagem e estudo; conclua a restauração completa da Forja na Vila para trabalhar obras épicas, lendárias e consagrações."
         craftedCount == forgeRecipes.size -> "Darian · Mestre Ferreiro" to
-            "Oito obras saíram destas brasas com a sua medida. Nenhuma dá atalho, mas cada uma lembra o caminho que você sustentou."
+            "Doze obras saíram destas brasas com a sua medida. Nenhuma dá atalho, mas cada uma lembra o caminho que você sustentou."
+        completedCols > 0 -> "Darian · Mestre Ferreiro" to
+            "Uma coleção inteira reunida sob o mesmo teto. O ferro guarda melhor a história quando cada peça reconhece as demais."
+        consecratedCount > 0 -> "Darian · Mestre Ferreiro" to
+            "Consagrar o metal não muda o peso do dia, mas lembra quem você se tornou até conseguir segurá-lo."
+        engravedCount > 0 -> "Darian · Mestre Ferreiro" to
+            "O cinzel marcou o bronze com firmeza. Quando estiver pronto, podemos levar o acabamento até a consagração."
+        hasCustomHeraldry && craftedCount == 0 -> "Darian · Mestre Ferreiro" to
+            "Vi o brasão que você escolheu para o escudo. Escolha um molde na bigorna quando quiser forjar peças dignas dele."
         else -> "Darian · Mestre Ferreiro" to
             "O fogo está firme e a bigorna assentada. Escolha o molde, confira o ajuste no retrato e só bata o martelo quando a peça fizer sentido na sua saga."
     }

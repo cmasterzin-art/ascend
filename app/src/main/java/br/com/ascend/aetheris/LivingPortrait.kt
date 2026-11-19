@@ -311,7 +311,13 @@ fun LivingHeroPortrait(
             }
         }
 
-        // Layer 4: Calibrated Torso Armor / Garment Overlay
+        // Layer 4: Calibrated Torso Armor / Garment Overlay + Upgrade stage finishes (1.7.3.1 Retrato Vivo 1.1)
+        val outfitStage = remember(s?.assets, look.outfitId) {
+            look.outfitId?.let { id -> s?.assets?.find { it.id == id }?.stage } ?: FORGE_STAGE_FORGED
+        }
+        val frameStage = remember(s?.assets, look.frameId) {
+            look.frameId?.let { id -> s?.assets?.find { it.id == id }?.stage } ?: FORGE_STAGE_FORGED
+        }
         if (armorSpec != null) {
             AtlasCellOverlay(
                 resId = R.drawable.living_armor_atlas,
@@ -322,6 +328,36 @@ fun LivingHeroPortrait(
                 alpha = armorSpec.alpha,
                 colorFilter = armorSpec.tint?.let { ColorFilter.tint(it, BlendMode.Modulate) }
             )
+            // Gravado (Stage II+): subtle Borre engraved collar trim calibrated cleanly on torso collar (never touching face)
+            if (outfitStage >= FORGE_STAGE_ENGRAVED && !minimal && size >= 96.dp) {
+                Box(
+                    Modifier
+                        .align(Alignment.TopCenter)
+                        .offset(y = size * 1.5f * 0.495f)
+                        .size(width = size * 0.40f, height = size * 0.22f)
+                ) {
+                    AtlasCell(
+                        R.drawable.living_hero_heritage_atlas,
+                        index = 1,
+                        columns = 3,
+                        rows = 2,
+                        modifier = Modifier.matchParentSize(),
+                        alpha = 0.84f
+                    )
+                }
+            }
+            // Consagrado (Stage III): radiant braided shoulder clasp applique on left mantle shoulder
+            if (outfitStage >= FORGE_STAGE_CONSECRATED && !minimal && size >= 96.dp) {
+                val claspSize = (size * 0.145f).coerceIn(12.dp, 38.dp)
+                Box(
+                    Modifier
+                        .align(Alignment.TopStart)
+                        .offset(x = size * 0.19f, y = size * 1.5f * 0.62f)
+                        .size(claspSize)
+                ) {
+                    AtlasCell(R.drawable.living_hero_heritage_atlas, 5, 3, 2, Modifier.matchParentSize(), alpha = 0.92f)
+                }
+            }
         }
 
         // Layer 5: Direct Chest Brooch / Cloak Clasp Accessory (anchored at x≈0.68, y≈0.70, clear of face)
@@ -369,6 +405,17 @@ fun LivingHeroPortrait(
                 rows = 2,
                 modifier = Modifier.matchParentSize()
             )
+            // Gravado/Consagrado frame crown accent along upper rim
+            if (frameStage >= FORGE_STAGE_ENGRAVED && size >= 110.dp) {
+                Box(
+                    Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 2.dp)
+                        .size(width = size * 0.44f, height = size * 0.22f)
+                ) {
+                    AtlasCell(R.drawable.living_hero_heritage_atlas, 4, 3, 2, Modifier.matchParentSize(), alpha = 0.88f)
+                }
+            }
         } else {
             Canvas(Modifier.matchParentSize()) {
                 scale(this.size.width / 100f, this.size.height / 150f, Offset.Zero) {
@@ -378,7 +425,7 @@ fun LivingHeroPortrait(
             }
         }
 
-        // Contextual weapon, companion/ring, and specialization medallions cleanly nested inside frame corners
+        // Contextual weapon, companion/ring, specialization, and personal heraldic crest medallions cleanly nested in frame corners
         if (showBadges) {
             val badgeSize = (size * 0.20f).coerceIn(22.dp, 42.dp)
             val edgePadX = (size * 0.115f).coerceIn(10.dp, 24.dp)
@@ -393,8 +440,13 @@ fun LivingHeroPortrait(
                         .padding(start = edgePadX, bottom = edgePadY)
                         .size(badgeSize)
                 ) {
-                    val cell = if (look.weaponId == "craft-blade") 1 else 2
-                    AtlasCell(R.drawable.living_artifacts_atlas, cell, 4, 2, Modifier.fillMaxSize().padding(3.dp))
+                    when (look.weaponId) {
+                        "vigil-axe" -> AtlasCell(R.drawable.forge_legacy_items_atlas, 0, 2, 2, Modifier.fillMaxSize().padding(3.dp))
+                        "runic-staff" -> AtlasCell(R.drawable.forge_legacy_items_atlas, 1, 2, 2, Modifier.fillMaxSize().padding(3.dp))
+                        "northern-blade" -> AtlasCell(R.drawable.forge_legacy_items_atlas, 2, 2, 2, Modifier.fillMaxSize().padding(3.dp))
+                        "craft-blade" -> AtlasCell(R.drawable.living_artifacts_atlas, 1, 4, 2, Modifier.fillMaxSize().padding(3.dp))
+                        else -> AtlasCell(R.drawable.living_artifacts_atlas, 2, 4, 2, Modifier.fillMaxSize().padding(3.dp))
+                    }
                 }
             }
 
@@ -418,6 +470,22 @@ fun LivingHeroPortrait(
                         }
                         ArtTile(R.drawable.relic_atlas, compIndex, 3, Modifier.fillMaxSize().clip(CircleShape))
                     }
+                }
+            }
+
+            // Top-left personal Heraldic Crest medallion (1.7.3.1, when size >= 110dp, heraldry saved & enabled)
+            val heraldry = s?.heraldry
+            if (heraldry != null && heraldry.showOnPortrait && size >= 110.dp && !minimal) {
+                val crestSize = (size * 0.19f).coerceIn(22.dp, 38.dp)
+                Box(
+                    Modifier
+                        .align(Alignment.TopStart)
+                        .padding(top = edgePadY, start = edgePadX)
+                        .size(crestSize),
+                    contentAlignment = Alignment.Center
+                ) {
+                    AtlasCell(R.drawable.living_hero_heritage_atlas, 3, 3, 2, Modifier.matchParentSize())
+                    HeraldicCrest(heraldry, size = crestSize * 0.78f, showInscription = false)
                 }
             }
 
@@ -468,6 +536,7 @@ private fun PortraitCornerMedallion(
 @Composable
 private fun AccessoryOverlaySprite(itemId: String, modifier: Modifier = Modifier) {
     when (itemId) {
+        "constellation-brooch" -> AtlasCell(R.drawable.living_hero_heritage_atlas, 0, 3, 2, modifier)
         "yggdrasil-brooch" -> AtlasCell(R.drawable.living_artifacts_atlas, 0, 4, 2, modifier)
         "ember-amulet" -> AtlasCell(R.drawable.living_artifacts_atlas, 3, 4, 2, modifier)
         "eternal-memory-medallion" -> AtlasCell(R.drawable.living_artifacts_atlas, 4, 4, 2, modifier)

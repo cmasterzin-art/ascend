@@ -90,7 +90,10 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
    Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(if(narrow)10.dp else 14.dp)){
     Box(Modifier.drawBehind{if(!minimal){val r=size.maxDimension*.95f;drawCircle(Brush.radialGradient(listOf(cold.copy(alpha=.2f),Color.Transparent),center=Offset(size.width/2,size.height*.4f),radius=r),r,Offset(size.width/2,size.height*.4f))}}.clickable(onClickLabel="Ampliar retrato",onClick=onPortrait)){ForgePortrait(s,portrait)}
     Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(3.dp)){
-     Text(p.name,style=if(narrow)MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium,letterSpacing=1.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+     Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){
+      if(s.heraldry!=null){HeraldicCrest(s.heraldry,size=if(narrow)22.dp else 26.dp)}
+      Text(p.name,style=if(narrow)MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium,letterSpacing=1.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+     }
      Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){ClassEmblem(p.heroClass,Modifier.size(18.dp));Text(classes[p.heroClass],color=Blue,fontSize=12.sp);if(!narrow){Text("·",color=Muted,fontSize=12.sp);Text(p.title,color=Muted,fontSize=12.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis)}}
      if(narrow)Text(p.title,color=Muted,fontSize=11.sp,maxLines=1,overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis)
      Spacer(Modifier.height(3.dp))
