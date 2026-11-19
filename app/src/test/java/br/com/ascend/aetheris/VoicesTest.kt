@@ -47,7 +47,7 @@ class VoicesTest{
  @Test fun realV4MigrationAndLegacyBackupPreserveProgress()=runBlocking{
  val h=Habit(name="Antigo");repo.habit(h);val q=Quest(name="Saga antiga",habitIds=h.id);repo.saga(q);val old=repo.state.value!!
  val ctx=RuntimeEnvironment.getApplication() as AscendApp;val name="voices-migration.db";legacyDatabase(ctx,name,4,old)
- val disk=Room.databaseBuilder(ctx,GameDatabase::class.java,name).addMigrations(MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8,MIGRATION_8_9).build()
+ val disk=Room.databaseBuilder(ctx,GameDatabase::class.java,name).addMigrations(MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8,MIGRATION_8_9,MIGRATION_9_10).build()
  try{val migrated=GameRepository(disk);migrated.refresh();assertEquals(old,migrated.state.value);migrated.abandonSaga(q.id);assertEquals(1,migrated.state.value!!.quests.first{it.id==q.id}.sagaState)}finally{disk.close();ctx.deleteDatabase(name)}
  val gson=com.google.gson.Gson();val payload=gson.toJsonTree(old).asJsonObject;payload["quests"].asJsonArray.forEach{r->listOf("sagaState","sagaEnd","sagaStopped").forEach{r.asJsonObject.remove(it)}}
  val data=gson.toJson(payload);val digest=java.security.MessageDigest.getInstance("SHA-256").digest(data.toByteArray()).joinToString(""){"%02x".format(it)}

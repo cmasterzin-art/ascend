@@ -117,8 +117,8 @@ class LivingHeroAndForgeTest {
 
     @Test
     fun darianForgeRecipesStagesEconomyExclusivityAndConcurrentIdempotency() = runBlocking {
-        assertEquals(8, forgeRecipes.size)
-        assertEquals(8, forgeItemIds.size)
+        assertEquals(12, forgeRecipes.size)
+        assertEquals(12, forgeItemIds.size)
 
         // Stage 0 (ruínas): all 8 recipes are locked
         grantProgress(targetLevel = 10, extraCoins = 1200L)
@@ -409,10 +409,10 @@ class LivingHeroAndForgeTest {
         repo.saveCurrentAsLoadout("loadout:1", "Guarda Real")
 
         val jsonV11 = Backup.encode(s())
-        assertTrue(jsonV11.contains("\"version\":11"))
+        assertTrue(jsonV11.contains("\"version\":12"))
         assertTrue(jsonV11.contains("Guarda Real"))
 
-        // Round-trip v11 preserves loadouts & forged assets
+        // Round-trip v12 preserves loadouts & forged assets
         val decodedV11 = Backup.decode(jsonV11)
         assertEquals("Guarda Real", decodedV11.loadouts.first { it.id == "loadout:1" }.name)
         assertEquals("oath-helm", decodedV11.loadouts.first { it.id == "loadout:1" }.headId)
@@ -452,7 +452,7 @@ class LivingHeroAndForgeTest {
         legacyDatabase(context, dbName, 8, before)
 
         val migrated = Room.databaseBuilder(context, GameDatabase::class.java, dbName)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
             .allowMainThreadQueries()
             .build()
         try {
