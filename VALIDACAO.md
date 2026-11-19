@@ -1,15 +1,17 @@
 # ASCEND 1.7.1 — Validação
 
-19/11/2026. Base `feat/ascend-1.7.0.1` (`230cc15`). Branch `feat/ascend-1.7.1`.
+19/11/2026. Base `feat/ascend-1.7.0.1` (`230cc15`). Branch `feat/ascend-1.7.1`. GitHub Actions execução `44441287022` (commits `6148640` / `2a44389`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL**.
 
-- Validação local: `./gradlew testDebugUnitTest` + `./gradlew lintDebug assembleDebug` concluíram com **BUILD SUCCESSFUL**. **167 testes aprovados** (`155` preservados da `1.7.0.1` + `12` novos em `MimirAndArchetypesTest` e `MimirAndArchetypesUiTest`), zero falhas, erros ou ignorados. Android Lint: **0 erros e 23 avisos**.
-- Manifesto verificado via `aapt2`: `package: name='br.com.ascend.aetheris'`, `versionName='1.7.1'`, `versionCode='22'`, `minSdkVersion='26'`, `targetSdkVersion='35'`, sem permissão `INTERNET`.
-- Room v8 (`MIGRATION_7_8` validada sobre banco SQLite real v7), backup v10 (compatibilidade v9 → v10, round-trip completo e rollback atômico em falha validados em teste) e Biblioteca da Forja (`1.6.9.19`) integralmente preservados.
-- Três recursos pictóricos novos (`mimir_library.webp`, `archetype_seals_atlas.webp`, `mimir_codex_atlas.webp`) somando `359.502` bytes (`351,1 KB`). Sete capturas reais em Robolectric inspecionadas em `docs/screenshots/v1.7.1/`, incluindo cenário `320 dp` / fonte `130%` / tema claro / minimalista.
-- Assinatura oficial (`e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`) e publicação de `downloads/ASCEND-1.7.1.apk`: aguardando fechamento do job GitHub Actions (será registrado com ID de execução, bytes e SHA-256 finais).
-- Limites: sem teste físico de instalação por cima em aparelho Android, IME físico ou TalkBack.
+- **Testes:** **167 testes aprovados** (`155` preservados da `1.7.0.1` + `12` novos em `MimirAndArchetypesTest` e `MimirAndArchetypesUiTest`), zero falhas, erros ou ignorados.
+- **Android Lint:** **0 erros e 24 avisos** no CI (`23` localmente), sem novas supressões.
+- **APK oficial assinado:** [downloads/ASCEND-1.7.1.apk](downloads/ASCEND-1.7.1.apk?raw=true) com **24.755.664 bytes**, `versionName='1.7.1'`, `versionCode='22'`, `package: name='br.com.ascend.aetheris'`, `minSdkVersion='26'`, `targetSdkVersion='35'`, sem permissão `INTERNET`.
+- **Checksum SHA-256 do APK:** `dd1cf12d99822388b10fecbcce55b5e52af8c17a67d10b44a9d2b2438537c39f` (`sha256sum -c downloads/ASCEND-1.7.1.apk.sha256`: **OK**).
+- **Assinatura e alinhamento:** `Zipalign OK`; APK Signature Scheme v2 válida com o certificado oficial preservado `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
+- **Persistência e retrocompatibilidade:** Room v8 (`MIGRATION_7_8` validada sobre banco SQLite real v7), backup v10 (compatibilidade `v9 → v10`, round-trip completo e rollback atômico em falha validados em teste) e Biblioteca da Forja (`1.6.9.19`) integralmente preservados.
+- **Acervo pictórico e capturas:** 3 novos WebPs (`mimir_library.webp`, `archetype_seals_atlas.webp`, `mimir_codex_atlas.webp`) somando `359.502` bytes (`351,1 KB`). Renderizações reais em Robolectric em `docs/screenshots/v1.7.1/` (7 novas telas/variantes da 1.7.1 + 6 telas preservadas da 1.7.0), incluindo `320 dp` / fonte `130%` / tema claro / minimalista.
+- **Limites:** validação em Robolectric e CI; instalação física por cima da `1.7.0.1` em aparelho Android, IME físico em texto longo Markdown e TalkBack não foram executados.
 
-[Biblioteca de Mímir](docs/BIBLIOTECA-MIMIR-1.7.1.md) · [Arquétipos](docs/ARQUETIPOS-1.7.1.md) · [Visual e capturas 1.7.1](docs/VISUAL-1.7.1.md) · [Diário 1.7.1](docs/DESENVOLVIMENTO-1.7.1.md)
+[APK](downloads/ASCEND-1.7.1.apk?raw=true) · [Build](docs/validation/BUILD-1.7.1.txt) · [Lint](docs/validation/LINT-1.7.1.txt) · [Certificado e manifesto](docs/validation/APK-1.7.1.txt) · [Biblioteca de Mímir](docs/BIBLIOTECA-MIMIR-1.7.1.md) · [Arquétipos](docs/ARQUETIPOS-1.7.1.md) · [Visual 1.7.1](docs/VISUAL-1.7.1.md) · [Diário 1.7.1](docs/DESENVOLVIMENTO-1.7.1.md)
 
 ---
 
