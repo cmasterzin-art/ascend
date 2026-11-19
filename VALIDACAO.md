@@ -1,3 +1,20 @@
+# ASCEND 1.7.2 — Validação
+
+19/11/2026. Base `feat/ascend-1.7.1` (`88565d6`). Branch `feat/ascend-1.7.2`. GitHub Actions execução `44468019721` (commits `f3e369b` / `e0f12f8`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL**.
+
+- **Testes:** **181 testes aprovados** (`167` preservados da `1.7.1` + `4` regressões em `MimirAndArchetypesTest` + `10` novos em `WorldExpansionTest` e `WorldExpansionUiTest`), zero falhas, erros ou ignorados.
+- **Android Lint:** **0 erros e 29 avisos** no CI (`28` localmente), sem novas supressões.
+- **APK oficial assinado:** [downloads/ASCEND-1.7.2.apk](downloads/ASCEND-1.7.2.apk?raw=true) com **25.734.582 bytes**, `versionName='1.7.2'`, `versionCode='23'`, `package: name='br.com.ascend.aetheris'`, `minSdkVersion='26'`, `targetSdkVersion='35'`, sem permissão `INTERNET`.
+- **Checksum SHA-256 do APK:** `69cf6a92ffa2166d5a4cec9a48a9d79dcc0a45fbac2c7829d730d5f31c9a897b` (`sha256sum -c downloads/ASCEND-1.7.2.apk.sha256`: **OK**).
+- **Assinatura e alinhamento:** `Zipalign OK`; APK Signature Scheme v2 válida com o certificado oficial preservado `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
+- **Persistência e retrocompatibilidade:** Room v8 e backup v10 preservados integralmente sem migração destrutiva (compatibilidade `v1`–`v10` validada em teste), Floresta da Persistência (`roots`, `sanctuary`, `vigil`) e economia de XP/moedas preservadas.
+- **Acervo pictórico e capturas:** 10 novos recursos WebP originais (`1` prancha conceitual em `docs/art/concepts/nordic-viking-ui-172.webp` fora do APK + `9` atlas de produção somando `845.042 bytes` / `0,81 MB` dentro do APK, abaixo do limite de `3 MB`). 14 capturas reais de produção em `docs/screenshots/1.7.2/`, incluindo prancha do Design System 3.0, Atlas 2.0, Biblioteca das Eras e Montanhas da Disciplina (antes e depois), Relíquia equipada, Tema Claro e `320 dp` / fonte `130%`.
+- **Limites:** validação executada em Robolectric e GitHub Actions; instalação física por cima da `1.7.1` em aparelho Android, gestos reais de pinça em tela sensível ao toque, teclado IME físico e TalkBack não foram executados.
+
+[APK](downloads/ASCEND-1.7.2.apk?raw=true) · [Build](docs/validation/BUILD-1.7.2.txt) · [Lint](docs/validation/LINT-1.7.2.txt) · [Certificado e manifesto](docs/validation/APK-1.7.2.txt) · [Exploração 1.7.2](docs/EXPLORACAO-1.7.2.md) · [Atlas 2.0](docs/ATLAS-2.0.md) · [Design System 3.0](docs/DESIGN-SYSTEM-3.0.md) · [Renascimento Rúnico](docs/RENASCIMENTO-RUNICO.md) · [Visual 1.7.2](docs/VISUAL-1.7.2.md) · [Diário 1.7.2](docs/DESENVOLVIMENTO-1.7.2.md)
+
+---
+
 # ASCEND 1.7.1 — Validação
 
 19/11/2026. Base `feat/ascend-1.7.0.1` (`230cc15`). Branch `feat/ascend-1.7.1`. GitHub Actions execução `44441287022` (commits `6148640` / `2a44389`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL**.
