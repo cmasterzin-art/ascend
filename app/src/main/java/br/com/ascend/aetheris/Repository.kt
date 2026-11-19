@@ -185,22 +185,31 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         val baseline=s.records.filter{it.habitId in q.habitIds.split(',')}.joinToString(";"){"${it.id}=${it.progress}"}
         d.quest(q.copy(id=uid(),sagaStart=today(),sagaBaseline=baseline,sagaState=0,sagaEnd="",sagaStopped=0))
     }
-    suspend fun startExpedition(id:String,habitIds:List<String>)=change("Expedição iniciada"){
-        val s=read();val e=forestExpeditions.firstOrNull{it.id==id}?:error("Expedição desconhecida")
+    suspend fun startExpedition(id:String,habitIds:List<String>,metric:Int=EXPEDITION_METRIC_HABITS)=change("Expedição iniciada"){
+        val s=read();val e=expeditionById(id)?:error("Expedição desconhecida")
         require(expeditionAvailable(s,e)){"Revele a região e conclua a aventura anterior."}
         require(s.quests.none{it.id==expeditionQuestId(e,0)}){"Esta expedição já foi iniciada."}
-        require(habitIds.isNotEmpty()&&habitIds.distinct().size==habitIds.size&&habitIds.all{id->s.habits.any{it.id==id&&!it.deleted&&!it.archived&&!it.paused}}){"Selecione hábitos ativos."}
-        d.quest(expeditionPhaseQuest(e,0,habitIds,s))
+        val useIntegrated=metric!=EXPEDITION_METRIC_HABITS
+        require(!useIntegrated || metric==e.integratedMetric){"Métrica incompatível com esta expedição."}
+        if(!useIntegrated){
+            require(habitIds.isNotEmpty()&&habitIds.distinct().size==habitIds.size&&habitIds.all{hid->s.habits.any{it.id==hid&&!it.deleted&&!it.archived&&!it.paused}}){"Selecione hábitos ativos."}
+        }
+        d.quest(expeditionPhaseQuest(e,0,if(useIntegrated)emptyList() else habitIds,s,metric))
     }
-    suspend fun advanceExpedition(id:String)=change("Marco da floresta reconhecido"){
-        val s=read();val e=forestExpeditions.firstOrNull{it.id==id}?:error("Expedição desconhecida")
+    suspend fun advanceExpedition(id:String)=change("Marco regional reconhecido"){
+        val s=read();val e=expeditionById(id)?:error("Expedição desconhecida")
         require(expeditionAvailable(s,e)){"Uma etapa anterior precisa ser confirmada novamente pelo progresso real."}
         require(!expeditionComplete(s,e)){"A recompensa já foi resgatada."}
         val phase=expeditionPhaseIndex(s,e);val q=requireNotNull(s.quests.find{it.id==expeditionQuestId(e,phase)})
         require(questProgress(q,s)>=q.target){"A etapa ainda está em andamento."}
         val claimId="${q.id}@once"
         if(s.claims.none{it.id==claimId})d.claim(Claim(claimId,q.id,"once",xp=q.xp,coins=q.coins,target=q.target,metric=q.metric,habitIds=q.habitIds,period=2,sagaStart=q.sagaStart,sagaBaseline=q.sagaBaseline))
-        if(phase<e.phases.lastIndex){if(s.quests.none{it.id==expeditionQuestId(e,phase+1)})d.quest(expeditionPhaseQuest(e,phase+1,q.habitIds.split(','),s))}
+        if(phase<e.phases.lastIndex){
+            if(s.quests.none{it.id==expeditionQuestId(e,phase+1)}){
+                val ids=q.habitIds.split(',').filter{it.isNotBlank()}
+                d.quest(expeditionPhaseQuest(e,phase+1,ids,s,q.metric))
+            }
+        }
         else if(e.item.isNotBlank()){val item=shopItems.first{it.id==e.item};if(s.assets.none{it.id==item.id})d.asset(Asset(item.id,item.kind))}
     }
     suspend fun widgetComplete(habitId:String,date:String)=change("A chama ganhou força"){
@@ -227,7 +236,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         }
     }
     suspend fun buy(item:ShopItem)=change("${item.name} chegou ao inventário"){
-        require(shopItems.any{it==item} && item.id!="mist-clasp" && skillDefs.none{it.item==item.id}){"Este item é obtido por habilidade."};val s=read();require(s.assets.none{it.id==item.id}){"Você já possui este item."};require(s.rawCoins>=item.cost){"Fragmentos insuficientes."}
+        require(shopItems.any{it==item} && item.id !in expeditionRelicIds && skillDefs.none{it.item==item.id}){"Este item é obtido por exploração ou habilidade."};val s=read();require(s.assets.none{it.id==item.id}){"Você já possui este item."};require(s.rawCoins>=item.cost){"Fragmentos insuficientes."}
         d.reward(Reward("buy:${item.id}",coins=-item.cost.toLong(),label="Compra · ${item.name}"));d.asset(Asset(item.id,item.kind))
     }
     suspend fun equip(a:Asset)=change(if(a.equipped) "Item removido" else "Item equipado"){
@@ -781,7 +790,7 @@ fun validateState(s:GameState){
     s.records.forEach{r->require(s.habits.any{it.id==r.habitId} && r.id=="${r.habitId}@${r.date}" && r.target in 1..1000000 && r.progress in 0..r.target && r.attribute in 0..4 && r.type in 0..3 && r.xp in 0..1000000 && r.coins in 0..1000000 && r.points in 0..1000000 && r.date<=today());LocalDate.parse(r.date)}
     s.ledger.forEach{require(kotlin.math.abs(it.xp)<=1000000000L && kotlin.math.abs(it.coins)<=1000000000L && kotlin.math.abs(it.points)<=1000000000L && it.attribute in -1..4);LocalDate.parse(it.date)}
     s.quests.filter{it.sagaStart.isNotBlank()}.forEach{validateSaga(it,s);LocalDate.parse(it.sagaStart);parseBaseline(it.sagaBaseline)}
-    s.quests.forEach{require(it.sagaState in 0..3 && it.sagaStopped>=0);if(it.sagaEnd.isNotBlank())LocalDate.parse(it.sagaEnd);require(it.attribute in -1..4 && it.name.isNotBlank() && it.target in 1..1000000 && it.xp in 0..1000000 && it.coins in 0..1000000 && it.period in 0..3 && it.metric in 0..3);if(it.deadline.isNotEmpty())LocalDate.parse(it.deadline)}
+    s.quests.forEach{val maxMetric=if(isExpedition(it)) 6 else 3;require(it.sagaState in 0..3 && it.sagaStopped>=0);if(it.sagaEnd.isNotBlank())LocalDate.parse(it.sagaEnd);require(it.attribute in -1..4 && it.name.isNotBlank() && it.target in 1..1000000 && it.xp in 0..1000000 && it.coins in 0..1000000 && it.period in 0..3 && it.metric in 0..maxMetric);if(it.deadline.isNotEmpty())LocalDate.parse(it.deadline)}
     s.assets.forEach{a->
         require(a.memorySpeaker.length<=200 && a.memoryText.length<=10000)
         require(a.kind in setOf("building","outfit","frame","background","companion","decoration","trophy","head","accessory","weapon","skill","memory"))
@@ -795,7 +804,7 @@ fun validateState(s:GameState){
     s.achievements.forEach{a->require(achievementDefs.any{it.id==a.id});LocalDate.parse(a.date)}
     s.journal.forEach{require(it.title.length<=100000 && it.text.length<=1000000);LocalDate.parse(it.date)}
     s.routines.forEach{r->require(r.name.isNotBlank() && r.habitIds.split(',').all{id->s.habits.any{it.id==id}});LocalTime.parse(r.time)}
-    s.claims.forEach{c->if(c.sagaStart.isNotBlank()){LocalDate.parse(c.sagaStart);parseBaseline(c.sagaBaseline)};require(s.quests.any{it.id==c.questId} && c.id=="${c.questId}@${c.occurrence}" && c.xp in 0..1000000 && c.coins in 0..1000000 && c.target in 1..1000000 && c.metric in 0..3 && c.period in 0..3 && c.attribute in -1..4);LocalDate.parse(c.date);if(c.period!=2)LocalDate.parse(c.occurrence)}
+    s.claims.forEach{c->val maxMetric=if(expeditionRef(c.questId)!=null) 6 else 3;if(c.sagaStart.isNotBlank()){LocalDate.parse(c.sagaStart);parseBaseline(c.sagaBaseline)};require(s.quests.any{it.id==c.questId} && c.id=="${c.questId}@${c.occurrence}" && c.xp in 0..1000000 && c.coins in 0..1000000 && c.target in 1..1000000 && c.metric in 0..maxMetric && c.period in 0..3 && c.attribute in -1..4);LocalDate.parse(c.date);if(c.period!=2)LocalDate.parse(c.occurrence)}
     require(s.plans.size<=200000 && s.focusSessions.size<=200000)
     distinct(s.plans.map{it.id});distinct(s.focusSessions.map{it.id})
     s.plans.forEach{p->LocalDate.parse(p.date);require(p.id=="${p.habitId}@${p.date}"&&s.habits.any{it.id==p.habitId&&p.date>=it.created})}

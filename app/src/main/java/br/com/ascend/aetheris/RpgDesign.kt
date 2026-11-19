@@ -1,6 +1,10 @@
 package br.com.ascend.aetheris
 
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.calculatePan
+import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.material3.*
@@ -10,10 +14,16 @@ import androidx.compose.ui.draw.*
 import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.drawscope.*
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.*
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import kotlin.math.*
 
@@ -34,13 +44,26 @@ val Sepia=Color(0xFF29251E)
         drawImage(art,srcOffset=IntOffset(index%3*cellWidth+(cellWidth-sourceWidth)/2,index/3*cellHeight+(cellHeight-sourceHeight)/2),srcSize=IntSize(sourceWidth,sourceHeight),dstSize=IntSize(size.width.toInt().coerceAtLeast(1),size.height.toInt().coerceAtLeast(1)),filterQuality=FilterQuality.Medium)
     }
 }
+
+private val regionalRelicAtlasIndex = mapOf(
+ "eternal-memory-medallion" to 0,
+ "firmament-compass" to 1,
+ "scribes-ring" to 2,
+ "boreal-vigil-brooch" to 3
+)
+
 @Composable fun RelicArt(kind:String,color:Color,modifier:Modifier=Modifier,itemId:String?=null,dim:Boolean=false){
     val index=when(kind){"head"->0;"outfit"->1;"accessory"->2;"weapon"->3;"companion"->when(itemId){"lyra"->5;"ignis"->6;else->4};"frame"->7;else->8}
     val variant=when(itemId){"will-helm"->0;"armor"->1;"ember-amulet"->2;"dawn-outfit"->3;"rune-frame"->4;"night"->5;"lantern"->6;"craft-blade"->7;"traveler-helm"->8;else->null}
-    // 1.6.9.15: niches are lit from above like a stone alcove; empty niches keep a clearly legible carved silhouette (.66f alpha + cold key light).
+    val realmRelicCell = itemId?.let { regionalRelicAtlasIndex[it] }
+    // 1.6.9.15 + 1.7.2: niches are lit from above like a stone alcove; regional relics sample realm_relics_atlas (2x2).
     Box(modifier.size(70.dp).clip(CutCornerShape(3.dp)).background(Brush.verticalGradient(listOf(Color(0xFF2A3036),Color(0xFF131618),Color(0xFF0A0C0D))))){
         Box(Modifier.matchParentSize().padding(3.dp).alpha(if(dim).66f else 1f)){
-            if(itemId=="mist-clasp")ArtTile(R.drawable.forest_atlas,8,3,Modifier.matchParentSize()) else ArtTile(if(variant!=null)R.drawable.relic_variants else R.drawable.relic_atlas,variant?:index,3,Modifier.matchParentSize())
+            when {
+                realmRelicCell != null -> AtlasCell(R.drawable.realm_relics_atlas, realmRelicCell, 2, 2, Modifier.matchParentSize())
+                itemId=="mist-clasp" -> ArtTile(R.drawable.forest_atlas,8,3,Modifier.matchParentSize())
+                else -> ArtTile(if(variant!=null)R.drawable.relic_variants else R.drawable.relic_atlas,variant?:index,3,Modifier.matchParentSize())
+            }
         }
         val tier=when(color){Gold->3;Violet->2;Blue,Green->1;else->0}
         ArtifactFrame(Modifier.matchParentSize(),rarity=tier)
@@ -77,20 +100,207 @@ val Sepia=Color(0xFF29251E)
     }
 }
 
+@Composable fun regionStateColor(state: RegionAtlasState): Color = when (state) {
+ RegionAtlasState.Locked -> Color(0xFF8B949E)
+ RegionAtlasState.Revealed -> Blue
+ RegionAtlasState.Available -> Gold
+ RegionAtlasState.InProgress -> Blue
+ RegionAtlasState.Completed -> Green
+ RegionAtlasState.NoInteractiveYet -> Violet
+}
+
+/**
+ * 1.7.2 — Atlas de Aetheris 2.0: interactive Nordic cartography with bounded pinch-zoom (1.0x–2.4x),
+ * clamped pan (zero blank void), accessible +/-/Centralizar controls, synchronized markers, and
+ * 6 clearly differentiated region states. Passes single-finger vertical scrolls through when zoom == 1f.
+ */
 @Composable fun AetherisMap(s:GameState,selected:Int,onSelect:(Int)->Unit){
     val xs=listOf(.24f,.72f,.27f,.73f,.26f,.69f);val ys=listOf(.78f,.66f,.49f,.36f,.23f,.12f)
-    val labels=listOf("Despertar","Bosque","Arquivo","Montanhas","Lago","Cidadela")
-    BoxWithConstraints(Modifier.fillMaxWidth().aspectRatio(2f/3f).clip(CutCornerShape(6.dp)).border(1.dp,OldBronze,CutCornerShape(6.dp))){
-        val mapWidth=maxWidth;val mapHeight=maxHeight
-        Image(painterResource(R.drawable.nordic_atlas),null,Modifier.matchParentSize(),contentScale=ContentScale.FillBounds)
-        Canvas(Modifier.matchParentSize()){
-            regions.indices.filter{s.level<regionLevels[it]}.forEach{i->val c=Offset(size.width*xs[i],size.height*ys[i]);val r=size.width*.23f;drawCircle(Brush.radialGradient(listOf(Color(0xFFB7C3CC).copy(alpha=.16f),Color.Transparent),c,r),r,c)}
+    val labels=listOf("Despertar","Bosque","Biblioteca","Montanhas","Santuário","Fortaleza")
+    var zoom by remember{mutableFloatStateOf(1f)}
+    var offset by remember{mutableStateOf(Offset.Zero)}
+    var viewportSize by remember{mutableStateOf(IntSize.Zero)}
+
+    fun clampOffset(candidate: Offset, targetZoom: Float): Offset {
+        if (targetZoom <= 1.01f || viewportSize.width <= 0 || viewportSize.height <= 0) return Offset.Zero
+        val maxX = ((targetZoom - 1f) * viewportSize.width) / 2f
+        val maxY = ((targetZoom - 1f) * viewportSize.height) / 2f
+        return Offset(candidate.x.coerceIn(-maxX, maxX), candidate.y.coerceIn(-maxY, maxY))
+    }
+
+    fun applyZoom(newZoom: Float, panDelta: Offset = Offset.Zero) {
+        val clampedZoom = newZoom.coerceIn(1f, 2.4f)
+        zoom = clampedZoom
+        offset = clampOffset(offset + panDelta, clampedZoom)
+    }
+
+    Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
+        // Accessible zoom & recenter controls (all >= 48dp touch targets)
+        Row(
+            Modifier.fillMaxWidth().testTag("atlas_controls"),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RealmOrnament(5, size = 26.dp)
+            Text(
+                "Zoom ${(zoom * 100).toInt()}%",
+                color = Muted,
+                fontSize = 11.sp,
+                modifier = Modifier.weight(1f)
+            )
+            SagaButton(
+                text = "−",
+                onClick = { applyZoom(zoom - 0.35f) },
+                enabled = zoom > 1.01f,
+                style = VikingButtonStyle.CompactoRunico,
+                modifier = Modifier.widthIn(min = 48.dp).semantics { contentDescription = "Reduzir mapa" }
+            )
+            SagaButton(
+                text = "Centralizar",
+                onClick = { zoom = 1f; offset = Offset.Zero },
+                enabled = zoom > 1.01f || offset != Offset.Zero,
+                style = VikingButtonStyle.CompactoRunico,
+                modifier = Modifier.semantics { contentDescription = "Centralizar mapa" }
+            )
+            SagaButton(
+                text = "+",
+                onClick = { applyZoom(zoom + 0.35f) },
+                enabled = zoom < 2.39f,
+                style = VikingButtonStyle.CompactoRunico,
+                modifier = Modifier.widthIn(min = 48.dp).semantics { contentDescription = "Ampliar mapa" }
+            )
         }
-        regions.forEachIndexed{i,name->val open=s.level>=regionLevels[i];val chosen=selected==i
-            Column(Modifier.offset(x=mapWidth*xs[i]-42.dp,y=mapHeight*ys[i]-28.dp).width(84.dp).heightIn(min=56.dp).clickable(onClickLabel="Explorar $name"){onSelect(i)}.semantics(mergeDescendants=true){contentDescription="$name, ${if(open)"revelada" else "nível ${regionLevels[i]}"}"},horizontalAlignment=Alignment.CenterHorizontally){
-                RegionStone(i,open,chosen)
-                if(i==1&&forestProgress(s)>0)Text("${forestProgress(s)}% · trilha",color=WornIvory,fontSize=9.sp)
-                Text(if(open)labels[i] else "Nível ${regionLevels[i]}",Modifier.background(Color(0xFF0A1019).copy(alpha=.74f),CutCornerShape(3.dp)).border(.6.dp,if(chosen)Gold.copy(alpha=.7f) else if(open)OldBronze.copy(alpha=.45f) else ColdIron.copy(alpha=.3f),CutCornerShape(3.dp)).padding(horizontal=6.dp,vertical=2.dp),color=if(open)WornIvory else Color(0xFFBDC7D3),fontSize=10.sp)
+
+        BoxWithConstraints(
+            Modifier
+                .fillMaxWidth()
+                .aspectRatio(2f / 3f)
+                .clip(CutCornerShape(6.dp))
+                .border(1.2.dp, OldBronze.copy(alpha = .85f), CutCornerShape(6.dp))
+                .testTag("atlas_viewport")
+                .onSizeChanged { viewportSize = it }
+                .pointerInput(Unit) {
+                    awaitEachGesture {
+                        awaitFirstDown(requireUnconsumed = false)
+                        do {
+                            val event = awaitPointerEvent()
+                            val pointers = event.changes.count { it.pressed }
+                            if (pointers >= 2) {
+                                val zChange = event.calculateZoom()
+                                val panChange = event.calculatePan()
+                                if (zChange != 1f || panChange != Offset.Zero) {
+                                    applyZoom(zoom * zChange, panChange)
+                                    event.changes.forEach { if (it.positionChanged()) it.consume() }
+                                }
+                            } else if (zoom > 1.01f && pointers == 1) {
+                                val panChange = event.calculatePan()
+                                if (panChange != Offset.Zero) {
+                                    offset = clampOffset(offset + panChange, zoom)
+                                    event.changes.forEach { if (it.positionChanged()) it.consume() }
+                                }
+                            }
+                        } while (event.changes.any { it.pressed })
+                    }
+                }
+        ) {
+            val mapWidth = maxWidth
+            val mapHeight = maxHeight
+            Box(
+                Modifier
+                    .matchParentSize()
+                    .graphicsLayer {
+                        scaleX = zoom
+                        scaleY = zoom
+                        translationX = offset.x
+                        translationY = offset.y
+                    }
+            ) {
+                Image(painterResource(R.drawable.nordic_atlas), null, Modifier.matchParentSize(), contentScale = ContentScale.FillBounds)
+                Canvas(Modifier.matchParentSize()) {
+                    // Subtle carved cartographic trails linking adjacent regions
+                    for (idx in 0 until regions.lastIndex) {
+                        val a = Offset(size.width * xs[idx], size.height * ys[idx])
+                        val b = Offset(size.width * xs[idx + 1], size.height * ys[idx + 1])
+                        val openEdge = s.level >= regionLevels[idx + 1]
+                        drawLine(
+                            color = (if (openEdge) Color(0xFFD9B878) else Color(0xFF9AA39D)).copy(alpha = if (openEdge) .42f else .18f),
+                            start = a,
+                            end = b,
+                            strokeWidth = 1.6.dp.toPx(),
+                            pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 8f), 0f)
+                        )
+                    }
+                    // Fog over locked regions; subtle warm halo over completed regions
+                    regions.indices.forEach { i ->
+                        val c = Offset(size.width * xs[i], size.height * ys[i])
+                        val st = regionAtlasState(s, i)
+                        if (st == RegionAtlasState.Locked) {
+                            val r = size.width * .22f
+                            drawCircle(Brush.radialGradient(listOf(Color(0xFFB7C3CC).copy(alpha = .22f), Color.Transparent), c, r), r, c)
+                        } else if (st == RegionAtlasState.Completed) {
+                            val r = size.width * .16f
+                            drawCircle(Brush.radialGradient(listOf(Color(0xFFA8B69A).copy(alpha = .24f), Color.Transparent), c, r), r, c)
+                        } else if (selected == i) {
+                            val r = size.width * .17f
+                            drawCircle(Brush.radialGradient(listOf(Color(0xFFC4A36A).copy(alpha = .26f), Color.Transparent), c, r), r, c)
+                        }
+                    }
+                }
+                regions.forEachIndexed { i, name ->
+                    val open = s.level >= regionLevels[i]
+                    val chosen = selected == i
+                    val st = regionAtlasState(s, i)
+                    val stColor = regionStateColor(st)
+                    val prog = when (i) {
+                        0 -> s.assets.filter { it.kind == "building" }.sumOf { it.stage } * 10
+                        1, 2, 3 -> regionProgress(s, i)
+                        else -> 0
+                    }
+                    Column(
+                        Modifier
+                            .offset(x = mapWidth * xs[i] - 46.dp, y = mapHeight * ys[i] - 30.dp)
+                            .width(92.dp)
+                            .heightIn(min = 58.dp)
+                            .clickable(onClickLabel = "Explorar $name") { onSelect(i) }
+                            .semantics(mergeDescendants = true) {
+                                // Preserves exact legacy contentDescription contract for automated tests + TalkBack
+                                contentDescription = "$name, ${if (open) "revelada" else "nível ${regionLevels[i]}"}"
+                            },
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Box(contentAlignment = Alignment.TopEnd) {
+                            RegionStone(i, open, chosen)
+                            Box(
+                                Modifier
+                                    .background(Color(0xFF0A1018).copy(alpha = .88f), CircleShape)
+                                    .border(.8.dp, stColor, CircleShape)
+                                    .padding(horizontal = 4.dp, vertical = 1.dp)
+                            ) {
+                                Text(st.symbol, color = stColor, fontSize = 8.sp, lineHeight = 10.sp)
+                            }
+                        }
+                        if (i in 1..3 && prog > 0) {
+                            Text(
+                                "$prog% · ${if (i == 1) "trilha" else if (i == 2) "acervo" else "cumes"}",
+                                color = WornIvory,
+                                fontSize = 9.sp,
+                                maxLines = 1
+                            )
+                        }
+                        Text(
+                            if (open) labels[i] else "Nível ${regionLevels[i]}",
+                            Modifier
+                                .background(Color(0xFF0A1019).copy(alpha = .82f), CutCornerShape(3.dp))
+                                .border(if (chosen) 1.dp else .6.dp, if (chosen) Gold else stColor.copy(alpha = .65f), CutCornerShape(3.dp))
+                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                            color = if (open) WornIvory else Color(0xFFBDC7D3),
+                            fontSize = 10.sp,
+                            fontWeight = if (chosen) FontWeight.SemiBold else FontWeight.Normal,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
             }
         }
     }

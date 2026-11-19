@@ -103,9 +103,17 @@ val achievementDefs=listOf(
     AchievementDef("mimir_first_rune","A Primeira Runa","Concluir sua primeira revisão nas Runas da Memória.","Comum","◈",1,coins=0),
     AchievementDef("mimir_ten_cards","Memória de Mímir","Revisar 10 flashcards distintos nas Runas da Memória.","Rara","❖",10,coins=0),
     AchievementDef("mimir_five_days","Guardião do Conhecimento","Revisar flashcards em 5 dias distintos.","Rara","☽",5,coins=0),
-    AchievementDef("mimir_sage","Sábio dos Reinos","Reunir 10 páginas e 3 ligações entre notas na Biblioteca de Mímir.","Épica","✦",1,coins=0))
+    AchievementDef("mimir_sage","Sábio dos Reinos","Reunir 10 páginas e 3 ligações entre notas na Biblioteca de Mímir.","Épica","✦",1,coins=0),
+    AchievementDef("library_portico","Abertura das Eras","Concluir O Primeiro Manuscrito na Biblioteca das Eras.","Rara","▤",1,coins=5),
+    AchievementDef("library_ages","Guardião das Eras","Restaurar a Biblioteca das Eras concluindo O Juramento da Sabedoria.","Épica","◈",1,coins=10),
+    AchievementDef("mountains_trail","Passo de Ferro","Concluir O Caminho dos Antigos nas Montanhas da Disciplina.","Rara","◆",1,coins=5),
+    AchievementDef("mountains_discipline","Testemunha dos Cumes","Restaurar as Montanhas da Disciplina concluindo O Silêncio dos Cumes.","Épica","❖",1,coins=10))
 fun achievementProgress(a: AchievementDef,s: GameState): Long = when(a.id){
     "forest"->if(expeditionComplete(s,forestExpeditions.last()))1 else 0
+    "library_portico"->if(expeditionComplete(s,libraryExpeditions.first()))1 else 0
+    "library_ages"->if(expeditionComplete(s,libraryExpeditions.last()))1 else 0
+    "mountains_trail"->if(expeditionComplete(s,mountainsExpeditions.first()))1 else 0
+    "mountains_discipline"->if(expeditionComplete(s,mountainsExpeditions.last()))1 else 0
     "first","hundred"->s.records.count{it.complete}.toLong()
     "five","fifty"->s.level.toLong()
     "study"->s.records.filter{it.type==2 && it.attribute==0}.sumOf{it.progress.toLong()}
@@ -138,6 +146,10 @@ val shopItems=listOf(
     ShopItem("corvus","Corvus · Corvo Arcano","companion",100,"Observa os caminhos que a névoa tenta esconder.","✦"),
     ShopItem("ignis","Ignis · Dragão Jovem","companion",150,"Guarda uma brasa para os dias frios.","✺"),
     ShopItem("mist-clasp","Broche da Vigília","accessory",0,"Ferro, bronze e uma pedra azul. O fecho recebido ao atravessar as três provações do Guardião da Névoa.","◈"),
+    ShopItem("eternal-memory-medallion","Medalhão da Memória Eterna","accessory",0,"Bronze entalhado e vidro boreal. Relíquia concedida ao selar O Juramento da Sabedoria na Biblioteca das Eras.","◈"),
+    ShopItem("firmament-compass","Bússola do Firmamento","accessory",0,"Aro de ferro forjado com agulha boreal. Relíquia recebida ao concluir O Silêncio dos Cumes nas Montanhas da Disciplina.","❖"),
+    ShopItem("scribes-ring","Anel dos Escribas","accessory",0,"Prata oxidada com entrelace nórdico. Relíquia recuperada no Acervo Submerso da Biblioteca das Eras.","◇"),
+    ShopItem("boreal-vigil-brooch","Broche da Vigília Boreal","accessory",0,"Fíbula nórdica de bronze e pedra gélida. Relíquia obtida ao reacender a Torre da Vigília nas Montanhas da Disciplina.","✦"),
     ShopItem("lantern","Lanterna do Regresso","decoration",30,"Uma luz na praça, à espera dos viajantes.","◇"))
 val buildings=listOf("A Biblioteca","A Forja","O Jardim","A Torre do Cronista","A Praça Central")
 val regions=listOf("Vila do Despertar","Floresta da Persistência","Biblioteca das Eras","Montanhas da Disciplina","Santuário do Equilíbrio","Fortaleza da Vontade")

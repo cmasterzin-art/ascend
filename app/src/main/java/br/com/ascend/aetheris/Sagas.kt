@@ -4,12 +4,22 @@ import java.time.LocalDate
 
 fun parseBaseline(value:String):Map<String,Int> = if(value.isBlank())emptyMap() else value.split(';').associate { val parts=it.split('=');require(parts.size==2);parts[0] to parts[1].toInt().also{v->require(v in 0..1000000)} }
 fun validateSaga(q:Quest,s:GameState){
-    require(q.name.isNotBlank()&&q.target in 1..1000000&&q.xp in 0..1000000&&q.coins in 0..1000000&&q.metric in listOf(0,1,3)){"Revise nome, meta, métrica e recompensas."}
-    val ids=q.habitIds.split(',');require(ids.isNotEmpty()&&ids.distinct().size==ids.size&&ids.all{id->s.habits.any{it.id==id}}){"Selecione hábitos relacionados."}
+    val exp=isExpedition(q)
+    val allowedMetrics=if(exp) listOf(0,1,3,EXPEDITION_METRIC_FOCUS_SESSIONS,EXPEDITION_METRIC_FLASHCARD_DAYS,EXPEDITION_METRIC_PATH_TASKS) else listOf(0,1,3)
+    require(q.name.isNotBlank()&&q.target in 1..1000000&&q.xp in 0..1000000&&q.coins in 0..1000000&&q.metric in allowedMetrics){"Revise nome, meta, métrica e recompensas."}
+    if(q.metric in listOf(EXPEDITION_METRIC_FOCUS_SESSIONS,EXPEDITION_METRIC_FLASHCARD_DAYS,EXPEDITION_METRIC_PATH_TASKS)){
+        require(exp){"Métrica exclusiva de expedições regionais."}
+    }else{
+        val ids=q.habitIds.split(',').filter{it.isNotBlank()}
+        require(ids.isNotEmpty()&&ids.distinct().size==ids.size&&ids.all{id->s.habits.any{it.id==id}}){"Selecione hábitos relacionados."}
+    }
     if(q.deadline.isNotBlank()){LocalDate.parse(q.deadline);require(q.deadline>=(q.sagaStart.ifBlank{today()})){"O prazo deve ser posterior ao início."}}
 }
 fun sagaProgress(q:Quest,s:GameState):Long{
     if(q.sagaState in listOf(1,3))return q.sagaStopped
+    if(q.metric in listOf(EXPEDITION_METRIC_FOCUS_SESSIONS,EXPEDITION_METRIC_FLASHCARD_DAYS,EXPEDITION_METRIC_PATH_TASKS)){
+        return expeditionMetricProgress(q,s)
+    }
     val baseline=parseBaseline(q.sagaBaseline);val ids=q.habitIds.split(',').toSet()
     return s.records.filter{it.habitId in ids&&it.date>=q.sagaStart&&(q.deadline.isBlank()||it.date<=q.deadline)}.sumOf{r->
         val prior=baseline[r.id]?:0;val delta=(r.progress-prior).coerceAtLeast(0).toLong()
@@ -48,7 +58,7 @@ fun narrativeCandidates(s:GameState):List<NarrativeLine> = buildList{
  if(s.quests.any{isPersonalSaga(it)&&it.sagaState==0&&it.metric==1})add(NarrativeLine("darian-saga","Darian · Ferreiro","Marquei as horas na madeira do banco. Não para apressar o trabalho. Para saber quanto dele ficou aqui quando eu for embora."))
  if(chapterUnlocked(6,s))add(NarrativeLine("discovery-ione","O Cronista","Ione voltou com a margem do mapa molhada. Onde o rio mudou, ela desenhou duas linhas: uma para a água, outra para a lembrança."))
  if(s.achievements.any{it.id=="return"})add(NarrativeLine("seren-return","Seren · Guardiã do Jardim","As sementes ficaram sob a terra enquanto você esteve longe. Algumas esperaram. Outras encontraram seu próprio tempo."))
- forestExpeditions.forEach{e->if(expeditionComplete(s,e))add(NarrativeLine("expedition:${e.id}","O Cronista",e.consequence))}
+ allExpeditions.forEach{e->if(expeditionComplete(s,e)){val speaker=expeditionRegion(e).npc?.let{"${it.name} · ${it.role}"} ?: "O Cronista";add(NarrativeLine("expedition:${e.id}",speaker,e.consequence))}}
  s.paths.filter{it.state==3}.forEach{p->add(NarrativeLine("path-done:${p.id}","O Cronista","O caminho \"${p.name}\" alcançou seu marco final. Não foi uma promessa vaga; houve passos reais entre a partida e a chegada."))}
  if(s.records.any{it.complete})add(NarrativeLine("first","O Cronista","Encontrei terra na soleira. Até ontem, só havia poeira. Alguém saiu e voltou; é o primeiro fato deste volume."))
 }

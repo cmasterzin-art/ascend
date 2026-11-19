@@ -12,8 +12,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.*
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable fun WorldScreen(s:GameState,vm:GameViewModel,onWeekly:()->Unit={},onMemories:()->Unit={},onRegion:(Int)->Unit={},onMimir:()->Unit={}){
     var tab by rememberSaveable{mutableIntStateOf(0)};var region by remember{mutableIntStateOf(0)};var chapter by remember{mutableStateOf<Int?>(null)};var restore by remember{mutableStateOf<Int?>(null)}
     val Gold=Gold;val Green=Green
@@ -29,7 +31,160 @@ import androidx.compose.ui.unit.*
                 val rev=regionLevels.count{it<=s.level}
                 Text("$rev de ${regions.size} ${if(rev==1)"região revelada" else "regiões reveladas"}",color=Blue,fontSize=12.sp)
                 AetherisMap(s,region,{region=it})
-                Column(Modifier.fillMaxWidth().padding(top=4.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){Eyebrow(if(s.level>=regionLevels[region])"Região revelada" else "Na névoa · nível ${regionLevels[region]}",if(s.level>=regionLevels[region])Gold else Muted);Text(regions[region],style=MaterialTheme.typography.headlineMedium);Text(regionDescriptions[region],color=Muted,fontSize=14.sp,lineHeight=22.sp);Text(if(region==1)"Exploração · ${forestProgress(s)}% · 3 locais" else "Expedições próprias: ainda não disponíveis",color=Blue,fontSize=12.sp);if(region==0){val stage=s.assets.filter{it.kind=="building"}.sumOf{it.stage};Meter(stage/10f,Green,slim=true);Text("$stage de 10 etapas recuperadas",color=Green,fontSize=12.sp);Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){Action("Explorar região",{onRegion(region)},Modifier.weight(1f),enabled=s.level>=regionLevels[region]);SagaButton("Visitar a vila",{tab=1},Modifier.weight(1f),secondary=true)}}else{val progress=(s.level.toFloat()/regionLevels[region]).coerceAtMost(1f);val rem=(regionLevels[region]-s.level).coerceAtLeast(0);Meter(progress,Blue,slim=true);Text(if(s.level>=regionLevels[region])"Região revelada. Seus marcos são registrados nas crônicas." else "${if(rem==1)"Falta 1 nível" else "Faltam $rem níveis"} para revelar esta região.",color=Muted,fontSize=12.sp);Action("Explorar região",{onRegion(region)},enabled=s.level>=regionLevels[region])}}
+                // 6-state visual legend
+                FlowRow(
+                    Modifier.fillMaxWidth().testTag("atlas_legend"),
+                    horizontalArrangement=Arrangement.spacedBy(8.dp),
+                    verticalArrangement=Arrangement.spacedBy(6.dp)
+                ){
+                    RegionAtlasState.entries.forEach{st->
+                        val col=regionStateColor(st)
+                        Row(
+                            Modifier
+                                .background(col.copy(alpha=.10f),CutCornerShape(3.dp))
+                                .border(.7.dp,col.copy(alpha=.45f),CutCornerShape(3.dp))
+                                .padding(horizontal=7.dp,vertical=3.dp),
+                            verticalAlignment=Alignment.CenterVertically,
+                            horizontalArrangement=Arrangement.spacedBy(4.dp)
+                        ){
+                            Text(st.symbol,color=col,fontSize=10.sp)
+                            Text(st.label,color=Ink,fontSize=11.sp)
+                        }
+                    }
+                }
+                // Selected region detail panel
+                val st=regionAtlasState(s,region)
+                val stColor=regionStateColor(st)
+                val explReg=explorableRegion(region)
+                val isOpen=s.level>=regionLevels[region]
+                Panel(accent=stColor){
+                    Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){
+                        if(explReg!=null) RealmOrnament(explReg.ornamentCell,size=38.dp)
+                        else RealmOrnament(if(region==0)5 else 4,size=34.dp)
+                        Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(2.dp)){
+                            Eyebrow(if(isOpen) st.label else "Na névoa · nível ${regionLevels[region]}",stColor)
+                            Text(regions[region],style=MaterialTheme.typography.headlineSmall)
+                        }
+                    }
+                    Text(regionDescriptions[region],color=Muted,fontSize=14.sp,lineHeight=22.sp)
+                    if(explReg!=null && explReg.distinctionNote.isNotBlank()){
+                        Text(explReg.distinctionNote,color=Blue,fontSize=12.sp,lineHeight=18.sp)
+                    }
+                    when{
+                        region==0->{
+                            val stage=s.assets.filter{it.kind=="building"}.sumOf{it.stage}
+                            Meter(stage/10f,Green,slim=true)
+                            Text("$stage de 10 etapas recuperadas na Vila do Despertar",color=Green,fontSize=12.sp)
+                            Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
+                                Action("Explorar região",{onRegion(region)},Modifier.weight(1f),enabled=isOpen)
+                                SagaButton("Visitar a vila",{tab=1},Modifier.weight(1f),secondary=true)
+                            }
+                        }
+                        explReg!=null->{
+                            val prog=regionProgress(s,region)
+                            val marks=regionConfirmedMarks(s,region)
+                            val total=regionTotalMarks(region)
+                            val rem=(explReg.unlockLevel-s.level).coerceAtLeast(0)
+                            Text(
+                                if(isOpen) "Exploração · $prog% · $marks de $total marcos · ${explReg.expeditions.size} locais"
+                                else "Nível ${explReg.unlockLevel} necessário · ${explReg.expeditions.size} locais exploráveis",
+                                color=if(isOpen) Blue else Muted,
+                                fontSize=12.sp
+                            )
+                            Meter(if(isOpen) prog/100f else (s.level.toFloat()/explReg.unlockLevel).coerceAtMost(1f),if(prog>=100) Green else Blue,slim=true)
+                            if(!isOpen){
+                                Text("${if(rem==1)"Falta 1 nível" else "Faltam $rem níveis"} para revelar esta região.",color=Muted,fontSize=12.sp)
+                            }else if(explReg.npc!=null){
+                                Text("Guia local: ${explReg.npc.name}, ${explReg.npc.role}.",color=Gold,fontSize=12.sp)
+                            }
+                            Action("Explorar região",{onRegion(region)},Modifier.fillMaxWidth(),enabled=isOpen)
+                        }
+                        else->{
+                            val progress=(s.level.toFloat()/regionLevels[region]).coerceAtMost(1f)
+                            val rem=(regionLevels[region]-s.level).coerceAtLeast(0)
+                            Text("Sem conteúdo interativo ainda · reservada para futuras crônicas.",color=Violet,fontSize=12.sp)
+                            Meter(progress,Violet,slim=true)
+                            Text(
+                                if(isOpen) "Região revelada no Atlas. Ainda não possui expedições próprias nesta versão."
+                                else "${if(rem==1)"Falta 1 nível" else "Faltam $rem níveis"} para revelar esta região.",
+                                color=Muted,
+                                fontSize=12.sp
+                            )
+                            Action("Explorar região",{onRegion(region)},Modifier.fillMaxWidth(),enabled=isOpen)
+                        }
+                    }
+                }
+                // Compact Exploration Journal
+                val journal=explorationJournal(s)
+                AetherSurface(SurfaceKind.Ceremonial){
+                    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+                        Eyebrow("Diário de Exploração",Gold)
+                        Text("${journal.totalConfirmedMarks}/${journal.totalAvailableMarks} marcos",color=Blue,fontSize=12.sp)
+                    }
+                    if(journal.activeExpeditions.isEmpty()){
+                        Text(
+                            journal.nextAvailable?.let{"Próxima expedição disponível: ${it.name} (${regions[it.regionIndex]})."}
+                                ?: if(journal.totalConfirmedMarks>=journal.totalAvailableMarks) "Todas as expedições exploráveis foram registradas no Salão das Memórias."
+                                else "Alcance o nível 3 para abrir a Floresta da Persistência, nível 5 para a Biblioteca das Eras e nível 8 para as Montanhas da Disciplina.",
+                            color=Muted,fontSize=13.sp,lineHeight=20.sp
+                        )
+                    }else{
+                        journal.activeExpeditions.take(3).forEach{(exp,phase,q)->
+                            val pr=questProgress(q,s).coerceAtMost(q.target.toLong())
+                            Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(4.dp)){
+                                Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){
+                                    Text("${exp.name} · ${exp.phases[phase].name}",fontSize=13.sp,color=Ink,modifier=Modifier.weight(1f))
+                                    Text("$pr/${q.target}",fontSize=12.sp,color=Gold)
+                                }
+                                Meter(pr.toFloat()/q.target.coerceAtLeast(1),Gold,slim=true)
+                            }
+                        }
+                    }
+                    journal.lastDiscovery?.let{(title,excerpt)->
+                        Hairline()
+                        Text("Última descoberta · $title",color=Green,fontSize=11.sp)
+                        Text(excerpt,color=Muted,fontSize=12.sp,lineHeight=18.sp)
+                    }
+                }
+                // Accessible Region List (full parity with map without needing gestures)
+                Column(Modifier.fillMaxWidth().testTag("atlas_accessible_list"),verticalArrangement=Arrangement.spacedBy(8.dp)){
+                    Eyebrow("Regiões de Aetheris · lista acessível",Muted)
+                    regions.forEachIndexed{i,name->
+                        val rState=regionAtlasState(s,i)
+                        val rColor=regionStateColor(rState)
+                        val rOpen=s.level>=regionLevels[i]
+                        val rProg=when(i){
+                            0->"${s.assets.filter{it.kind=="building"}.sumOf{it.stage}}/10 vila"
+                            1,2,3->"${regionProgress(s,i)}%"
+                            else->if(rOpen)"Sem conteúdo interativo ainda" else "Nível ${regionLevels[i]}"
+                        }
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .background(if(region==i) Gold.copy(alpha=.10f) else Surface.copy(alpha=.55f),CutCornerShape(4.dp))
+                                .border(if(region==i) 1.dp else .7.dp,if(region==i) Gold.copy(alpha=.65f) else ColdIron.copy(alpha=.35f),CutCornerShape(4.dp))
+                                .clickable{region=i}
+                                .padding(horizontal=12.dp,vertical=10.dp),
+                            verticalAlignment=Alignment.CenterVertically,
+                            horizontalArrangement=Arrangement.spacedBy(10.dp)
+                        ){
+                            Text(rState.symbol,color=rColor,fontSize=14.sp)
+                            Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(2.dp)){
+                                Text(name,fontSize=14.sp,color=if(region==i) Gold else Ink)
+                                Text("${rState.label} · $rProg",fontSize=11.sp,color=Muted)
+                            }
+                            if(rOpen){
+                                SagaButton(
+                                    text="Abrir",
+                                    onClick={region=i;onRegion(i)},
+                                    style=VikingButtonStyle.CompactoRunico
+                                )
+                            }else{
+                                Text("Nv. ${regionLevels[i]}",color=Muted,fontSize=11.sp)
+                            }
+                        }
+                    }
+                }
             }
             1->{Landscape(s,large=true);Eyebrow("Vila do Despertar");Text("Fragmentos restauram pedras. Seus hábitos devolvem sentido a elas.",color=Muted);buildings.forEachIndexed{i,name->val stage=s.assets.find{it.id=="building:$i"}?.stage?:0;Panel(accent=if(stage==2)Green else Gold){Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Text(name,style=MaterialTheme.typography.titleLarge);Text(listOf("▤","◆","♧","♜","◇")[i],color=Gold,fontSize=24.sp)};Crossfade(stage,animationSpec=tween(if(LocalAppearance.current.reducedMotion)0 else 450),label="restauração"){shown->BuildingScene(i,shown)};Text(listOf("Ruínas · portas fechadas e memórias dispersas.","Estrutura recuperada · a vida começa a voltar.","Restauração completa · uma nova luz na vila.")[stage],color=Muted,fontSize=13.sp);Meter(stage/2f,Green,slim=true);val dialogue=villagerDialogue(i,stage);Text(dialogue.first,color=Gold,fontSize=12.sp);Text("“${dialogue.second}”",fontFamily=androidx.compose.ui.text.font.FontFamily.Serif,fontSize=17.sp);if(i<3){val q=narrativeQuests[i];if(s.quests.none{it.id==q.id})SagaButton("Aceitar missão de ${dialogue.first.substringBefore(" ·")}",{vm.run{vm.repo.quest(q)}},Modifier.fillMaxWidth(),secondary=true)else Text("Missão no livro: ${q.name}",color=Muted,fontSize=12.sp)};if(stage<2)Action("Restaurar · ◈ ${(stage+1)*30}",{restore=i},enabled=s.coins>=(stage+1)*30,ceremonial=s.coins>=(stage+1)*30)else Eyebrow("Vida restaurada",Green)}}}
             2->{

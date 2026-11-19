@@ -100,8 +100,8 @@ class MainActivity:ComponentActivity(){var widgetHabit by mutableStateOf<String?
                         composable("mimir_review/{notebookId}"){back->FlashcardReviewScreen(back.arguments?.getString("notebookId")?:"",state,vm,{nav.popBackStack()})}
                         composable("character"){CharacterScreen(state,vm,{nav.navigate("settings")},{nav.navigate("journal")},{nav.navigate("memories")},{nav.navigate("portrait")},{nav.navigate("mimir")},{nav.navigate("mimir_review")},{nav.navigate("paths")})}
                         composable("region/{index}"){back->val index=back.arguments?.getString("index")?.toIntOrNull()?.takeIf{it in regions.indices}?:0;RegionScreen(index,state,{nav.navigate("location/$it")})}
-                        composable("location/{id}"){back->forestExpeditions.find{it.id==back.arguments?.getString("id")}?.let{e->LocationScreen(e,state,{nav.navigate("expedition/${e.id}")})}}
-                        composable("expedition/{id}"){back->forestExpeditions.find{it.id==back.arguments?.getString("id")}?.let{e->ExpeditionScreen(e,state,vm)}}
+                        composable("location/{id}"){back->expeditionById(back.arguments?.getString("id")?:"")?.let{e->LocationScreen(e,state,{nav.navigate("expedition/${e.id}")})}}
+                        composable("expedition/{id}"){back->expeditionById(back.arguments?.getString("id")?:"")?.let{e->ExpeditionScreen(e,state,vm)}}
                         composable("planner"){PlannerScreen(state,vm,{h,r->progress=h to r},{nav.navigate("path/$it")},{nav.navigate("inbox")},{nav.navigate("pending")},{pid,tid,lbl->pathFocus=Triple(pid,tid,lbl)})}
                         composable("analysis"){AnalysisScreen(state)}
                         composable("focus_history"){FocusHistoryScreen(state)}

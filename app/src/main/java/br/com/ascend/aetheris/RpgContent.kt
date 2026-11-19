@@ -22,9 +22,22 @@ val skillDefs=listOf(
     SkillDef("art_runes","Entalhe Rúnico","Artífice",6,"art_forge","","Refina o ofício pessoal com precisão estética e memória organizada.",heroClass=4,atlasIndex=9,effectSummary="Ornamento entalhado no perfil e título 'Mestre do Entalhe'.",titleGrant="Mestre do Entalhe")
 )
 fun skillPoints(s:GameState)=(s.level/3-s.assets.count{it.kind=="skill"}).coerceAtLeast(0)
-fun rarity(item:ShopItem)=when(item.id){"mist-clasp"->3;"will-helm","dawn-outfit"->4;"ignis","rune-frame","craft-blade"->3;"frame","corvus","armor","scholar-bg"->2;"cloak","lyra","ember-amulet"->1;else->0}
+fun rarity(item:ShopItem)=when(item.id){
+ "eternal-memory-medallion","firmament-compass","will-helm","dawn-outfit"->4
+ "mist-clasp","scribes-ring","boreal-vigil-brooch","ignis","rune-frame","craft-blade"->3
+ "frame","corvus","armor","scholar-bg"->2
+ "cloak","lyra","ember-amulet"->1
+ else->0
+}
 val rarityNames=listOf("Comum","Incomum","Raro","Épico","Lendário")
-fun itemOrigin(item:ShopItem)=if(item.id=="mist-clasp")"Expedição: A Vigília da Floresta" else skillDefs.find{it.item==item.id}?.let{"Habilidade: ${it.name}"}?:"Mercador · ${item.cost} Fragmentos"
+fun itemOrigin(item:ShopItem)=when(item.id){
+ "mist-clasp"->"Expedição: A Vigília da Floresta · Floresta da Persistência"
+ "scribes-ring"->"Expedição: As Páginas do Silêncio · Biblioteca das Eras"
+ "eternal-memory-medallion"->"Expedição: O Juramento da Sabedoria · Biblioteca das Eras"
+ "boreal-vigil-brooch"->"Expedição: A Chama que Não Cessa · Montanhas da Disciplina"
+ "firmament-compass"->"Expedição: O Silêncio dos Cumes · Montanhas da Disciplina"
+ else->skillDefs.find{it.item==item.id}?.let{"Habilidade: ${it.name}"}?:"Mercador · ${item.cost} Fragmentos"
+}
 val equipmentSlots=listOf("head" to "Cabeça","outfit" to "Corpo / capa","accessory" to "Acessório","weapon" to "Arma cosmética","companion" to "Companheiro","frame" to "Moldura","background" to "Fundo")
 fun specializationTitles(s:GameState):List<String> = buildList {
     activeSpecialization(s)?.let { add(it.titleGrant) }
@@ -32,6 +45,8 @@ fun specializationTitles(s:GameState):List<String> = buildList {
     if(s.achievements.any{it.id=="mimir_five_days"}) add("Guardião do Conhecimento")
     if(s.achievements.any{it.id=="mimir_sage"}) add("Sábio dos Reinos")
     if(expeditionComplete(s,forestExpeditions.last()))add("Testemunha das Raízes")
+    if(expeditionComplete(s,libraryExpeditions.last()))add("Guardião das Eras")
+    if(expeditionComplete(s,mountainsExpeditions.last()))add("Testemunha dos Cumes")
     val names=listOf("Aprendiz das Runas","Caminhante de Ferro","Guardião dos Rituais","Voz do Santuário","Mãos da Aurora")
     names.forEachIndexed{i,n->if(1+s.points(i)/50>=10)add(n)}
     if(s.level>=50)add("Lenda do Primeiro Sol")
