@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.OnboardingTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:11:52" hostname="runnervmccnms" time="21.962">
+<testsuite name="br.com.ascend.aetheris.OnboardingTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-19T02:05:11" hostname="runnervmccnms" time="18.835">
   <properties/>
-  <testcase name="inspectNordicEquipmentVillageBossAndChronicle" classname="br.com.ascend.aetheris.OnboardingTest" time="8.036"/>
-  <testcase name="inspectRpgScreensAndEquipPurchasedRelic" classname="br.com.ascend.aetheris.OnboardingTest" time="3.241"/>
-  <testcase name="narrowScreenWithLargeTextKeepsNavigationAndEquipmentUsable" classname="br.com.ascend.aetheris.OnboardingTest" time="2.012"/>
-  <testcase name="planAndRemoveRestThroughCalendar" classname="br.com.ascend.aetheris.OnboardingTest" time="1.622"/>
-  <testcase name="customHabitsPreserveHistoricalXpAndUndoThroughInterface" classname="br.com.ascend.aetheris.OnboardingTest" time="3.214"/>
-  <testcase name="createMageAndRecordStudyThroughInterface" classname="br.com.ascend.aetheris.OnboardingTest" time="2.437"/>
-  <testcase name="lightThemeCanBeSelectedAndPersistsLocally" classname="br.com.ascend.aetheris.OnboardingTest" time="1.398"/>
+  <testcase name="inspectNordicEquipmentVillageBossAndChronicle" classname="br.com.ascend.aetheris.OnboardingTest" time="8.139"/>
+  <testcase name="inspectRpgScreensAndEquipPurchasedRelic" classname="br.com.ascend.aetheris.OnboardingTest" time="2.359"/>
+  <testcase name="narrowScreenWithLargeTextKeepsNavigationAndEquipmentUsable" classname="br.com.ascend.aetheris.OnboardingTest" time="1.501"/>
+  <testcase name="planAndRemoveRestThroughCalendar" classname="br.com.ascend.aetheris.OnboardingTest" time="1.629"/>
+  <testcase name="customHabitsPreserveHistoricalXpAndUndoThroughInterface" classname="br.com.ascend.aetheris.OnboardingTest" time="2.776"/>
+  <testcase name="createMageAndRecordStudyThroughInterface" classname="br.com.ascend.aetheris.OnboardingTest" time="1.363"/>
+  <testcase name="lightThemeCanBeSelectedAndPersistsLocally" classname="br.com.ascend.aetheris.OnboardingTest" time="1.067"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

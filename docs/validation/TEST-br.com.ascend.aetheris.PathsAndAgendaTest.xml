@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.PathsAndAgendaTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:12:14" hostname="runnervmccnms" time="1.696">
+<testsuite name="br.com.ascend.aetheris.PathsAndAgendaTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-11-19T02:05:30" hostname="runnervmccnms" time="0.528">
   <properties/>
-  <testcase name="schemaSixMigrationPreservesDataAndSupportsPathsAndAgenda" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.375"/>
-  <testcase name="backupNineRoundTripCompatibilityAndAtomicRollback" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.396"/>
-  <testcase name="agendaTimeBlocksEventsInboxTriageAndPendingBucketsWorkAtomically" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.447"/>
-  <testcase name="pathStagesTasksSubtasksDuplicateMoveAndDeletePreserveConsistency" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.334"/>
-  <testcase name="habitLinksAndProjectFocusDoNotDuplicateOrInventXp" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.143"/>
+  <testcase name="schemaSixMigrationPreservesDataAndSupportsPathsAndAgenda" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.066"/>
+  <testcase name="triageAndStageEditsRejectInvalidWritesWithoutRemovingData" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.035"/>
+  <testcase name="backupNineRoundTripCompatibilityAndAtomicRollback" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.074"/>
+  <testcase name="agendaTimeBlocksEventsInboxTriageAndPendingBucketsWorkAtomically" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.118"/>
+  <testcase name="pathStagesTasksSubtasksDuplicateMoveAndDeletePreserveConsistency" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.073"/>
+  <testcase name="habitLinksAndProjectFocusDoNotDuplicateOrInventXp" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.045"/>
+  <testcase name="activeSessionCannotOverwriteHistoryOnBackupRestore" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.025"/>
+  <testcase name="closingWithOpenTasksRequiresCurrentConfirmationAndReopeningRestoresPending" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.038"/>
+  <testcase name="activeFocusKeepsItsSnapshotAcrossEditsMovesAndDeletes" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.053"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

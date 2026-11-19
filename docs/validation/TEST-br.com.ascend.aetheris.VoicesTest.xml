@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.VoicesTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-18T14:12:56" hostname="runnervmccnms" time="0.533">
+<testsuite name="br.com.ascend.aetheris.VoicesTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-19T02:06:30" hostname="runnervmccnms" time="0.266">
   <properties/>
-  <testcase name="realV4MigrationAndLegacyBackupPreserveProgress" classname="br.com.ascend.aetheris.VoicesTest" time="0.083"/>
-  <testcase name="weeklySummaryUsesCivilWeekAndCorrections" classname="br.com.ascend.aetheris.VoicesTest" time="0.031"/>
-  <testcase name="recognizedConversationsAreSnapshotsAndMemoriesDoNotPay" classname="br.com.ascend.aetheris.VoicesTest" time="0.063"/>
-  <testcase name="soundPolicyAndLocalPreferences" classname="br.com.ascend.aetheris.VoicesTest" time="0.16"/>
-  <testcase name="completedArchiveKeepsSingleClaimAndNewAttemptExcludesOldWork" classname="br.com.ascend.aetheris.VoicesTest" time="0.092"/>
-  <testcase name="abandonedSagaFreezesAndCannotPayThenRestartsFresh" classname="br.com.ascend.aetheris.VoicesTest" time="0.07"/>
-  <testcase name="weeklySagasAndRestDaysUseRecordedDates" classname="br.com.ascend.aetheris.VoicesTest" time="0.034"/>
+  <testcase name="realV4MigrationAndLegacyBackupPreserveProgress" classname="br.com.ascend.aetheris.VoicesTest" time="0.044"/>
+  <testcase name="weeklySummaryUsesCivilWeekAndCorrections" classname="br.com.ascend.aetheris.VoicesTest" time="0.02"/>
+  <testcase name="recognizedConversationsAreSnapshotsAndMemoriesDoNotPay" classname="br.com.ascend.aetheris.VoicesTest" time="0.028"/>
+  <testcase name="soundPolicyAndLocalPreferences" classname="br.com.ascend.aetheris.VoicesTest" time="0.08"/>
+  <testcase name="completedArchiveKeepsSingleClaimAndNewAttemptExcludesOldWork" classname="br.com.ascend.aetheris.VoicesTest" time="0.038"/>
+  <testcase name="abandonedSagaFreezesAndCannotPayThenRestartsFresh" classname="br.com.ascend.aetheris.VoicesTest" time="0.036"/>
+  <testcase name="weeklySagasAndRestDaysUseRecordedDates" classname="br.com.ascend.aetheris.VoicesTest" time="0.019"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
