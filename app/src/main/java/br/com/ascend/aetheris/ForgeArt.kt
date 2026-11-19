@@ -91,10 +91,15 @@ internal val preservedPictorialArchive=intArrayOf(R.drawable.forge_iron,R.drawab
   Text("$level",color=if(LocalAppearance.current.minimal)Ink else Color(0xFFE7DECB),fontFamily=SagaFont,fontSize=17.sp)
  }
 }
-@Composable fun ForgePortrait(s:GameState,size:Dp){
- Box(Modifier.width(size+12.dp).height(size*1.5f+18.dp),contentAlignment=Alignment.Center){
-  Avatar(s.player!!,s,size)
-  if(!LocalAppearance.current.minimal)Image(painterResource(R.drawable.north_frame),null,Modifier.matchParentSize(),contentScale=ContentScale.Fit)
+@Composable fun ForgePortrait(s:GameState,size:Dp,previewOverrides:Map<String,String?>?=null,previewSpecializationId:String?=null){
+ Box(Modifier.width(size+8.dp).height(size*1.5f+12.dp),contentAlignment=Alignment.Center){
+  LivingHeroPortrait(
+   p = s.player!!,
+   s = s,
+   size = size,
+   previewOverrides = previewOverrides,
+   previewSpecializationId = previewSpecializationId
+  )
  }
 }
 

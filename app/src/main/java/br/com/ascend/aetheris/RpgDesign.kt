@@ -52,17 +52,76 @@ private val regionalRelicAtlasIndex = mapOf(
  "boreal-vigil-brooch" to 3
 )
 
+@Composable fun AtlasSubCell(
+    resId: Int,
+    index: Int,
+    columns: Int,
+    rows: Int,
+    cropLeft: Float,
+    cropTop: Float,
+    cropRight: Float,
+    cropBottom: Float,
+    modifier: Modifier = Modifier
+) {
+    val bmp = ImageBitmap.imageResource(resId)
+    val safe = index.coerceIn(0, (columns * rows - 1).coerceAtLeast(0))
+    val col = safe % columns
+    val row = safe / columns
+    Canvas(modifier) {
+        val cw = bmp.width / columns
+        val ch = bmp.height / rows
+        val sx = col * cw + (cw * cropLeft).toInt()
+        val sy = row * ch + (ch * cropTop).toInt()
+        val sw = ((cropRight - cropLeft) * cw).toInt().coerceAtLeast(1)
+        val sh = ((cropBottom - cropTop) * ch).toInt().coerceAtLeast(1)
+        val aspect = sw.toFloat() / sh.toFloat()
+        val dstW: Int
+        val dstH: Int
+        if (size.width / size.height.coerceAtLeast(1f) > aspect) {
+            dstH = size.height.toInt().coerceAtLeast(1)
+            dstW = (dstH * aspect).toInt().coerceAtLeast(1)
+        } else {
+            dstW = size.width.toInt().coerceAtLeast(1)
+            dstH = (dstW / aspect).toInt().coerceAtLeast(1)
+        }
+        val dx = ((size.width - dstW) / 2f).toInt()
+        val dy = ((size.height - dstH) / 2f).toInt()
+        drawImage(
+            image = bmp,
+            srcOffset = IntOffset(sx, sy),
+            srcSize = IntSize(sw, sh),
+            dstOffset = IntOffset(dx, dy),
+            dstSize = IntSize(dstW, dstH),
+            filterQuality = FilterQuality.Medium
+        )
+    }
+}
+
 @Composable fun RelicArt(kind:String,color:Color,modifier:Modifier=Modifier,itemId:String?=null,dim:Boolean=false){
     val index=when(kind){"head"->0;"outfit"->1;"accessory"->2;"weapon"->3;"companion"->when(itemId){"lyra"->5;"ignis"->6;else->4};"frame"->7;else->8}
     val variant=when(itemId){"will-helm"->0;"armor"->1;"ember-amulet"->2;"dawn-outfit"->3;"rune-frame"->4;"night"->5;"lantern"->6;"craft-blade"->7;"traveler-helm"->8;else->null}
     val realmRelicCell = itemId?.let { regionalRelicAtlasIndex[it] }
-    // 1.6.9.15 + 1.7.2: niches are lit from above like a stone alcove; regional relics sample realm_relics_atlas (2x2).
+    // 1.6.9.15 + 1.7.2 + 1.7.3: niches are lit from above like a stone alcove; Forge & Living Hero items sample dedicated 1.7.3 atlases.
     Box(modifier.size(70.dp).clip(CutCornerShape(3.dp)).background(Brush.verticalGradient(listOf(Color(0xFF2A3036),Color(0xFF131618),Color(0xFF0A0C0D))))){
         Box(Modifier.matchParentSize().padding(3.dp).alpha(if(dim).66f else 1f)){
-            when {
-                realmRelicCell != null -> AtlasCell(R.drawable.realm_relics_atlas, realmRelicCell, 2, 2, Modifier.matchParentSize())
-                itemId=="mist-clasp" -> ArtTile(R.drawable.forest_atlas,8,3,Modifier.matchParentSize())
-                else -> ArtTile(if(variant!=null)R.drawable.relic_variants else R.drawable.relic_atlas,variant?:index,3,Modifier.matchParentSize())
+            when (itemId) {
+                "oath-helm" -> AtlasSubCell(R.drawable.living_helms_atlas, 0, 2, 2, 0.27f, 0.05f, 0.75f, 0.43f, Modifier.matchParentSize())
+                "mimir-runic-crown" -> AtlasSubCell(R.drawable.living_helms_atlas, 1, 2, 2, 0.30f, 0.14f, 0.72f, 0.30f, Modifier.matchParentSize())
+                "north-mail" -> AtlasSubCell(R.drawable.living_armor_atlas, 0, 2, 2, 0.02f, 0.45f, 0.98f, 0.99f, Modifier.matchParentSize())
+                "scribe-robes" -> AtlasSubCell(R.drawable.living_armor_atlas, 1, 2, 2, 0.02f, 0.47f, 0.98f, 0.99f, Modifier.matchParentSize())
+                "rune-mantle" -> AtlasSubCell(R.drawable.living_armor_atlas, 2, 2, 2, 0.02f, 0.47f, 0.98f, 0.99f, Modifier.matchParentSize())
+                "vigil-armor" -> AtlasSubCell(R.drawable.living_armor_atlas, 3, 2, 2, 0.02f, 0.47f, 0.98f, 0.99f, Modifier.matchParentSize())
+                "yggdrasil-brooch" -> AtlasCell(R.drawable.living_artifacts_atlas, 0, 4, 2, Modifier.matchParentSize())
+                "nine-realms-frame" -> AtlasCell(R.drawable.hero_frames_atlas, 3, 2, 2, Modifier.matchParentSize())
+                "craft-blade" -> AtlasCell(R.drawable.living_artifacts_atlas, 1, 4, 2, Modifier.matchParentSize())
+                "silver-blade" -> AtlasCell(R.drawable.living_artifacts_atlas, 2, 4, 2, Modifier.matchParentSize())
+                "ember-amulet" -> AtlasCell(R.drawable.living_artifacts_atlas, 3, 4, 2, Modifier.matchParentSize())
+                "lantern" -> AtlasCell(R.drawable.living_artifacts_atlas, 7, 4, 2, Modifier.matchParentSize())
+                else -> when {
+                    realmRelicCell != null -> AtlasCell(R.drawable.realm_relics_atlas, realmRelicCell, 2, 2, Modifier.matchParentSize())
+                    itemId=="mist-clasp" -> ArtTile(R.drawable.forest_atlas,8,3,Modifier.matchParentSize())
+                    else -> ArtTile(if(variant!=null)R.drawable.relic_variants else R.drawable.relic_atlas,variant?:index,3,Modifier.matchParentSize())
+                }
             }
         }
         val tier=when(color){Gold->3;Violet->2;Blue,Green->1;else->0}

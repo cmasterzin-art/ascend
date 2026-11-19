@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.semantics.*
 import java.time.*
 
-@Composable fun CharacterScreen(s:GameState,vm:GameViewModel,onSettings:()->Unit,onJournal:()->Unit,onMemories:()->Unit={},onPortrait:()->Unit={},onMimir:()->Unit={},onMimirReview:()->Unit={},onPaths:()->Unit={}){
+@Composable fun CharacterScreen(s:GameState,vm:GameViewModel,onSettings:()->Unit,onJournal:()->Unit,onMemories:()->Unit={},onPortrait:()->Unit={},onMimir:()->Unit={},onMimirReview:()->Unit={},onPaths:()->Unit={},onForge:()->Unit={}){
     val hero=requireNotNull(s.player)
     val tabStates=rememberSaveableStateHolder()
     var tab by rememberSaveable{mutableIntStateOf(0)};var playerEdit by remember{mutableStateOf(false)}
@@ -32,7 +32,7 @@ import java.time.*
         when(visible){
             0->{HeroStage(s,onPortrait);HeroEvolution(s);Hairline();ArchetypeAscensionPanel(s,vm,onMimir,onMimirReview,onPaths,{tab=6});Hairline();AttributeInscriptions(s);Hairline();Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){SagaButton("Ampliar retrato",onPortrait,Modifier.weight(1f),secondary=true);SagaButton("Salão das Memórias",onMemories,Modifier.weight(1f),secondary=true)};AetherSurface{SectionHeader("Sua identidade");ReadingBlock(classDescriptions[hero.heroClass]);if(hero.goals.isNotBlank())ReadingBlock(hero.goals,"Seus propósitos");Action("Personalizar personagem",{playerEdit=true},Modifier.fillMaxWidth())};EquippedNiches(s);s.assets.find{it.kind=="companion"&&it.equipped}?.let{a->Panel(accent=Violet){val item=shopItems.find{it.id==a.id};Eyebrow("Companheiro",Violet);Text(item?.name?:"Companheiro",style=MaterialTheme.typography.titleLarge);Text(when(a.id){"lyra"->"Lyra se acomoda ao lado do seu caderno. Parece aprovar a página de hoje.";"corvus"->"Corvus observa o horizonte. Há sempre outra trilha entre as árvores.";else->"Ignis protege uma pequena brasa sob as asas. Por enquanto, isso basta."},color=Muted)}};Action("Abrir diário do aventureiro",onJournal,Modifier.fillMaxWidth());Panel{Eyebrow("Títulos conquistados");val titles=listOf(1 to "O Desperto",5 to "Aprendiz Errante",10 to "Aventureiro",15 to "Guardião do Conhecimento",20 to "Mestre da Vontade",30 to "Herói de Aetheris",50 to "Lenda Ascendente");(titles+specializationTitles(s).map{1 to it}).filter{it.first<=s.level}.distinctBy{it.second}.forEach{(_,title)->TextButton({vm.run{vm.repo.player(hero.copy(title=title))}}){Text(if(hero.title==title)"✦ $title" else title)}}}}
             1->{attributes.forEachIndexed{i,a->val pts=s.points(i);if(i>0)Hairline();Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(10.dp)){Eyebrow("Atributo · nível ${1+pts/50}",habitColor(i));Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){AttributeEmblem(i,Modifier.size(38.dp));Text(a,style=MaterialTheme.typography.titleLarge)};Meter((pts%50)/50f,habitColor(i));Text("${pts%50}/50 pontos neste nível · $pts acumulados",color=Muted,fontSize=12.sp);s.ledger.filter{it.attribute==i && it.points!=0L}.sortedByDescending{it.date}.take(8).forEach{Text("${displayDate(it.date)} · ${it.label.removePrefix("Hábito · ")} · +${it.points}",color=Muted,fontSize=11.sp)}}}}
-            2->Equipment(s,vm)
+            2->Equipment(s,vm,onOpenForge=onForge)
             3->Equipment(s,vm,store=true)
             4->{achievementDefs.forEach{a->val unlocked=s.achievements.find{it.id==a.id};val value=achievementProgress(a,s);val color=when(a.rarity){"Lendária"->Gold;"Épica"->Violet;"Rara"->Blue;else->Muted};Panel(accent=color){Eyebrow("${a.rarity} · ${if(unlocked!=null)"Conquistada" else "Em busca"}",color);Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){CeremonialSeal(SealKind.Reward,unlocked!=null,Modifier.size(42.dp));Text("${a.icon} ${a.name}",Modifier.weight(1f),style=MaterialTheme.typography.titleLarge)};Text(a.description,color=Muted,fontSize=13.sp);Meter(value.toFloat()/a.target,color);Text(unlocked?.let{if(a.coins>0L)"Registrada em ${displayDate(it.date)} · ◈ ${a.coins}" else "Registrada em ${displayDate(it.date)} · Marco de Sabedoria"}?:"${value.coerceAtMost(a.target)}/${a.target}",color=color,fontSize=12.sp)}}}
             5->Statistics(s)
@@ -40,7 +40,7 @@ import java.time.*
         }
     }
     }}}
-    if(playerEdit)PlayerEditor(hero,{playerEdit=false},{p->vm.run{vm.repo.player(p);playerEdit=false}})
+    if(playerEdit)PlayerEditor(hero,s,{playerEdit=false},{p->vm.run{vm.repo.player(p);playerEdit=false}})
 }
 @Composable fun ArchetypeAscensionPanel(
     s: GameState,
@@ -127,10 +127,10 @@ import java.time.*
         }
     }
 }
-@Composable fun PlayerEditor(p:Player,onDismiss:()->Unit,onSave:(Player)->Unit){
+@Composable fun PlayerEditor(p:Player,s:GameState?=null,onDismiss:()->Unit,onSave:(Player)->Unit){
     var name by remember{mutableStateOf(p.name)};var cls by remember{mutableIntStateOf(p.heroClass)};var face by remember{mutableIntStateOf(p.face)};var color by remember{mutableIntStateOf(p.color)};var outfit by remember{mutableIntStateOf(p.outfit)};var frame by remember{mutableIntStateOf(p.frame)};var goals by remember{mutableStateOf(p.goals)}
     val next=p.copy(name=name,heroClass=cls,face=face,color=color,outfit=outfit,frame=frame,goals=goals)
-    FullForm("Personalizar",onDismiss,{onSave(next)}){Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){Avatar(next,size=130.dp)};FormField(name,{name=it.take(40)},"Nome");ChipRow(classes,cls,{cls=it});ClassEmblem(cls);Text(classDescriptions[cls],color=Muted);ChipRow(listOf("Pele clara","Pele escura","Pele média"),face,{face=it});ChipRow(listOf("Ouro","Azul","Violeta","Verde","Coral"),color,{color=it});ChipRow(listOf("Túnica","Veste de viagem","Cerimonial"),outfit,{outfit=it});ChipRow(listOf("Simples","Solar","Estrelada"),frame,{frame=it});FormField(goals,{goals=it},"Seus propósitos",multi=true)}
+    FullForm("Personalizar",onDismiss,{onSave(next)}){Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){Avatar(next,s,size=130.dp)};FormField(name,{name=it.take(40)},"Nome");ChipRow(classes,cls,{cls=it});ClassEmblem(cls);Text(classDescriptions[cls],color=Muted);ChipRow(listOf("Pele clara","Pele escura","Pele média"),face,{face=it});ChipRow(listOf("Ouro","Azul","Violeta","Verde","Coral"),color,{color=it});ChipRow(listOf("Túnica","Veste de viagem","Cerimonial"),outfit,{outfit=it});ChipRow(listOf("Simples","Solar","Estrelada"),frame,{frame=it});FormField(goals,{goals=it},"Seus propósitos",multi=true)}
 }
 @Composable fun Statistics(s:GameState){var h by remember{mutableStateOf<Habit?>(null)};AnalysisContent(s,onHabit={h=it});h?.let{habit->FullForm("Análise do hábito",{h=null},{h=null},"Fechar"){AnalysisContent(s,habit)}}}
 @Composable fun XpChart(values:List<Float>){

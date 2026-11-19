@@ -12,6 +12,7 @@ const val EXPEDITION_METRIC_HABITS = 0
 const val EXPEDITION_METRIC_FOCUS_SESSIONS = 4
 const val EXPEDITION_METRIC_FLASHCARD_DAYS = 5
 const val EXPEDITION_METRIC_PATH_TASKS = 6
+const val EXPEDITION_MIN_FOCUS_SECONDS = 300L // 1.7.3 (16.1): duração mínima efetiva de 5 minutos por sessão de Foco
 
 data class ExpeditionPhase(
  val name: String,
@@ -488,7 +489,7 @@ fun expeditionMetricUnit(metric: Int, target: Int): String = when (metric) {
  */
 fun expeditionBaselineFor(metric: Int, ids: List<String>, s: GameState): String = when (metric) {
  EXPEDITION_METRIC_FOCUS_SESSIONS -> s.focusSessions
-  .filter { it.registered && it.elapsedSeconds > 0L && it.status != "cancelled" }
+  .filter { it.registered && it.elapsedSeconds >= EXPEDITION_MIN_FOCUS_SECONDS && it.status != "cancelled" }
   .sortedBy { it.id }
   .joinToString(";") { "${it.id}=1" }
  EXPEDITION_METRIC_FLASHCARD_DAYS -> s.flashcardReviews
@@ -497,7 +498,7 @@ fun expeditionBaselineFor(metric: Int, ids: List<String>, s: GameState): String 
   .sorted()
   .joinToString(";") { "$it=1" }
  EXPEDITION_METRIC_PATH_TASKS -> s.pathTasks
-  .filter { it.completed && !it.archived }
+  .filter { it.completed }
   .sortedBy { it.id }
   .joinToString(";") { "${it.id}=1" }
  else -> s.records
@@ -505,12 +506,19 @@ fun expeditionBaselineFor(metric: Int, ids: List<String>, s: GameState): String 
   .joinToString(";") { "${it.id}=${it.progress}" }
 }
 
-/** Evaluates expanded expedition metrics (4=Focus Sessions, 5=Mímir Flashcard Days, 6=Path Tasks). */
-fun expeditionMetricProgress(q: Quest, s: GameState): Long {
+/**
+ * Evaluates expanded expedition metrics (4=Focus Sessions >= 5 min, 5=Mímir Flashcard Days, 6=Path Tasks).
+ * Archiving a completed PathTask preserves expedition credit (16.2); reopening or deleting removes it.
+ */
+fun expeditionMetricProgress(
+ q: Quest,
+ s: GameState,
+ minFocusSeconds: Long = EXPEDITION_MIN_FOCUS_SECONDS
+): Long {
  val baseline = parseBaseline(q.sagaBaseline)
  return when (q.metric) {
   EXPEDITION_METRIC_FOCUS_SESSIONS -> s.focusSessions.count { f ->
-   f.registered && f.elapsedSeconds > 0L && f.status != "cancelled" &&
+   f.registered && f.elapsedSeconds >= minFocusSeconds && f.status != "cancelled" &&
     f.date >= q.sagaStart && (q.deadline.isBlank() || f.date <= q.deadline) &&
     f.id !in baseline
   }.toLong()
@@ -522,7 +530,7 @@ fun expeditionMetricProgress(q: Quest, s: GameState): Long {
    .count()
    .toLong()
   EXPEDITION_METRIC_PATH_TASKS -> s.pathTasks.count { t ->
-   t.completed && !t.archived && t.id !in baseline &&
+   t.completed && t.id !in baseline &&
     (t.completedDate.isBlank() || (t.completedDate >= q.sagaStart && (q.deadline.isBlank() || t.completedDate <= q.deadline)))
   }.toLong()
   else -> 0L

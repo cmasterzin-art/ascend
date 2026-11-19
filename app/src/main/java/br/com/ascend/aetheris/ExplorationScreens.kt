@@ -219,9 +219,9 @@ private fun locationLabelFor(e:ExpeditionDef,s:GameState):String{
   Meter(progress.toFloat()/q.target.coerceAtLeast(1),color,slim=true)
   ReadingBlock(e.phases[phase].text)
   val contribText=when(q.metric){
-   EXPEDITION_METRIC_FOCUS_SESSIONS->"Contribuem: sessões de Foco registradas após o início desta etapa (sessões canceladas não contam)."
+   EXPEDITION_METRIC_FOCUS_SESSIONS->"Contribuem: sessões de Foco registradas com pelo menos 5 min após o início desta etapa (sessões canceladas ou curtas não contam)."
    EXPEDITION_METRIC_FLASHCARD_DAYS->"Contribuem: dias distintos com revisões de flashcards na Biblioteca de Mímir após o início desta etapa."
-   EXPEDITION_METRIC_PATH_TASKS->"Contribuem: tarefas concluídas em Caminhos após o início desta etapa."
+   EXPEDITION_METRIC_PATH_TASKS->"Contribuem: tarefas concluídas em Caminhos após o início desta etapa (arquivar tarefas concluídas preserva o progresso)."
    else->"Contribuem: "+s.habits.filter{it.id in q.habitIds.split(',')}.joinToString{it.name}
   }
   Text(contribText,color=Muted,fontSize=12.sp,lineHeight=20.sp)
@@ -320,9 +320,9 @@ private fun locationLabelFor(e:ExpeditionDef,s:GameState):String{
       Eyebrow("Integração ativa · ${e.integratedLabel}",Blue)
       Text(
        when(e.integratedMetric){
-        EXPEDITION_METRIC_FOCUS_SESSIONS->"Sessões de Foco registradas a partir de agora avançam automaticamente cada marco desta expedição. Sessões canceladas ou zeradas não contam."
+        EXPEDITION_METRIC_FOCUS_SESSIONS->"Sessões de Foco registradas com duração mínima efetiva de 5 minutos a partir de agora avançam automaticamente cada marco desta expedição. Sessões canceladas ou abaixo de 5 min não contam."
         EXPEDITION_METRIC_FLASHCARD_DAYS->"Cada dia distinto com revisões de flashcards na Biblioteca de Mímir a partir de agora avança esta expedição (revisões repetidas no mesmo dia não duplicam o marco)."
-        else->"Tarefas concluídas em Caminhos a partir de agora avançam cada marco desta expedição sem reutilizar tarefas já concluídas."
+        else->"Tarefas concluídas em Caminhos a partir de agora avançam cada marco desta expedição sem reutilizar tarefas já concluídas. Arquivar tarefas concluídas preserva o progresso."
        },
        color=Muted,fontSize=13.sp,lineHeight=20.sp
       )

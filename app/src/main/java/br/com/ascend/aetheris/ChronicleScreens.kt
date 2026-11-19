@@ -73,10 +73,35 @@ import java.time.LocalDate
  }
 }
 @Composable fun PortraitScreen(s:GameState){
- Page{Title(s.player!!.name,"${classes[s.player.heroClass]} · ${s.player.title} · nível ${s.level}")
- Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){ClassEmblem(s.player.heroClass,Modifier.size(38.dp))}
- BoxWithConstraints(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){Avatar(s.player,s,(maxWidth-32.dp).coerceAtMost(300.dp))}
- val frame=s.assets.firstOrNull{it.kind=="frame"&&it.equipped}?.let{a->shopItems.find{it.id==a.id}?.name}?:listOf("Simples","Solar","Estrelada")[s.player.frame]
- StatusSeal("Moldura · $frame",Blue);ReadingBlock(classDescriptions[s.player.heroClass])
+ val hero=requireNotNull(s.player)
+ val spec=activeSpecialization(s)
+ val equipped=s.assets.filter{it.equipped}.mapNotNull{a->shopItems.find{it.id==a.id}}
+ Page{
+  Title(hero.name,"${classes[hero.heroClass]}${if(spec!=null)" · ${spec.name}" else ""} · ${hero.title} · nível ${s.level}")
+  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center,verticalAlignment=Alignment.CenterVertically){
+   ClassEmblem(hero.heroClass,Modifier.size(36.dp))
+   if(spec!=null){
+    Spacer(Modifier.width(12.dp))
+    ArchetypeSealArt(spec.atlasIndex,Modifier.size(36.dp))
+   }
+  }
+  BoxWithConstraints(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){
+   LivingHeroPortrait(hero,s,(maxWidth-32.dp).coerceAtMost(300.dp))
+  }
+  val frame=s.assets.firstOrNull{it.kind=="frame"&&it.equipped}?.let{a->shopItems.find{it.id==a.id}?.name}?:listOf("Ferro Nórdico","Bronze Solar","Runas Estreladas")[hero.frame]
+  StatusSeal("Moldura · $frame",Blue)
+  if(equipped.isNotEmpty()){
+   AetherSurface(SurfaceKind.Artifact){
+    Eyebrow("Camadas do Retrato Vivo",Gold)
+    equipped.forEach{item->
+     val rep=portraitRepresentationFor(item)
+     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+      Text(item.name,color=Ink,fontSize=13.sp,modifier=Modifier.weight(1f))
+      Text(rep.label,color=Muted,fontSize=11.sp)
+     }
+    }
+   }
+  }
+  ReadingBlock(classDescriptions[hero.heroClass])
  }
 }

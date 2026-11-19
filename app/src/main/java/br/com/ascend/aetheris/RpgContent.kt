@@ -22,7 +22,7 @@ val skillDefs=listOf(
     SkillDef("art_runes","Entalhe Rúnico","Artífice",6,"art_forge","","Refina o ofício pessoal com precisão estética e memória organizada.",heroClass=4,atlasIndex=9,effectSummary="Ornamento entalhado no perfil e título 'Mestre do Entalhe'.",titleGrant="Mestre do Entalhe")
 )
 fun skillPoints(s:GameState)=(s.level/3-s.assets.count{it.kind=="skill"}).coerceAtLeast(0)
-fun rarity(item:ShopItem)=when(item.id){
+fun rarity(item:ShopItem)=forgeRecipeById(item.id)?.rarity ?: when(item.id){
  "eternal-memory-medallion","firmament-compass","will-helm","dawn-outfit"->4
  "mist-clasp","scribes-ring","boreal-vigil-brooch","ignis","rune-frame","craft-blade"->3
  "frame","corvus","armor","scholar-bg"->2
@@ -30,7 +30,7 @@ fun rarity(item:ShopItem)=when(item.id){
  else->0
 }
 val rarityNames=listOf("Comum","Incomum","Raro","Épico","Lendário")
-fun itemOrigin(item:ShopItem)=when(item.id){
+fun itemOrigin(item:ShopItem)=forgeRecipeById(item.id)?.let{"A Forja de Darian · ${it.cost} Fragmentos (${it.requirementLabel})"} ?: when(item.id){
  "mist-clasp"->"Expedição: A Vigília da Floresta · Floresta da Persistência"
  "scribes-ring"->"Expedição: As Páginas do Silêncio · Biblioteca das Eras"
  "eternal-memory-medallion"->"Expedição: O Juramento da Sabedoria · Biblioteca das Eras"

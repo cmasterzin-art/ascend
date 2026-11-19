@@ -16,7 +16,7 @@ import java.security.MessageDigest
 
 val Context.preferences by preferencesDataStore("ascend_settings")
 class AscendApp:Application(){
-    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8).build() }
+    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8,MIGRATION_8_9).build() }
     val repository by lazy { GameRepository(database){s->HabitWidget.refresh(this,s)} }
 }
 data class GameEvent(val message:String,val level:Int=0,val xp:Long=0,val coins:Long=0,val points:List<Long> = emptyList(),val highlights:List<String> = emptyList())
@@ -24,7 +24,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     private val d=db.dao(); private val lock=Mutex()
     val state=MutableStateFlow<GameState?>(null)
     val events=MutableSharedFlow<GameEvent>(extraBufferCapacity=10)
-    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus(),d.restDays(),d.plans(),d.focusSessions(),d.paths(),d.pathStages(),d.pathTasks(),d.pathSubtasks(),d.pathHabitLinks(),d.timeBlocks(),d.agendaEvents(),d.inboxItems(),d.notebooks(),d.knowledgePages(),d.knowledgeLinks(),d.knowledgeReferences(),d.flashcards(),d.flashcardReviews())
+    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus(),d.restDays(),d.plans(),d.focusSessions(),d.paths(),d.pathStages(),d.pathTasks(),d.pathSubtasks(),d.pathHabitLinks(),d.timeBlocks(),d.agendaEvents(),d.inboxItems(),d.notebooks(),d.knowledgePages(),d.knowledgeLinks(),d.knowledgeReferences(),d.flashcards(),d.flashcardReviews(),d.loadouts())
     suspend fun refresh()=lock.withLock { state.value=read() }
     private suspend fun change(message:String="Salvo",block:suspend ()->Unit){
         lock.withLock {
@@ -236,8 +236,101 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         }
     }
     suspend fun buy(item:ShopItem)=change("${item.name} chegou ao inventário"){
-        require(shopItems.any{it==item} && item.id !in expeditionRelicIds && skillDefs.none{it.item==item.id}){"Este item é obtido por exploração ou habilidade."};val s=read();require(s.assets.none{it.id==item.id}){"Você já possui este item."};require(s.rawCoins>=item.cost){"Fragmentos insuficientes."}
+        require(shopItems.any{it==item} && item.id !in expeditionRelicIds && item.id !in forgeItemIds && skillDefs.none{it.item==item.id}){"Este item é obtido por exploração, forja ou habilidade."};val s=read();require(s.assets.none{it.id==item.id}){"Você já possui este item."};require(s.rawCoins>=item.cost){"Fragmentos insuficientes."}
         d.reward(Reward("buy:${item.id}",coins=-item.cost.toLong(),label="Compra · ${item.name}"));d.asset(Asset(item.id,item.kind))
+    }
+    suspend fun craftForgeItem(recipeId:String)=change("Peça forjada na oficina de Darian"){
+        val recipe=requireNotNull(forgeRecipeById(recipeId)){"Receita de forja desconhecida."}
+        val item=requireNotNull(shopItems.find{it.id==recipe.id && it.kind==recipe.kind}){"Item de forja inválido."}
+        val s=read()
+        require(s.assets.none{it.id==recipe.id}){"Você já forjou ${recipe.name}."}
+        val missing=forgeRecipeMissingReasons(s,recipe)
+        require(missing.isEmpty()){missing.first()}
+        require(s.rawCoins>=recipe.cost){"São necessários ${recipe.cost} Fragmentos de Aether."}
+        d.reward(Reward("forge:${recipe.id}",xp=0L,coins=-recipe.cost.toLong(),label="Forja de Darian · ${recipe.name}"))
+        d.asset(Asset(item.id,item.kind))
+    }
+    suspend fun applyStudioSelection(selectedByKind:Map<String,String?>)=change("Aparência atualizada no Estúdio"){
+        val validKinds=equipmentSlots.map{it.first}.toSet()
+        require(selectedByKind.keys.all{it in validKinds}){"Espaço de equipamento inválido."}
+        val s=read()
+        val ownedById=s.assets.associateBy{it.id}
+        selectedByKind.forEach{(kind,itemId)->
+            if(!itemId.isNullOrBlank()){
+                val item=requireNotNull(shopItems.find{it.id==itemId && it.kind==kind}){"Item incompatível com o espaço $kind."}
+                require(item.id in ownedById){"Você ainda não possui ${item.name}. Itens bloqueados servem apenas para prévia."}
+            }
+        }
+        selectedByKind.forEach{(kind,itemId)->
+            s.assets.filter{it.kind==kind}.forEach{d.asset(it.copy(equipped=false))}
+            if(!itemId.isNullOrBlank()){
+                val asset=requireNotNull(ownedById[itemId])
+                d.asset(asset.copy(equipped=true))
+            }
+        }
+    }
+    suspend fun saveLoadout(loadout:EquipmentLoadout)=change("Conjunto salvo"){
+        val clean=loadout.copy(name=loadout.name.trim(),updated=today())
+        validateLoadoutInput(clean)
+        val s=read()
+        val owned=s.assets.map{it.id}.toSet()
+        clean.slotMap().values.forEach{id->
+            val name=shopItems.find{it.id==id}?.name?:id
+            require(id in owned){"Você não possui $name para salvar neste conjunto."}
+        }
+        d.loadout(clean)
+    }
+    suspend fun saveCurrentAsLoadout(loadoutId:String,customName:String?=null)=change("Conjunto atualizado"){
+        require(loadoutId in validLoadoutIds){"Conjunto inválido."}
+        val s=read()
+        val existing=resolvedLoadouts(s).first{it.id==loadoutId}
+        val finalName=(customName?:existing.name).trim()
+        val equipped=s.assets.filter{it.equipped}.associate{it.kind to it.id}
+        val next=EquipmentLoadout(
+            id=loadoutId,
+            name=finalName,
+            headId=equipped["head"]?:"",
+            outfitId=equipped["outfit"]?:"",
+            accessoryId=equipped["accessory"]?:"",
+            weaponId=equipped["weapon"]?:"",
+            companionId=equipped["companion"]?:"",
+            frameId=equipped["frame"]?:"",
+            backgroundId=equipped["background"]?:"",
+            updated=today()
+        )
+        validateLoadoutInput(next)
+        d.loadout(next)
+    }
+    suspend fun renameLoadout(loadoutId:String,newName:String)=change("Conjunto renomeado"){
+        require(loadoutId in validLoadoutIds){"Conjunto inválido."}
+        val s=read()
+        val existing=resolvedLoadouts(s).first{it.id==loadoutId}
+        val next=existing.copy(name=newName.trim(),updated=today())
+        validateLoadoutInput(next)
+        d.loadout(next)
+    }
+    suspend fun applyLoadout(loadoutId:String)=change("Conjunto equipado"){
+        require(loadoutId in validLoadoutIds){"Conjunto inválido."}
+        val s=read()
+        val loadout=resolvedLoadouts(s).first{it.id==loadoutId}
+        validateLoadoutInput(loadout)
+        val ownedById=s.assets.associateBy{it.id}
+        val slotKinds=equipmentSlots.map{it.first}
+        slotKinds.forEach{kind->
+            s.assets.filter{it.kind==kind}.forEach{d.asset(it.copy(equipped=false))}
+        }
+        loadout.slotMap().forEach{(kind,itemId)->
+            val asset=ownedById[itemId]
+            if(asset!=null && asset.kind==kind){
+                d.asset(asset.copy(equipped=true))
+            }
+        }
+    }
+    suspend fun clearLoadout(loadoutId:String)=change("Conjunto limpo"){
+        require(loadoutId in validLoadoutIds){"Conjunto inválido."}
+        val s=read()
+        val existing=resolvedLoadouts(s).first{it.id==loadoutId}
+        d.loadout(EquipmentLoadout(id=loadoutId,name=existing.name,updated=today()))
     }
     suspend fun equip(a:Asset)=change(if(a.equipped) "Item removido" else "Item equipado"){
         val s=read();val owned=requireNotNull(s.assets.find{it.id==a.id})
@@ -693,6 +786,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     }
     suspend fun importState(s:GameState)=change("Backup restaurado"){
         validateState(s)
+        d.clearLoadouts()
         d.clearFlashcardReviews();d.clearFlashcards();d.clearKnowledgeReferences();d.clearKnowledgeLinks();d.clearKnowledgePages();d.clearNotebooks()
         d.clearPathHabitLinks();d.clearPathSubtasks();d.clearPathTasks();d.clearPathStages();d.clearPaths();d.clearTimeBlocks();d.clearAgendaEvents();d.clearInboxItems()
         d.clearPlans();d.clearFocusSessions();d.clearRestDays();d.clearFocus();d.clearRecords();d.clearHabits();d.clearLedger();d.clearQuests();d.clearClaims();d.clearAssets();d.clearAchievements();d.clearJournal();d.clearRoutines();d.clearPlayer()
@@ -700,6 +794,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         s.player?.let{d.player(it)};s.habits.forEach{d.habit(it)};s.plans.forEach{d.plan(it)};s.records.forEach{d.record(it)};s.ledger.forEach{d.reward(it)};s.quests.forEach{d.quest(it)};s.claims.forEach{d.claim(it)};s.assets.forEach{d.asset(it)};s.achievements.forEach{d.unlock(it)};s.journal.forEach{d.journal(it)};s.routines.forEach{d.routine(it)}
         s.paths.forEach{d.path(it)};s.pathStages.forEach{d.pathStage(it)};s.pathTasks.forEach{d.pathTask(it)};s.pathSubtasks.forEach{d.pathSubtask(it)};s.pathHabitLinks.forEach{d.pathHabitLink(it)};s.timeBlocks.forEach{d.timeBlock(it)};s.agendaEvents.forEach{d.agendaEvent(it)};s.inboxItems.forEach{d.inboxItem(it)}
         s.notebooks.forEach{d.notebook(it)};s.knowledgePages.forEach{d.knowledgePage(it)};s.knowledgeLinks.forEach{d.knowledgeLink(it)};s.knowledgeReferences.forEach{d.knowledgeReference(it)};s.flashcards.forEach{d.flashcard(it)};s.flashcardReviews.forEach{d.flashcardReview(it)}
+        s.loadouts.forEach{d.loadout(it)}
         s.focusSessions.forEach{d.focusSession(it)};s.focus?.let{d.focus(it.copy(elapsed=it.seconds(),startedAt=0))}
     }
 }
@@ -754,7 +849,7 @@ fun validateHabitInput(h:Habit){
     require(h.difficulty in 0..2 && h.icon in glyphs.indices && h.color in palette.indices){"Revise a dificuldade, o ícone e a cor."}
     require(h.templateId.length<=100 && h.narrativeName.length<=200){"Nome narrativo muito longo."}
 }
-data class BackupEnvelope(val format:String="ASCEND",val version:Int=10,val sha256:String,val payload:String)
+data class BackupEnvelope(val format:String="ASCEND",val version:Int=11,val sha256:String,val payload:String)
 object Backup {
     private val gson=Gson()
     private fun digest(s:String)=MessageDigest.getInstance("SHA-256").digest(s.toByteArray(Charsets.UTF_8)).joinToString(""){"%02x".format(it)}
@@ -762,13 +857,13 @@ object Backup {
     fun decode(text:String):GameState {
         require(text.length<=20_000_000){"Backup muito grande (máximo 20 MB)."}
         val b=gson.fromJson(text,BackupEnvelope::class.java)
-        require(b.format=="ASCEND" && b.version in 1..10 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
+        require(b.format=="ASCEND" && b.version in 1..11 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
         val json=com.google.gson.JsonParser.parseString(b.payload).asJsonObject
         json["player"]?.takeIf{it.isJsonObject}?.asJsonObject?.let{p->if(!p.has("specialization"))p.addProperty("specialization","")}
         listOf("quests","claims").forEach{table->json.getAsJsonArray(table)?.forEach{row->listOf("sagaStart","sagaBaseline").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}}
         json.getAsJsonArray("quests")?.forEach{row->val obj=row.asJsonObject;if(!obj.has("sagaState"))obj.addProperty("sagaState",0);if(!obj.has("sagaEnd"))obj.addProperty("sagaEnd","");if(!obj.has("sagaStopped"))obj.addProperty("sagaStopped",0)}
         json.getAsJsonArray("assets")?.forEach{row->listOf("memorySpeaker","memoryText").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}
-        listOf("plans","focusSessions","paths","pathStages","pathTasks","pathSubtasks","pathHabitLinks","timeBlocks","agendaEvents","inboxItems","notebooks","knowledgePages","knowledgeLinks","knowledgeReferences","flashcards","flashcardReviews").forEach{if(!json.has(it))json.add(it,com.google.gson.JsonArray())}
+        listOf("plans","focusSessions","paths","pathStages","pathTasks","pathSubtasks","pathHabitLinks","timeBlocks","agendaEvents","inboxItems","notebooks","knowledgePages","knowledgeLinks","knowledgeReferences","flashcards","flashcardReviews","loadouts").forEach{if(!json.has(it))json.add(it,com.google.gson.JsonArray())}
         json["focus"]?.takeIf{it.isJsonObject}?.asJsonObject?.let{f->if(!f.has("sessionId"))f.addProperty("sessionId","");if(!f.has("beganAt"))f.addProperty("beganAt",0);if(!f.has("pathId"))f.addProperty("pathId","");if(!f.has("taskId"))f.addProperty("taskId","");if(!f.has("targetLabel"))f.addProperty("targetLabel","")}
         json.getAsJsonArray("focusSessions")?.forEach{row->val obj=row.asJsonObject;listOf("pathId","taskId","targetLabel").forEach{k->if(!obj.has(k))obj.addProperty(k,"")}}
         val s=gson.fromJson(json,GameState::class.java);validateState(s);return s
@@ -782,6 +877,9 @@ fun validateState(s:GameState){
     require(s.habits.size<=10000 && s.records.size<=200000 && s.ledger.size<=300000)
     fun distinct(ids:List<String>)=require(ids.all{it.isNotBlank()} && ids.distinct().size==ids.size)
     distinct(s.habits.map{it.id});distinct(s.records.map{it.id});distinct(s.ledger.map{it.id});distinct(s.quests.map{it.id});distinct(s.claims.map{it.id});distinct(s.assets.map{it.id});distinct(s.achievements.map{it.id});distinct(s.journal.map{it.id});distinct(s.routines.map{it.id})
+    require(s.loadouts.size<=3)
+    distinct(s.loadouts.map{it.id})
+    s.loadouts.forEach{validateLoadoutInput(it)}
     require(s.restDays.size<=36600)
     distinct(s.restDays.map{it.date});s.restDays.forEach{LocalDate.parse(it.date)}
     s.habits.forEach{h->require(h.name.isNotBlank() && h.target in 1..1000000 && h.attribute in 0..4 && h.color in 0..4 && h.icon in glyphs.indices && h.type in 0..3 && h.xp in 0..1000000 && h.coins in 0..1000000 && h.points in 0..1000000 && h.days.split(',').all{it.toIntOrNull() in 1..7});LocalDate.parse(h.created);if(h.time.isNotBlank())LocalTime.parse(h.time)

@@ -5,7 +5,12 @@ import java.time.LocalDate
 data class WeekChronicle(val start:String,val end:String,val summary:PeriodSummary,val coins:Long,val points:List<Long>,val missions:List<String>,val sagasAdvanced:List<String>,val sagasCompleted:List<String>,val achievements:List<String>,val restored:List<String>,val narrative:String)
 fun rawClaimValid(c:Claim,s:GameState):Boolean{
  val q=s.quests.find{it.id==c.questId}?:return false
- return questProgress(q.copy(target=c.target,metric=c.metric,habitIds=c.habitIds,period=c.period,attribute=c.attribute,deadline=c.deadline,sagaStart=c.sagaStart,sagaBaseline=c.sagaBaseline),s,c.occurrence)>=c.target
+ val snap=q.copy(target=c.target,metric=c.metric,habitIds=c.habitIds,period=c.period,attribute=c.attribute,deadline=c.deadline,sagaStart=c.sagaStart,sagaBaseline=c.sagaBaseline)
+ if(snap.sagaStart.isNotBlank()&&snap.metric==EXPEDITION_METRIC_FOCUS_SESSIONS){
+  // Preserva claims legados válidos da 1.7.2 (> 0s) enquanto novas etapas exigem >= EXPEDITION_MIN_FOCUS_SECONDS (300s).
+  return expeditionMetricProgress(snap,s,minFocusSeconds=1L)>=c.target
+ }
+ return questProgress(snap,s,c.occurrence)>=c.target
 }
 fun weeklyChronicle(s:GameState,date:String=today(),now:String=today()):WeekChronicle{
  val start=weekOf(date);val end=minOf(LocalDate.parse(start).plusDays(6).toString(),now)

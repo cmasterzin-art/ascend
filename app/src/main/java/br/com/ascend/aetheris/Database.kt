@@ -102,6 +102,11 @@ interface GameDao {
     @Query("DELETE FROM knowledge_pages") suspend fun clearKnowledgePages()
     @Query("DELETE FROM knowledge_notebooks") suspend fun clearNotebooks()
 
+    @Query("SELECT * FROM equipment_loadouts ORDER BY id") suspend fun loadouts():List<EquipmentLoadout>
+    @Upsert suspend fun loadout(v:EquipmentLoadout)
+    @Query("DELETE FROM equipment_loadouts WHERE id=:id") suspend fun deleteLoadout(id:String)
+    @Query("DELETE FROM equipment_loadouts") suspend fun clearLoadouts()
+
     @Query("DELETE FROM diary WHERE id=:id") suspend fun deleteJournal(id:String)
     @Query("DELETE FROM routines WHERE id=:id") suspend fun deleteRoutine(id:String)
     @Query("DELETE FROM player") suspend fun clearPlayer()
@@ -127,7 +132,7 @@ val MIGRATION_2_3 = object : androidx.room.migration.Migration(2,3) {
         db.execSQL("ALTER TABLE habits ADD COLUMN trackStreak INTEGER NOT NULL DEFAULT 1")
     }
 }
-@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class,PlanException::class,FocusSession::class,PersonalPath::class,PathStage::class,PathTask::class,PathSubtask::class,PathHabitLink::class,TimeBlock::class,AgendaEvent::class,InboxItem::class,KnowledgeNotebook::class,KnowledgePage::class,KnowledgePageLink::class,KnowledgeReference::class,Flashcard::class,FlashcardReview::class],version=8,exportSchema=true)
+@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class,PlanException::class,FocusSession::class,PersonalPath::class,PathStage::class,PathTask::class,PathSubtask::class,PathHabitLink::class,TimeBlock::class,AgendaEvent::class,InboxItem::class,KnowledgeNotebook::class,KnowledgePage::class,KnowledgePageLink::class,KnowledgeReference::class,Flashcard::class,FlashcardReview::class,EquipmentLoadout::class],version=9,exportSchema=true)
 abstract class GameDatabase:RoomDatabase(){abstract fun dao():GameDao}
 
 val MIGRATION_3_4 = object : androidx.room.migration.Migration(3,4) {
@@ -223,5 +228,11 @@ val MIGRATION_7_8=object:androidx.room.migration.Migration(7,8){
   db.execSQL("CREATE TABLE IF NOT EXISTS `flashcard_reviews` (`id` TEXT NOT NULL, `flashcardId` TEXT NOT NULL, `reviewDate` TEXT NOT NULL, `rating` INTEGER NOT NULL, `intervalBefore` INTEGER NOT NULL, `intervalAfter` INTEGER NOT NULL, `easeAfter` REAL NOT NULL, `reviewedAt` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`flashcardId`) REFERENCES `flashcards`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )")
   db.execSQL("CREATE INDEX IF NOT EXISTS `index_flashcard_reviews_flashcardId` ON `flashcard_reviews` (`flashcardId`)")
   db.execSQL("CREATE INDEX IF NOT EXISTS `index_flashcard_reviews_reviewDate` ON `flashcard_reviews` (`reviewDate`)")
+ }
+}
+
+val MIGRATION_8_9=object:androidx.room.migration.Migration(8,9){
+ override fun migrate(db:androidx.sqlite.db.SupportSQLiteDatabase){
+  db.execSQL("CREATE TABLE IF NOT EXISTS `equipment_loadouts` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `headId` TEXT NOT NULL, `outfitId` TEXT NOT NULL, `accessoryId` TEXT NOT NULL, `weaponId` TEXT NOT NULL, `companionId` TEXT NOT NULL, `frameId` TEXT NOT NULL, `backgroundId` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`))")
  }
 }

@@ -73,31 +73,14 @@ val Ember=Color(0xFF8D4B43)
     }
 }
 
-@Composable fun Avatar(p:Player,s:GameState?=null,size:Dp=100.dp){
-    val assets=s?.assets.orEmpty().filter{it.equipped}
-    val color=habitColor(p.color)
-    val border=when(assets.find{it.kind=="frame"}?.id){"rune-frame"->Color(0xFFB4A1C7);"frame"->WornIvory;else->if(p.frame==1)Color(0xFFB9965A) else if(p.frame==2)Color(0xFF8BA2C7) else listOf(Ember,Color(0xFF8BA2C7),Color(0xFF89967D),Color(0xFF92A5B7),OldBronze)[p.heroClass]}
-    val portrait=when(p.face){1->R.drawable.wanderer_dark;2->R.drawable.wanderer_medium;else->R.drawable.wanderer_light}
-    val appearance=LocalAppearance.current
-    val signature=assets.joinToString{it.id}+"${p.color}:${p.outfit}:${p.frame}:${p.face}"
-    val flash=remember{Animatable(0f)}
-    LaunchedEffect(signature){if(!appearance.reducedMotion){flash.snapTo(.28f);flash.animateTo(0f,tween(650))}else flash.snapTo(0f)}
-    Box(Modifier.width(size).height(size*1.5f).clip(CutCornerShape(topStart=14.dp,topEnd=14.dp,bottomStart=4.dp,bottomEnd=4.dp)).background(Color(0xFF0A0D12)).semantics{contentDescription="Avatar de ${p.name}, ${classes[p.heroClass]}. Equipados: ${assets.filter{a->shopItems.any{it.id==a.id}}.joinToString{a->shopItems.first{it.id==a.id}.name}.ifBlank{"nenhum"}}"}){
-        Image(painterResource(portrait),null,Modifier.matchParentSize(),contentScale=ContentScale.FillBounds)
-        Canvas(Modifier.matchParentSize()){
-            scale(this.size.width/100f,this.size.height/150f,Offset.Zero){
-                fun poly(vararg xy:Float)=Path().apply{moveTo(xy[0],xy[1]);for(i in 2 until xy.size step 2)lineTo(xy[i],xy[i+1]);close()}
-                // Equipment occupies real display niches outside this painting, not artificial body overlays.
-                drawRect(Brush.verticalGradient(listOf(Color.Transparent,Color(0xFF070A0F).copy(alpha=.35f)),startY=130f,endY=150f))
-                drawRect(border.copy(alpha=.7f),Offset(1.5f,1.5f),Size(97f,147f),style=Stroke(.65f))
-                drawRect(border.copy(alpha=.25f),Offset(3f,3f),Size(94f,144f),style=Stroke(.4f))
-                drawRect(Brush.horizontalGradient(listOf(border.copy(alpha=if(p.frame>0||assets.any{it.kind=="frame"}).5f else .2f),Color.Transparent,border.copy(alpha=.15f))));drawLine(Color.White.copy(alpha=.3f),Offset(8f,2f),Offset(92f,2f),.5f)
-                drawLine(color.copy(alpha=.7f),Offset(12f,146f),Offset(88f,146f),if(p.outfit==0).6f else if(p.outfit==1)1.2f else 2f)
-                drawRect(border.copy(alpha=flash.value))
-            }
-        }
-
-    }
+@Composable fun Avatar(p:Player,s:GameState?=null,size:Dp=100.dp,previewOverrides:Map<String,String?>?=null,previewSpecializationId:String?=null){
+    LivingHeroPortrait(
+        p = p,
+        s = s,
+        size = size,
+        previewOverrides = previewOverrides,
+        previewSpecializationId = previewSpecializationId
+    )
 }
 
 @Composable fun Landscape(s:GameState,modifier:Modifier=Modifier,large:Boolean=false){
