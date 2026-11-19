@@ -16,7 +16,7 @@ import java.security.MessageDigest
 
 val Context.preferences by preferencesDataStore("ascend_settings")
 class AscendApp:Application(){
-    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7).build() }
+    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8).build() }
     val repository by lazy { GameRepository(database){s->HabitWidget.refresh(this,s)} }
 }
 data class GameEvent(val message:String,val level:Int=0,val xp:Long=0,val coins:Long=0,val points:List<Long> = emptyList(),val highlights:List<String> = emptyList())
@@ -24,7 +24,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     private val d=db.dao(); private val lock=Mutex()
     val state=MutableStateFlow<GameState?>(null)
     val events=MutableSharedFlow<GameEvent>(extraBufferCapacity=10)
-    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus(),d.restDays(),d.plans(),d.focusSessions(),d.paths(),d.pathStages(),d.pathTasks(),d.pathSubtasks(),d.pathHabitLinks(),d.timeBlocks(),d.agendaEvents(),d.inboxItems())
+    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus(),d.restDays(),d.plans(),d.focusSessions(),d.paths(),d.pathStages(),d.pathTasks(),d.pathSubtasks(),d.pathHabitLinks(),d.timeBlocks(),d.agendaEvents(),d.inboxItems(),d.notebooks(),d.knowledgePages(),d.knowledgeLinks(),d.knowledgeReferences(),d.flashcards(),d.flashcardReviews())
     suspend fun refresh()=lock.withLock { state.value=read() }
     private suspend fun change(message:String="Salvo",block:suspend ()->Unit){
         lock.withLock {
@@ -49,12 +49,13 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         s=read()
         achievementDefs.forEach{a ->
             if(achievementProgress(a,s)>=a.target && s.achievements.none{it.id==a.id}){
-                d.unlock(Unlocked(a.id)); d.reward(Reward("achievement:${a.id}",coins=5,label="Conquista · ${a.name}"))
+                d.unlock(Unlocked(a.id))
+                if(a.coins>0L) d.reward(Reward("achievement:${a.id}",coins=a.coins,label="Conquista · ${a.name}"))
             }
         }
     }
     suspend fun create(p:Player,starters:List<Habit>)=change("Sua jornada começou"){
-        require(p.name.trim().isNotEmpty()){ "Escolha um nome." }; d.player(p.copy(name=p.name.trim().take(40)))
+        require(p.name.trim().isNotEmpty()){ "Escolha um nome." }; d.player(p.copy(name=p.name.trim().take(40),specialization=""))
         starters.forEach{d.habit(it.copy(scheduleHistory="${it.created}|${it.days}|false"))}
         listOf(
             Quest("daily","Uma chama por dia","Conclua três hábitos hoje.",0,0,3,xp=30,coins=8),
@@ -67,7 +68,25 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
             Quest("boss-chaos","O Guardião do Caos","A disciplina reconstrói o que a pressa dispersou.",3,0,5,xp=100,coins=30,attribute=2)
         ).forEach{d.quest(it)}
     }
-    suspend fun player(p:Player)=change("Personagem atualizado"){require(p.name.isNotBlank());d.player(p)}
+    suspend fun player(p:Player)=change("Personagem atualizado"){
+        require(p.name.isNotBlank() && p.heroClass in 0..4)
+        val validSpec = if (p.specialization.isBlank()) "" else {
+            val spec = specializationById(p.specialization)
+            if (spec != null && spec.heroClass == p.heroClass) spec.id else ""
+        }
+        d.player(p.copy(specialization=validSpec))
+    }
+    suspend fun selectSpecialization(specId:String)=change(if(specId.isBlank()) "Especialização removida" else "Especialização escolhida"){
+        val s=read()
+        val p=requireNotNull(s.player){"Personagem não encontrado."}
+        if(specId.isBlank()){
+            d.player(p.copy(specialization=""))
+        }else{
+            val spec=requireNotNull(specializationById(specId)){"Especialização desconhecida."}
+            require(canSelectSpecialization(s,spec)){"Alcance o nível ${spec.unlockLevel} na classe ${classes[spec.heroClass]} para escolher ${spec.name}."}
+            d.player(p.copy(specialization=spec.id))
+        }
+    }
     suspend fun habit(h:Habit)=change("Hábito salvo"){
         validateHabitInput(h)
         val old=d.habits().find{it.id==h.id}
@@ -200,9 +219,12 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         val skill=skillDefs.firstOrNull{it.id==id}?:error("Habilidade desconhecida")
         val s=read()
         require(s.assets.none{it.id=="skill:$id"}){"Habilidade já desbloqueada."}
-        require(s.level>=skill.level && skillPoints(s)>0 && (skill.parent==null || s.assets.any{it.id=="skill:${skill.parent}"})){"Faltam pontos, nível ou habilidade anterior."}
-        val item=shopItems.first{it.id==skill.item}
-        d.asset(Asset("skill:$id","skill"));d.asset(Asset(item.id,item.kind))
+        require(canUnlockSkill(s,skill)){skillRequirementText(s,skill)}
+        d.asset(Asset("skill:$id","skill"))
+        if(skill.item.isNotBlank()){
+            val item=shopItems.first{it.id==skill.item}
+            d.asset(Asset(item.id,item.kind))
+        }
     }
     suspend fun buy(item:ShopItem)=change("${item.name} chegou ao inventário"){
         require(shopItems.any{it==item} && item.id!="mist-clasp" && skillDefs.none{it.item==item.id}){"Este item é obtido por habilidade."};val s=read();require(s.assets.none{it.id==item.id}){"Você já possui este item."};require(s.rawCoins>=item.cost){"Fragmentos insuficientes."}
@@ -338,6 +360,10 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         d.timeBlocks().filter{it.pathId==pathId || it.taskId in taskIds}.forEach{tb->
             d.timeBlock(if (tb.taskId in taskIds) tb.copy(pathId="",taskId="") else tb.copy(pathId=""))
         }
+        d.notebooks().filter{it.pathId==pathId}.forEach{nb->d.notebook(nb.copy(pathId=""))}
+        d.knowledgePages().filter{it.pathId==pathId || it.taskId in taskIds}.forEach{pg->
+            d.knowledgePage(pg.copy(pathId=if(pg.pathId==pathId)"" else pg.pathId,taskId=if(pg.taskId in taskIds)"" else pg.taskId))
+        }
         d.deletePathHabitLinksByPath(pathId)
         tasks.forEach{t->d.deletePathSubtasksByTask(t.id);d.deletePathTask(t.id)}
         d.deletePathStagesByPath(pathId)
@@ -388,6 +414,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         d.focus()?.let{f->if(f.taskId==taskId) d.focus(f.copy(taskId="",targetLabel=f.targetLabel.ifBlank{t.title}))}
         d.focusSessions().filter{it.taskId==taskId}.forEach{fs->d.focusSession(fs.copy(taskId="",targetLabel=fs.targetLabel.ifBlank{t.title}))}
         d.timeBlocks().filter{it.taskId==taskId}.forEach{tb->d.timeBlock(tb.copy(taskId="",pathId=""))}
+        d.knowledgePages().filter{it.taskId==taskId}.forEach{pg->d.knowledgePage(pg.copy(taskId=""))}
         d.deletePathSubtasksByTask(taskId)
         d.deletePathTask(taskId)
     }
@@ -481,13 +508,168 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         d.agendaEvent(clean)
         d.deleteInboxItem(inboxId)
     }
+    suspend fun saveNotebook(notebook:KnowledgeNotebook)=change("Caderno guardado na Biblioteca"){
+        val existing=d.notebooks().find{it.id==notebook.id}
+        val clean=notebook.copy(
+            name=notebook.name.trim(),
+            description=notebook.description.trim(),
+            category=notebook.category.trim().ifBlank{"Estudo"},
+            created=existing?.created ?: notebook.created.ifBlank{today()},
+            updated=today()
+        )
+        validateNotebookInput(clean,d.paths())
+        d.notebook(clean)
+    }
+    suspend fun archiveNotebook(notebookId:String,archived:Boolean)=change(if(archived)"Caderno arquivado" else "Caderno reativado"){
+        val nb=requireNotNull(d.notebooks().find{it.id==notebookId}){"Caderno não encontrado."}
+        d.notebook(nb.copy(archived=archived,updated=today()))
+    }
+    suspend fun deleteNotebook(notebookId:String)=change("Caderno excluído"){
+        requireNotNull(d.notebooks().find{it.id==notebookId}){"Caderno não encontrado."}
+        d.flashcards().filter{it.notebookId==notebookId}.forEach{card->
+            d.deleteFlashcardReviewsForCard(card.id)
+            d.deleteFlashcard(card.id)
+        }
+        d.knowledgePages().filter{it.notebookId==notebookId}.forEach{pg->
+            d.deleteKnowledgeReferencesForPage(pg.id)
+            d.deleteKnowledgeLinksForPage(pg.id)
+            d.deleteKnowledgePage(pg.id)
+        }
+        d.deleteNotebook(notebookId)
+    }
+    suspend fun savePage(page:KnowledgePage)=change("Página guardada"){
+        val existing=d.knowledgePages().find{it.id==page.id}
+        val clean=page.copy(
+            title=page.title.trim(),
+            tags=normalizeTags(page.tags),
+            created=existing?.created ?: page.created.ifBlank{today()},
+            updated=today()
+        )
+        validatePageInput(clean,d.notebooks(),d.paths(),d.pathTasks())
+        d.knowledgePage(clean)
+        d.notebooks().find{it.id==clean.notebookId}?.let{nb->d.notebook(nb.copy(updated=today()))}
+    }
+    suspend fun duplicatePage(pageId:String)=change("Página duplicada"){
+        val orig=requireNotNull(d.knowledgePages().find{it.id==pageId}){"Página não encontrada."}
+        val copyId=uid()
+        val now=today()
+        val newTitle="${orig.title} (cópia)".take(200)
+        d.knowledgePage(orig.copy(id=copyId,title=newTitle,favorite=false,archived=false,created=now,updated=now))
+        d.knowledgeReferences().filter{it.pageId==pageId}.forEach{ref->
+            d.knowledgeReference(ref.copy(id=uid(),pageId=copyId,created=now))
+        }
+        d.notebooks().find{it.id==orig.notebookId}?.let{nb->d.notebook(nb.copy(updated=now))}
+    }
+    suspend fun movePage(pageId:String,targetNotebookId:String)=change("Página movida"){
+        val pg=requireNotNull(d.knowledgePages().find{it.id==pageId}){"Página não encontrada."}
+        val nb=requireNotNull(d.notebooks().find{it.id==targetNotebookId}){"Caderno de destino não encontrado."}
+        val now=today()
+        d.knowledgePage(pg.copy(notebookId=targetNotebookId,updated=now))
+        d.notebook(nb.copy(updated=now))
+    }
+    suspend fun togglePageFavorite(pageId:String)=change("Favorito atualizado"){
+        val pg=requireNotNull(d.knowledgePages().find{it.id==pageId}){"Página não encontrada."}
+        d.knowledgePage(pg.copy(favorite=!pg.favorite,updated=today()))
+    }
+    suspend fun archivePage(pageId:String,archived:Boolean)=change(if(archived)"Página arquivada" else "Página reativada"){
+        val pg=requireNotNull(d.knowledgePages().find{it.id==pageId}){"Página não encontrada."}
+        d.knowledgePage(pg.copy(archived=archived,updated=today()))
+    }
+    suspend fun deletePage(pageId:String)=change("Página excluída"){
+        requireNotNull(d.knowledgePages().find{it.id==pageId}){"Página não encontrada."}
+        d.flashcards().filter{it.pageId==pageId}.forEach{card->
+            d.flashcard(card.copy(pageId="",updated=today()))
+        }
+        d.deleteKnowledgeReferencesForPage(pageId)
+        d.deleteKnowledgeLinksForPage(pageId)
+        d.deleteKnowledgePage(pageId)
+    }
+    suspend fun linkPages(sourcePageId:String,targetPageId:String)=change("Ligação entre páginas criada"){
+        require(sourcePageId!=targetPageId){"Uma página não pode referenciar a si mesma."}
+        val pages=d.knowledgePages()
+        require(pages.any{it.id==sourcePageId} && pages.any{it.id==targetPageId}){"Páginas para ligação não encontradas."}
+        val linkId="$sourcePageId->$targetPageId"
+        d.knowledgeLink(KnowledgePageLink(id=linkId,sourcePageId=sourcePageId,targetPageId=targetPageId,created=today()))
+    }
+    suspend fun unlinkPages(sourcePageId:String,targetPageId:String)=change("Ligação removida"){
+        d.deleteKnowledgeLink("$sourcePageId->$targetPageId")
+    }
+    suspend fun saveReference(reference:KnowledgeReference)=change("Referência bibliográfica salva"){
+        val existing=d.knowledgeReferences().find{it.id==reference.id}
+        val clean=reference.copy(
+            author=reference.author.trim(),
+            title=reference.title.trim(),
+            year=reference.year.trim(),
+            source=reference.source.trim(),
+            url=reference.url.trim(),
+            location=reference.location.trim(),
+            notes=reference.notes.trim(),
+            created=existing?.created ?: reference.created.ifBlank{today()}
+        )
+        validateReferenceInput(clean,d.knowledgePages())
+        d.knowledgeReference(clean)
+    }
+    suspend fun deleteReference(referenceId:String)=change("Referência removida"){
+        d.deleteKnowledgeReference(referenceId)
+    }
+    suspend fun saveFlashcard(card:Flashcard)=change("Runa da Memória salva"){
+        val existing=d.flashcards().find{it.id==card.id}
+        val clean=card.copy(
+            question=card.question.trim(),
+            answer=card.answer.trim(),
+            tags=normalizeTags(card.tags),
+            easeFactor=sanitizeEaseFactor(card.easeFactor),
+            created=existing?.created ?: card.created.ifBlank{today()},
+            updated=today()
+        )
+        validateFlashcardInput(clean,d.notebooks(),d.knowledgePages())
+        d.flashcard(clean)
+    }
+    suspend fun archiveFlashcard(flashcardId:String,archived:Boolean)=change(if(archived)"Flashcard arquivado" else "Flashcard reativado"){
+        val card=requireNotNull(d.flashcards().find{it.id==flashcardId}){"Flashcard não encontrado."}
+        d.flashcard(card.copy(archived=archived,updated=today()))
+    }
+    suspend fun deleteFlashcard(flashcardId:String)=change("Flashcard excluído"){
+        requireNotNull(d.flashcards().find{it.id==flashcardId}){"Flashcard não encontrado."}
+        d.deleteFlashcardReviewsForCard(flashcardId)
+        d.deleteFlashcard(flashcardId)
+    }
+    suspend fun reviewFlashcard(flashcardId:String,rating:Int,reviewDate:String=today())=change("Revisão registrada"){
+        require(rating in 0..3){"Avaliação inválida."}
+        LocalDate.parse(reviewDate)
+        val card=requireNotNull(d.flashcards().find{it.id==flashcardId}){"Flashcard não encontrado."}
+        require(!card.archived){"Flashcards arquivados não podem ser revisados."}
+        val nb=requireNotNull(d.notebooks().find{it.id==card.notebookId}){"Caderno do flashcard não encontrado."}
+        require(!nb.archived){"Reative o caderno antes de revisar seus flashcards."}
+        require(card.nextReviewDate<=reviewDate && card.lastReviewDate!=reviewDate){"Este flashcard já foi revisado hoje ou ainda não está pendente."}
+        val outcome=computeNextReview(card,rating,reviewDate)
+        d.flashcard(card.copy(
+            repetitions=outcome.repetitions,
+            intervalDays=outcome.intervalDays,
+            easeFactor=outcome.easeFactor,
+            nextReviewDate=outcome.nextReviewDate,
+            lastReviewDate=reviewDate,
+            updated=reviewDate
+        ))
+        d.flashcardReview(FlashcardReview(
+            flashcardId=card.id,
+            reviewDate=reviewDate,
+            rating=rating,
+            intervalBefore=card.intervalDays,
+            intervalAfter=outcome.intervalDays,
+            easeAfter=outcome.easeFactor,
+            reviewedAt=System.currentTimeMillis()
+        ))
+    }
     suspend fun importState(s:GameState)=change("Backup restaurado"){
         validateState(s)
+        d.clearFlashcardReviews();d.clearFlashcards();d.clearKnowledgeReferences();d.clearKnowledgeLinks();d.clearKnowledgePages();d.clearNotebooks()
         d.clearPathHabitLinks();d.clearPathSubtasks();d.clearPathTasks();d.clearPathStages();d.clearPaths();d.clearTimeBlocks();d.clearAgendaEvents();d.clearInboxItems()
         d.clearPlans();d.clearFocusSessions();d.clearRestDays();d.clearFocus();d.clearRecords();d.clearHabits();d.clearLedger();d.clearQuests();d.clearClaims();d.clearAssets();d.clearAchievements();d.clearJournal();d.clearRoutines();d.clearPlayer()
         s.restDays.forEach{d.restDay(it)}
         s.player?.let{d.player(it)};s.habits.forEach{d.habit(it)};s.plans.forEach{d.plan(it)};s.records.forEach{d.record(it)};s.ledger.forEach{d.reward(it)};s.quests.forEach{d.quest(it)};s.claims.forEach{d.claim(it)};s.assets.forEach{d.asset(it)};s.achievements.forEach{d.unlock(it)};s.journal.forEach{d.journal(it)};s.routines.forEach{d.routine(it)}
         s.paths.forEach{d.path(it)};s.pathStages.forEach{d.pathStage(it)};s.pathTasks.forEach{d.pathTask(it)};s.pathSubtasks.forEach{d.pathSubtask(it)};s.pathHabitLinks.forEach{d.pathHabitLink(it)};s.timeBlocks.forEach{d.timeBlock(it)};s.agendaEvents.forEach{d.agendaEvent(it)};s.inboxItems.forEach{d.inboxItem(it)}
+        s.notebooks.forEach{d.notebook(it)};s.knowledgePages.forEach{d.knowledgePage(it)};s.knowledgeLinks.forEach{d.knowledgeLink(it)};s.knowledgeReferences.forEach{d.knowledgeReference(it)};s.flashcards.forEach{d.flashcard(it)};s.flashcardReviews.forEach{d.flashcardReview(it)}
         s.focusSessions.forEach{d.focusSession(it)};s.focus?.let{d.focus(it.copy(elapsed=it.seconds(),startedAt=0))}
     }
 }
@@ -542,7 +724,7 @@ fun validateHabitInput(h:Habit){
     require(h.difficulty in 0..2 && h.icon in glyphs.indices && h.color in palette.indices){"Revise a dificuldade, o ícone e a cor."}
     require(h.templateId.length<=100 && h.narrativeName.length<=200){"Nome narrativo muito longo."}
 }
-data class BackupEnvelope(val format:String="ASCEND",val version:Int=9,val sha256:String,val payload:String)
+data class BackupEnvelope(val format:String="ASCEND",val version:Int=10,val sha256:String,val payload:String)
 object Backup {
     private val gson=Gson()
     private fun digest(s:String)=MessageDigest.getInstance("SHA-256").digest(s.toByteArray(Charsets.UTF_8)).joinToString(""){"%02x".format(it)}
@@ -550,12 +732,13 @@ object Backup {
     fun decode(text:String):GameState {
         require(text.length<=20_000_000){"Backup muito grande (máximo 20 MB)."}
         val b=gson.fromJson(text,BackupEnvelope::class.java)
-        require(b.format=="ASCEND" && b.version in 1..9 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
+        require(b.format=="ASCEND" && b.version in 1..10 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
         val json=com.google.gson.JsonParser.parseString(b.payload).asJsonObject
+        json["player"]?.takeIf{it.isJsonObject}?.asJsonObject?.let{p->if(!p.has("specialization"))p.addProperty("specialization","")}
         listOf("quests","claims").forEach{table->json.getAsJsonArray(table)?.forEach{row->listOf("sagaStart","sagaBaseline").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}}
         json.getAsJsonArray("quests")?.forEach{row->val obj=row.asJsonObject;if(!obj.has("sagaState"))obj.addProperty("sagaState",0);if(!obj.has("sagaEnd"))obj.addProperty("sagaEnd","");if(!obj.has("sagaStopped"))obj.addProperty("sagaStopped",0)}
         json.getAsJsonArray("assets")?.forEach{row->listOf("memorySpeaker","memoryText").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}
-        listOf("plans","focusSessions","paths","pathStages","pathTasks","pathSubtasks","pathHabitLinks","timeBlocks","agendaEvents","inboxItems").forEach{if(!json.has(it))json.add(it,com.google.gson.JsonArray())}
+        listOf("plans","focusSessions","paths","pathStages","pathTasks","pathSubtasks","pathHabitLinks","timeBlocks","agendaEvents","inboxItems","notebooks","knowledgePages","knowledgeLinks","knowledgeReferences","flashcards","flashcardReviews").forEach{if(!json.has(it))json.add(it,com.google.gson.JsonArray())}
         json["focus"]?.takeIf{it.isJsonObject}?.asJsonObject?.let{f->if(!f.has("sessionId"))f.addProperty("sessionId","");if(!f.has("beganAt"))f.addProperty("beganAt",0);if(!f.has("pathId"))f.addProperty("pathId","");if(!f.has("taskId"))f.addProperty("taskId","");if(!f.has("targetLabel"))f.addProperty("targetLabel","")}
         json.getAsJsonArray("focusSessions")?.forEach{row->val obj=row.asJsonObject;listOf("pathId","taskId","targetLabel").forEach{k->if(!obj.has(k))obj.addProperty(k,"")}}
         val s=gson.fromJson(json,GameState::class.java);validateState(s);return s
@@ -564,6 +747,7 @@ object Backup {
 fun validateState(s:GameState){
     s.habits.forEach{require(it.templateId.length<=100 && it.narrativeName.length<=200)}
     val p=requireNotNull(s.player){"Backup sem personagem."}; require(p.id==1 && p.name.isNotBlank() && p.heroClass in 0..4 && p.color in 0..4 && p.face in 0..2 && p.outfit in 0..2 && p.frame in 0..2)
+    require(p.specialization.isBlank() || specializationById(p.specialization)?.heroClass==p.heroClass){"Especialização incompatível com a classe do personagem."}
     LocalDate.parse(p.created)
     require(s.habits.size<=10000 && s.records.size<=200000 && s.ledger.size<=300000)
     fun distinct(ids:List<String>)=require(ids.all{it.isNotBlank()} && ids.distinct().size==ids.size)
@@ -604,6 +788,14 @@ fun validateState(s:GameState){
     s.timeBlocks.forEach{validateTimeBlockInput(it,s.paths,s.pathTasks,s.habits)}
     s.agendaEvents.forEach{validateAgendaEventInput(it)}
     s.inboxItems.forEach{item->require(item.title.isNotBlank() && item.title.length<=200);LocalDate.parse(item.created)}
+    require(s.notebooks.size<=5000 && s.knowledgePages.size<=50000 && s.knowledgeLinks.size<=200000 && s.knowledgeReferences.size<=100000 && s.flashcards.size<=100000 && s.flashcardReviews.size<=500000)
+    distinct(s.notebooks.map{it.id});distinct(s.knowledgePages.map{it.id});distinct(s.knowledgeLinks.map{it.id});distinct(s.knowledgeReferences.map{it.id});distinct(s.flashcards.map{it.id});distinct(s.flashcardReviews.map{it.id})
+    s.notebooks.forEach{validateNotebookInput(it,s.paths)}
+    s.knowledgePages.forEach{validatePageInput(it,s.notebooks,s.paths,s.pathTasks)}
+    s.knowledgeLinks.forEach{l->LocalDate.parse(l.created);require(l.sourcePageId!=l.targetPageId && l.id=="${l.sourcePageId}->${l.targetPageId}" && s.knowledgePages.any{it.id==l.sourcePageId} && s.knowledgePages.any{it.id==l.targetPageId})}
+    s.knowledgeReferences.forEach{validateReferenceInput(it,s.knowledgePages)}
+    s.flashcards.forEach{validateFlashcardInput(it,s.notebooks,s.knowledgePages)}
+    s.flashcardReviews.forEach{r->LocalDate.parse(r.reviewDate);require(r.rating in 0..3 && r.intervalBefore in 0..3650 && r.intervalAfter in 1..3650 && !r.easeAfter.isNaN() && !r.easeAfter.isInfinite() && r.easeAfter in 1.3..3.5 && r.reviewedAt>=0 && s.flashcards.any{it.id==r.flashcardId})}
     s.focusSessions.forEach{f->LocalDate.parse(f.date);require((f.habitId.isNotBlank()||f.pathId.isNotBlank()||f.taskId.isNotBlank()||f.targetLabel.isNotBlank()) && (f.habitId.isBlank()||s.habits.any{it.id==f.habitId}) && (f.pathId.isBlank()||s.paths.any{it.id==f.pathId}) && (f.taskId.isBlank()||s.pathTasks.any{it.id==f.taskId}) && f.date<=today() && f.startedAt>0 && f.endedAt>=f.startedAt && f.plannedMinutes in 1..1440 && f.elapsedSeconds in 0..f.plannedMinutes*60L && f.status in listOf("completed","interrupted","cancelled") && f.registered==(f.status!="cancelled"))}
     s.focus?.let{f->
         LocalDate.parse(f.date)

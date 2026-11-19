@@ -75,6 +75,33 @@ interface GameDao {
     @Query("DELETE FROM agenda_events") suspend fun clearAgendaEvents()
     @Query("DELETE FROM inbox_items") suspend fun clearInboxItems()
 
+    @Query("SELECT * FROM knowledge_notebooks ORDER BY updated DESC, name") suspend fun notebooks():List<KnowledgeNotebook>
+    @Query("SELECT * FROM knowledge_pages ORDER BY updated DESC, title") suspend fun knowledgePages():List<KnowledgePage>
+    @Query("SELECT * FROM knowledge_page_links ORDER BY created") suspend fun knowledgeLinks():List<KnowledgePageLink>
+    @Query("SELECT * FROM knowledge_references ORDER BY created DESC") suspend fun knowledgeReferences():List<KnowledgeReference>
+    @Query("SELECT * FROM flashcards ORDER BY nextReviewDate, created") suspend fun flashcards():List<Flashcard>
+    @Query("SELECT * FROM flashcard_reviews ORDER BY reviewedAt DESC") suspend fun flashcardReviews():List<FlashcardReview>
+    @Upsert suspend fun notebook(v:KnowledgeNotebook)
+    @Upsert suspend fun knowledgePage(v:KnowledgePage)
+    @Upsert suspend fun knowledgeLink(v:KnowledgePageLink)
+    @Upsert suspend fun knowledgeReference(v:KnowledgeReference)
+    @Upsert suspend fun flashcard(v:Flashcard)
+    @Upsert suspend fun flashcardReview(v:FlashcardReview)
+    @Query("DELETE FROM knowledge_notebooks WHERE id=:id") suspend fun deleteNotebook(id:String)
+    @Query("DELETE FROM knowledge_pages WHERE id=:id") suspend fun deleteKnowledgePage(id:String)
+    @Query("DELETE FROM knowledge_page_links WHERE id=:id") suspend fun deleteKnowledgeLink(id:String)
+    @Query("DELETE FROM knowledge_page_links WHERE sourcePageId=:pageId OR targetPageId=:pageId") suspend fun deleteKnowledgeLinksForPage(pageId:String)
+    @Query("DELETE FROM knowledge_references WHERE id=:id") suspend fun deleteKnowledgeReference(id:String)
+    @Query("DELETE FROM knowledge_references WHERE pageId=:pageId") suspend fun deleteKnowledgeReferencesForPage(pageId:String)
+    @Query("DELETE FROM flashcards WHERE id=:id") suspend fun deleteFlashcard(id:String)
+    @Query("DELETE FROM flashcard_reviews WHERE flashcardId=:flashcardId") suspend fun deleteFlashcardReviewsForCard(flashcardId:String)
+    @Query("DELETE FROM flashcard_reviews") suspend fun clearFlashcardReviews()
+    @Query("DELETE FROM flashcards") suspend fun clearFlashcards()
+    @Query("DELETE FROM knowledge_references") suspend fun clearKnowledgeReferences()
+    @Query("DELETE FROM knowledge_page_links") suspend fun clearKnowledgeLinks()
+    @Query("DELETE FROM knowledge_pages") suspend fun clearKnowledgePages()
+    @Query("DELETE FROM knowledge_notebooks") suspend fun clearNotebooks()
+
     @Query("DELETE FROM diary WHERE id=:id") suspend fun deleteJournal(id:String)
     @Query("DELETE FROM routines WHERE id=:id") suspend fun deleteRoutine(id:String)
     @Query("DELETE FROM player") suspend fun clearPlayer()
@@ -100,7 +127,7 @@ val MIGRATION_2_3 = object : androidx.room.migration.Migration(2,3) {
         db.execSQL("ALTER TABLE habits ADD COLUMN trackStreak INTEGER NOT NULL DEFAULT 1")
     }
 }
-@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class,PlanException::class,FocusSession::class,PersonalPath::class,PathStage::class,PathTask::class,PathSubtask::class,PathHabitLink::class,TimeBlock::class,AgendaEvent::class,InboxItem::class],version=7,exportSchema=true)
+@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class,PlanException::class,FocusSession::class,PersonalPath::class,PathStage::class,PathTask::class,PathSubtask::class,PathHabitLink::class,TimeBlock::class,AgendaEvent::class,InboxItem::class,KnowledgeNotebook::class,KnowledgePage::class,KnowledgePageLink::class,KnowledgeReference::class,Flashcard::class,FlashcardReview::class],version=8,exportSchema=true)
 abstract class GameDatabase:RoomDatabase(){abstract fun dao():GameDao}
 
 val MIGRATION_3_4 = object : androidx.room.migration.Migration(3,4) {
@@ -172,5 +199,29 @@ val MIGRATION_6_7=object:androidx.room.migration.Migration(6,7){
   db.execSQL("CREATE TABLE IF NOT EXISTS `agenda_events` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `date` TEXT NOT NULL, `startTime` TEXT NOT NULL, `endTime` TEXT NOT NULL, `kind` TEXT NOT NULL, `description` TEXT NOT NULL, `completed` INTEGER NOT NULL, `archived` INTEGER NOT NULL, PRIMARY KEY(`id`))")
   db.execSQL("CREATE INDEX IF NOT EXISTS `index_agenda_events_date` ON `agenda_events` (`date`)")
   db.execSQL("CREATE TABLE IF NOT EXISTS `inbox_items` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `notes` TEXT NOT NULL, `created` TEXT NOT NULL, `archived` INTEGER NOT NULL, PRIMARY KEY(`id`))")
+ }
+}
+
+val MIGRATION_7_8=object:androidx.room.migration.Migration(7,8){
+ override fun migrate(db:androidx.sqlite.db.SupportSQLiteDatabase){
+  db.execSQL("ALTER TABLE `player` ADD COLUMN `specialization` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("CREATE TABLE IF NOT EXISTS `knowledge_notebooks` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT NOT NULL, `category` TEXT NOT NULL, `icon` INTEGER NOT NULL, `cover` INTEGER NOT NULL, `pathId` TEXT NOT NULL, `archived` INTEGER NOT NULL, `created` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`))")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_knowledge_notebooks_pathId` ON `knowledge_notebooks` (`pathId`)")
+  db.execSQL("CREATE TABLE IF NOT EXISTS `knowledge_pages` (`id` TEXT NOT NULL, `notebookId` TEXT NOT NULL, `title` TEXT NOT NULL, `content` TEXT NOT NULL, `tags` TEXT NOT NULL, `favorite` INTEGER NOT NULL, `archived` INTEGER NOT NULL, `pathId` TEXT NOT NULL, `taskId` TEXT NOT NULL, `created` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`notebookId`) REFERENCES `knowledge_notebooks`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_knowledge_pages_notebookId` ON `knowledge_pages` (`notebookId`)")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_knowledge_pages_pathId` ON `knowledge_pages` (`pathId`)")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_knowledge_pages_taskId` ON `knowledge_pages` (`taskId`)")
+  db.execSQL("CREATE TABLE IF NOT EXISTS `knowledge_page_links` (`id` TEXT NOT NULL, `sourcePageId` TEXT NOT NULL, `targetPageId` TEXT NOT NULL, `created` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`sourcePageId`) REFERENCES `knowledge_pages`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT , FOREIGN KEY(`targetPageId`) REFERENCES `knowledge_pages`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_knowledge_page_links_sourcePageId` ON `knowledge_page_links` (`sourcePageId`)")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_knowledge_page_links_targetPageId` ON `knowledge_page_links` (`targetPageId`)")
+  db.execSQL("CREATE TABLE IF NOT EXISTS `knowledge_references` (`id` TEXT NOT NULL, `pageId` TEXT NOT NULL, `author` TEXT NOT NULL, `title` TEXT NOT NULL, `year` TEXT NOT NULL, `source` TEXT NOT NULL, `url` TEXT NOT NULL, `location` TEXT NOT NULL, `notes` TEXT NOT NULL, `created` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`pageId`) REFERENCES `knowledge_pages`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_knowledge_references_pageId` ON `knowledge_references` (`pageId`)")
+  db.execSQL("CREATE TABLE IF NOT EXISTS `flashcards` (`id` TEXT NOT NULL, `notebookId` TEXT NOT NULL, `pageId` TEXT NOT NULL, `question` TEXT NOT NULL, `answer` TEXT NOT NULL, `tags` TEXT NOT NULL, `repetitions` INTEGER NOT NULL, `intervalDays` INTEGER NOT NULL, `easeFactor` REAL NOT NULL, `nextReviewDate` TEXT NOT NULL, `lastReviewDate` TEXT NOT NULL, `archived` INTEGER NOT NULL, `created` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`notebookId`) REFERENCES `knowledge_notebooks`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_flashcards_notebookId` ON `flashcards` (`notebookId`)")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_flashcards_pageId` ON `flashcards` (`pageId`)")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_flashcards_nextReviewDate` ON `flashcards` (`nextReviewDate`)")
+  db.execSQL("CREATE TABLE IF NOT EXISTS `flashcard_reviews` (`id` TEXT NOT NULL, `flashcardId` TEXT NOT NULL, `reviewDate` TEXT NOT NULL, `rating` INTEGER NOT NULL, `intervalBefore` INTEGER NOT NULL, `intervalAfter` INTEGER NOT NULL, `easeAfter` REAL NOT NULL, `reviewedAt` INTEGER NOT NULL, PRIMARY KEY(`id`), FOREIGN KEY(`flashcardId`) REFERENCES `flashcards`(`id`) ON UPDATE NO ACTION ON DELETE RESTRICT )")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_flashcard_reviews_flashcardId` ON `flashcard_reviews` (`flashcardId`)")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_flashcard_reviews_reviewDate` ON `flashcard_reviews` (`reviewDate`)")
  }
 }

@@ -15,7 +15,7 @@ fun weekOf(date: String): String = LocalDate.parse(date).with(java.time.DayOfWee
 fun uid(): String = java.util.UUID.randomUUID().toString()
 
 @Entity(tableName="player")
-data class Player(@PrimaryKey val id: Int = 1, val name: String = "", val heroClass: Int = 1, val color: Int = 1, val face: Int = 0, val outfit: Int = 0, val frame: Int = 0, val title: String = "O Desperto", val goals: String = "", val created: String = today())
+data class Player(@PrimaryKey val id: Int = 1, val name: String = "", val heroClass: Int = 1, val color: Int = 1, val face: Int = 0, val outfit: Int = 0, val frame: Int = 0, val title: String = "O Desperto", val goals: String = "", val created: String = today(), @ColumnInfo(defaultValue="''") val specialization: String = "")
 @Entity(tableName="habits")
 data class Habit(@PrimaryKey val id: String = uid(), val name: String = "", val description: String = "", val icon: Int = 0, val color: Int = 1, val category: String = "Estudo", val attribute: Int = 0, val difficulty: Int = 1, val type: Int = 0, val target: Int = 1, val unit: String = "vez", val days: String = "1,2,3,4,5,6,7", val time: String = "08:00", val xp: Int = 50, val coins: Int = 5, val points: Int = 5, val proportional: Boolean = false, val reminder: Boolean = false, val paused: Boolean = false, val archived: Boolean = false, val deleted: Boolean = false, val position: Int = 0, val created: String = today(), val scheduleHistory: String = "", @ColumnInfo(defaultValue="''") val templateId:String="", @ColumnInfo(defaultValue="''") val narrativeName:String="", @ColumnInfo(defaultValue="1") val trackStreak:Boolean=true)
 @Entity(tableName="records", foreignKeys=[ForeignKey(entity=Habit::class,parentColumns=["id"], childColumns=["habitId"], onDelete=ForeignKey.RESTRICT)], indices=[Index("habitId")])
@@ -41,7 +41,7 @@ data class Focus(@PrimaryKey val id: Int = 1, val habitId: String = "", val date
     fun seconds(now: Long = System.currentTimeMillis()) = (elapsed + if(startedAt>0) max(0L,(now-startedAt)/1000) else 0).coerceAtMost(duration*60L)
 }
 
-data class GameState(val player: Player? = null, val habits: List<Habit> = emptyList(), val records: List<HabitRecord> = emptyList(), val ledger: List<Reward> = emptyList(), val quests: List<Quest> = emptyList(), val claims: List<Claim> = emptyList(), val assets: List<Asset> = emptyList(), val achievements: List<Unlocked> = emptyList(), val journal: List<Journal> = emptyList(), val routines: List<Routine> = emptyList(), val focus: Focus? = null, val restDays: List<RestDay> = emptyList(), val plans:List<PlanException> = emptyList(), val focusSessions:List<FocusSession> = emptyList(), val paths:List<PersonalPath> = emptyList(), val pathStages:List<PathStage> = emptyList(), val pathTasks:List<PathTask> = emptyList(), val pathSubtasks:List<PathSubtask> = emptyList(), val pathHabitLinks:List<PathHabitLink> = emptyList(), val timeBlocks:List<TimeBlock> = emptyList(), val agendaEvents:List<AgendaEvent> = emptyList(), val inboxItems:List<InboxItem> = emptyList()) {
+data class GameState(val player: Player? = null, val habits: List<Habit> = emptyList(), val records: List<HabitRecord> = emptyList(), val ledger: List<Reward> = emptyList(), val quests: List<Quest> = emptyList(), val claims: List<Claim> = emptyList(), val assets: List<Asset> = emptyList(), val achievements: List<Unlocked> = emptyList(), val journal: List<Journal> = emptyList(), val routines: List<Routine> = emptyList(), val focus: Focus? = null, val restDays: List<RestDay> = emptyList(), val plans:List<PlanException> = emptyList(), val focusSessions:List<FocusSession> = emptyList(), val paths:List<PersonalPath> = emptyList(), val pathStages:List<PathStage> = emptyList(), val pathTasks:List<PathTask> = emptyList(), val pathSubtasks:List<PathSubtask> = emptyList(), val pathHabitLinks:List<PathHabitLink> = emptyList(), val timeBlocks:List<TimeBlock> = emptyList(), val agendaEvents:List<AgendaEvent> = emptyList(), val inboxItems:List<InboxItem> = emptyList(), val notebooks:List<KnowledgeNotebook> = emptyList(), val knowledgePages:List<KnowledgePage> = emptyList(), val knowledgeLinks:List<KnowledgePageLink> = emptyList(), val knowledgeReferences:List<KnowledgeReference> = emptyList(), val flashcards:List<Flashcard> = emptyList(), val flashcardReviews:List<FlashcardReview> = emptyList()) {
     val xp get() = ledger.sumOf{it.xp}.coerceAtLeast(0)
     val level get() = Progression.level(xp)
     val rawCoins get() = ledger.sumOf{it.coins}
@@ -88,7 +88,7 @@ fun questProgress(q: Quest,s: GameState, occ: String = occurrence(q)): Long {
     val rs=s.records.filter{r -> (selected.isEmpty() || r.habitId in selected) && (q.attribute<0 || r.attribute==q.attribute) && when(q.period){0->r.date==occ;1,3->r.date>=occ && r.date<=LocalDate.parse(occ).plusDays(6).toString();else->true} && (q.deadline.isEmpty() || r.date<=q.deadline)}
     return when(q.metric){1->rs.filter{it.type==2}.sumOf{it.progress.toLong()};2->rs.sumOf{Progression.reward(it.xp,it.progress,it.target,it.proportional)};3->rs.filter{it.unit.contains("página",true)}.sumOf{it.progress.toLong()};else->rs.count{it.complete}.toLong()}
 }
-data class AchievementDef(val id: String, val name: String, val description: String, val rarity: String, val icon: String, val target: Long)
+data class AchievementDef(val id: String, val name: String, val description: String, val rarity: String, val icon: String, val target: Long, val coins: Long = 5)
 val achievementDefs=listOf(
     AchievementDef("forest","Testemunha da Floresta","Resgatar a Vigília da Floresta.","Épica","◈",1),
     AchievementDef("first","O Primeiro Passo","Concluir um hábito.","Comum","✦",1),
@@ -98,7 +98,12 @@ val achievementDefs=listOf(
     AchievementDef("streak","A Chama Persistente","Manter uma sequência de 7 dias programados.","Rara","✺",7),
     AchievementDef("return","O Retorno do Herói","Concluir um hábito após 7 dias sem registros completos.","Rara","☽",1),
     AchievementDef("fifty","Lenda de Aetheris","Alcançar o nível 50.","Lendária","⚑",50),
-    AchievementDef("restore","Pedras que Recordam","Restaurar uma construção da vila.","Rara","◇",1))
+    AchievementDef("restore","Pedras que Recordam","Restaurar uma construção da vila.","Rara","◇",1),
+    AchievementDef("mimir_first_tome","Primeiro Tomo","Criar seu primeiro caderno na Biblioteca de Mímir.","Comum","▤",1,coins=0),
+    AchievementDef("mimir_first_rune","A Primeira Runa","Concluir sua primeira revisão nas Runas da Memória.","Comum","◈",1,coins=0),
+    AchievementDef("mimir_ten_cards","Memória de Mímir","Revisar 10 flashcards distintos nas Runas da Memória.","Rara","❖",10,coins=0),
+    AchievementDef("mimir_five_days","Guardião do Conhecimento","Revisar flashcards em 5 dias distintos.","Rara","☽",5,coins=0),
+    AchievementDef("mimir_sage","Sábio dos Reinos","Reunir 10 páginas e 3 ligações entre notas na Biblioteca de Mímir.","Épica","✦",1,coins=0))
 fun achievementProgress(a: AchievementDef,s: GameState): Long = when(a.id){
     "forest"->if(expeditionComplete(s,forestExpeditions.last()))1 else 0
     "first","hundred"->s.records.count{it.complete}.toLong()
@@ -107,6 +112,11 @@ fun achievementProgress(a: AchievementDef,s: GameState): Long = when(a.id){
     "streak"->s.habits.maxOfOrNull{streak(it,s.records,restDates=s.restDates,plans=s.plans)}?.toLong()?:0
     "return"->{val ds=s.records.filter{it.complete}.map{LocalDate.parse(it.date)}.distinct().sorted(); if(ds.zipWithNext().any{(x,y)->java.time.temporal.ChronoUnit.DAYS.between(x,y)>=7}) 1 else 0}
     "restore"->s.assets.count{it.kind=="building"}.toLong()
+    "mimir_first_tome"->if(s.notebooks.isNotEmpty()) 1 else 0
+    "mimir_first_rune"->if(s.flashcardReviews.isNotEmpty()) 1 else 0
+    "mimir_ten_cards"->s.flashcardReviews.map{it.flashcardId}.distinct().size.toLong()
+    "mimir_five_days"->s.flashcardReviews.map{it.reviewDate}.distinct().size.toLong()
+    "mimir_sage"->if(s.knowledgePages.count{!it.archived}>=10 && s.knowledgeLinks.size>=3) 1 else 0
     else->0
 }
 data class ShopItem(val id:String,val name:String,val kind:String,val cost:Int,val description:String,val symbol:String)
