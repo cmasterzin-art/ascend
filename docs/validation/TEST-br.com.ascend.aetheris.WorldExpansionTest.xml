@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.WorldExpansionTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-19T05:57:49" hostname="runnervmccnms" time="1.344">
+<testsuite name="br.com.ascend.aetheris.WorldExpansionTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-19T20:03:11" hostname="runnervmccnms" time="5.635">
   <properties/>
-  <testcase name="atlasStatesAndLevelGatesRespectAllSixRegions" classname="br.com.ascend.aetheris.WorldExpansionTest" time="0.406"/>
-  <testcase name="bibliotecaDasErasFullPlaythroughWithCaminhosMimirAndAntiSpam" classname="br.com.ascend.aetheris.WorldExpansionTest" time="0.383"/>
-  <testcase name="montanhasDaDisciplinaFocusSessionsRestDaysAndRelics" classname="br.com.ascend.aetheris.WorldExpansionTest" time="0.455"/>
-  <testcase name="npcsRespondToProgressAndSpecializationsAndBackupRoundTripsCleanly" classname="br.com.ascend.aetheris.WorldExpansionTest" time="0.099"/>
+  <testcase name="atlasStatesAndLevelGatesRespectAllSixRegions" classname="br.com.ascend.aetheris.WorldExpansionTest" time="3.991"/>
+  <testcase name="bibliotecaDasErasFullPlaythroughWithCaminhosMimirAndAntiSpam" classname="br.com.ascend.aetheris.WorldExpansionTest" time="0.821"/>
+  <testcase name="montanhasDaDisciplinaFocusSessionsRestDaysAndRelics" classname="br.com.ascend.aetheris.WorldExpansionTest" time="0.621"/>
+  <testcase name="npcsRespondToProgressAndSpecializationsAndBackupRoundTripsCleanly" classname="br.com.ascend.aetheris.WorldExpansionTest" time="0.202"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
