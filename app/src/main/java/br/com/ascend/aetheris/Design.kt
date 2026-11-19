@@ -84,18 +84,20 @@ val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
         drawPath(groove,Brush.verticalGradient(listOf(grooveTop,track.copy(alpha=.85f),grooveBot)))
         if(ctrlImg!=null){
             clipPath(groove){
-                drawAtlasCellNineSlice(ctrlImg,index=0,columns=2,rows=4,capXRatio=.16f,capYRatio=.25f,alpha=if(dark).54f else .22f)
+                drawAtlasCellNineSlice(ctrlImg,index=0,columns=2,rows=4,capXRatio=.08f,capYRatio=.25f,alpha=if(dark).34f else .16f)
             }
         }
         if(fraction>0f){val fw=(w*fraction).coerceAtLeast(tip*2)
             clipPath(groove){
-                drawRect(Brush.horizontalGradient(listOf(color.copy(alpha=.46f),color.copy(alpha=.88f),color),endX=fw),size=Size(fw,h))
+                drawRect(Brush.horizontalGradient(listOf(color.copy(alpha=.52f),color.copy(alpha=.92f),color),endX=fw),size=Size(fw,h))
                 if(ctrlImg!=null){
                     val cw=ctrlImg.width/2;val ch=ctrlImg.height/4
-                    drawImage(ctrlImg,IntOffset(cw,0),IntSize((cw*fraction).toInt().coerceAtLeast(1),ch),IntOffset(0,0),IntSize(fw.toInt().coerceAtLeast(1),h.toInt().coerceAtLeast(1)),alpha=if(dark).34f else .18f)
+                    clipRect(right=fw){
+                        drawImage(ctrlImg,IntOffset(cw,0),IntSize(cw,ch),IntOffset(0,0),IntSize(w.toInt().coerceAtLeast(1),h.toInt().coerceAtLeast(1)),alpha=if(dark).14f else .08f)
+                    }
                 }
-                drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha=.26f),Color.Transparent,Color.Black.copy(alpha=.34f))),size=Size(fw,h))
-                if(fraction<1f)drawRect(Brush.horizontalGradient(listOf(Color.Transparent,Color.White.copy(alpha=.52f)),startX=fw-7*d,endX=fw),topLeft=Offset(fw-7*d,0f),size=Size(7*d,h))
+                drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha=.24f),Color.Transparent,Color.Black.copy(alpha=.32f))),size=Size(fw,h))
+                if(fraction<1f)drawRect(Brush.horizontalGradient(listOf(Color.Transparent,Color.White.copy(alpha=.50f)),startX=fw-7*d,endX=fw),topLeft=Offset(fw-7*d,0f),size=Size(7*d,h))
             }
         }
         listOf(.25f,.5f,.75f).forEach{stop->val x=w*stop;drawLine((if(onParchment)Sepia else Color.Black).copy(alpha=.55f),Offset(x,h*.18f),Offset(x,h*.82f),d)}
@@ -108,15 +110,16 @@ val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
 @Composable fun Action(text:String,onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boolean=true,completed:Boolean=false,ceremonial:Boolean=false,secondary:Boolean=false,selected:Boolean=false,style:VikingButtonStyle?=null,leadingRune:HistoricalFutharkRune?=null){SagaButton(text,onClick,modifier,enabled=enabled,completed=completed,ceremonial=ceremonial,secondary=secondary,selected=selected,style=style,leadingRune=leadingRune)}
 @Composable fun Empty(text:String){Row(Modifier.fillMaxWidth().materialSurface(accent=ColdIron).padding(18.dp),horizontalArrangement=Arrangement.spacedBy(14.dp),verticalAlignment=Alignment.CenterVertically){RuneSeal(0,Muted,Modifier.size(34.dp));Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)){Box(Modifier.width(24.dp).height(1.dp).background(Gold.copy(alpha=.45f)));Text(text,color=Muted,fontSize=14.sp,lineHeight=23.sp)}}}
 @Composable fun ChipRow(values:List<String>,selected:Int,onSelect:(Int)->Unit,scrollable:Boolean=true){
-    val dark=LocalAppearance.current.dark;val gold=Gold
+    val dark=LocalAppearance.current.dark;val gold=Gold;val night=Night
     Row(if(scrollable)Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()) else Modifier,horizontalArrangement=Arrangement.spacedBy(6.dp),verticalAlignment=Alignment.CenterVertically){
         values.forEachIndexed{i,v->val isSel=selected==i;val shape=CutCornerShape(topStart=5.dp,topEnd=2.dp,bottomEnd=5.dp,bottomStart=2.dp)
-            Box(Modifier.heightIn(min=36.dp).clip(shape).background(Brush.verticalGradient(if(isSel)listOf(gold.copy(alpha=if(dark).24f else .20f),gold.copy(alpha=.08f)) else listOf(Surface.copy(alpha=.78f),Surface.copy(alpha=.48f)))).atlasCellNineSlice(R.drawable.viking_controls_atlas,index=if(isSel)3 else 2,columns=2,rows=4,capXRatio=.18f,capYRatio=.28f,alpha=if(dark)(if(isSel).76f else .52f) else if(isSel).26f else .14f).border(if(isSel)1.2.dp else 1.dp,if(isSel)gold.copy(alpha=.82f) else ColdIron.copy(alpha=.30f),shape).drawWithCache{onDrawBehind{
+            Box(Modifier.heightIn(min=36.dp).clip(shape).background(Brush.verticalGradient(if(isSel)listOf(gold.copy(alpha=if(dark).22f else .20f),if(dark)Color(0xFF1A1612) else gold.copy(alpha=.08f)) else listOf(Surface.copy(alpha=.78f),Surface.copy(alpha=.48f)))).atlasCellNineSlice(R.drawable.viking_controls_atlas,index=if(isSel)3 else 2,columns=2,rows=4,capXRatio=.18f,capYRatio=.28f,alpha=if(dark)(if(isSel).42f else .38f) else if(isSel).20f else .12f).border(if(isSel)1.2.dp else 1.dp,if(isSel)gold.copy(alpha=.84f) else ColdIron.copy(alpha=.30f),shape).drawWithCache{onDrawBehind{
                 val d=1.dp.toPx()
+                if(isSel&&dark)drawRect(night.copy(alpha=.42f))
                 drawLine(Color.White.copy(alpha=if(isSel).18f else .06f),Offset(5*d,d),Offset(size.width-5*d,d),d)
                 if(isSel)drawLine(gold,Offset(size.width*.20f,size.height-1.5f*d),Offset(size.width*.80f,size.height-1.5f*d),1.5f*d)
             }}.semantics(mergeDescendants=true){this.selected=isSel;role=Role.Tab}.clickable{onSelect(i)}.padding(horizontal=12.dp,vertical=7.dp),contentAlignment=Alignment.Center){
-                Text(v,color=if(isSel)gold else Muted,fontSize=12.sp,letterSpacing=.2.sp,fontWeight=if(isSel)FontWeight.SemiBold else FontWeight.Normal)
+                Text(v,color=if(isSel)(if(dark)Color(0xFFF3E7CE) else gold) else Muted,fontSize=12.sp,letterSpacing=.2.sp,fontWeight=if(isSel)FontWeight.SemiBold else FontWeight.Normal)
             }
         }
     }

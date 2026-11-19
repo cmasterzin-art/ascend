@@ -350,13 +350,27 @@ fun Modifier.vikingCornerAccents(
 fun Modifier.vikingHollowFrame(alpha: Float = .72f): Modifier =
  atlasCellNineSlice(R.drawable.viking_knotwork_atlas, index = 6, columns = 2, rows = 4, capXRatio = .20f, capYRatio = .26f, alpha = alpha)
 
-/** Confirmation check seal from viking_controls_atlas.webp (cell 6). */
+/** Confirmation check seal from viking_controls_atlas.webp (cell 6, centered square crop). */
 @Composable
 fun VikingCheckSeal(size: Dp = 22.dp, modifier: Modifier = Modifier) {
  if (LocalAppearance.current.minimal) {
   FutharkRuneGlyph(HistoricalFutharkRune.Fehu, Green, modifier, size)
  } else {
-  AtlasCell(R.drawable.viking_controls_atlas, index = 6, columns = 2, rows = 4, modifier = modifier.size(size))
+  val img = ImageBitmap.imageResource(R.drawable.viking_controls_atlas)
+  Canvas(modifier.size(size)) {
+   val cw = img.width / 2
+   val ch = img.height / 4
+   val side = minOf(cw, ch)
+   val srcX = (cw - side) / 2
+   val srcY = 3 * ch + (ch - side) / 2
+   drawImage(
+    image = img,
+    srcOffset = IntOffset(srcX, srcY),
+    srcSize = IntSize(side, side),
+    dstSize = IntSize(this.size.width.toInt().coerceAtLeast(1), this.size.height.toInt().coerceAtLeast(1)),
+    filterQuality = FilterQuality.Medium
+   )
+  }
  }
 }
 

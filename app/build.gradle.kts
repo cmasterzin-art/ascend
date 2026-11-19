@@ -11,8 +11,8 @@ android {
         applicationId = "br.com.ascend.aetheris"
         minSdk = 26
         targetSdk = 35
-        versionCode = 22
-        versionName = "1.7.1"
+        versionCode = 23
+        versionName = "1.7.2"
     }
     // Keep signing material outside the repository. Use the original key for an in-place update.
     System.getenv("ASCEND_KEYSTORE_PATH")?.let { path ->
@@ -29,7 +29,8 @@ android {
     buildFeatures { compose = true }
     testOptions { unitTests.isIncludeAndroidResources = true
         unitTests.all {
-            it.maxHeapSize = "1600m"
+            it.maxHeapSize = "1200m"
+            it.forkEvery = 8
             it.systemProperty("robolectric.dependency.repo.url", "https://repo.maven.apache.org/maven2")
             listOf("https.proxyHost", "https.proxyPort", "http.proxyHost", "http.proxyPort").forEach { key -> System.getProperty(key)?.let { value -> it.systemProperty(key, value) } }
         }

@@ -135,40 +135,54 @@ private val regionalRelicAtlasIndex = mapOf(
     }
 
     Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
-        // Accessible zoom & recenter controls (all >= 48dp touch targets)
-        Row(
+        // Accessible zoom & recenter controls (all >= 48dp touch targets; wraps cleanly on 320dp + 130% font)
+        @OptIn(ExperimentalLayoutApi::class)
+        FlowRow(
             Modifier.fillMaxWidth().testTag("atlas_controls"),
             horizontalArrangement = Arrangement.spacedBy(6.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            RealmOrnament(5, size = 26.dp)
-            Text(
-                "Zoom ${(zoom * 100).toInt()}%",
-                color = Muted,
-                fontSize = 11.sp,
-                modifier = Modifier.weight(1f)
-            )
-            SagaButton(
-                text = "−",
-                onClick = { applyZoom(zoom - 0.35f) },
-                enabled = zoom > 1.01f,
-                style = VikingButtonStyle.CompactoRunico,
-                modifier = Modifier.widthIn(min = 48.dp).semantics { contentDescription = "Reduzir mapa" }
-            )
-            SagaButton(
-                text = "Centralizar",
-                onClick = { zoom = 1f; offset = Offset.Zero },
-                enabled = zoom > 1.01f || offset != Offset.Zero,
-                style = VikingButtonStyle.CompactoRunico,
-                modifier = Modifier.semantics { contentDescription = "Centralizar mapa" }
-            )
-            SagaButton(
-                text = "+",
-                onClick = { applyZoom(zoom + 0.35f) },
-                enabled = zoom < 2.39f,
-                style = VikingButtonStyle.CompactoRunico,
-                modifier = Modifier.widthIn(min = 48.dp).semantics { contentDescription = "Ampliar mapa" }
-            )
+            Row(
+                Modifier.align(Alignment.CenterVertically),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                RealmOrnament(5, size = 26.dp)
+                Text(
+                    "Zoom ${(zoom * 100).toInt()}%",
+                    color = Muted,
+                    fontSize = 11.sp,
+                    maxLines = 1,
+                    softWrap = false
+                )
+            }
+            Row(
+                Modifier.align(Alignment.CenterVertically),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                SagaButton(
+                    text = "−",
+                    onClick = { applyZoom(zoom - 0.35f) },
+                    enabled = zoom > 1.01f,
+                    style = VikingButtonStyle.CompactoRunico,
+                    modifier = Modifier.widthIn(min = 48.dp).semantics { contentDescription = "Reduzir mapa" }
+                )
+                SagaButton(
+                    text = "Centralizar",
+                    onClick = { zoom = 1f; offset = Offset.Zero },
+                    enabled = zoom > 1.01f || offset != Offset.Zero,
+                    style = VikingButtonStyle.CompactoRunico,
+                    modifier = Modifier.semantics { contentDescription = "Centralizar mapa" }
+                )
+                SagaButton(
+                    text = "+",
+                    onClick = { applyZoom(zoom + 0.35f) },
+                    enabled = zoom < 2.39f,
+                    style = VikingButtonStyle.CompactoRunico,
+                    modifier = Modifier.widthIn(min = 48.dp).semantics { contentDescription = "Ampliar mapa" }
+                )
+            }
         }
 
         BoxWithConstraints(
