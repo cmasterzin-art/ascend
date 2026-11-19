@@ -1,3 +1,22 @@
+# 1.7.3.1 — O Legado das Runas
+
+Heráldica Rúnica, Codex Rúnico de 24 runas, 3 Coleções Lendárias, Forja expandida para 12 receitas com 3 estágios de aprimoramento, Retrato Vivo 1.1, Arsenal 2.1 e correções da 1.7.3 (*Runic Heritage & Legendary Collections Update*) sobre a base `feat/ascend-1.7.3`, preservando integralmente todos os 191 testes anteriores, os retratos originais e a economia. [Heráldica Rúnica](docs/HERALDICA-RUNICA.md) · [Codex Rúnico](docs/CODEX-RUNICO.md) · [Coleções Lendárias](docs/COLECOES-LENDARIAS.md) · [Aprimoramentos da Forja](docs/APRIMORAMENTOS-DA-FORJA.md) · [Visual 1.7.3.1](docs/VISUAL-1.7.3.1.md).
+
+## Etapa 0 — Correções Estruturais da 1.7.3
+
+- **Equipamento idempotente (`Repository.kt`, `EquipmentScreen.kt`):** novos comandos `equipItem`, `unequipItem` e `setEquipment` garantem estado determinístico sob chamadas repetidas/concorrentes, 1 peça por espaço, posse, compatibilidade e `0` efeito econômico.
+- **Expedições de foco versionadas (`Exploration.kt`, `ChronicleData.kt`, `Database.kt`):** `focusRuleVersion` em `Quest` e `Claim` preserva fases e claims legados da 1.7.2 (`0`, `>0s`) enquanto novas fases (`1`) exigem `>= 300s`.
+- **Configurações parciais seguras (`EquipmentScreen.kt`, `Repository.kt`):** prévia explícita `previewLoadoutApplication` listando disponíveis, ausentes e alterações antes de aplicar; espaços válidos fora dos itens disponíveis nunca são apagados.
+- **Integridade do Estúdio (`EquipmentScreen.kt`):** rascunho em `rememberSaveable`, confirmação ao descartar mudanças e permanência do Estúdio aberto se o salvamento falhar.
+- **Alinhamento documental:** corrigido `craft:<recipeId>` para a chave real `forge:<recipeId>`.
+
+## Pilares 1 a 6 — Heráldica, Codex, Forja, Coleções Lendárias, Retrato Vivo 1.1 & Arsenal 2.1
+
+- **Heráldica Rúnica (`RunicHeritageData.kt`, `HeraldryAndCodex.kt`):** 8 símbolos, 4 formatos, 4 metais, 5 cores secundárias, 5 ornamentos, 3 estandartes e inscrição curta de até 6 runas (com transliteração aproximada rotulada explicitamente como não sendo tradução para nórdico antigo), persistida em **Room v10 (`heraldry_profile`)** e **Backup v12**, exibida em Jornada, Perfil, Retrato Ampliado, Retrato Vivo 1.1, Arsenal, Salão das Memórias, Crônicas e Coleções concluídas.
+- **Codex Rúnico completo (`VikingDesignSystem.kt`, `HeraldryAndCodex.kt`):** 24 runas vetoriais do *Elder Futhark* preservando ordinais `0..11` das 12 originais, mapeamento explícito `sealFallbackRune`, 6 superfícies limpas (`runic_codex_surfaces_atlas.webp`), busca/filtros/favoritos e distinção explícita entre *Elder Futhark* (24), *Younger Futhark* (16) e ficção de Aetheris.
+- **Forja de Darian (12 receitas), 3 Estágios & 3 Coleções Lendárias:** 4 novas receitas exclusivas (`vigil-axe`, `runic-staff`, `northern-blade`, `constellation-brooch`), aprimoramento cosmético **Forjado → Gravado → Consagrado** (`forge-upgrade:<itemId>:<stage>`, `0 XP`, sem pular estágios) e **3 Coleções Lendárias** (*Juramento de Ferro*, *Sabedoria de Mímir*, *Vigília Boreal*) independentes das 3 Configurações de Equipamento (*Jornada*, *Conselho*, *Expedição*), concedendo troféu e título exclusivo sem multiplicadores.
+- **Retrato Vivo 1.1, Arsenal 2.1, Design System 3.1 & Validação:** acabamentos de aprimoramento e brasão no Retrato Vivo; Arsenal em 4 abas compactas com busca, filtros combináveis e 5 ordenações; contraste refinado na navegação inferior; **8 novos recursos pictóricos** (`647,5 KB` no APK + prancha conceitual fora do APK); **Room v10 (`MIGRATION_9_10`)** e **Backup v12 (`v1`–`v12`)**; **202 testes aprovados** (`191` preservados + `11` novos), Lint com **0 erros**, `versionCode 25`.
+
 # 1.7.3 — A Forja das Lendas
 
 Retrato Vivo, A Forja de Darian e Arsenal dos Nove Reinos (*Living Hero, Runic Crafting & Nordic Viking Arsenal Update*) sobre a base `feat/ascend-1.7.2`, preservando integralmente os três retratos pintados originais, o Atlas 2.0, as regiões exploráveis, a Biblioteca de Mímir, os Arquétipos, os Caminhos, a Agenda 2.0, a economia de XP/moedas e os 181 testes anteriores. [Retrato Vivo](docs/RETRATO-VIVO-1.7.3.md) · [Forja de Darian](docs/FORJA-DARIAN-1.7.3.md) · [Arsenal 1.7.3](docs/ARSENAL-1.7.3.md) · [Visual 1.7.3](docs/VISUAL-1.7.3.md).
@@ -10,7 +29,7 @@ Retrato Vivo, A Forja de Darian e Arsenal dos Nove Reinos (*Living Hero, Runic C
 ## Módulo II — A Forja de Darian (`ForgeCrafting.kt`, `ForgeScreen.kt`, `WorldScreen.kt`)
 
 - **Integração à construção `A Forja` (`building:1`):** preserva as 2 etapas históricas de restauração e adiciona oficina de fabricação cosmética com **8 receitas exclusivas** (*Elmo do Juramento*, *Cota do Norte*, *Vestes do Escriba*, *Fíbula de Yggdrasil*, *Coroa Rúnica de Mímir*, *Manto das Runas*, *Armadura da Vigília* e *Moldura dos Nove Reinos*).
-- **Integridade econômica:** somente Fragmentos de Aether (`craft:<recipeId>`), `0 XP`, fora da Loja (`Repository.buy` bloqueia `forgeItemIds`), idempotência concorrente em transação Room, prévia ao vivo na bigorna e diálogo/selo exclusivos para `mestre_da_forja` sem desconto ou bônus econômico.
+- **Integridade econômica:** somente Fragmentos de Aether (`forge:<recipeId>`), `0 XP`, fora da Loja (`Repository.buy` bloqueia `forgeItemIds`), idempotência concorrente em transação Room, prévia ao vivo na bigorna e diálogo/selo exclusivos para `mestre_da_forja` sem desconto ou bônus econômico.
 
 ## Módulo III — Arsenal dos Nove Reinos, Estúdio, 3 Conjuntos & Estabilidade
 

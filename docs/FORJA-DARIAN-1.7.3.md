@@ -4,7 +4,7 @@
 
 ## 1. Regras Econômicas e Integridade
 
-- **Zero nova moeda:** todas as receitas utilizam exclusivamente os **Fragmentos de Aether** do ledger transacional existente (`craft:<recipeId>`).
+- **Zero nova moeda:** todas as receitas utilizam exclusivamente os **Fragmentos de Aether** do ledger transacional existente (`forge:<recipeId>`).
 - **100% cosmético (`0 XP`, `0` bônus de combate ou multiplicadores):** forjar uma peça nunca gera XP, não altera atributos e não cria vantagens econômicas.
 - **Exclusividade garantida:** nenhuma das 8 peças da Forja aparece ou pode ser comprada na Loja (`Repository.buy()` bloqueia `forgeItemIds`), e nenhuma das 5 relíquias de expedição pode ser fabricada na Forja.
 - **Idempotência concorrente (`Repository.craftForgeItem`):** executada dentro de transação Room com verificação de etapa da Forja, requisitos reais, posse prévia e saldo; chamadas concorrentes para a mesma receita debitam apenas uma vez.

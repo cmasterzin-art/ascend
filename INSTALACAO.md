@@ -1,13 +1,13 @@
-# Instalar ASCEND 1.7.3 no Android
+# Instalar ASCEND 1.7.3.1 no Android
 
 Android 8.0 (API 26) ou superior. O uso não exige internet, conta ou pagamento.
 
-## Atualizar os APKs 1.1 a 1.7.2 fornecidos neste repositório
+## Atualizar os APKs 1.1 a 1.7.3 fornecidos neste repositório
 
 1. Em Herói → Configurações, exporte um backup de segurança.
-2. [Baixe ASCEND-1.7.3.apk](downloads/ASCEND-1.7.3.apk?raw=true) e abra o arquivo.
-3. Confirme a atualização **sem desinstalar**. O pacote (`br.com.ascend.aetheris`) e o certificado oficial (`e1f003ef...`) são os mesmos; o `versionCode` passou para `24`.
-4. Abra o app e confira seu personagem. A `1.7.3` migra aditivamente para **Room v9 (`MIGRATION_8_9`)** e **backup v11** (compatível com `v1`–`v11`), mantendo todos os dados anteriores (hábitos, foco, Caminhos, Agenda 2.0, Biblioteca de Mímir, especializações, exploração regional, inventário e memórias).
+2. [Baixe ASCEND-1.7.3.1.apk](downloads/ASCEND-1.7.3.1.apk?raw=true) e abra o arquivo.
+3. Confirme a atualização **sem desinstalar**. O pacote (`br.com.ascend.aetheris`) e o certificado oficial (`e1f003ef...`) são os mesmos; o `versionCode` passou para `25`.
+4. Abra o app e confira seu personagem. A `1.7.3.1` migra aditivamente para **Room v10 (`MIGRATION_9_10`)** e **backup v12** (compatível com `v1`–`v12`), mantendo todos os dados anteriores (hábitos, foco, Caminhos, Agenda 2.0, Biblioteca de Mímir, especializações, exploração regional, Forja de Darian, conjuntos de equipamento, inventário e memórias).
 
 Se o Android indicar conflito de assinatura, sua instalação foi compilada com outra chave. Não desinstale antes de exportar os dados; consulte `ASSINATURA.md`.
 
@@ -18,23 +18,24 @@ Se o Android indicar conflito de assinatura, sua instalação foi compilada com 
 1. Na **versão 1.0 ainda instalada**, abra **Herói → Configurações → Exportar backup**.
 2. Salve o JSON em Downloads ou outra pasta fora do aplicativo. Confirme que o arquivo foi criado e guarde uma cópia.
 3. Desinstale a 1.0. Essa ação apaga o banco do aplicativo; o backup salvo no passo anterior será usado na restauração.
-4. [Baixe ASCEND-1.7.3.apk](downloads/ASCEND-1.7.3.apk?raw=true), abra pelo gerenciador de arquivos e instale.
-5. Na tela de boas-vindas, toque em **Já tenho uma jornada · Restaurar backup**, escolha o JSON e confirme. A `1.7.3` aceita backups `v1` a `v11`. Se já criou outro personagem, use **Herói → Configurações → Importar backup**; os dados atuais serão substituídos pelos do arquivo.
+4. [Baixe ASCEND-1.7.3.1.apk](downloads/ASCEND-1.7.3.1.apk?raw=true), abra pelo gerenciador de arquivos e instale.
+5. Na tela de boas-vindas, toque em **Já tenho uma jornada · Restaurar backup**, escolha o JSON e confirme. A `1.7.3.1` aceita backups `v1` a `v12`. Se já criou outro personagem, use **Herói → Configurações → Importar backup**; os dados atuais serão substituídos pelos do arquivo.
 6. Confira nome, hábitos e XP antes de apagar qualquer cópia de segurança.
 
-Se você tem a chave original, pode compilar a `1.7.3` com ela e instalar diretamente por cima da 1.0, sem desinstalar. A migração do banco preserva os dados. Veja `ASSINATURA.md`.
+Se você tem a chave original, pode compilar a `1.7.3.1` com ela e instalar diretamente por cima da 1.0, sem desinstalar. A migração do banco preserva os dados. Veja `ASSINATURA.md`.
 
 ## Primeira instalação
 
 1. Baixe o APK e abra-o em Downloads/Arquivos.
 2. Se solicitado pelo Android, permita **Instalar apps desconhecidos** para o gerenciador de arquivos ou navegador usado.
 3. Instale e abra ASCEND; escolha personagem, classe e hábitos iniciais.
-4. Na Jornada, use **+** para criar hábitos e registrar progresso, personalize seu **Retrato Vivo** no **Arsenal dos Nove Reinos** (com **Estúdio de Personalização** e **3 Conjuntos de Equipamento**), restaure **A Forja** na Vila para abrir **A Forja de Darian** e forjar peças cosméticas com Fragmentos, e explore o **Atlas de Aetheris 2.0** e a **Biblioteca de Mímir**.
+4. Na Jornada, use **+** para criar hábitos e registrar progresso, personalize seu **Retrato Vivo 1.1** e sua **Heráldica Rúnica** no **Arsenal 2.1**, consulte o **Codex Rúnico (24 runas do Elder Futhark)** pela **Biblioteca de Mímir** ou **Crônicas**, restaure **A Forja** na Vila para abrir **A Forja de Darian** (12 receitas, 3 estágios de aprimoramento e 3 Coleções Lendárias) e explore o **Atlas de Aetheris 2.0**.
 
-O APK é uma compilação pessoal de depuração assinada com a chave preservada, distribuída fora da Play Store. O checksum está em `downloads/ASCEND-1.7.3.apk.sha256`.
+O APK é uma compilação pessoal de depuração assinada com a chave preservada, distribuída fora da Play Store. O checksum está em `downloads/ASCEND-1.7.3.1.apk.sha256`.
 
-## Novidades da 1.7.3, 1.7.2, 1.7.1, 1.7.0 e 1.6
+## Novidades da 1.7.3.1, 1.7.3, 1.7.2, 1.7.1, 1.7.0 e 1.6
 
+- **O Legado das Runas (`1.7.3.1`):** **Heráldica Rúnica** (8 símbolos, 4 formatos, 4 metais, 5 cores, 5 ornamentos, 3 estandartes e inscrição de até 6 runas), **Codex Rúnico completo** com 24 caracteres vetoriais do *Elder Futhark* e separação rigorosa entre história e ficção, **Forja de Darian expandida** para 12 receitas + **3 estágios de aprimoramento** (*Forjado → Gravado → Consagrado*) + **3 Coleções Lendárias** independentes das 3 Configurações de Equipamento, **Arsenal 2.1** (4 abas, busca, filtros combináveis e ordenação), **Retrato Vivo 1.1** e correções estruturais da `1.7.3` (equipamento idempotente, versionamento de foco em expedições, aplicação parcial segura de configurações e preservação de rascunho no Estúdio). [Heráldica](docs/HERALDICA-RUNICA.md) · [Codex Rúnico](docs/CODEX-RUNICO.md) · [Coleções Lendárias](docs/COLECOES-LENDARIAS.md) · [Aprimoramentos da Forja](docs/APRIMORAMENTOS-DA-FORJA.md) · [Visual 1.7.3.1](docs/VISUAL-1.7.3.1.md).
 - **Retrato Vivo, A Forja de Darian & Arsenal dos Nove Reinos (`1.7.3`):** retrato em camadas pictóricas 2D sobre os 3 retratos originais refletindo armaduras, elmos abertos, fíbulas, molduras, fundos e todas as 10 especializações; oficina **A Forja de Darian** (8 receitas cosméticas em Fragmentos, `0 XP`, fora da Loja, diálogo exclusivo para *Mestre da Forja*); **Estúdio de Personalização** (com prévia segura de itens bloqueados, desfazer, salvar e restaurar) e **3 Conjuntos de Equipamento** salvos em Room v9 / backup v11; correções da `1.7.2` (mínimo de 5 min em sessões de foco para expedições e preservação de crédito ao arquivar tarefas concluídas). [Retrato Vivo](docs/RETRATO-VIVO-1.7.3.md) · [A Forja de Darian](docs/FORJA-DARIAN-1.7.3.md) · [Arsenal 1.7.3](docs/ARSENAL-1.7.3.md) · [Visual 1.7.3](docs/VISUAL-1.7.3.md).
 - **Atlas 2.0, Biblioteca das Eras & Montanhas da Disciplina (`1.7.2`):** zoom e lista acessível no Atlas, 2 novas regiões exploráveis com 3 expedições cada (Eydis e Haldor), integração opcional com Caminhos, Mímir e Foco (com fallback para hábitos), 4 relíquias colecionáveis fora da Loja, 2 títulos e **Design System 3.0** com 6 famílias de botões viking e 10 novos recursos pictóricos (`0,81 MB`). [Exploração 1.7.2](docs/EXPLORACAO-1.7.2.md) · [Atlas 2.0](docs/ATLAS-2.0.md) · [Visual 1.7.2](docs/VISUAL-1.7.2.md).
 - **Biblioteca de Mímir & Runas da Memória (`1.7.1`):** cadernos temáticos, páginas em Markdown (editar/visualizar), tags, favoritos, busca, ligações entre páginas + backlinks, referências bibliográficas, vínculo opcional com Caminhos/Tarefas e flashcards com revisão espaçada SM-2 (`0 XP` / `0 moedas` extras).
