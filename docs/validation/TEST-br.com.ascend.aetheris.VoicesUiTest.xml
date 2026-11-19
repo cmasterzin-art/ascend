@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.VoicesUiTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-19T20:02:47" hostname="runnervmccnms" time="13.51">
+<testsuite name="br.com.ascend.aetheris.VoicesUiTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-19T22:38:46" hostname="runnervm0hi8g" time="12.998">
   <properties/>
-  <testcase name="mainRoutesWeeklyMemoriesAndBackPreserveSections" classname="br.com.ascend.aetheris.VoicesUiTest" time="3.248"/>
-  <testcase name="datePickerAndSagaAbandonmentHaveRealControls" classname="br.com.ascend.aetheris.VoicesUiTest" time="4.209"/>
-  <testcase name="recognizedConversationsAndRichWeeklyPageCanBeRevisited" classname="br.com.ascend.aetheris.VoicesUiTest" time="3.951"/>
-  <testcase name="menusRemainUsableWithLargeTextAndLightTheme" classname="br.com.ascend.aetheris.VoicesUiTest" time="2.102"/>
+  <testcase name="mainRoutesWeeklyMemoriesAndBackPreserveSections" classname="br.com.ascend.aetheris.VoicesUiTest" time="2.819"/>
+  <testcase name="datePickerAndSagaAbandonmentHaveRealControls" classname="br.com.ascend.aetheris.VoicesUiTest" time="4.058"/>
+  <testcase name="recognizedConversationsAndRichWeeklyPageCanBeRevisited" classname="br.com.ascend.aetheris.VoicesUiTest" time="4.007"/>
+  <testcase name="menusRemainUsableWithLargeTextAndLightTheme" classname="br.com.ascend.aetheris.VoicesUiTest" time="2.114"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[Invalid ID 0x00000000.
 ]]></system-err>

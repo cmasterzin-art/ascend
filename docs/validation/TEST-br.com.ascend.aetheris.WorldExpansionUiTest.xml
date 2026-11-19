@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.WorldExpansionUiTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-19T20:03:16" hostname="runnervmccnms" time="80.644">
+<testsuite name="br.com.ascend.aetheris.WorldExpansionUiTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-19T22:39:15" hostname="runnervm0hi8g" time="83.084">
   <properties/>
-  <testcase name="atlas20ZoomAccessibleListAndNoInteractiveRegions" classname="br.com.ascend.aetheris.WorldExpansionUiTest" time="12.971"/>
-  <testcase name="componentBoardAndDesignSystem30" classname="br.com.ascend.aetheris.WorldExpansionUiTest" time="1.32"/>
-  <testcase name="lightThemeAndNarrow320Font130" classname="br.com.ascend.aetheris.WorldExpansionUiTest" time="7.22"/>
-  <testcase name="montanhasDaDisciplinaAndRelicsVisualStates" classname="br.com.ascend.aetheris.WorldExpansionUiTest" time="26.394"/>
-  <testcase name="coreScreensTour172" classname="br.com.ascend.aetheris.WorldExpansionUiTest" time="8.107"/>
-  <testcase name="bibliotecaDasErasVisualStates" classname="br.com.ascend.aetheris.WorldExpansionUiTest" time="24.631"/>
+  <testcase name="atlas20ZoomAccessibleListAndNoInteractiveRegions" classname="br.com.ascend.aetheris.WorldExpansionUiTest" time="13.285"/>
+  <testcase name="componentBoardAndDesignSystem30" classname="br.com.ascend.aetheris.WorldExpansionUiTest" time="1.449"/>
+  <testcase name="lightThemeAndNarrow320Font130" classname="br.com.ascend.aetheris.WorldExpansionUiTest" time="7.526"/>
+  <testcase name="montanhasDaDisciplinaAndRelicsVisualStates" classname="br.com.ascend.aetheris.WorldExpansionUiTest" time="26.998"/>
+  <testcase name="coreScreensTour172" classname="br.com.ascend.aetheris.WorldExpansionUiTest" time="8.255"/>
+  <testcase name="bibliotecaDasErasVisualStates" classname="br.com.ascend.aetheris.WorldExpansionUiTest" time="25.571"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

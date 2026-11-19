@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.FocusAttributionTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-19T19:59:12" hostname="runnervmccnms" time="0.03">
+<testsuite name="br.com.ascend.aetheris.FocusAttributionTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-19T22:34:31" hostname="runnervm0hi8g" time="0.029">
   <properties/>
   <testcase name="pausesReportOnlyProvenMinutes" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.012"/>
-  <testcase name="suspendedPathsKeepTasksOutsideActiveSurfaces" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.009"/>
-  <testcase name="blocksPartitionTimeWithoutDuplicatingIt" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.001"/>
-  <testcase name="movedTaskDoesNotMoveHistoricalFocus" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.0"/>
-  <testcase name="nextActivitiesRespectStartEndDayAndUntimedEvents" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.007"/>
+  <testcase name="suspendedPathsKeepTasksOutsideActiveSurfaces" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.01"/>
+  <testcase name="blocksPartitionTimeWithoutDuplicatingIt" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.0"/>
+  <testcase name="movedTaskDoesNotMoveHistoricalFocus" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.001"/>
+  <testcase name="nextActivitiesRespectStartEndDayAndUntimedEvents" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.004"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
