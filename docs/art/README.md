@@ -120,5 +120,21 @@ Dez novos recursos pictóricos originais gerados via `generate_image` (orçament
 | `viking_knotwork_atlas.webp` | Atlas ornamental `2 × 4` | `960 × 640` · WebP RGBA | 101,108 | `3b8dba23cbaa5ff8d586e8eba114dae629c35a83005cfd22e6092f1156ed00ba` | Divisores Urnes/Borre, cantoneiras metálicas e moldura vazada 9-slice | `VikingKnotDivider`, `vikingCornerBrackets`, `vikingHollowFrame` |
 | `viking_controls_atlas.webp` | Atlas de controles `2 × 4` | `960 × 640` · WebP RGBA | 67,090 | `2ea4921583c849aac3adf935c1cd149607e02998bf2d663707ec8e2fe5037f9f` | Sulco/barra de progresso, tabuletas de chip, trilho de switch, campo rebaixado, selo de check e amuleto de navegação | `Meter`, `ChipRow`, `FormField`, `Toggle`, `VikingCheckSeal`, `VikingNavAmulet` |
 
+## 1.7.3 — A Forja das Lendas (Living Hero, Runic Crafting & Nordic Viking Arsenal)
+
+Oito novos recursos pictóricos originais gerados via `generate_image` (orçamento estrito de `8/10` chamadas, sem necessidade de usar as `2` de reserva): **1 prancha conceitual** mantida fora do APK (`docs/art/concepts/hero-living-173.webp`) e **7 atlas WebP de produção** em `app/src/main/res/drawable-nodpi/`, somando **621.042 bytes (606,5 KB / 0,59 MB)** dentro do APK (limite máximo de `3 MB`) e preservando integralmente os três retratos base (`wanderer_light/medium/dark.webp`) e todos os recursos das versões `1.3` a `1.7.2`. Documentação visual em [VISUAL-1.7.3.md](../VISUAL-1.7.3.md) e [RETRATO-VIVO-1.7.3.md](../RETRATO-VIVO-1.7.3.md).
+
+| Arquivo WebP (1.7.3) | Tipo / Grade | Dimensões e Formato | Bytes | SHA-256 | Finalidade Artística | Componentes Onde é Aplicado |
+|---|---|---|---:|---|---|---|
+| `concepts/hero-living-173.webp` | Prancha conceitual (fora do APK) | `1376 × 768` · WebP RGB | 134,652 | `f2030e512ae68a6c18971d7311ce1acb88589089411c00cfe2789179b52c8ec1` | Prancha de direção visual para Retrato Vivo, camadas sobre retratos originais, Forja de Darian e Arsenal Viking | Referência conceitual (fora do APK) |
+| `living_armor_atlas.webp` | Atlas de trajes `2 × 2` | `1024 × 1536` · WebP RGBA | 90,468 | `b06be0652ab1cf1eb444d7617369f77570cf82eccd1de9d5dc35ba575ca5343f` | 4 trajes nórdicos calibrados ao torso/ombros dos retratos base (`north-mail`, `scribe-robes`, `rune-mantle`, `vigil-armor`) | `LivingHeroPortrait` (`LivingPortrait.kt`), `RelicArt` (`RpgDesign.kt`) |
+| `living_helms_atlas.webp` | Atlas de elmos/coroas `2 × 2` | `1024 × 1536` · WebP RGBA | 32,010 | `bb8db995e2b3624984549baf38680fd7291012823d8332fa62d9bd6165f49a72` | 4 elmos/coroas abertos calibrados acima dos olhos (`oath-helm`, `mimir-runic-crown`, `traveler-helm`, `will-helm`) | `LivingHeroPortrait` (`LivingPortrait.kt`), `RelicArt` (`RpgDesign.kt`) |
+| `living_artifacts_atlas.webp` | Atlas de artefatos `4 × 2` | `1024 × 512` · WebP RGBA | 77,474 | `b80db748d5156a433efb4f7766f6ab10241515d2aaf10a41b0fa280be3fe87a6` | 8 fíbulas, broches, relíquias e armas/aliados contextuais para o manto e Arsenal | `LivingHeroPortrait` (`LivingPortrait.kt`), `RelicArt` (`RpgDesign.kt`) |
+| `darian_forge_atlas.webp` | Atlas da Forja `2 × 2` | `1280 × 720` · WebP RGB | 148,708 | `85c7fc0976c00caaadac4cee47588c5c28691fdee94574d985f612280b1267ae` | 3 estados da oficina de Darian (Etapa 0 ruínas, Etapa 1 parcial, Etapa 2 restaurada) + retrato de Darian | `ForgeScreen.kt` (`AtlasCellCropped`) |
+| `hero_background_atlas.webp` | Atlas de fundos `2 × 2` | `960 × 1440` · WebP RGB | 101,160 | `597c0e0d6160a1c813400e55446f8024be75f75947af52873dcbd19c5464a33d` | 4 ambientes nórdicos (Salão Viking, Biblioteca Rúnica, Torre dos Cumes, Oficina dos Artífices) | `LivingHeroPortrait`, `EquipmentScreen.kt`, `ForgeScreen.kt` |
+| `hero_frames_atlas.webp` | Atlas de molduras `2 × 2` | `960 × 1440` · WebP RGBA | 94,150 | `38b31c2ec7947623158fd7ce67e79d43212968ba827ad6855890615fec1a3d08` | 4 molduras pictóricas do Retrato Vivo (Ferro, Bronze Borre, Prata Rúnica, Lendária Nove Reinos Yggdrasil) | `LivingHeroPortrait` (`LivingPortrait.kt`), `RelicArt` (`RpgDesign.kt`) |
+| `viking_arsenal_ui_atlas.webp` | Atlas de UI do Arsenal `4 × 2` | `1024 × 512` · WebP RGBA | 77,072 | `ac7486c76f12d676e9e1b6142e74b8b2b1ad86fcfb5527dd83a438ff1718324e` | Encaixes vazio/equipado, placas e 4 brasões de raridade (Comum/Incomum, Raro, Épico, Lendário) | `EquipmentScreen.kt` (`EquipmentSlot`, `RarityCrestBadge`) |
+
+
 
 
