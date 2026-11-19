@@ -1,3 +1,20 @@
+# ASCEND 1.7.3.1 — Validação
+
+19/11/2026. Base `feat/ascend-1.7.3` (`cd2d1e2`). Branch `feat/ascend-1.7.3.1`. GitHub Actions execução `44629276894` (commits `baacce7` / `179e7e6`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL**.
+
+- **Testes:** **202 testes aprovados** (`191` preservados da `1.7.3` + `8` unitários/migração/backup/correções em `RunicHeritageTest` + `3` testes de UI gerando 15 capturas em `RunicHeritageUiTest`), zero falhas, erros ou ignorados.
+- **Android Lint:** **0 erros e 29 avisos** no CI (`28` localmente), sem novas supressões.
+- **APK oficial assinado:** [downloads/ASCEND-1.7.3.1.apk](downloads/ASCEND-1.7.3.1.apk?raw=true) com **27.367.167 bytes**, `versionName='1.7.3.1'`, `versionCode='25'`, `package: name='br.com.ascend.aetheris'`, `minSdkVersion='26'`, `targetSdkVersion='35'`, sem permissão `INTERNET`.
+- **Checksum SHA-256 do APK:** `0e9ba9240b7baf29dc0590f490c0db334aded480aa25343399a6f6db1964a772` (`sha256sum -c downloads/ASCEND-1.7.3.1.apk.sha256`: **OK**).
+- **Assinatura e alinhamento:** `Zipalign OK`; APK Signature Scheme v2 válida com o certificado oficial preservado `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
+- **Persistência e retrocompatibilidade:** **Room v10** (`MIGRATION_9_10` aditiva criando `heraldry_profile` e adicionando `focusRuleVersion` com `DEFAULT 0` em `quests` e `claims`, esquema `app/schemas/br.com.ascend.aetheris.GameDatabase/10.json`) e **backup v12** (compatibilidade `v1`–`v12`, round-trip completo e rollback atômico validados em teste), preservando integralmente os dados históricos, retratos base, fases legadas de foco da 1.7.2 e economia de XP/moedas.
+- **Acervo pictórico e capturas:** 8 novos recursos WebP originais (`1` prancha conceitual em `docs/art/concepts/runic-heritage-1731.webp` fora do APK + `7` atlas de produção somando `663.010 bytes` / `647,5 KB` / `0,63 MB` dentro do APK, abaixo do limite de `3 MB`, com `8/10` gerações usadas e `2` em reserva). **15 capturas reais** de produção inspecionadas em `docs/screenshots/1.7.3.1/`.
+- **Limites:** validação executada em Robolectric e GitHub Actions; instalação física por cima da `1.7.3` em aparelho Android, renderização em GPU física, teclado IME físico e TalkBack não foram executados.
+
+[APK](downloads/ASCEND-1.7.3.1.apk?raw=true) · [Build](docs/validation/BUILD-1.7.3.1.txt) · [Lint](docs/validation/LINT-1.7.3.1.txt) · [Certificado e manifesto](docs/validation/APK-1.7.3.1.txt) · [Heráldica Rúnica](docs/HERALDICA-RUNICA.md) · [Codex Rúnico](docs/CODEX-RUNICO.md) · [Coleções Lendárias](docs/COLECOES-LENDARIAS.md) · [Aprimoramentos da Forja](docs/APRIMORAMENTOS-DA-FORJA.md) · [Visual 1.7.3.1](docs/VISUAL-1.7.3.1.md) · [Diário 1.7.3.1](docs/DESENVOLVIMENTO-1.7.3.1.md)
+
+---
+
 # ASCEND 1.7.3 — Validação
 
 19/11/2026. Base `feat/ascend-1.7.2` (`dafcb03`). Branch `feat/ascend-1.7.3`. GitHub Actions execução `44603318077` (commits `f02e20b` / `8978f95`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL**.
