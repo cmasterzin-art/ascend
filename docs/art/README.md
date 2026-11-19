@@ -93,3 +93,14 @@ Os **20 novos arquivos WebP** (1 prancha conceitual + 19 recursos de produção 
 | `wid_plate_compact.webp` | Família IV — Widgets ([prancha](../screenshots/v1.6.9.19/prancha-biblioteca-16919.png)) | `628 × 140` · WebP RGBA | 15,950 | `ff2d1c3d402e9a553f10618b786988c8fd6fbe21ebfe66f58b12b33afcaad030` | Placa pictórica horizontal de ardósia e ferro com braçadeiras de bronze para widget compacto | `widget_surface.xml`, `HabitWidget.kt` (modo compacto) |
 | `wid_plate_expanded.webp` | Família IV — Widgets ([prancha](../screenshots/v1.6.9.19/prancha-biblioteca-16919.png)) | `628 × 320` · WebP RGBA | 54,036 | `d5fbe0a4b0e25b7d99138820dfd8182ac964819767478a87ef0a5650db0121e7` | Tábua pictórica expandida de ardósia vulcânica com arco superior de bronze e cantoneiras de ferro | `widget_surface_expanded.xml`, `HabitWidget.kt` (modo expandido) |
 
+## 1.7.1 — O Acervo de Mímir (Biblioteca de Mímir & Ascensão dos Arquétipos)
+
+Três novos recursos pictóricos originais gerados via ferramenta `generate_image` (orçamento estrito de 3 imagens) e otimizados em WebP em `app/src/main/res/drawable-nodpi/`, somando **359.502 bytes (351,1 KB)** e preservando integralmente todos os recursos anteriores. Relatório visual e capturas reais em [VISUAL-1.7.1.md](../VISUAL-1.7.1.md).
+
+| Arquivo WebP (1.7.1) | Origem / Geração | Dimensões e Formato | Bytes | SHA-256 | Finalidade Artística | Componentes Onde é Aplicado |
+|---|---|---|---:|---|---|---|
+| `mimir_library.webp` | `generate_image` (`mimir_library_1795050287377.jpg`) | `1280 × 704` · WebP RGB | 116,684 | `86bbbb5f0f18bb2b85cecdb436fd566f38eaed9a22bba72996c264f2d985b8b5` | Ilustração atmosférica da Biblioteca de Mímir em pedra escura, estantes talhadas e luz fria de velas | `MimirLibraryBanner` (`MimirScreens.kt`) |
+| `archetype_seals_atlas.webp` | `generate_image` (`archetype_seals_atlas_1795050288588.jpg`) | `1280 × 512` · WebP RGBA (`5 × 2`, células `256 × 256`) | 198,934 | `11e04851579cd756abd565f7846f91b3e5d93dfe5b97ef3616b7c58c1df69a7a` | 10 selos de bronze e ferro para as 10 especializações (Machado, Escudo de Ferro, Tomo, Círculo Rúnico, Escudo Ornado, Árvore, Bússola, Arco, Bigorna, Nó de Urnes) | `ArchetypeSealArt` em `HeroStage`, `ArchetypeAscensionPanel` (`CharacterScreen.kt`) e `SkillTree` (`EquipmentScreen.kt`) |
+| `mimir_codex_atlas.webp` | `generate_image` (`mimir_codex_atlas_1795050289877.jpg`) | `960 × 640` · WebP RGB (`3 × 2`, células `320 × 320`) | 43,884 | `4692aed01ff119a71c4b77ce72bcca62e43918e0fdab07f68a212384fdcb3a2a` | 6 capas e ícones pictóricos de tomos, pergaminhos, manuscritos, runa de ardósia e placa de bronze | `MimirCodexArt` em `MimirScreens.kt` (cadernos, editor, Runas da Memória) e `WorldScreen.kt` |
+
+
