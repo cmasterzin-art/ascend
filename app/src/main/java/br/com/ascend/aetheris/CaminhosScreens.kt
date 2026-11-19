@@ -393,7 +393,9 @@ fun PathDetailScreen(
     vm: GameViewModel,
     onBack: () -> Unit,
     onEditPath: (PersonalPath) -> Unit,
-    onStartFocus: (pathId: String, taskId: String, label: String) -> Unit
+    onStartFocus: (pathId: String, taskId: String, label: String) -> Unit,
+    onOpenNotebook: (String) -> Unit = {},
+    onOpenPage: (String) -> Unit = {}
 ) {
     val changePathState = pathStateAction(s, vm)
     val day = currentDay()
@@ -417,6 +419,12 @@ fun PathDetailScreen(
     }
     val links = remember(s.pathHabitLinks, pathId) {
         s.pathHabitLinks.filter { it.pathId == pathId }
+    }
+    val linkedNotebooks = remember(s.notebooks, pathId) {
+        s.notebooks.filter { !it.archived && it.pathId == pathId }
+    }
+    val linkedPages = remember(s.knowledgePages, pathId) {
+        s.knowledgePages.filter { !it.archived && it.pathId == pathId }
     }
     val prog = pathProgress(s, pathId)
     val focusMinutes = pathFocusMinutes(s, pathId)
@@ -713,6 +721,38 @@ fun PathDetailScreen(
                             TextButton({ vm.run { vm.repo.linkHabitToPath(p.id, h.id, false) } }) {
                                 Text("Desvincular", fontSize = 12.sp)
                             }
+                        }
+                    }
+                }
+            }
+        }
+
+        if (linkedNotebooks.isNotEmpty() || linkedPages.isNotEmpty()) {
+            item {
+                AetherSurface(SurfaceKind.Artifact) {
+                    Eyebrow("Biblioteca de Mímir vinculada", Gold)
+                    linkedNotebooks.forEach { nb ->
+                        Row(
+                            Modifier.fillMaxWidth().clickable { onOpenNotebook(nb.id) }.padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            MimirCodexArt(nb.cover, Modifier.size(36.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(nb.name, color = Ink, fontSize = 13.sp)
+                                Text("Caderno · ${nb.category}", color = Muted, fontSize = 11.sp)
+                            }
+                            Text("Abrir", color = Gold, fontSize = 12.sp)
+                        }
+                    }
+                    linkedPages.forEach { pg ->
+                        Row(
+                            Modifier.fillMaxWidth().clickable { onOpenPage(pg.id) }.padding(vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text("▤ ${pg.title}", color = Blue, fontSize = 13.sp, modifier = Modifier.weight(1f))
+                            Text("Ler", color = Gold, fontSize = 12.sp)
                         }
                     }
                 }

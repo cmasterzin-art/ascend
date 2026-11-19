@@ -33,12 +33,19 @@ private val hairline:Color @Composable get()=if(LocalAppearance.current.dark)Col
   Row(Modifier.fillMaxWidth().padding(horizontal=20.dp).padding(top=14.dp,bottom=8.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(16.dp)){
    Box(Modifier.drawBehind{if(!minimal){val r=size.maxDimension*.85f;drawCircle(Brush.radialGradient(listOf(cold.copy(alpha=.24f),Color.Transparent),center=Offset(size.width/2,size.height*.38f),radius=r),r,Offset(size.width/2,size.height*.38f))}}.clickable(onClickLabel="Ampliar retrato",onClick=onPortrait)){ForgePortrait(s,portrait)}
    Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)){
+    val spec=activeSpecialization(s)
     Eyebrow("Saga pessoal",Muted.copy(alpha=.8f))
     Text(hero.name,style=MaterialTheme.typography.headlineMedium,letterSpacing=1.sp,maxLines=2,overflow=TextOverflow.Ellipsis)
-    Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){ClassEmblem(hero.heroClass,Modifier.size(20.dp));Text(classes[hero.heroClass],color=Blue,fontSize=13.sp)}
+    Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){
+     ClassEmblem(hero.heroClass,Modifier.size(20.dp))
+     Text(if(spec!=null)"${classes[hero.heroClass]} · ${spec.name}" else classes[hero.heroClass],color=Blue,fontSize=13.sp,maxLines=1,overflow=TextOverflow.Ellipsis)
+    }
     Text(hero.title,color=Muted,fontSize=12.sp)
     Row(Modifier.padding(top=4.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){
      Box(Modifier.semantics(mergeDescendants=true){contentDescription="Nível ${s.level}"}){ForgeMedallion(s.level,Modifier.size(40.dp))}
+     if(spec!=null){
+      Box(Modifier.semantics(mergeDescendants=true){contentDescription="Especialização ${spec.name}"}){ArchetypeSealArt(spec.atlasIndex,Modifier.size(38.dp))}
+     }
      Column{Text("${s.coins}",fontFamily=SagaFont,fontSize=18.sp,lineHeight=22.sp);Text("fragmentos",color=Muted,fontSize=11.sp)}
     }
    }

@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.semantics.*
 import java.time.*
 
-@Composable fun CharacterScreen(s:GameState,vm:GameViewModel,onSettings:()->Unit,onJournal:()->Unit,onMemories:()->Unit={},onPortrait:()->Unit={}){
+@Composable fun CharacterScreen(s:GameState,vm:GameViewModel,onSettings:()->Unit,onJournal:()->Unit,onMemories:()->Unit={},onPortrait:()->Unit={},onMimir:()->Unit={},onMimirReview:()->Unit={},onPaths:()->Unit={}){
     val hero=requireNotNull(s.player)
     val tabStates=rememberSaveableStateHolder()
     var tab by rememberSaveable{mutableIntStateOf(0)};var playerEdit by remember{mutableStateOf(false)}
@@ -30,17 +30,102 @@ import java.time.*
         val reduce=LocalAppearance.current.reducedMotion
         Crossfade(targetState=tab,modifier=Modifier.weight(1f),animationSpec=tween(if(reduce)0 else AetherTokens.scene),label="abas do herói"){visible->tabStates.SaveableStateProvider(visible){Page{
         when(visible){
-            0->{HeroStage(s,onPortrait);HeroEvolution(s);Hairline();AttributeInscriptions(s);Hairline();Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){SagaButton("Ampliar retrato",onPortrait,Modifier.weight(1f),secondary=true);SagaButton("Salão das Memórias",onMemories,Modifier.weight(1f),secondary=true)};AetherSurface{SectionHeader("Sua identidade");ReadingBlock(classDescriptions[hero.heroClass]);if(hero.goals.isNotBlank())ReadingBlock(hero.goals,"Seus propósitos");Action("Personalizar personagem",{playerEdit=true},Modifier.fillMaxWidth())};EquippedNiches(s);s.assets.find{it.kind=="companion"&&it.equipped}?.let{a->Panel(accent=Violet){val item=shopItems.find{it.id==a.id};Eyebrow("Companheiro",Violet);Text(item?.name?:"Companheiro",style=MaterialTheme.typography.titleLarge);Text(when(a.id){"lyra"->"Lyra se acomoda ao lado do seu caderno. Parece aprovar a página de hoje.";"corvus"->"Corvus observa o horizonte. Há sempre outra trilha entre as árvores.";else->"Ignis protege uma pequena brasa sob as asas. Por enquanto, isso basta."},color=Muted)}};Action("Abrir diário do aventureiro",onJournal,Modifier.fillMaxWidth());Panel{Eyebrow("Títulos conquistados");val titles=listOf(1 to "O Desperto",5 to "Aprendiz Errante",10 to "Aventureiro",15 to "Guardião do Conhecimento",20 to "Mestre da Vontade",30 to "Herói de Aetheris",50 to "Lenda Ascendente");(titles+specializationTitles(s).map{1 to it}).filter{it.first<=s.level}.forEach{(_,title)->TextButton({vm.run{vm.repo.player(hero.copy(title=title))}}){Text(if(hero.title==title)"✦ $title" else title)}}}}
+            0->{HeroStage(s,onPortrait);HeroEvolution(s);Hairline();ArchetypeAscensionPanel(s,vm,onMimir,onMimirReview,onPaths,{tab=6});Hairline();AttributeInscriptions(s);Hairline();Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){SagaButton("Ampliar retrato",onPortrait,Modifier.weight(1f),secondary=true);SagaButton("Salão das Memórias",onMemories,Modifier.weight(1f),secondary=true)};AetherSurface{SectionHeader("Sua identidade");ReadingBlock(classDescriptions[hero.heroClass]);if(hero.goals.isNotBlank())ReadingBlock(hero.goals,"Seus propósitos");Action("Personalizar personagem",{playerEdit=true},Modifier.fillMaxWidth())};EquippedNiches(s);s.assets.find{it.kind=="companion"&&it.equipped}?.let{a->Panel(accent=Violet){val item=shopItems.find{it.id==a.id};Eyebrow("Companheiro",Violet);Text(item?.name?:"Companheiro",style=MaterialTheme.typography.titleLarge);Text(when(a.id){"lyra"->"Lyra se acomoda ao lado do seu caderno. Parece aprovar a página de hoje.";"corvus"->"Corvus observa o horizonte. Há sempre outra trilha entre as árvores.";else->"Ignis protege uma pequena brasa sob as asas. Por enquanto, isso basta."},color=Muted)}};Action("Abrir diário do aventureiro",onJournal,Modifier.fillMaxWidth());Panel{Eyebrow("Títulos conquistados");val titles=listOf(1 to "O Desperto",5 to "Aprendiz Errante",10 to "Aventureiro",15 to "Guardião do Conhecimento",20 to "Mestre da Vontade",30 to "Herói de Aetheris",50 to "Lenda Ascendente");(titles+specializationTitles(s).map{1 to it}).filter{it.first<=s.level}.distinctBy{it.second}.forEach{(_,title)->TextButton({vm.run{vm.repo.player(hero.copy(title=title))}}){Text(if(hero.title==title)"✦ $title" else title)}}}}
             1->{attributes.forEachIndexed{i,a->val pts=s.points(i);if(i>0)Hairline();Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(10.dp)){Eyebrow("Atributo · nível ${1+pts/50}",habitColor(i));Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){AttributeEmblem(i,Modifier.size(38.dp));Text(a,style=MaterialTheme.typography.titleLarge)};Meter((pts%50)/50f,habitColor(i));Text("${pts%50}/50 pontos neste nível · $pts acumulados",color=Muted,fontSize=12.sp);s.ledger.filter{it.attribute==i && it.points!=0L}.sortedByDescending{it.date}.take(8).forEach{Text("${displayDate(it.date)} · ${it.label.removePrefix("Hábito · ")} · +${it.points}",color=Muted,fontSize=11.sp)}}}}
             2->Equipment(s,vm)
             3->Equipment(s,vm,store=true)
-            4->{achievementDefs.forEach{a->val unlocked=s.achievements.find{it.id==a.id};val value=achievementProgress(a,s);val color=when(a.rarity){"Lendária"->Gold;"Épica"->Violet;"Rara"->Blue;else->Muted};Panel(accent=color){Eyebrow("${a.rarity} · ${if(unlocked!=null)"Conquistada" else "Em busca"}",color);Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){CeremonialSeal(SealKind.Reward,unlocked!=null,Modifier.size(42.dp));Text("${a.icon} ${a.name}",Modifier.weight(1f),style=MaterialTheme.typography.titleLarge)};Text(a.description,color=Muted,fontSize=13.sp);Meter(value.toFloat()/a.target,color);Text(unlocked?.let{"Registrada em ${displayDate(it.date)} · ◈ 5"}?:"${value.coerceAtMost(a.target)}/${a.target}",color=color,fontSize=12.sp)}}}
+            4->{achievementDefs.forEach{a->val unlocked=s.achievements.find{it.id==a.id};val value=achievementProgress(a,s);val color=when(a.rarity){"Lendária"->Gold;"Épica"->Violet;"Rara"->Blue;else->Muted};Panel(accent=color){Eyebrow("${a.rarity} · ${if(unlocked!=null)"Conquistada" else "Em busca"}",color);Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){CeremonialSeal(SealKind.Reward,unlocked!=null,Modifier.size(42.dp));Text("${a.icon} ${a.name}",Modifier.weight(1f),style=MaterialTheme.typography.titleLarge)};Text(a.description,color=Muted,fontSize=13.sp);Meter(value.toFloat()/a.target,color);Text(unlocked?.let{if(a.coins>0L)"Registrada em ${displayDate(it.date)} · ◈ ${a.coins}" else "Registrada em ${displayDate(it.date)} · Marco de Sabedoria"}?:"${value.coerceAtMost(a.target)}/${a.target}",color=color,fontSize=12.sp)}}}
             5->Statistics(s)
             6->SkillTree(s,vm)
         }
     }
     }}}
     if(playerEdit)PlayerEditor(hero,{playerEdit=false},{p->vm.run{vm.repo.player(p);playerEdit=false}})
+}
+@Composable fun ArchetypeAscensionPanel(
+    s: GameState,
+    vm: GameViewModel,
+    onMimir: () -> Unit,
+    onMimirReview: () -> Unit,
+    onPaths: () -> Unit,
+    onOpenSkills: () -> Unit
+) {
+    val hero = requireNotNull(s.player)
+    val options = remember(hero.heroClass) { specializationsForClass(hero.heroClass) }
+    val active = activeSpecialization(s)
+    val classSkills = remember(hero.heroClass) { skillDefs.filter { it.heroClass == hero.heroClass } }
+    val ownedClassSkills = classSkills.count { sk -> s.assets.any { it.id == "skill:${sk.id}" } }
+
+    AetherSurface(SurfaceKind.Operational) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Eyebrow("Ascensão do Arquétipo · ${classes[hero.heroClass]}", Gold)
+                Text(
+                    active?.let { "${it.name} · ${it.titleGrant}" } ?: "Escolha sua especialização",
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
+            TextButton(onOpenSkills) { Text("Habilidades ($ownedClassSkills/${classSkills.size})", fontSize = 12.sp) }
+        }
+        Text(
+            if (s.level < 3) "Alcance o nível 3 para escolher uma das duas especializações de ${classes[hero.heroClass]}. Trocar especialização nunca apaga habilidades já obtidas."
+            else "Especializações moldam sua identidade, emblema e atalhos temáticos sem alterar XP ou moedas.",
+            color = Muted,
+            fontSize = 12.sp
+        )
+        options.forEach { spec ->
+            val selected = active?.id == spec.id
+            val unlocked = canSelectSpecialization(s, spec)
+            val accent = if (selected) Gold else Blue
+            Panel(accent = accent) {
+                Row(
+                    Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    ArchetypeSealArt(spec.atlasIndex, Modifier.size(54.dp), dimmed = !unlocked && !selected)
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Eyebrow(
+                            if (selected) "Especialização ativa" else if (unlocked) "Disponível · Nível ${spec.unlockLevel}+" else "Bloqueada · Nível ${spec.unlockLevel}",
+                            if (selected) Gold else if (unlocked) Blue else Muted
+                        )
+                        Text(spec.name, style = MaterialTheme.typography.titleMedium)
+                        Text("“${spec.motto}”", fontFamily = FontFamily.Serif, color = Muted, fontSize = 12.sp)
+                    }
+                }
+                Text(spec.description, color = Muted, fontSize = 12.sp)
+                Text(spec.effectSummary, color = accent, fontSize = 11.sp)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Action(
+                        if (selected) "Especialização ativa" else "Escolher ${spec.name}",
+                        { vm.run { vm.repo.selectSpecialization(spec.id) } },
+                        Modifier.weight(1f),
+                        enabled = unlocked && !selected
+                    )
+                    if (selected) {
+                        SagaButton("Remover", { vm.run { vm.repo.selectSpecialization("") } }, secondary = true)
+                    }
+                }
+            }
+        }
+        // Thematic convenience shortcuts without altering economy
+        val showMimirShortcut = active?.id in setOf("erudito", "arquimago_runico") || s.assets.any { it.id in setOf("skill:mage_mimir", "skill:mage_runes") }
+        val showPathsShortcut = active?.id == "cartografo" || s.assets.any { it.id == "skill:expl_compass" }
+        if (showMimirShortcut || showPathsShortcut) {
+            Hairline()
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                if (showMimirShortcut) {
+                    SagaButton("Biblioteca de Mímir", onMimir, Modifier.weight(1f), secondary = true)
+                    if (active?.id == "arquimago_runico" || s.assets.any { it.id == "skill:mage_runes" }) {
+                        SagaButton("Runas da Memória", onMimirReview, Modifier.weight(1f), secondary = true)
+                    }
+                }
+                if (showPathsShortcut) {
+                    SagaButton("Meus Caminhos", onPaths, Modifier.weight(1f), secondary = true)
+                }
+            }
+        }
+    }
 }
 @Composable fun PlayerEditor(p:Player,onDismiss:()->Unit,onSave:(Player)->Unit){
     var name by remember{mutableStateOf(p.name)};var cls by remember{mutableIntStateOf(p.heroClass)};var face by remember{mutableIntStateOf(p.face)};var color by remember{mutableIntStateOf(p.color)};var outfit by remember{mutableIntStateOf(p.outfit)};var frame by remember{mutableIntStateOf(p.frame)};var goals by remember{mutableStateOf(p.goals)}

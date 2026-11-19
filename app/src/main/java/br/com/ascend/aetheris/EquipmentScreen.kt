@@ -73,13 +73,48 @@ import androidx.compose.ui.semantics.*
     }
 }
 @Composable fun SkillTree(s:GameState,vm:GameViewModel){
-    Title("Constelações da alma","Escolhas cosméticas que acompanham sua jornada.")
-    Panel{Stat("${skillPoints(s)}","PONTOS DISPONÍVEIS");Text("Um ponto a cada três níveis. Cada habilidade custa um ponto e concede uma relíquia equipável. Seus hábitos e estatísticas continuam livres.",color=Muted,fontSize=13.sp);Text("Se o XP for corrigido, habilidades obtidas permanecem; novos pontos aguardam a compensação do nível.",color=Muted,fontSize=11.sp)}
-    skillDefs.groupBy{it.path}.forEach{(path,nodes)->
+    val heroClass=s.player?.heroClass?:1
+    var scopeTab by remember{mutableIntStateOf(0)} // 0=Minha classe + Universais, 1=Todas as classes
+    Title("Constelações da alma","Habilidades universais e ascensão dos arquétipos.")
+    Panel{
+        Stat("${skillPoints(s)}","PONTOS DISPONÍVEIS")
+        Text("Um ponto a cada três níveis. Cada habilidade custa um ponto, sem nova moeda e sem multiplicadores artificiais de XP ou fragmentos.",color=Muted,fontSize=13.sp)
+        Text("Se o XP for corrigido ou a classe mudar, habilidades já obtidas permanecem.",color=Muted,fontSize=11.sp)
+    }
+    ChipRow(listOf("Minha classe (${classes[heroClass]})","Todas as classes"),scopeTab,{scopeTab=it})
+
+    val classSkills=skillDefs.filter{it.heroClass>=0 && (scopeTab==1 || it.heroClass==heroClass)}
+    Eyebrow("Ascensão dos Arquétipos · ${if(scopeTab==0)classes[heroClass] else "5 classes"}",Gold)
+    classSkills.groupBy{it.path}.forEach{(path,nodes)->
+        if(scopeTab==1)Eyebrow(path,Blue)
+        nodes.forEachIndexed{i,skill->
+            if(i>0)SagaDivider(color=Gold)
+            val owned=s.assets.any{it.id=="skill:${skill.id}"}
+            val ready=canUnlockSkill(s,skill)
+            val accent=if(owned)Green else if(ready)Gold else Violet
+            Panel(accent=accent){
+                Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){
+                    ArchetypeSealArt(skill.atlasIndex,Modifier.size(56.dp),dimmed=!owned&&!ready)
+                    Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(2.dp)){
+                        Text(skill.name,style=MaterialTheme.typography.titleLarge)
+                        Text("${skill.path} · Nível ${skill.level} · 1 ponto",color=Muted,fontSize=12.sp)
+                        Text(if(owned)"Despertada na constelação" else if(ready)"Disponível para despertar" else skillRequirementText(s,skill),color=if(owned)Green else if(ready)Gold else Muted,fontSize=12.sp)
+                    }
+                }
+                Text(skill.description,color=Muted,fontSize=13.sp)
+                if(skill.effectSummary.isNotBlank())Text(skill.effectSummary,color=accent,fontSize=12.sp)
+                Action(if(owned)"Habilidade despertada" else "Despertar habilidade",{vm.run{vm.repo.unlockSkill(skill.id)}},enabled=!owned&&ready)
+            }
+        }
+    }
+
+    Hairline()
+    Eyebrow("Constelações Universais · Relíquias",Blue)
+    skillDefs.filter{it.heroClass<0}.groupBy{it.path}.forEach{(path,nodes)->
         Eyebrow(path)
         nodes.forEachIndexed{i,skill->
             if(i>0)SagaDivider(color=Blue)
-            val owned=s.assets.any{it.id=="skill:${skill.id}"};val ready=s.level>=skill.level&&(skill.parent==null||s.assets.any{it.id=="skill:${skill.parent}"})&&skillPoints(s)>0
+            val owned=s.assets.any{it.id=="skill:${skill.id}"};val ready=canUnlockSkill(s,skill)
             Panel(accent=if(owned)Green else Violet){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){RelicArt(shopItems.first{it.id==skill.item}.kind,if(owned)Green else Violet,itemId=skill.item);Column(Modifier.weight(1f)){Text(skill.name,style=MaterialTheme.typography.titleLarge);Text("Nível ${skill.level} · 1 ponto",color=Muted,fontSize=12.sp);Text(if(owned)"Inscrita na constelação" else if(ready)"Disponível" else "Bloqueada",color=if(owned)Green else Muted,fontSize=12.sp)}};skill.parent?.let{parent->Text("Requer: ${skillDefs.first{it.id==parent}.name}",color=Muted,fontSize=12.sp)};Text(skill.description,color=Muted);Action(if(owned)"Despertada · item no inventário" else "Despertar habilidade",{vm.run{vm.repo.unlockSkill(skill.id)}},enabled=!owned&&ready)}
         }
     }

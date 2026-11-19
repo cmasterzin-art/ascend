@@ -45,12 +45,13 @@ import java.util.Locale
 
 @Composable fun currentDay(): String = currentLocalMinute().toLocalDate().toString()
 
-@Composable fun Journey(s:GameState,onProgress:(Habit,HabitRecord?)->Unit,onEdit:(Habit)->Unit,onFocus:(Habit)->Unit,onAdd:()->Unit,onJournal:()->Unit,vm:GameViewModel,relaxed:Boolean,onPlanner:()->Unit={},onAnalysis:()->Unit={},onHistory:()->Unit={},onPortrait:()->Unit={},onMissions:()->Unit={},onRegion:()->Unit={},onPaths:()->Unit={},onInbox:()->Unit={},onPending:()->Unit={},onOpenPath:(String)->Unit={}){
+@Composable fun Journey(s:GameState,onProgress:(Habit,HabitRecord?)->Unit,onEdit:(Habit)->Unit,onFocus:(Habit)->Unit,onAdd:()->Unit,onJournal:()->Unit,vm:GameViewModel,relaxed:Boolean,onPlanner:()->Unit={},onAnalysis:()->Unit={},onHistory:()->Unit={},onPortrait:()->Unit={},onMissions:()->Unit={},onRegion:()->Unit={},onPaths:()->Unit={},onInbox:()->Unit={},onPending:()->Unit={},onOpenPath:(String)->Unit={},onMimirReview:()->Unit={}){
  val now=currentLocalMinute();val day=now.toLocalDate().toString();val rested=day in s.restDates
  val due=if(relaxed&&!rested)s.habits.filter{!it.deleted&&!it.archived&&!it.paused}.sortedBy{it.position} else s.due(day)
  val done=due.count{s.record(it.id,day)?.complete==true};var pendingOnly by remember{mutableStateOf(false)};var detail by remember{mutableStateOf<Habit?>(null)}
   val dialSize=if(LocalConfiguration.current.screenWidthDp<=340)56.dp else 66.dp
   val inboxCount=s.inboxItems.count{!it.archived}
+  val dueCardsCount=remember(s.notebooks,s.flashcards,day){dueFlashcards(s,day).size}
   val rumos=remember(s,now){rumosDoDia(s,day,now.toLocalTime())}
   val hasRumos=rumos.nextEvent!=null||rumos.nextBlock!=null||rumos.untimedEvents.isNotEmpty()||rumos.priorityTasks.isNotEmpty()||rumos.upcomingPaths.isNotEmpty()||rumos.inboxCount>0
   var rumosExpanded by androidx.compose.runtime.saveable.rememberSaveable{mutableStateOf(false)}
@@ -70,7 +71,7 @@ import java.util.Locale
     ShortcutStrip(listOf(Triple("Planejador",Glyph.Planner,onPlanner),Triple("Análises",Glyph.Analysis,onAnalysis),Triple("Foco",Glyph.Focus,onHistory)))
     ShortcutStrip(listOf(Triple("Caminhos",Glyph.Map,onPaths),Triple("Entrada${if(inboxCount>0)" ($inboxCount)" else ""}",Glyph.Chronicles,onInbox),Triple("Pendências",Glyph.Claims,onPending)))
    }}
-  item{RumosDoDiaPanel(rumos,s,vm,expanded=rumosExpanded||hasRumos&&rumosExpanded,hasRumos=hasRumos,onToggle={rumosExpanded=!rumosExpanded},onPaths=onPaths,onOpenPath=onOpenPath,onPlanner=onPlanner,onInbox=onInbox,onPending=onPending)}
+  item{RumosDoDiaPanel(rumos,s,vm,expanded=rumosExpanded||hasRumos&&rumosExpanded,hasRumos=hasRumos,dueCardsCount=dueCardsCount,onToggle={rumosExpanded=!rumosExpanded},onPaths=onPaths,onOpenPath=onOpenPath,onPlanner=onPlanner,onInbox=onInbox,onPending=onPending,onMimirReview=onMimirReview)}
   item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){SectionHeader("Seus próximos passos","Conclua com um toque; detalhes ao selecionar o nome.")};IconButton(onAdd,Modifier.size(42.dp).clip(CutCornerShape(5.dp)).background(Gold.copy(alpha=.12f)).border(1.dp,Gold.copy(alpha=.45f),CutCornerShape(5.dp))){Icon(Icons.Default.Add,"Criar hábito",tint=Gold)}};if(due.size>1||done>0)ChipRow(listOf("Todos (${due.size})","Pendentes (${due.size-done})"),if(pendingOnly)1 else 0,{pendingOnly=it==1})}
   val visible=due.filter{!pendingOnly||s.record(it.id,day)?.complete!=true}.sortedBy{s.record(it.id,day)?.complete==true}
   if(visible.isEmpty())item{Empty(if(rested)"Este dia está reservado para descanso. Seus registros e recompensas anteriores continuam guardados." else if(due.isEmpty())"Nenhum hábito para hoje. Abra o Planejador ou crie seu primeiro passo." else "Tudo feito por hoje. Aetheris pode esperar pelo seu próximo passo.")}
@@ -82,7 +83,7 @@ import java.util.Locale
  detail?.let{h->HabitDetails(h,s,{detail=null},{detail=null;onEdit(h)},{r->detail=null;onProgress(h,r)})}
 }
 @OptIn(ExperimentalLayoutApi::class)
-@Composable fun RumosDoDiaPanel(r:RumosDoDia,s:GameState,vm:GameViewModel,expanded:Boolean,hasRumos:Boolean,onToggle:()->Unit,onPaths:()->Unit,onOpenPath:(String)->Unit,onPlanner:()->Unit,onInbox:()->Unit,onPending:()->Unit){
+@Composable fun RumosDoDiaPanel(r:RumosDoDia,s:GameState,vm:GameViewModel,expanded:Boolean,hasRumos:Boolean,dueCardsCount:Int=0,onToggle:()->Unit,onPaths:()->Unit,onOpenPath:(String)->Unit,onPlanner:()->Unit,onInbox:()->Unit,onPending:()->Unit,onMimirReview:()->Unit={}){
  AetherSurface(if(r.overdueCount>0)SurfaceKind.Heroic else SurfaceKind.Operational,Modifier.testTag("rumos_do_dia")){
   Row(Modifier.fillMaxWidth().clickable(onClick=onToggle),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){
    Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(2.dp)){
@@ -95,6 +96,12 @@ import java.util.Locale
     )
    }
    TextButton(onToggle){Text(if(expanded)"Recolher" else "Abrir rumos",fontSize=12.sp)}
+  }
+  if(dueCardsCount>0){
+   Row(Modifier.fillMaxWidth().clickable(onClick=onMimirReview).padding(top=2.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+    Text("◈ Runas da Memória · $dueCardsCount ${if(dueCardsCount==1)"revisão pendente" else "revisões pendentes"}",color=Blue,fontSize=12.sp,modifier=Modifier.weight(1f))
+    Text("Revisar",color=Gold,fontSize=12.sp)
+   }
   }
   if(expanded){
    Hairline()
