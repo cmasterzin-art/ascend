@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.MimirAndArchetypesTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-11-19T02:04:49" hostname="runnervmccnms" time="1.892">
+<testsuite name="br.com.ascend.aetheris.MimirAndArchetypesTest" tests="13" skipped="0" failures="0" errors="0" timestamp="2026-11-19T05:55:03" hostname="runnervmccnms" time="2.389">
   <properties/>
-  <testcase name="pageLinksBacklinksReferencesAndCleanDeletionWithoutOrphans" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.237"/>
-  <testcase name="flashcardSessionPersistenceNoExtraEconomyAndDuplicateReviewBlocked" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.127"/>
-  <testcase name="knowledgeMilestonesAreIdempotentAndGrantZeroCoins" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.471"/>
-  <testcase name="notebooksPagesTagsSearchSortDuplicateMoveAndCascadeDelete" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.114"/>
-  <testcase name="sm2DeterministicAlgorithmSanitizationAndReviewRules" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.032"/>
-  <testcase name="archetypeSpecializationsSkillsAndPreservationAcrossSwitches" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.175"/>
-  <testcase name="migration7To8PreservesAllV7DataAndSupportsMimirAndSpecializations" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.237"/>
-  <testcase name="deletingPathOrTaskUnlinksKnowledgeWithoutDeletingNotebooksOrPages" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.185"/>
-  <testcase name="backupV9BackwardCompatibilityV10RoundTripAndAtomicRollback" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.313"/>
+  <testcase name="pageLinksBacklinksReferencesAndCleanDeletionWithoutOrphans" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.141"/>
+  <testcase name="flashcardSessionPersistenceNoExtraEconomyAndDuplicateReviewBlocked" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.233"/>
+  <testcase name="viewModelDraftStoreProtectsLargeUnsavedTextSafely" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.163"/>
+  <testcase name="deleteNotebookDefensivelyUnlinksLegacyCrossNotebookFlashcardPageId" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.209"/>
+  <testcase name="movePageDeleteDestinationNotebookPreservesFlashcardAndRestoresBackupCleanly" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.236"/>
+  <testcase name="knowledgeMilestonesAreIdempotentAndGrantZeroCoins" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.495"/>
+  <testcase name="notebooksPagesTagsSearchSortDuplicateMoveAndCascadeDelete" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.129"/>
+  <testcase name="sm2DeterministicAlgorithmSanitizationAndReviewRules" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.097"/>
+  <testcase name="archetypeSpecializationsSkillsAndPreservationAcrossSwitches" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.165"/>
+  <testcase name="archivedNotebookDoesNotLeakIntoSearchFavoritesTagsOrReviews" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.094"/>
+  <testcase name="migration7To8PreservesAllV7DataAndSupportsMimirAndSpecializations" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.208"/>
+  <testcase name="deletingPathOrTaskUnlinksKnowledgeWithoutDeletingNotebooksOrPages" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.109"/>
+  <testcase name="backupV9BackwardCompatibilityV10RoundTripAndAtomicRollback" classname="br.com.ascend.aetheris.MimirAndArchetypesTest" time="0.1"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
