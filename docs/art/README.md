@@ -135,6 +135,22 @@ Oito novos recursos pictóricos originais gerados via `generate_image` (orçamen
 | `hero_frames_atlas.webp` | Atlas de molduras `2 × 2` | `960 × 1440` · WebP RGBA | 94,150 | `38b31c2ec7947623158fd7ce67e79d43212968ba827ad6855890615fec1a3d08` | 4 molduras pictóricas do Retrato Vivo (Ferro, Bronze Borre, Prata Rúnica, Lendária Nove Reinos Yggdrasil) | `LivingHeroPortrait` (`LivingPortrait.kt`), `RelicArt` (`RpgDesign.kt`) |
 | `viking_arsenal_ui_atlas.webp` | Atlas de UI do Arsenal `4 × 2` | `1024 × 512` · WebP RGBA | 77,072 | `ac7486c76f12d676e9e1b6142e74b8b2b1ad86fcfb5527dd83a438ff1718324e` | Encaixes vazio/equipado, placas e 4 brasões de raridade (Comum/Incomum, Raro, Épico, Lendário) | `EquipmentScreen.kt` (`EquipmentSlot`, `RarityCrestBadge`) |
 
+## 1.7.3.1 — O Legado das Runas (O Acervo dos Ancestrais)
+
+Oito novos recursos pictóricos originais gerados via `generate_image` (orçamento de `8/10` chamadas, preservando as `2` de reserva sem necessidade de regeneração): **1 prancha conceitual** mantida fora do APK (`docs/art/concepts/runic-heritage-1731.webp`) e **7 atlas WebP de produção** em `app/src/main/res/drawable-nodpi/`, somando **663.010 bytes (647,5 KB / 0,63 MB)** dentro do APK (limite máximo de `3 MB`) e preservando integralmente toda a biblioteca pictórica das versões `1.3` a `1.7.3`. Documentação visual em [VISUAL-1.7.3.1.md](../VISUAL-1.7.3.1.md).
+
+| Arquivo WebP (1.7.3.1) | Tipo / Grade | Dimensões e Formato | Bytes | SHA-256 | Finalidade Artística | Componentes Onde é Aplicado |
+|---|---|---|---:|---|---|---|
+| `concepts/runic-heritage-1731.webp` | Prancha conceitual (fora do APK) | `1376 × 768` · WebP RGB | 237,796 | `6edd3dd3102d6ead605aaa21048b57bc5b74249bddc16cc2fd5b0a11f4847346` | Prancha conceitual de direção visual para Heráldica Rúnica, Codex, Coleções Lendárias e Consagração | Referência conceitual (fora do APK) |
+| `ancestral_heraldry_atlas.webp` | Atlas heráldico `4 × 2` | `1024 × 512` · WebP RGBA | 137,802 | `b9c31e7294f6bacdd650282c5350e382ebb41668859af5c90369f5eba85c15d5` | 8 símbolos heráldicos vikings (Corvo, Lobo, Carvalho, Machado, Escudo, Tomo, Montanha, Yggdrasil) | `HeraldicCrest`, `HeraldryEditorScreen` (`HeraldryAndCodex.kt`) |
+| `viking_heraldic_bases_atlas.webp` | Atlas de escudos e estandartes `4 × 2` | `1024 × 512` · WebP RGBA | 55,274 | `ccb090094275e8916cf40b70f4b95afd44d17eaeb4a10967ecb75ddc5066e6cf` | 4 bases vazias (Escudo Circular, Oval, Placa Rúnica, Medalhão), 3 estandartes (Tecido, Couro, Cerimonial) e placa de inscrição | `HeraldicCrest`, `HeraldicBanner`, `HeraldryEditorScreen` |
+| `forge_legacy_items_atlas.webp` | Atlas de peças da Forja `2 × 2` | `768 × 768` · WebP RGBA | 55,136 | `c84fa68772ae047577e226ce54269210b4a4f003c9a01ec93f8e05860e6ac360` | 4 novos equipamentos fabricáveis (`vigil-axe`, `runic-staff`, `northern-blade`, `constellation-brooch`) | `RelicArt` (`RpgDesign.kt`), `ForgeScreen.kt`, `EquipmentScreen.kt`, `LivingPortrait.kt` |
+| `legendary_collections_atlas.webp` | Atlas de coleções `3 × 2` | `1080 × 720` · WebP RGB | 106,112 | `b3a4fb726d665c02961fbfb05dc54557f5dbce23e18423a39699efc97cfa01a3` | 3 pinturas temáticas + 3 medalhões exclusivos (*Juramento de Ferro*, *Sabedoria de Mímir*, *Vigília Boreal*) | `LegendaryCollectionsSection` (`EquipmentScreen.kt`, `ForgeScreen.kt`) |
+| `runic_codex_surfaces_atlas.webp` | Atlas de superfícies do Codex `3 × 2` | `960 × 640` · WebP RGB | 93,222 | `e05cea3c632b1f1b49780ae6356243e6e2419404e07314e8fe29970e2e1449be` | 6 superfícies materiais limpas (Pedra escura, Pedra clara, Ferro, Velino, Madeira escandinava, Bronze) para sobreposição das 24 runas vetoriais | `RunicCodexScreen` (`HeraldryAndCodex.kt`) |
+| `forge_consacration_atlas.webp` | Atlas de consagração `4 × 2` | `1024 × 512` · WebP RGBA | 90,790 | `10d1573e2f46ef70a62b62f2ff079edb77e06009af8ee6b13fe767504af477d4` | 3 selos de aprimoramento (Forjado, Gravado, Consagrado), moldura viking aprimorada e 4 ornamentos metálicos | `UpgradeStageBadge`, `ForgeScreen.kt`, `EquipmentScreen.kt` |
+| `living_hero_heritage_atlas.webp` | Atlas de acabamentos do Retrato Vivo `3 × 2` | `960 × 640` · WebP RGBA | 124,674 | `80c396aa73e271670b43a2a9124b65dc8e29c222bbb0502e652e8e0984cf2a06` | Broche das Constelações, gola Borre gravada, faixa cerimonial, aro heráldico, coroa de moldura e aplique consagrado | `LivingHeroPortrait` (`LivingPortrait.kt`) |
+
+
 
 
 
