@@ -114,5 +114,5 @@ internal val preservedPictorialArchive=intArrayOf(R.drawable.forge_iron,R.drawab
 }
 
 @Composable fun NorthDivider(silver:Boolean=false){
- if(!LocalAppearance.current.minimal)AtlasCell(R.drawable.orn_divider_forged,if(silver)1 else 0,1,2,Modifier.fillMaxWidth().height(26.dp))
+ if(!LocalAppearance.current.minimal)VikingKnotDivider(variant=if(silver)1 else 7,alpha=.88f,height=22.dp)
 }

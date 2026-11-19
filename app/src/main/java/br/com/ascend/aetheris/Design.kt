@@ -74,19 +74,26 @@ val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
             drawCircle(Brush.radialGradient(listOf(color.copy(alpha=.55f),Color.Transparent),center=Offset(fw,cy),radius=7*d),7*d,Offset(fw,cy))
             drawCircle(color,1.8f*d,Offset(fw,cy))}
     };return}
-    val trackImg=if(LocalAppearance.current.minimal||onParchment)null else ImageBitmap.imageResource(R.drawable.orn_track_progress)
-    // A groove cut into stone (orn_track_progress); the value fills it like cooled metal with a single bright leading edge.
+    val ctrlImg=if(LocalAppearance.current.minimal||onParchment)null else ImageBitmap.imageResource(R.drawable.viking_controls_atlas)
+    // 1.7.2 DS 3.0: recessed basalt groove (cell 0) filled with hammered bronze-tinted metal (cell 1) and crisp leading sheen.
     Canvas(modifier.fillMaxWidth().height(12.dp).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)}){
         val w=size.width;val h=size.height;val d=1.dp.toPx();val tip=h*.55f
         val groove=Path().apply{moveTo(tip,0f);lineTo(w-tip,0f);lineTo(w,h/2);lineTo(w-tip,h);lineTo(tip,h);lineTo(0f,h/2);close()}
         val grooveTop=if(onParchment)Sepia.copy(alpha=.32f) else Color.Black.copy(alpha=if(dark).82f else .35f)
         val grooveBot=if(onParchment)Sepia.copy(alpha=.16f) else Color.Black.copy(alpha=if(dark).42f else .18f)
         drawPath(groove,Brush.verticalGradient(listOf(grooveTop,track.copy(alpha=.85f),grooveBot)))
-        if(trackImg!=null)drawImage(trackImg,IntOffset(0,0),IntSize(trackImg.width,trackImg.height/2),IntOffset(0,0),IntSize(w.toInt().coerceAtLeast(1),h.toInt().coerceAtLeast(1)),alpha=if(dark).38f else .18f)
+        if(ctrlImg!=null){
+            clipPath(groove){
+                drawAtlasCellNineSlice(ctrlImg,index=0,columns=2,rows=4,capXRatio=.16f,capYRatio=.25f,alpha=if(dark).54f else .22f)
+            }
+        }
         if(fraction>0f){val fw=(w*fraction).coerceAtLeast(tip*2)
             clipPath(groove){
-                drawRect(Brush.horizontalGradient(listOf(color.copy(alpha=.42f),color.copy(alpha=.85f),color),endX=fw),size=Size(fw,h))
-                if(trackImg!=null)drawImage(trackImg,IntOffset(0,trackImg.height/2),IntSize((trackImg.width*fraction).toInt().coerceAtLeast(1),trackImg.height/2),IntOffset(0,0),IntSize(fw.toInt().coerceAtLeast(1),h.toInt().coerceAtLeast(1)),alpha=if(dark).32f else .16f)
+                drawRect(Brush.horizontalGradient(listOf(color.copy(alpha=.46f),color.copy(alpha=.88f),color),endX=fw),size=Size(fw,h))
+                if(ctrlImg!=null){
+                    val cw=ctrlImg.width/2;val ch=ctrlImg.height/4
+                    drawImage(ctrlImg,IntOffset(cw,0),IntSize((cw*fraction).toInt().coerceAtLeast(1),ch),IntOffset(0,0),IntSize(fw.toInt().coerceAtLeast(1),h.toInt().coerceAtLeast(1)),alpha=if(dark).34f else .18f)
+                }
                 drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha=.26f),Color.Transparent,Color.Black.copy(alpha=.34f))),size=Size(fw,h))
                 if(fraction<1f)drawRect(Brush.horizontalGradient(listOf(Color.Transparent,Color.White.copy(alpha=.52f)),startX=fw-7*d,endX=fw),topLeft=Offset(fw-7*d,0f),size=Size(7*d,h))
             }
@@ -94,21 +101,21 @@ val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
         listOf(.25f,.5f,.75f).forEach{stop->val x=w*stop;drawLine((if(onParchment)Sepia else Color.Black).copy(alpha=.55f),Offset(x,h*.18f),Offset(x,h*.82f),d)}
         drawLine(grooveTop,Offset(tip,d*.5f),Offset(w-tip,d*.5f),d)
         drawLine(Color.White.copy(alpha=if(dark).12f else .55f),Offset(tip,h-d*.5f),Offset(w-tip,h-d*.5f),d)
-        drawPath(groove,color.copy(alpha=if(onParchment).45f else .34f),style=Stroke(d))
+        drawPath(groove,color.copy(alpha=if(onParchment).45f else .38f),style=Stroke(d))
     }
 }
 @Composable fun Stat(value:String,label:String,color:Color=Gold){Column{Text(value,color=color,fontSize=24.sp,fontFamily=SagaFont);Text(label,color=Muted,fontSize=10.sp,letterSpacing=.6.sp)}}
-@Composable fun Action(text:String,onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boolean=true,completed:Boolean=false,ceremonial:Boolean=false,secondary:Boolean=false){SagaButton(text,onClick,modifier,enabled=enabled,completed=completed,ceremonial=ceremonial,secondary=secondary)}
+@Composable fun Action(text:String,onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boolean=true,completed:Boolean=false,ceremonial:Boolean=false,secondary:Boolean=false,selected:Boolean=false,style:VikingButtonStyle?=null,leadingRune:HistoricalFutharkRune?=null){SagaButton(text,onClick,modifier,enabled=enabled,completed=completed,ceremonial=ceremonial,secondary=secondary,selected=selected,style=style,leadingRune=leadingRune)}
 @Composable fun Empty(text:String){Row(Modifier.fillMaxWidth().materialSurface(accent=ColdIron).padding(18.dp),horizontalArrangement=Arrangement.spacedBy(14.dp),verticalAlignment=Alignment.CenterVertically){RuneSeal(0,Muted,Modifier.size(34.dp));Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)){Box(Modifier.width(24.dp).height(1.dp).background(Gold.copy(alpha=.45f)));Text(text,color=Muted,fontSize=14.sp,lineHeight=23.sp)}}}
 @Composable fun ChipRow(values:List<String>,selected:Int,onSelect:(Int)->Unit,scrollable:Boolean=true){
     val dark=LocalAppearance.current.dark;val gold=Gold
     Row(if(scrollable)Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()) else Modifier,horizontalArrangement=Arrangement.spacedBy(6.dp),verticalAlignment=Alignment.CenterVertically){
         values.forEachIndexed{i,v->val isSel=selected==i;val shape=CutCornerShape(topStart=5.dp,topEnd=2.dp,bottomEnd=5.dp,bottomStart=2.dp)
-            Box(Modifier.heightIn(min=34.dp).clip(shape).background(Brush.verticalGradient(if(isSel)listOf(gold.copy(alpha=if(dark).24f else .18f),gold.copy(alpha=.08f)) else listOf(Surface.copy(alpha=.75f),Surface.copy(alpha=.45f)))).pictorialFrame(R.drawable.ui_tablet_selector,capXRatio=.2f,capYRatio=.28f,alpha=if(dark)(if(isSel).64f else .38f) else .16f).border(1.dp,if(isSel)gold.copy(alpha=.78f) else ColdIron.copy(alpha=.28f),shape).drawWithCache{onDrawBehind{
+            Box(Modifier.heightIn(min=36.dp).clip(shape).background(Brush.verticalGradient(if(isSel)listOf(gold.copy(alpha=if(dark).24f else .20f),gold.copy(alpha=.08f)) else listOf(Surface.copy(alpha=.78f),Surface.copy(alpha=.48f)))).atlasCellNineSlice(R.drawable.viking_controls_atlas,index=if(isSel)3 else 2,columns=2,rows=4,capXRatio=.18f,capYRatio=.28f,alpha=if(dark)(if(isSel).76f else .52f) else if(isSel).26f else .14f).border(if(isSel)1.2.dp else 1.dp,if(isSel)gold.copy(alpha=.82f) else ColdIron.copy(alpha=.30f),shape).drawWithCache{onDrawBehind{
                 val d=1.dp.toPx()
                 drawLine(Color.White.copy(alpha=if(isSel).18f else .06f),Offset(5*d,d),Offset(size.width-5*d,d),d)
-                if(isSel)drawLine(gold,Offset(size.width*.22f,size.height-1.5f*d),Offset(size.width*.78f,size.height-1.5f*d),1.5f*d)
-            }}.semantics(mergeDescendants=true){this.selected=isSel;role=Role.Tab}.clickable{onSelect(i)}.padding(horizontal=12.dp,vertical=6.dp),contentAlignment=Alignment.Center){
+                if(isSel)drawLine(gold,Offset(size.width*.20f,size.height-1.5f*d),Offset(size.width*.80f,size.height-1.5f*d),1.5f*d)
+            }}.semantics(mergeDescendants=true){this.selected=isSel;role=Role.Tab}.clickable{onSelect(i)}.padding(horizontal=12.dp,vertical=7.dp),contentAlignment=Alignment.Center){
                 Text(v,color=if(isSel)gold else Muted,fontSize=12.sp,letterSpacing=.2.sp,fontWeight=if(isSel)FontWeight.SemiBold else FontWeight.Normal)
             }
         }
@@ -116,25 +123,25 @@ val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
 }
 @Composable fun FormField(value:String,onChange:(String)->Unit,label:String,number:Boolean=false,multi:Boolean=false,modifier:Modifier=Modifier){
     val dark=LocalAppearance.current.dark;val gold=Gold;val iron=ColdIron;val shape=CutCornerShape(topStart=6.dp,topEnd=2.dp,bottomEnd=6.dp,bottomStart=2.dp)
-    val fieldImg=if(LocalAppearance.current.minimal)null else ImageBitmap.imageResource(R.drawable.ui_field_inscription)
+    val ctrlImg=if(LocalAppearance.current.minimal)null else ImageBitmap.imageResource(R.drawable.viking_controls_atlas)
     Box(modifier.fillMaxWidth().drawWithCache{onDrawBehind{
         val d=1.dp.toPx();val w=size.width;val h=size.height;val topInset=7*d
-        if(fieldImg!=null&&h>topInset+8*d)withTransform({translate(0f,topInset);scale(1f,(h-topInset)/h,Offset.Zero)}){drawNineSlice(fieldImg,capXRatio=.14f,capYRatio=.28f,alpha=if(dark).58f else .14f)}
-        drawLine(gold.copy(alpha=.42f),Offset(8*d,h-d),Offset(w-8*d,h-d),1.4f*d)
+        if(ctrlImg!=null&&h>topInset+8*d)withTransform({translate(0f,topInset);scale(1f,(h-topInset)/h,Offset.Zero)}){drawAtlasCellNineSlice(ctrlImg,index=5,columns=2,rows=4,capXRatio=.16f,capYRatio=.28f,alpha=if(dark).62f else .16f)}
+        drawLine(gold.copy(alpha=.44f),Offset(8*d,h-d),Offset(w-8*d,h-d),1.4f*d)
         drawLine(iron.copy(alpha=.35f),Offset(2*d,10*d),Offset(2*d,18*d),d)
         drawLine(iron.copy(alpha=.35f),Offset(w-2*d,h-10*d),Offset(w-2*d,h-3*d),d)
     }}){
-        OutlinedTextField(value,onChange,Modifier.fillMaxWidth(),label={Text(label,letterSpacing=.3.sp)},textStyle=MaterialTheme.typography.bodyLarge,singleLine=!multi,minLines=if(multi)3 else 1,keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=if(number)androidx.compose.ui.text.input.KeyboardType.Number else androidx.compose.ui.text.input.KeyboardType.Text),shape=shape,colors=OutlinedTextFieldDefaults.colors(focusedBorderColor=gold.copy(alpha=.82f),unfocusedBorderColor=iron.copy(alpha=.42f),focusedLabelColor=gold,unfocusedLabelColor=Muted,focusedContainerColor=if(dark)Color(0xFF141719).copy(alpha=.78f) else Color(0xFFEAE4D7).copy(alpha=.88f),unfocusedContainerColor=if(dark)Color(0xFF111416).copy(alpha=.78f) else Color(0xFFE3DDD0).copy(alpha=.88f),cursorColor=gold))
+        OutlinedTextField(value,onChange,Modifier.fillMaxWidth(),label={Text(label,letterSpacing=.3.sp)},textStyle=MaterialTheme.typography.bodyLarge,singleLine=!multi,minLines=if(multi)3 else 1,keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=if(number)androidx.compose.ui.text.input.KeyboardType.Number else androidx.compose.ui.text.input.KeyboardType.Text),shape=shape,colors=OutlinedTextFieldDefaults.colors(focusedBorderColor=gold.copy(alpha=.84f),unfocusedBorderColor=iron.copy(alpha=.44f),focusedLabelColor=gold,unfocusedLabelColor=Muted,focusedContainerColor=if(dark)Color(0xFF141719).copy(alpha=.78f) else Color(0xFFEAE4D7).copy(alpha=.88f),unfocusedContainerColor=if(dark)Color(0xFF111416).copy(alpha=.78f) else Color(0xFFE3DDD0).copy(alpha=.88f),cursorColor=gold))
     }
 }
 @Composable fun Toggle(label:String,checked:Boolean,onChange:(Boolean)->Unit){
     val dark=LocalAppearance.current.dark
     Row(Modifier.fillMaxWidth().padding(vertical=2.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){
         Text(label,Modifier.weight(1f).padding(end=12.dp),fontSize=14.sp,color=Ink)
-        Box(Modifier.pictorialFrame(R.drawable.ui_control_surface,capXRatio=.28f,capYRatio=.35f,alpha=if(dark).68f else .22f).padding(horizontal=4.dp,vertical=2.dp),contentAlignment=Alignment.Center){
+        Box(Modifier.atlasCellNineSlice(R.drawable.viking_controls_atlas,index=4,columns=2,rows=4,capXRatio=.26f,capYRatio=.32f,alpha=if(dark).70f else .22f).padding(horizontal=5.dp,vertical=2.dp),contentAlignment=Alignment.Center){
             Switch(checked,onChange,modifier=Modifier.semantics{contentDescription=label},colors=SwitchDefaults.colors(
                 checkedThumbColor=if(dark)Color(0xFFF0E4CC) else Color.White,
-                checkedTrackColor=Gold.copy(alpha=if(dark).65f else .82f),
+                checkedTrackColor=Gold.copy(alpha=if(dark).68f else .84f),
                 checkedBorderColor=Gold,
                 uncheckedThumbColor=Muted,
                 uncheckedTrackColor=if(dark)Color(0xFF14181B).copy(alpha=.75f) else Color(0xFFD5CFC2),

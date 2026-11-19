@@ -19,32 +19,38 @@ import androidx.compose.ui.unit.*
 
 val mainRoutes=listOf("journey","habits","missions","world","character")
 val mainNames=listOf("Jornada","Hábitos","Missões","Mundo","Herói")
+private val mainVikingIcons=listOf(VikingIcon.Hearth,VikingIcon.OakTree,VikingIcon.QuillScroll,VikingIcon.CompassRaven,VikingIcon.Helmet)
 /** The five areas share the carved glyph family. Decorative canvas; text provides tab semantics. */
 @Composable fun NavigationSigil(index:Int,color:Color,modifier:Modifier=Modifier){CarvedGlyph(listOf(Glyph.Journey,Glyph.Habits,Glyph.Missions,Glyph.World,Glyph.Hero)[index%5],color,modifier,26.dp)}
 @Composable fun AetherisNavigation(route:String,onSelect:(String)->Unit){
  val selected=if(route=="mimir"||route.startsWith("mimir_")||route.startsWith("region/")||route.startsWith("location/")||route.startsWith("expedition/"))"world" else if(route.startsWith("path/")||route in listOf("paths","inbox","pending"))"journey" else when(route){"grimoire","planner","analysis","focus_history"->"habits";"settings","journal","memories","portrait"->"character";"weekly"->"world";else->route}
- val dark=LocalAppearance.current.dark;val motion=LocalAppearance.current.reducedMotion
- val bronze=Gold;val base=if(dark)Color(0xFF0F1110) else Color(0xFFE2DCD0)
- // One continuous basalt strip: no per-tab boxes, selection is a lit notch and a warmed glyph.
+ val dark=LocalAppearance.current.dark;val motion=LocalAppearance.current.reducedMotion;val minimal=LocalAppearance.current.minimal
+ val bronze=Gold;val base=if(dark)Color(0xFF0E1011) else Color(0xFFE2DCD0)
+ // 1.7.2 DS 3.0: continuous basalt strip, forged top seam, subtle runic amulet active halo, and crisp Viking functional icons.
  Column(Modifier.fillMaxWidth().background(base).forgeMaterial().navigationBarsPadding()){
   Canvas(Modifier.fillMaxWidth().height(3.dp)){
-   drawLine(Color.Black.copy(alpha=.7f),Offset.Zero,Offset(size.width,0f),2.dp.toPx())
-   drawLine(bronze.copy(alpha=.22f),Offset(0f,2.dp.toPx()),Offset(size.width,2.dp.toPx()),1.dp.toPx())
+   drawLine(Color.Black.copy(alpha=.74f),Offset.Zero,Offset(size.width,0f),2.dp.toPx())
+   drawLine(bronze.copy(alpha=.30f),Offset(0f,2.dp.toPx()),Offset(size.width,2.dp.toPx()),1.dp.toPx())
   }
   Row(Modifier.fillMaxWidth().padding(horizontal=6.dp,vertical=2.dp)){
    mainRoutes.forEachIndexed{i,r->val active=selected==r
     val light by animateFloatAsState(if(active)1f else 0f,tween(if(motion)0 else AetherTokens.quick),label="aba")
-    Box(Modifier.weight(1f).testTag("nav:$r").heightIn(min=66.dp).selectable(active,onClick={onSelect(r)},role=Role.Tab).semantics(mergeDescendants=true){}){
+    Box(Modifier.weight(1f).testTag("nav:$r").heightIn(min=68.dp).selectable(active,onClick={onSelect(r)},role=Role.Tab).semantics(mergeDescendants=true){}){
      Canvas(Modifier.matchParentSize()){
       if(light>0f){
        val d=1.dp.toPx();val w=size.width
-       drawCircle(Brush.radialGradient(listOf(bronze.copy(alpha=.16f*light),Color.Transparent),center=Offset(w/2,size.height*.36f),radius=w*.42f),radius=w*.42f,center=Offset(w/2,size.height*.36f))
-       val notch=Path().apply{moveTo(w*.5f-13*d,0f);lineTo(w*.5f+13*d,0f);lineTo(w*.5f+9*d,3*d);lineTo(w*.5f-9*d,3*d);close()}
-       drawPath(notch,bronze.copy(alpha=.95f*light))
+       drawCircle(Brush.radialGradient(listOf(bronze.copy(alpha=.18f*light),Color.Transparent),center=Offset(w/2,size.height*.36f),radius=w*.46f),radius=w*.46f,center=Offset(w/2,size.height*.36f))
+       val notch=Path().apply{moveTo(w*.5f-14*d,0f);lineTo(w*.5f+14*d,0f);lineTo(w*.5f+10*d,3.5f*d);lineTo(w*.5f-10*d,3.5f*d);close()}
+       drawPath(notch,bronze.copy(alpha=.96f*light))
       }
      }
-     Column(Modifier.fillMaxWidth().padding(top=11.dp,bottom=8.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(5.dp)){
-      NavigationSigil(i,if(active)Gold else Muted.copy(alpha=.85f),Modifier.size(25.dp))
+     Column(Modifier.fillMaxWidth().padding(top=9.dp,bottom=8.dp),horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(4.dp)){
+      Box(Modifier.size(32.dp),contentAlignment=Alignment.Center){
+       if(active&&!minimal){
+        VikingNavAmulet(Modifier.size(32.dp),alpha=if(dark).46f else .24f)
+       }
+       VikingFunctionalIcon(mainVikingIcons[i],if(active)Gold else Muted.copy(alpha=.85f),size=24.dp,active=active)
+      }
       Text(mainNames[i],color=if(active)Gold else Muted,fontSize=10.sp,lineHeight=14.sp,letterSpacing=.4.sp,textAlign=androidx.compose.ui.text.style.TextAlign.Center)
      }
     }

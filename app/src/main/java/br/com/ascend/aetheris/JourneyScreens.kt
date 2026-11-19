@@ -44,8 +44,14 @@ import java.util.Locale
   if(h.type!=0)Meter(amount.toFloat()/target,if(complete)Green else color)
   Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)){
    Column(Modifier.weight(1f)){Text(if(h.type==0)"+${r?.xp?:h.xp} XP" else "$amount/$target $unitLabel",color=if(complete)Green else color,fontSize=13.sp);if(h.type!=0)Text("+${r?.xp?:h.xp} XP ao atingir a meta",color=Muted,fontSize=11.sp)}
-   if(h.type==2)TextButton(onFocus,Modifier.heightIn(min=48.dp).clip(actShape).background(Violet.copy(alpha=.1f)).border(1.dp,Violet.copy(alpha=.38f),actShape).semantics{contentDescription="Iniciar foco em ${h.name}"}){Text("Foco",color=Violet,fontSize=12.sp)}
-   IconButton(onProgress,Modifier.size(48.dp).clip(actShape).background(if(complete)Green.copy(alpha=.18f) else color.copy(alpha=.16f)).border(1.dp,(if(complete)Green else color).copy(alpha=.52f),actShape)){Icon(if(complete)Icons.Default.Check else Icons.Default.Add,if(complete)"Editar conclusão" else "Registrar progresso",tint=if(complete)Green else color)}
+   if(h.type==2)TextButton(onFocus,Modifier.heightIn(min=48.dp).clip(actShape).background(Violet.copy(alpha=.12f)).atlasCellNineSlice(R.drawable.viking_button_atlas,index=VikingButtonStyle.CompactoRunico.cellIndex,columns=2,rows=3,capXRatio=.2f,capYRatio=.28f,alpha=.62f).border(1.dp,Violet.copy(alpha=.46f),actShape).semantics{contentDescription="Iniciar foco em ${h.name}"}){Text("Foco",color=Violet,fontSize=12.sp)}
+   IconButton(onProgress,Modifier.size(48.dp).clip(actShape).background(if(complete)Green.copy(alpha=.20f) else color.copy(alpha=.16f)).atlasCellNineSlice(R.drawable.viking_button_atlas,index=if(complete)VikingButtonStyle.Confirmacao.cellIndex else VikingButtonStyle.CompactoRunico.cellIndex,columns=2,rows=3,capXRatio=.22f,capYRatio=.28f,alpha=.72f).border(1.dp,(if(complete)Green else color).copy(alpha=.58f),actShape)){
+    if(complete&&!LocalAppearance.current.minimal){
+     Box(Modifier.semantics{contentDescription="Editar conclusão"}){VikingCheckSeal(size=24.dp)}
+    } else {
+     Icon(if(complete)Icons.Default.Check else Icons.Default.Add,if(complete)"Editar conclusão" else "Registrar progresso",tint=if(complete)Green else color)
+    }
+   }
   }
  }
 }

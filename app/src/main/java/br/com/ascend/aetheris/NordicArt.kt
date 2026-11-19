@@ -42,7 +42,7 @@ val Ember=Color(0xFF8D4B43)
 }
 @Composable fun SagaDivider(modifier:Modifier=Modifier,color:Color=Gold){
     if(!LocalAppearance.current.minimal&&LocalContentColor.current!=Sepia){
-        AtlasCell(R.drawable.orn_divider_forged,if(color==Blue||color==ColdIron)1 else 0,1,2,modifier.fillMaxWidth().height(16.dp),alpha=.84f)
+        VikingKnotDivider(modifier=modifier,variant=if(color==Blue||color==ColdIron)1 else 7,alpha=.86f,height=16.dp)
         return
     }
     Canvas(modifier.fillMaxWidth().height(12.dp)){

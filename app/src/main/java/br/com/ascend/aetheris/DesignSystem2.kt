@@ -27,10 +27,17 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
  val base=when(kind){SurfaceKind.Parchment->if(dark)Color(0xFFD0C3A5) else Color(0xFFF2E5C7);SurfaceKind.Ceremonial->if(dark)Color(0xFF29211C) else Color(0xFFE1D5BF);SurfaceKind.Heroic->if(dark)Color(0xFF1A2026) else Color(0xFFE3E7EC);SurfaceKind.Artifact->if(dark)Color(0xFF211D25) else Color(0xFFE8E0D5);else->Surface}
  val shades=if(kind==SurfaceKind.Parchment)listOf(if(dark)Color(0xFFB7AA8D) else Color(0xFFE0CDA6),base,if(dark)Color(0xFFDBCEB0) else Color(0xFFF2E5C7)) else listOf(base,base.copy(alpha=.74f))
  val shape=androidx.compose.foundation.shape.CutCornerShape(if(kind==SurfaceKind.Operational)4.dp else 6.dp)
- val borderAlpha=when(kind){SurfaceKind.Ceremonial->.32f;SurfaceKind.Heroic->.28f;SurfaceKind.Artifact->.26f;SurfaceKind.Parchment->.24f;else->.2f}
- Column(modifier.fillMaxWidth().clip(shape).background(Brush.linearGradient(shades)).forgeMaterial(kind).border(1.dp,accent.copy(alpha=borderAlpha),shape).padding(AetherTokens.inset),verticalArrangement=Arrangement.spacedBy(12.dp)){
+ val borderAlpha=when(kind){SurfaceKind.Ceremonial->.36f;SurfaceKind.Heroic->.30f;SurfaceKind.Artifact->.30f;SurfaceKind.Parchment->.24f;else->.2f}
+ val cornerMod=when(kind){
+  SurfaceKind.Ceremonial->Modifier.vikingCornerAccents(alpha=.52f,sizeDp=20.dp,silver=false)
+  SurfaceKind.Heroic->Modifier.vikingCornerAccents(alpha=.44f,sizeDp=18.dp,silver=true)
+  SurfaceKind.Artifact->Modifier.vikingCornerAccents(alpha=.48f,sizeDp=18.dp,silver=true)
+  else->Modifier
+ }
+ Column(modifier.fillMaxWidth().clip(shape).background(Brush.linearGradient(shades)).forgeMaterial(kind).then(cornerMod).border(1.dp,accent.copy(alpha=borderAlpha),shape).padding(AetherTokens.inset),verticalArrangement=Arrangement.spacedBy(12.dp)){
   if(kind!=SurfaceKind.Operational&&kind!=SurfaceKind.Parchment)Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(8.dp)){
-   Box(Modifier.width(12.dp).height(1.dp).background(accent.copy(alpha=.55f)))
+   FutharkRuneGlyph(when(kind){SurfaceKind.Heroic->HistoricalFutharkRune.Mannaz;SurfaceKind.Ceremonial->HistoricalFutharkRune.Ansuz;else->HistoricalFutharkRune.Fehu},accent,size=12.dp)
+   Box(Modifier.width(10.dp).height(1.dp).background(accent.copy(alpha=.55f)))
    Text(when(kind){SurfaceKind.Heroic->"SAGA PESSOAL";SurfaceKind.Ceremonial->"MARCA DE AETHERIS";SurfaceKind.Parchment->"ARQUIVO DO CRONISTA";else->"COLEÇÃO DE ARTEFATOS"},color=accent,fontSize=9.sp,letterSpacing=2.sp,fontWeight=FontWeight.SemiBold)
   }
   CompositionLocalProvider(LocalContentColor provides if(kind==SurfaceKind.Parchment)Sepia else Ink){content()}
@@ -56,7 +63,7 @@ enum class SurfaceKind{Operational,Heroic,Ceremonial,Parchment,Artifact}
      else Box(Modifier.width(3.dp).height(20.dp).background(accent))
      Text(title,style=MaterialTheme.typography.titleLarge,color=if(kind==SurfaceKind.Ceremonial)Gold else Ink)
     }
-    Box(Modifier.fillMaxWidth().height(1.dp).background(Brush.horizontalGradient(listOf(accent.copy(alpha=.45f),accent.copy(alpha=.12f),Color.Transparent))))
+    VikingKnotDivider(variant=7,alpha=.68f,height=12.dp)
    }
   },
   text={Column(verticalArrangement=Arrangement.spacedBy(10.dp),content=content)},

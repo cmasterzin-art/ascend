@@ -63,8 +63,8 @@ import java.util.Locale
    s.focus?.let { focus -> item(key="active-focus") { FocusCard(focus,s,vm) } }
    item{Box(Modifier.fillMaxWidth()){
     CompactHero(s,onPortrait)
-    // 1.6.9.10: the header floats over the sky of the fjord instead of occupying its own band.
-    Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Eyebrow("ASCEND  /  MINHA JORNADA");Text(displayDate(day),color=Muted,fontSize=12.sp)};ClassEmblem(s.player!!.heroClass,Modifier.size(26.dp))}
+    // 1.7.2 DS 3.0: floating fjord header with subtle historical Raido rune accent.
+    Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){FutharkRuneGlyph(HistoricalFutharkRune.Raido,Gold,size=13.dp);Eyebrow("ASCEND  /  MINHA JORNADA")};Text(displayDate(day),color=Muted,fontSize=12.sp)};ClassEmblem(s.player!!.heroClass,Modifier.size(26.dp))}
    }}
    item{Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(12.dp)){
     DayLedger(done,due.size,rested,relaxed,dialSize)
@@ -72,12 +72,12 @@ import java.util.Locale
     ShortcutStrip(listOf(Triple("Caminhos",Glyph.Map,onPaths),Triple("Entrada${if(inboxCount>0)" ($inboxCount)" else ""}",Glyph.Chronicles,onInbox),Triple("Pendências",Glyph.Claims,onPending)))
    }}
   item{RumosDoDiaPanel(rumos,s,vm,expanded=rumosExpanded||hasRumos&&rumosExpanded,hasRumos=hasRumos,dueCardsCount=dueCardsCount,onToggle={rumosExpanded=!rumosExpanded},onPaths=onPaths,onOpenPath=onOpenPath,onPlanner=onPlanner,onInbox=onInbox,onPending=onPending,onMimirReview=onMimirReview)}
-  item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){SectionHeader("Seus próximos passos","Conclua com um toque; detalhes ao selecionar o nome.")};IconButton(onAdd,Modifier.size(42.dp).clip(CutCornerShape(5.dp)).background(Gold.copy(alpha=.12f)).border(1.dp,Gold.copy(alpha=.45f),CutCornerShape(5.dp))){Icon(Icons.Default.Add,"Criar hábito",tint=Gold)}};if(due.size>1||done>0)ChipRow(listOf("Todos (${due.size})","Pendentes (${due.size-done})"),if(pendingOnly)1 else 0,{pendingOnly=it==1})}
+  item{Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){SectionHeader("Seus próximos passos","Conclua com um toque; detalhes ao selecionar o nome.")};IconButton(onAdd,Modifier.size(48.dp).clip(CutCornerShape(5.dp)).background(Gold.copy(alpha=.12f)).atlasCellNineSlice(R.drawable.viking_button_atlas,index=VikingButtonStyle.BronzeForjado.cellIndex,columns=2,rows=3,capXRatio=.2f,capYRatio=.28f,alpha=.72f).border(1.dp,Gold.copy(alpha=.52f),CutCornerShape(5.dp))){Icon(Icons.Default.Add,"Criar hábito",tint=Color(0xFFF3EBDC))}};if(due.size>1||done>0)ChipRow(listOf("Todos (${due.size})","Pendentes (${due.size-done})"),if(pendingOnly)1 else 0,{pendingOnly=it==1})}
   val visible=due.filter{!pendingOnly||s.record(it.id,day)?.complete!=true}.sortedBy{s.record(it.id,day)?.complete==true}
   if(visible.isEmpty())item{Empty(if(rested)"Este dia está reservado para descanso. Seus registros e recompensas anteriores continuam guardados." else if(due.isEmpty())"Nenhum hábito para hoje. Abra o Planejador ou crie seu primeiro passo." else "Tudo feito por hoje. Aetheris pode esperar pelo seu próximo passo.")}
   items(visible.size,key={visible[it].id}){i->val h=visible[i];HabitCard(h,s.record(h.id,day),{if(h.type==0&&s.record(h.id,day)?.complete!=true)vm.run{vm.repo.progress(h,day,1)}else onProgress(h,s.record(h.id,day))},{detail=h},{onFocus(h)})}
   item{WeekStrip(s,day)}
-  item{SectionHeader("Além da rotina");Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){SagaButton("Missões",onMissions,Modifier.weight(1f),secondary=true);SagaButton("Região atual",onRegion,Modifier.weight(1f),secondary=true)}}
+  item{VikingKnotDivider(variant=7,alpha=.72f,height=16.dp);SectionHeader("Além da rotina");Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){SagaButton("Missões",onMissions,Modifier.weight(1f),style=VikingButtonStyle.FerroRunico,leadingRune=HistoricalFutharkRune.Fehu);SagaButton("Região atual",onRegion,Modifier.weight(1f),style=VikingButtonStyle.FerroRunico,leadingRune=HistoricalFutharkRune.Ehwaz)}}
   item{NarrativePanel(s,vm);TextButton(onJournal){Text("Escrever no diário")}}
  }
  detail?.let{h->HabitDetails(h,s,{detail=null},{detail=null;onEdit(h)},{r->detail=null;onProgress(h,r)})}
