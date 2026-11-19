@@ -603,4 +603,158 @@ class MimirAndArchetypesTest {
             db2.close()
         }
     }
+
+    @Test
+    fun movePageDeleteDestinationNotebookPreservesFlashcardAndRestoresBackupCleanly() = runBlocking {
+        repo.saveNotebook(KnowledgeNotebook(id = "nb-src", name = "Origem"))
+        repo.saveNotebook(KnowledgeNotebook(id = "nb-dst", name = "Destino"))
+        repo.savePage(KnowledgePage(id = "pg-mv", notebookId = "nb-src", title = "Nota Migrada", content = "Conteúdo"))
+        val yesterday = LocalDate.now().minusDays(1).toString()
+        repo.saveFlashcard(
+            Flashcard(
+                id = "fc-keep",
+                notebookId = "nb-src",
+                pageId = "pg-mv",
+                question = "O que preservar?",
+                answer = "O flashcard e seu histórico.",
+                nextReviewDate = yesterday
+            )
+        )
+        repo.reviewFlashcard("fc-keep", rating = 2, reviewDate = yesterday)
+
+        // Move page to nb-dst -> flashcard stays in nb-src with review history and cleanly unlinked pageId
+        repo.movePage("pg-mv", "nb-dst")
+        assertEquals("nb-dst", s().knowledgePages.single { it.id == "pg-mv" }.notebookId)
+        val afterMoveCard = s().flashcards.single { it.id == "fc-keep" }
+        assertEquals("nb-src", afterMoveCard.notebookId)
+        assertEquals("", afterMoveCard.pageId)
+        assertEquals(1, s().flashcardReviews.count { it.flashcardId == "fc-keep" })
+
+        // Delete destination notebook -> backup export & restore succeed with full integrity
+        repo.deleteNotebook("nb-dst")
+        assertTrue(s().notebooks.none { it.id == "nb-dst" })
+        assertTrue(s().knowledgePages.none { it.id == "pg-mv" })
+        assertEquals(1, s().flashcards.count { it.id == "fc-keep" })
+        assertEquals(1, s().flashcardReviews.count { it.flashcardId == "fc-keep" })
+
+        val encoded = Backup.encode(s())
+        val decoded = Backup.decode(encoded)
+        val db2 = Room.inMemoryDatabaseBuilder(context, GameDatabase::class.java).build()
+        try {
+            val repo2 = GameRepository(db2)
+            repo2.importState(decoded)
+            val restored = repo2.state.value!!
+            assertEquals(1, restored.flashcards.size)
+            assertEquals("fc-keep", restored.flashcards.single().id)
+            assertEquals("", restored.flashcards.single().pageId)
+            assertEquals(1, restored.flashcardReviews.size)
+        } finally {
+            db2.close()
+        }
+    }
+
+    @Test
+    fun deleteNotebookDefensivelyUnlinksLegacyCrossNotebookFlashcardPageId() = runBlocking {
+        repo.saveNotebook(KnowledgeNotebook(id = "nb-a", name = "Caderno A"))
+        repo.saveNotebook(KnowledgeNotebook(id = "nb-b", name = "Caderno B"))
+        repo.savePage(KnowledgePage(id = "pg-b", notebookId = "nb-b", title = "Página em B"))
+        // Simulate legacy 1.7.1 state where flashcard in nb-a points to pg-b in nb-b
+        db.dao().flashcard(
+            Flashcard(
+                id = "fc-legacy",
+                notebookId = "nb-a",
+                pageId = "pg-b",
+                question = "Legado?",
+                answer = "Sim."
+            )
+        )
+        repo.refresh()
+
+        repo.deleteNotebook("nb-b")
+        val surviving = s().flashcards.single { it.id == "fc-legacy" }
+        assertEquals("", surviving.pageId)
+        // Backup export & validation pass cleanly
+        val decoded = Backup.decode(Backup.encode(s()))
+        assertEquals("", decoded.flashcards.single { it.id == "fc-legacy" }.pageId)
+    }
+
+    @Test
+    fun archivedNotebookDoesNotLeakIntoSearchFavoritesTagsOrReviews() = runBlocking {
+        repo.saveNotebook(KnowledgeNotebook(id = "nb-act", name = "Ativo"))
+        repo.saveNotebook(KnowledgeNotebook(id = "nb-arc", name = "Arquivado"))
+        repo.savePage(
+            KnowledgePage(
+                id = "pg-act",
+                notebookId = "nb-act",
+                title = "Nota Ativa",
+                content = "Texto sobre runas",
+                tags = "runas, ativa",
+                favorite = true
+            )
+        )
+        repo.savePage(
+            KnowledgePage(
+                id = "pg-arc",
+                notebookId = "nb-arc",
+                title = "Nota Arquivada",
+                content = "Texto secreto sobre runas",
+                tags = "runas, oculta",
+                favorite = true
+            )
+        )
+        repo.linkPages("pg-act", "pg-arc")
+        repo.saveFlashcard(
+            Flashcard(
+                id = "fc-arc",
+                notebookId = "nb-arc",
+                pageId = "pg-arc",
+                question = "Q oculta",
+                answer = "A oculta",
+                nextReviewDate = LocalDate.now().plusDays(2).toString()
+            )
+        )
+
+        repo.archiveNotebook("nb-arc", true)
+        val archivedIds = archivedNotebookIds(s())
+        assertEquals(setOf("nb-arc"), archivedIds)
+
+        // Global active lists exclude archived notebook content
+        assertEquals(listOf("pg-act"), activeKnowledgePages(s()).map { it.id })
+        assertEquals(
+            listOf("pg-act"),
+            searchKnowledgePages(s().knowledgePages, query = "runas", archivedNotebookIds = archivedIds).map { it.id }
+        )
+        assertEquals(
+            listOf("pg-act"),
+            searchKnowledgePages(s().knowledgePages, favoritesOnly = true, archivedNotebookIds = archivedIds).map { it.id }
+        )
+        val tags = activeKnowledgeTags(s()).toMap()
+        assertEquals(1, tags["runas"])
+        assertNull(tags["oculta"])
+        assertTrue(dueFlashcards(s(), LocalDate.now().plusDays(5).toString()).isEmpty())
+        assertNull(nextFlashcardReviewDate(s()))
+
+        // Explicit archived viewing preserves pages, links, and allows opening the archived notebook directly
+        assertEquals(
+            listOf("pg-arc"),
+            searchKnowledgePages(s().knowledgePages, notebookId = "nb-arc", archivedNotebookIds = archivedIds).map { it.id }
+        )
+        assertEquals(
+            setOf("pg-act", "pg-arc"),
+            searchKnowledgePages(s().knowledgePages, includeArchived = true, archivedNotebookIds = archivedIds).map { it.id }.toSet()
+        )
+        assertEquals(listOf("pg-arc"), outgoingLinkedPages(s(), "pg-act").map { it.id })
+    }
+
+    @Test
+    fun viewModelDraftStoreProtectsLargeUnsavedTextSafely() {
+        val vm = GameViewModel(context)
+        val largeMarkdown = "# Rascunho\n" + "Linha de estudo nórdico.\n".repeat(4000)
+        vm.setDraft("page_edit:p1:content", largeMarkdown)
+        assertTrue(vm.hasDraft("page_edit:p1:content"))
+        assertEquals(largeMarkdown, vm.getDraft("page_edit:p1:content", ""))
+        vm.clearDraftsWithPrefix("page_edit:p1:")
+        assertFalse(vm.hasDraft("page_edit:p1:content"))
+        assertEquals("fallback", vm.getDraft("page_edit:p1:content", "fallback"))
+    }
 }

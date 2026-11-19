@@ -526,11 +526,20 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     }
     suspend fun deleteNotebook(notebookId:String)=change("Caderno excluído"){
         requireNotNull(d.notebooks().find{it.id==notebookId}){"Caderno não encontrado."}
+        val now=today()
+        val pagesToDelete=d.knowledgePages().filter{it.notebookId==notebookId}
+        val deletedPageIds=pagesToDelete.mapTo(HashSet()){it.id}
         d.flashcards().filter{it.notebookId==notebookId}.forEach{card->
             d.deleteFlashcardReviewsForCard(card.id)
             d.deleteFlashcard(card.id)
         }
-        d.knowledgePages().filter{it.notebookId==notebookId}.forEach{pg->
+        // Defensively unlink any surviving flashcard in another notebook whose pageId belonged to this notebook.
+        if(deletedPageIds.isNotEmpty()){
+            d.flashcards().filter{it.notebookId!=notebookId && it.pageId in deletedPageIds}.forEach{card->
+                d.flashcard(card.copy(pageId="",updated=now))
+            }
+        }
+        pagesToDelete.forEach{pg->
             d.deleteKnowledgeReferencesForPage(pg.id)
             d.deleteKnowledgeLinksForPage(pg.id)
             d.deleteKnowledgePage(pg.id)
@@ -562,10 +571,22 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     }
     suspend fun movePage(pageId:String,targetNotebookId:String)=change("Página movida"){
         val pg=requireNotNull(d.knowledgePages().find{it.id==pageId}){"Página não encontrada."}
-        val nb=requireNotNull(d.notebooks().find{it.id==targetNotebookId}){"Caderno de destino não encontrado."}
+        val dest=requireNotNull(d.notebooks().find{it.id==targetNotebookId}){"Caderno de destino não encontrado."}
         val now=today()
+        if(pg.notebookId==targetNotebookId){
+            d.knowledgePage(pg.copy(updated=now))
+            d.notebook(dest.copy(updated=now))
+            return@change
+        }
+        val sourceNotebookId=pg.notebookId
+        // Explicit policy: flashcards stay in their notebook with full review history,
+        // and any stale cross-notebook page link is unlinked cleanly.
+        d.flashcards().filter{it.pageId==pageId && it.notebookId!=targetNotebookId}.forEach{card->
+            d.flashcard(card.copy(pageId="",updated=now))
+        }
         d.knowledgePage(pg.copy(notebookId=targetNotebookId,updated=now))
-        d.notebook(nb.copy(updated=now))
+        d.notebooks().find{it.id==sourceNotebookId}?.let{src->d.notebook(src.copy(updated=now))}
+        d.notebook(dest.copy(updated=now))
     }
     suspend fun togglePageFavorite(pageId:String)=change("Favorito atualizado"){
         val pg=requireNotNull(d.knowledgePages().find{it.id==pageId}){"Página não encontrada."}
@@ -807,6 +828,11 @@ class GameViewModel(app:Application):AndroidViewModel(app){
     val repo=(app as AscendApp).repository
     val state=repo.state.asStateFlow()
     val error=MutableStateFlow<String?>(null)
+    private val drafts=LinkedHashMap<String,String>()
+    fun getDraft(key:String,fallback:String):String=drafts[key]?:fallback
+    fun setDraft(key:String,value:String){drafts[key]=value}
+    fun hasDraft(key:String):Boolean=key in drafts
+    fun clearDraftsWithPrefix(prefix:String){drafts.keys.removeAll{it.startsWith(prefix)}}
     val relaxed=app.preferences.data.map{it[booleanPreferencesKey("relaxed")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
     val bosses=app.preferences.data.map{it[booleanPreferencesKey("bosses")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
     val appearance=app.preferences.data.map{it[stringPreferencesKey("theme")]?:"dark"}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),"dark")

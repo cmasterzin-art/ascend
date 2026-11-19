@@ -178,9 +178,20 @@ fun parseTags(raw: String): List<String> {
 
 fun normalizeTags(raw: String): String = parseTags(raw).joinToString(", ")
 
-fun allKnowledgeTags(pages: List<KnowledgePage>): List<Pair<String, Int>> {
+fun archivedNotebookIds(s: GameState): Set<String> =
+    s.notebooks.filter { it.archived }.mapTo(HashSet()) { it.id }
+
+fun activeKnowledgePages(s: GameState): List<KnowledgePage> {
+    val archivedNbs = archivedNotebookIds(s)
+    return s.knowledgePages.filter { !it.archived && it.notebookId !in archivedNbs }
+}
+
+fun allKnowledgeTags(
+    pages: List<KnowledgePage>,
+    archivedNotebookIds: Set<String> = emptySet()
+): List<Pair<String, Int>> {
     val counts = LinkedHashMap<String, Pair<String, Int>>()
-    pages.filter { !it.archived }.forEach { page ->
+    pages.filter { !it.archived && it.notebookId !in archivedNotebookIds }.forEach { page ->
         parseTags(page.tags).forEach { tag ->
             val key = tag.lowercase()
             val cur = counts[key]
@@ -190,6 +201,9 @@ fun allKnowledgeTags(pages: List<KnowledgePage>): List<Pair<String, Int>> {
     return counts.values.sortedWith(compareByDescending<Pair<String, Int>> { it.second }.thenBy { it.first.lowercase() })
 }
 
+fun activeKnowledgeTags(s: GameState): List<Pair<String, Int>> =
+    allKnowledgeTags(s.knowledgePages, archivedNotebookIds(s))
+
 fun searchKnowledgePages(
     pages: List<KnowledgePage>,
     query: String = "",
@@ -197,12 +211,15 @@ fun searchKnowledgePages(
     tag: String = "",
     favoritesOnly: Boolean = false,
     includeArchived: Boolean = false,
-    sort: PageSort = PageSort.UPDATED
+    sort: PageSort = PageSort.UPDATED,
+    archivedNotebookIds: Set<String> = emptySet()
 ): List<KnowledgePage> {
     val q = query.trim().lowercase()
     val t = tag.trim().lowercase()
     val filtered = pages.filter { p ->
-        (includeArchived || !p.archived) &&
+        val visibleByArchive = includeArchived ||
+            (!p.archived && (notebookId.isNotBlank() || p.notebookId !in archivedNotebookIds))
+        visibleByArchive &&
             (notebookId.isBlank() || p.notebookId == notebookId) &&
             (!favoritesOnly || p.favorite) &&
             (t.isBlank() || parseTags(p.tags).any { it.lowercase() == t }) &&
@@ -233,6 +250,13 @@ fun dueFlashcards(s: GameState, date: String = today(), notebookId: String = "")
             (notebookId.isBlank() || card.notebookId == notebookId) &&
             card.nextReviewDate <= date
     }.sortedWith(compareBy<Flashcard> { it.nextReviewDate }.thenBy { it.repetitions }.thenBy { it.created }.thenBy { it.id })
+}
+
+fun nextFlashcardReviewDate(s: GameState, notebookId: String = ""): String? {
+    val activeNotebooks = s.notebooks.filter { !it.archived }.mapTo(HashSet()) { it.id }
+    return s.flashcards
+        .filter { !it.archived && it.notebookId in activeNotebooks && (notebookId.isBlank() || it.notebookId == notebookId) }
+        .minOfOrNull { it.nextReviewDate }
 }
 
 data class Sm2Outcome(

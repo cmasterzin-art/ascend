@@ -95,7 +95,7 @@ import androidx.compose.ui.semantics.*
     }
     if(discard)DiscardEdits(onDismiss,{discard=false})
 }
-@Composable private fun DiscardEdits(onDiscard:()->Unit,onKeep:()->Unit){
+@Composable fun DiscardEdits(onDiscard:()->Unit,onKeep:()->Unit){
     AetherDialog(onDismissRequest=onKeep,title="Descartar alterações?",confirmButton={SagaButton("Descartar",onDiscard,destructive=true)},dismissButton={TextButton(onKeep){Text("Continuar editando")}}){Text("As mudanças deste formulário ainda não foram salvas.")}
 }
 @Composable fun Onboarding(onRestore:(()->Unit)?=null,onCreate:(Player,List<Habit>)->Unit){
@@ -118,21 +118,47 @@ import androidx.compose.ui.semantics.*
     }
 }
 @Composable fun QuestEditor(initial:Quest?,habits:List<Habit>,onDismiss:()->Unit,onSave:(Quest)->Unit){
-    val q=remember{initial?:Quest(name="",period=2)};var name by remember{mutableStateOf(q.name)};var desc by remember{mutableStateOf(q.description)};var period by remember{mutableIntStateOf(q.period)};var metric by remember{mutableIntStateOf(q.metric)};var target by remember{mutableStateOf(q.target.toString())};var xp by remember{mutableStateOf(q.xp.toString())};var coins by remember{mutableStateOf(q.coins.toString())};var deadline by remember{mutableStateOf(q.deadline)};var special by remember{mutableStateOf(q.special)};var selected by remember{mutableStateOf(q.habitIds.split(',').filter{it.isNotBlank()}.toSet())}
-    FullForm("Forjar uma missão",onDismiss,{onSave(q.copy(name=name,description=desc,period=period,metric=metric,target=target.toIntOrNull()?:0,xp=xp.toIntOrNull()?:-1,coins=coins.toIntOrNull()?:-1,deadline=deadline,special=special,habitIds=selected.joinToString(",")))}){
-        FormField(name,{name=it},"Nome");FormField(desc,{desc=it},"Descrição",multi=true);ChipRow(listOf("Diária","Semanal","Épica","Chefe semanal"),period,{period=it});ChipRow(listOf("Conclusões","Minutos","XP de hábitos","Páginas"),metric,{metric=it});FormField(target,{target=it},"Meta",true);FormField(xp,{xp=it},"Recompensa XP",true);FormField(coins,{coins=it},"Fragmentos",true);FormField(deadline,{deadline=it},"Prazo opcional · AAAA-MM-DD");FormField(special,{special=it},"Nome do troféu opcional");Text("Hábitos relacionados (nenhum = todos)",color=Muted);habits.filter{!it.deleted}.forEach{h->Toggle(h.name,h.id in selected,{selected=if(it)selected+h.id else selected-h.id})}
+    val q=remember(initial?.id){initial?:Quest(name="",period=2)}
+    var name by rememberSaveable(q.id){mutableStateOf(q.name)}
+    var desc by rememberSaveable(q.id){mutableStateOf(q.description)}
+    var period by rememberSaveable(q.id){mutableIntStateOf(q.period)}
+    var metric by rememberSaveable(q.id){mutableIntStateOf(q.metric)}
+    var target by rememberSaveable(q.id){mutableStateOf(q.target.toString())}
+    var xp by rememberSaveable(q.id){mutableStateOf(q.xp.toString())}
+    var coins by rememberSaveable(q.id){mutableStateOf(q.coins.toString())}
+    var deadline by rememberSaveable(q.id){mutableStateOf(q.deadline)}
+    var special by rememberSaveable(q.id){mutableStateOf(q.special)}
+    var selectedCsv by rememberSaveable(q.id){mutableStateOf(q.habitIds)}
+    val selected=remember(selectedCsv){selectedCsv.split(',').filter{it.isNotBlank()}.toSet()}
+    var discard by remember{mutableStateOf(false)}
+    val dirty=name!=q.name||desc!=q.description||period!=q.period||metric!=q.metric||target!=q.target.toString()||xp!=q.xp.toString()||coins!=q.coins.toString()||deadline!=q.deadline||special!=q.special||selected!=q.habitIds.split(',').filter{it.isNotBlank()}.toSet()
+    FullForm("Forjar uma missão",{if(dirty)discard=true else onDismiss()},{onSave(q.copy(name=name,description=desc,period=period,metric=metric,target=target.toIntOrNull()?:0,xp=xp.toIntOrNull()?:-1,coins=coins.toIntOrNull()?:-1,deadline=deadline,special=special,habitIds=selected.joinToString(",")))}){
+        FormField(name,{name=it},"Nome");FormField(desc,{desc=it},"Descrição",multi=true);ChipRow(listOf("Diária","Semanal","Épica","Chefe semanal"),period,{period=it});ChipRow(listOf("Conclusões","Minutos","XP de hábitos","Páginas"),metric,{metric=it});FormField(target,{target=it},"Meta",true);FormField(xp,{xp=it},"Recompensa XP",true);FormField(coins,{coins=it},"Fragmentos",true);FormField(deadline,{deadline=it},"Prazo opcional · AAAA-MM-DD");FormField(special,{special=it},"Nome do troféu opcional");Text("Hábitos relacionados (nenhum = todos)",color=Muted);habits.filter{!it.deleted}.forEach{h->Toggle(h.name,h.id in selected,{val next=if(it)selected+h.id else selected-h.id;selectedCsv=next.joinToString(",")})}
     }
+    if(discard)DiscardEdits(onDismiss,{discard=false})
 }
 @Composable fun RoutineEditor(r:Routine?,habits:List<Habit>,onDismiss:()->Unit,onSave:(Routine)->Unit){
-    var name by remember{mutableStateOf(r?.name?:"")};var time by remember{mutableStateOf(r?.time?:"08:00")};var ids by remember{mutableStateOf(r?.habitIds?.split(',')?.filter{it.isNotBlank()}?:emptyList())}
-    FullForm("Ritual pessoal",onDismiss,{onSave(Routine(r?.id?:uid(),name,ids.joinToString(","),time))}){
+    val key=r?.id?:"new-routine"
+    var name by rememberSaveable(key){mutableStateOf(r?.name?:"")}
+    var time by rememberSaveable(key){mutableStateOf(r?.time?:"08:00")}
+    var idsCsv by rememberSaveable(key){mutableStateOf(r?.habitIds?:"")}
+    val ids=remember(idsCsv){idsCsv.split(',').filter{it.isNotBlank()}}
+    var discard by remember{mutableStateOf(false)}
+    val dirty=name!=(r?.name?:"")||time!=(r?.time?:"08:00")||idsCsv!=(r?.habitIds?:"")
+    FullForm("Ritual pessoal",{if(dirty)discard=true else onDismiss()},{onSave(Routine(r?.id?:uid(),name,ids.joinToString(","),time))}){
         FormField(name,{name=it},"Nome da rotina");FormField(time,{time=it},"Horário · HH:mm")
         Text("A ordem de seleção define a ordem da rotina. Desmarque e selecione novamente para reorganizar.",color=Muted,fontSize=13.sp)
-        habits.filter{!it.deleted && !it.archived}.forEach{h->Toggle("${if(h.id in ids) "${ids.indexOf(h.id)+1}. " else ""}${h.name}",h.id in ids,{ids=if(it)ids+h.id else ids-h.id})}
+        habits.filter{!it.deleted && !it.archived}.forEach{h->Toggle("${if(h.id in ids) "${ids.indexOf(h.id)+1}. " else ""}${h.name}",h.id in ids,{val next=if(it)ids+h.id else ids-h.id;idsCsv=next.joinToString(",")})}
         Text("Conclusões usam o mesmo registro diário em todas as rotinas.",color=Muted,fontSize=12.sp)
     }
+    if(discard)DiscardEdits(onDismiss,{discard=false})
 }
 @Composable fun JournalEditor(j:Journal?,onDismiss:()->Unit,onSave:(Journal)->Unit){
-    var title by remember{mutableStateOf(j?.title?:"")};var text by remember{mutableStateOf(j?.text?:"")}
-    FullForm("Diário do aventureiro",onDismiss,{onSave(Journal(j?.id?:uid(),title,text,j?.date?:today()))}){Eyebrow(displayDate(j?.date?:today()));FormField(title,{title=it},"Título");FormField(text,{text=it},"O que este dia deixou em você?",multi=true,modifier=Modifier.heightIn(min=320.dp));Text("Esta página fica somente neste aparelho e no backup local que você exportar.",color=Muted,fontSize=12.sp)}
+    val key=j?.id?:"new-journal"
+    var title by rememberSaveable(key){mutableStateOf(j?.title?:"")}
+    var text by remember(key){mutableStateOf(j?.text?:"")}
+    var discard by remember{mutableStateOf(false)}
+    val dirty=title!=(j?.title?:"")||text!=(j?.text?:"")
+    FullForm("Diário do aventureiro",{if(dirty)discard=true else onDismiss()},{onSave(Journal(j?.id?:uid(),title,text,j?.date?:today()))}){Eyebrow(displayDate(j?.date?:today()));FormField(title,{title=it},"Título");FormField(text,{text=it},"O que este dia deixou em você?",multi=true,modifier=Modifier.heightIn(min=320.dp));Text("Esta página fica somente neste aparelho e no backup local que você exportar.",color=Muted,fontSize=12.sp)}
+    if(discard)DiscardEdits(onDismiss,{discard=false})
 }

@@ -333,16 +333,20 @@ fun MimirLibraryScreen(
     var sortIndex by rememberSaveable { mutableIntStateOf(0) }
     var selectedTag by rememberSaveable { mutableStateOf("") }
     var showArchived by rememberSaveable { mutableStateOf(false) }
-    var notebookEditor by remember { mutableStateOf<KnowledgeNotebook?>(null) }
+    var notebookEditorId by rememberSaveable { mutableStateOf<String?>(null) }
     var deleteNotebookCandidate by remember { mutableStateOf<KnowledgeNotebook?>(null) }
-    var quickCardEditor by remember { mutableStateOf<Flashcard?>(null) }
+    var quickCardOpen by rememberSaveable { mutableStateOf(false) }
 
+    val archivedNbIds = remember(s.notebooks) { archivedNotebookIds(s) }
     val activeNotebooks = remember(s.notebooks) { s.notebooks.filter { !it.archived } }
     val archivedNotebooks = remember(s.notebooks) { s.notebooks.filter { it.archived } }
-    val activePages = remember(s.knowledgePages) { s.knowledgePages.filter { !it.archived } }
+    val activePages = remember(s.notebooks, s.knowledgePages) { activeKnowledgePages(s) }
+    val hasAnyArchivedPages = remember(s.notebooks, s.knowledgePages) {
+        s.knowledgePages.any { it.archived || it.notebookId in archivedNbIds }
+    }
     val dueCards = remember(s.notebooks, s.flashcards, day) { dueFlashcards(s, day) }
     val sort = PageSort.entries[sortIndex.coerceIn(PageSort.entries.indices)]
-    val allTags = remember(s.knowledgePages) { allKnowledgeTags(s.knowledgePages) }
+    val allTags = remember(s.notebooks, s.knowledgePages) { activeKnowledgeTags(s) }
 
     Page {
         MimirLibraryBanner(
@@ -355,8 +359,14 @@ fun MimirLibraryScreen(
         AetherisTabs(listOf("Cadernos", "Recentes", "Favoritos", "Tags", "Revisões"), tab, { tab = it })
 
         if (search.isNotBlank() && tab == 0) {
-            val matches = remember(s.knowledgePages, search, sort) {
-                searchKnowledgePages(s.knowledgePages, query = search, sort = sort)
+            val matches = remember(s.knowledgePages, archivedNbIds, search, sort, showArchived) {
+                searchKnowledgePages(
+                    s.knowledgePages,
+                    query = search,
+                    includeArchived = showArchived,
+                    sort = sort,
+                    archivedNotebookIds = archivedNbIds
+                )
             }
             Eyebrow("Resultados da busca (${matches.size})", Blue)
             if (matches.isEmpty()) {
@@ -373,7 +383,7 @@ fun MimirLibraryScreen(
         when (tab) {
             0 -> {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Action("+ Novo caderno", { notebookEditor = KnowledgeNotebook() }, Modifier.weight(1f))
+                    Action("+ Novo caderno", { notebookEditorId = "__new__" }, Modifier.weight(1f))
                     if (dueCards.isNotEmpty()) {
                         SagaButton("Revisar (${dueCards.size})", { onStartReview("") }, Modifier.weight(1f), secondary = true)
                     }
@@ -415,7 +425,7 @@ fun MimirLibraryScreen(
                             }
                             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 TextButton({ onOpenNotebook(nb.id) }) { Text("Abrir", fontSize = 12.sp) }
-                                TextButton({ notebookEditor = nb }) { Text("Editar", fontSize = 12.sp) }
+                                TextButton({ notebookEditorId = nb.id }) { Text("Editar", fontSize = 12.sp) }
                                 TextButton({ vm.run { vm.repo.archiveNotebook(nb.id, !nb.archived) } }) {
                                     Text(if (nb.archived) "Reativar" else "Arquivar", fontSize = 12.sp)
                                 }
@@ -432,28 +442,53 @@ fun MimirLibraryScreen(
             }
             1 -> {
                 ChipRow(listOf("Atualização", "Criação", "Nome"), sortIndex, { sortIndex = it })
-                val list = remember(s.knowledgePages, search, sort) {
-                    searchKnowledgePages(s.knowledgePages, query = search, sort = sort)
+                val list = remember(s.knowledgePages, archivedNbIds, search, sort, showArchived) {
+                    searchKnowledgePages(
+                        s.knowledgePages,
+                        query = search,
+                        includeArchived = showArchived,
+                        sort = sort,
+                        archivedNotebookIds = archivedNbIds
+                    )
                 }
                 if (list.isEmpty()) {
                     Empty("Nenhuma página registrada ainda. Abra um caderno para criar sua primeira nota.")
                 } else {
                     list.forEach { pg ->
-                        val nbName = s.notebooks.find { it.id == pg.notebookId }?.name ?: "Caderno"
+                        val nb = s.notebooks.find { it.id == pg.notebookId }
+                        val nbName = (nb?.name ?: "Caderno") + if (nb?.archived == true) " (arquivado)" else ""
                         KnowledgePageRow(pg, nbName, { onOpenPage(pg.id) }, { vm.run { vm.repo.togglePageFavorite(pg.id) } })
+                    }
+                }
+                if (hasAnyArchivedPages) {
+                    TextButton({ showArchived = !showArchived }) {
+                        Text(if (showArchived) "Ocultar itens arquivados" else "Incluir itens arquivados")
                     }
                 }
             }
             2 -> {
-                val favs = remember(s.knowledgePages, search, sort) {
-                    searchKnowledgePages(s.knowledgePages, query = search, favoritesOnly = true, sort = sort)
+                val favs = remember(s.knowledgePages, archivedNbIds, search, sort, showArchived) {
+                    searchKnowledgePages(
+                        s.knowledgePages,
+                        query = search,
+                        favoritesOnly = true,
+                        includeArchived = showArchived,
+                        sort = sort,
+                        archivedNotebookIds = archivedNbIds
+                    )
                 }
                 if (favs.isEmpty()) {
                     Empty("Nenhuma página favoritada. Marque páginas essenciais com ★ para acesso rápido.")
                 } else {
                     favs.forEach { pg ->
-                        val nbName = s.notebooks.find { it.id == pg.notebookId }?.name ?: "Caderno"
+                        val nb = s.notebooks.find { it.id == pg.notebookId }
+                        val nbName = (nb?.name ?: "Caderno") + if (nb?.archived == true) " (arquivado)" else ""
                         KnowledgePageRow(pg, nbName, { onOpenPage(pg.id) }, { vm.run { vm.repo.togglePageFavorite(pg.id) } })
+                    }
+                }
+                if (hasAnyArchivedPages) {
+                    TextButton({ showArchived = !showArchived }) {
+                        Text(if (showArchived) "Ocultar itens arquivados" else "Incluir itens arquivados")
                     }
                 }
             }
@@ -472,9 +507,15 @@ fun MimirLibraryScreen(
                             )
                         }
                     }
-                    val tagged = remember(s.knowledgePages, selectedTag, search, sort) {
+                    val tagged = remember(s.knowledgePages, archivedNbIds, selectedTag, search, sort) {
                         if (selectedTag.isBlank()) emptyList()
-                        else searchKnowledgePages(s.knowledgePages, query = search, tag = selectedTag, sort = sort)
+                        else searchKnowledgePages(
+                            s.knowledgePages,
+                            query = search,
+                            tag = selectedTag,
+                            sort = sort,
+                            archivedNotebookIds = archivedNbIds
+                        )
                     }
                     if (selectedTag.isNotBlank()) {
                         Eyebrow("Páginas com #$selectedTag (${tagged.size})", Blue)
@@ -512,7 +553,7 @@ fun MimirLibraryScreen(
                         if (activeNotebooks.isNotEmpty()) {
                             SagaButton(
                                 "+ Flashcard",
-                                { quickCardEditor = Flashcard(notebookId = activeNotebooks.first().id) },
+                                { quickCardOpen = true },
                                 Modifier.weight(1f),
                                 secondary = true
                             )
@@ -546,13 +587,30 @@ fun MimirLibraryScreen(
         }
     }
 
-    notebookEditor?.let { editing ->
-        NotebookEditorDialog(
-            initial = editing,
-            paths = s.paths.filter { it.state in 0..2 },
-            onDismiss = { notebookEditor = null },
-            onSave = { updated -> vm.run { vm.repo.saveNotebook(updated); notebookEditor = null } }
-        )
+    notebookEditorId?.let { id ->
+        val editing = if (id == "__new__") KnowledgeNotebook() else s.notebooks.find { it.id == id }
+        if (editing == null) {
+            notebookEditorId = null
+        } else {
+            val draftPrefix = "nb_editor:$id:"
+            NotebookEditorDialog(
+                initial = editing,
+                vm = vm,
+                draftPrefix = draftPrefix,
+                paths = s.paths.filter { it.state in 0..2 },
+                onDismiss = {
+                    vm.clearDraftsWithPrefix(draftPrefix)
+                    notebookEditorId = null
+                },
+                onSave = { updated ->
+                    vm.run {
+                        vm.repo.saveNotebook(updated)
+                        vm.clearDraftsWithPrefix(draftPrefix)
+                        notebookEditorId = null
+                    }
+                }
+            )
+        }
     }
 
     deleteNotebookCandidate?.let { nb ->
@@ -560,7 +618,7 @@ fun MimirLibraryScreen(
             onDismissRequest = { deleteNotebookCandidate = null },
             title = "Excluir caderno?",
             confirmButton = {
-                SagaButton("Excluir", { vm.run { vm.repo.deleteNotebook(nb.id) }; deleteNotebookCandidate = null }, destructive = true)
+                SagaButton("Excluir", { vm.run { vm.repo.deleteNotebook(nb.id); deleteNotebookCandidate = null } }, destructive = true)
             },
             dismissButton = { TextButton({ deleteNotebookCandidate = null }) { Text("Cancelar") } }
         ) {
@@ -568,13 +626,25 @@ fun MimirLibraryScreen(
         }
     }
 
-    quickCardEditor?.let { editing ->
+    if (quickCardOpen && activeNotebooks.isNotEmpty()) {
+        val draftPrefix = "fc_quick:"
         FlashcardEditorDialog(
-            initial = editing,
+            initial = Flashcard(notebookId = activeNotebooks.first().id),
+            vm = vm,
+            draftPrefix = draftPrefix,
             notebooks = activeNotebooks,
-            pages = s.knowledgePages.filter { !it.archived },
-            onDismiss = { quickCardEditor = null },
-            onSave = { updated -> vm.run { vm.repo.saveFlashcard(updated); quickCardEditor = null } }
+            pages = activePages,
+            onDismiss = {
+                vm.clearDraftsWithPrefix(draftPrefix)
+                quickCardOpen = false
+            },
+            onSave = { updated ->
+                vm.run {
+                    vm.repo.saveFlashcard(updated)
+                    vm.clearDraftsWithPrefix(draftPrefix)
+                    quickCardOpen = false
+                }
+            }
         )
     }
 }
@@ -648,11 +718,11 @@ fun NotebookDetailScreen(
     var search by rememberSaveable(notebookId) { mutableStateOf("") }
     var sortIndex by rememberSaveable(notebookId) { mutableIntStateOf(0) }
     var showArchived by rememberSaveable(notebookId) { mutableStateOf(false) }
-    var editNotebook by remember { mutableStateOf(false) }
-    var newPageDialog by remember { mutableStateOf(false) }
+    var editNotebook by rememberSaveable(notebookId) { mutableStateOf(false) }
+    var newPageDialog by rememberSaveable(notebookId) { mutableStateOf(false) }
     var movePageCandidate by remember { mutableStateOf<KnowledgePage?>(null) }
     var deletePageCandidate by remember { mutableStateOf<KnowledgePage?>(null) }
-    var cardEditor by remember { mutableStateOf<Flashcard?>(null) }
+    var cardEditorId by rememberSaveable(notebookId) { mutableStateOf<String?>(null) }
     var deleteCardCandidate by remember { mutableStateOf<Flashcard?>(null) }
 
     val sort = PageSort.entries[sortIndex.coerceIn(PageSort.entries.indices)]
@@ -731,7 +801,7 @@ fun NotebookDetailScreen(
             }
             1 -> {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Action("+ Novo flashcard", { cardEditor = Flashcard(notebookId = nb.id) }, Modifier.weight(1f))
+                    Action("+ Novo flashcard", { cardEditorId = "__new__" }, Modifier.weight(1f))
                     if (nbDue.isNotEmpty() && !nb.archived) {
                         SagaButton("Revisar (${nbDue.size})", { onStartReview(nb.id) }, Modifier.weight(1f), secondary = true)
                     }
@@ -756,7 +826,7 @@ fun NotebookDetailScreen(
                                 fontSize = 11.sp
                             )
                             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                TextButton({ cardEditor = card }) { Text("Editar", fontSize = 12.sp) }
+                                TextButton({ cardEditorId = card.id }) { Text("Editar", fontSize = 12.sp) }
                                 TextButton({ vm.run { vm.repo.archiveFlashcard(card.id, !card.archived) } }) {
                                     Text(if (card.archived) "Reativar" else "Arquivar", fontSize = 12.sp)
                                 }
@@ -773,33 +843,65 @@ fun NotebookDetailScreen(
     }
 
     if (editNotebook) {
+        val draftPrefix = "nb_detail_edit:${nb.id}:"
         NotebookEditorDialog(
             initial = nb,
+            vm = vm,
+            draftPrefix = draftPrefix,
             paths = s.paths.filter { it.state in 0..2 },
-            onDismiss = { editNotebook = false },
-            onSave = { updated -> vm.run { vm.repo.saveNotebook(updated); editNotebook = false } }
+            onDismiss = {
+                vm.clearDraftsWithPrefix(draftPrefix)
+                editNotebook = false
+            },
+            onSave = { updated ->
+                vm.run {
+                    vm.repo.saveNotebook(updated)
+                    vm.clearDraftsWithPrefix(draftPrefix)
+                    editNotebook = false
+                }
+            }
         )
     }
 
     if (newPageDialog) {
-        var title by remember { mutableStateOf("") }
-        var tags by remember { mutableStateOf("") }
-        var content by remember { mutableStateOf("") }
+        val draftPrefix = "new_page:${nb.id}:"
+        var title by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}title", "")) }
+        var tags by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}tags", "")) }
+        var content by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}content", "")) }
+        var discardConfirm by remember { mutableStateOf(false) }
+        val dirty = title.isNotBlank() || tags.isNotBlank() || content.isNotBlank()
         FullForm(
             "Nova página",
-            onDismiss = { newPageDialog = false },
+            onDismiss = {
+                if (dirty) discardConfirm = true
+                else {
+                    vm.clearDraftsWithPrefix(draftPrefix)
+                    newPageDialog = false
+                }
+            },
             onSave = {
                 val created = KnowledgePage(notebookId = nb.id, title = title, content = content, tags = tags, pathId = nb.pathId)
                 vm.run {
                     vm.repo.savePage(created)
+                    vm.clearDraftsWithPrefix(draftPrefix)
                     newPageDialog = false
                     onOpenPage(created.id)
                 }
             }
         ) {
-            FormField(title, { title = it.take(200) }, "Título da página")
-            FormField(tags, { tags = it }, "Tags (separadas por vírgula)")
-            FormField(content, { content = it }, "Conteúdo em Markdown (# título, **negrito**, - lista, > citação)", multi = true)
+            FormField(title, { title = it.take(200); vm.setDraft("${draftPrefix}title", title) }, "Título da página")
+            FormField(tags, { tags = it; vm.setDraft("${draftPrefix}tags", tags) }, "Tags (separadas por vírgula)")
+            FormField(content, { content = it; vm.setDraft("${draftPrefix}content", content) }, "Conteúdo em Markdown (# título, **negrito**, - lista, > citação)", multi = true)
+        }
+        if (discardConfirm) {
+            DiscardEdits(
+                onDiscard = {
+                    vm.clearDraftsWithPrefix(draftPrefix)
+                    discardConfirm = false
+                    newPageDialog = false
+                },
+                onKeep = { discardConfirm = false }
+            )
         }
     }
 
@@ -824,7 +926,7 @@ fun NotebookDetailScreen(
             onDismissRequest = { deletePageCandidate = null },
             title = "Excluir página?",
             confirmButton = {
-                SagaButton("Excluir", { vm.run { vm.repo.deletePage(pg.id) }; deletePageCandidate = null }, destructive = true)
+                SagaButton("Excluir", { vm.run { vm.repo.deletePage(pg.id); deletePageCandidate = null } }, destructive = true)
             },
             dismissButton = { TextButton({ deletePageCandidate = null }) { Text("Cancelar") } }
         ) {
@@ -832,14 +934,31 @@ fun NotebookDetailScreen(
         }
     }
 
-    cardEditor?.let { editing ->
-        FlashcardEditorDialog(
-            initial = editing,
-            notebooks = s.notebooks,
-            pages = s.knowledgePages.filter { it.notebookId == editing.notebookId && !it.archived },
-            onDismiss = { cardEditor = null },
-            onSave = { updated -> vm.run { vm.repo.saveFlashcard(updated); cardEditor = null } }
-        )
+    cardEditorId?.let { id ->
+        val editing = if (id == "__new__") Flashcard(notebookId = nb.id) else s.flashcards.find { it.id == id }
+        if (editing == null) {
+            cardEditorId = null
+        } else {
+            val draftPrefix = "fc_nb:${nb.id}:$id:"
+            FlashcardEditorDialog(
+                initial = editing,
+                vm = vm,
+                draftPrefix = draftPrefix,
+                notebooks = s.notebooks,
+                pages = s.knowledgePages.filter { it.notebookId == editing.notebookId && !it.archived },
+                onDismiss = {
+                    vm.clearDraftsWithPrefix(draftPrefix)
+                    cardEditorId = null
+                },
+                onSave = { updated ->
+                    vm.run {
+                        vm.repo.saveFlashcard(updated)
+                        vm.clearDraftsWithPrefix(draftPrefix)
+                        cardEditorId = null
+                    }
+                }
+            )
+        }
     }
 
     deleteCardCandidate?.let { card ->
@@ -847,7 +966,7 @@ fun NotebookDetailScreen(
             onDismissRequest = { deleteCardCandidate = null },
             title = "Excluir flashcard?",
             confirmButton = {
-                SagaButton("Excluir", { vm.run { vm.repo.deleteFlashcard(card.id) }; deleteCardCandidate = null }, destructive = true)
+                SagaButton("Excluir", { vm.run { vm.repo.deleteFlashcard(card.id); deleteCardCandidate = null } }, destructive = true)
             },
             dismissButton = { TextButton({ deleteCardCandidate = null }) { Text("Cancelar") } }
         ) {
@@ -874,19 +993,25 @@ fun PageDetailScreen(
         return
     }
     val notebook = s.notebooks.find { it.id == page.notebookId }
+    val draftPrefix = "page_edit:$pageId:"
     var modeTab by rememberSaveable(pageId) { mutableIntStateOf(0) } // 0=Visualizar, 1=Editar
-    var title by rememberSaveable(pageId, page.updated) { mutableStateOf(page.title) }
-    var content by rememberSaveable(pageId, page.updated) { mutableStateOf(page.content) }
-    var tags by rememberSaveable(pageId, page.updated) { mutableStateOf(page.tags) }
-    var linkedPathId by rememberSaveable(pageId, page.updated) { mutableStateOf(page.pathId) }
-    var linkedTaskId by rememberSaveable(pageId, page.updated) { mutableStateOf(page.taskId) }
+    var title by remember(pageId, page.updated) { mutableStateOf(vm.getDraft("${draftPrefix}title", page.title)) }
+    var content by remember(pageId, page.updated) { mutableStateOf(vm.getDraft("${draftPrefix}content", page.content)) }
+    var tags by remember(pageId, page.updated) { mutableStateOf(vm.getDraft("${draftPrefix}tags", page.tags)) }
+    var linkedPathId by remember(pageId, page.updated) { mutableStateOf(vm.getDraft("${draftPrefix}path", page.pathId)) }
+    var linkedTaskId by remember(pageId, page.updated) { mutableStateOf(vm.getDraft("${draftPrefix}task", page.taskId)) }
+    var confirmDiscardEdit by remember { mutableStateOf(false) }
 
-    var linkPickerOpen by remember { mutableStateOf(false) }
-    var refEditor by remember { mutableStateOf<KnowledgeReference?>(null) }
-    var flashcardCreator by remember { mutableStateOf(false) }
+    val hasUnsavedChanges = title != page.title || content != page.content || tags != page.tags ||
+        linkedPathId != page.pathId || linkedTaskId != page.taskId
+
+    var linkPickerOpen by rememberSaveable(pageId) { mutableStateOf(false) }
+    var refEditorId by rememberSaveable(pageId) { mutableStateOf<String?>(null) }
+    var flashcardCreator by rememberSaveable(pageId) { mutableStateOf(false) }
     var moveDialog by remember { mutableStateOf(false) }
     var deleteDialog by remember { mutableStateOf(false) }
 
+    val archivedNbIds = remember(s.notebooks) { archivedNotebookIds(s) }
     val outgoing = remember(s.knowledgeLinks, s.knowledgePages, pageId) { outgoingLinkedPages(s, pageId) }
     val backlinks = remember(s.knowledgeLinks, s.knowledgePages, pageId) { backlinkPages(s, pageId) }
     val refs = remember(s.knowledgeReferences, pageId) { s.knowledgeReferences.filter { it.pageId == pageId } }
@@ -908,7 +1033,17 @@ fun PageDetailScreen(
             }
         }
 
-        AetherisTabs(listOf("Visualizar", "Editar"), modeTab, { modeTab = it })
+        AetherisTabs(
+            listOf("Visualizar", if (hasUnsavedChanges) "Editar *" else "Editar"),
+            modeTab,
+            { nextTab ->
+                if (modeTab == 1 && nextTab == 0 && hasUnsavedChanges) {
+                    confirmDiscardEdit = true
+                } else {
+                    modeTab = nextTab
+                }
+            }
+        )
 
         if (modeTab == 0) {
             val tagList = remember(page.tags) { parseTags(page.tags) }
@@ -939,18 +1074,23 @@ fun PageDetailScreen(
             }
         } else {
             AetherSurface(SurfaceKind.Operational) {
-                FormField(title, { title = it.take(200) }, "Título")
-                FormField(tags, { tags = it }, "Tags (ex.: estoicismo, história, resumo)")
+                if (hasUnsavedChanges) {
+                    Eyebrow("Rascunho não salvo · protegido em memória", Gold)
+                }
+                FormField(title, { title = it.take(200); vm.setDraft("${draftPrefix}title", title) }, "Título")
+                FormField(tags, { tags = it; vm.setDraft("${draftPrefix}tags", tags) }, "Tags (ex.: estoicismo, história, resumo)")
                 Text("Markdown: # título · **negrito** · *itálico* · - lista · > citação · `código` · [link](url)", color = Muted, fontSize = 11.sp)
-                FormField(content, { content = it }, "Conteúdo da página", multi = true)
+                FormField(content, { content = it; vm.setDraft("${draftPrefix}content", content) }, "Conteúdo da página", multi = true)
                 if (activePaths.isNotEmpty()) {
                     Eyebrow("Vincular a um Caminho (opcional)", Violet)
                     val pathLabels = listOf("Nenhum") + activePaths.map { it.name }
                     val selectedPathIdx = if (linkedPathId.isBlank()) 0 else (activePaths.indexOfFirst { it.id == linkedPathId } + 1).coerceAtLeast(0)
                     ChipRow(pathLabels, selectedPathIdx, { idx ->
                         linkedPathId = if (idx == 0) "" else activePaths[idx - 1].id
+                        vm.setDraft("${draftPrefix}path", linkedPathId)
                         if (linkedTaskId.isNotBlank() && s.pathTasks.none { it.id == linkedTaskId && (linkedPathId.isBlank() || it.pathId == linkedPathId) }) {
                             linkedTaskId = ""
+                            vm.setDraft("${draftPrefix}task", "")
                         }
                     })
                 }
@@ -960,6 +1100,7 @@ fun PageDetailScreen(
                     val selectedTaskIdx = if (linkedTaskId.isBlank()) 0 else (activeTasks.indexOfFirst { it.id == linkedTaskId } + 1).coerceAtLeast(0)
                     ChipRow(taskLabels, selectedTaskIdx, { idx ->
                         linkedTaskId = if (idx == 0) "" else activeTasks[idx - 1].id
+                        vm.setDraft("${draftPrefix}task", linkedTaskId)
                     })
                 }
                 Action(
@@ -975,6 +1116,7 @@ fun PageDetailScreen(
                                     taskId = linkedTaskId
                                 )
                             )
+                            vm.clearDraftsWithPrefix(draftPrefix)
                             modeTab = 0
                         }
                     },
@@ -1024,7 +1166,7 @@ fun PageDetailScreen(
         AetherSurface(SurfaceKind.Operational) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Eyebrow("Referências bibliográficas (${refs.size})", Gold)
-                TextButton({ refEditor = KnowledgeReference(pageId = page.id) }) { Text("+ Referência", fontSize = 12.sp) }
+                TextButton({ refEditorId = "__new__" }) { Text("+ Referência", fontSize = 12.sp) }
             }
             if (refs.isEmpty()) {
                 Text("Adicione livros, artigos, fontes ou capítulos consultados nesta página.", color = Muted, fontSize = 12.sp)
@@ -1037,7 +1179,7 @@ fun PageDetailScreen(
                         if (ref.url.isNotBlank()) Text(ref.url, color = Blue, fontSize = 11.sp)
                         if (ref.notes.isNotBlank()) Text(ref.notes, color = Muted, fontSize = 12.sp)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TextButton({ refEditor = ref }) { Text("Editar", fontSize = 11.sp) }
+                            TextButton({ refEditorId = ref.id }) { Text("Editar", fontSize = 11.sp) }
                             TextButton({ vm.run { vm.repo.deleteReference(ref.id) } }) { Text("Remover", color = Muted, fontSize = 11.sp) }
                         }
                     }
@@ -1058,8 +1200,26 @@ fun PageDetailScreen(
         }
     }
 
+    if (confirmDiscardEdit) {
+        DiscardEdits(
+            onDiscard = {
+                vm.clearDraftsWithPrefix(draftPrefix)
+                title = page.title
+                content = page.content
+                tags = page.tags
+                linkedPathId = page.pathId
+                linkedTaskId = page.taskId
+                confirmDiscardEdit = false
+                modeTab = 0
+            },
+            onKeep = { confirmDiscardEdit = false }
+        )
+    }
+
     if (linkPickerOpen) {
-        val candidates = s.knowledgePages.filter { it.id != page.id && !it.archived && outgoing.none { o -> o.id == it.id } }
+        val candidates = s.knowledgePages.filter {
+            it.id != page.id && !it.archived && it.notebookId !in archivedNbIds && outgoing.none { o -> o.id == it.id }
+        }
         AetherDialog(
             onDismissRequest = { linkPickerOpen = false },
             title = "Ligar a outra página",
@@ -1078,21 +1238,50 @@ fun PageDetailScreen(
         }
     }
 
-    refEditor?.let { editing ->
-        ReferenceEditorDialog(
-            initial = editing,
-            onDismiss = { refEditor = null },
-            onSave = { updated -> vm.run { vm.repo.saveReference(updated); refEditor = null } }
-        )
+    refEditorId?.let { id ->
+        val editing = if (id == "__new__") KnowledgeReference(pageId = page.id) else s.knowledgeReferences.find { it.id == id }
+        if (editing == null) {
+            refEditorId = null
+        } else {
+            val refDraftPrefix = "ref_edit:${page.id}:$id:"
+            ReferenceEditorDialog(
+                initial = editing,
+                vm = vm,
+                draftPrefix = refDraftPrefix,
+                onDismiss = {
+                    vm.clearDraftsWithPrefix(refDraftPrefix)
+                    refEditorId = null
+                },
+                onSave = { updated ->
+                    vm.run {
+                        vm.repo.saveReference(updated)
+                        vm.clearDraftsWithPrefix(refDraftPrefix)
+                        refEditorId = null
+                    }
+                }
+            )
+        }
     }
 
     if (flashcardCreator) {
+        val fcDraftPrefix = "fc_from_page:${page.id}:"
         FlashcardEditorDialog(
             initial = Flashcard(notebookId = page.notebookId, pageId = page.id, tags = page.tags),
+            vm = vm,
+            draftPrefix = fcDraftPrefix,
             notebooks = s.notebooks,
             pages = s.knowledgePages.filter { it.notebookId == page.notebookId && !it.archived },
-            onDismiss = { flashcardCreator = false },
-            onSave = { updated -> vm.run { vm.repo.saveFlashcard(updated); flashcardCreator = false } }
+            onDismiss = {
+                vm.clearDraftsWithPrefix(fcDraftPrefix)
+                flashcardCreator = false
+            },
+            onSave = { updated ->
+                vm.run {
+                    vm.repo.saveFlashcard(updated)
+                    vm.clearDraftsWithPrefix(fcDraftPrefix)
+                    flashcardCreator = false
+                }
+            }
         )
     }
 
@@ -1116,7 +1305,7 @@ fun PageDetailScreen(
             onDismissRequest = { deleteDialog = false },
             title = "Excluir página?",
             confirmButton = {
-                SagaButton("Excluir", { vm.run { vm.repo.deletePage(page.id); deleteDialog = false; onBack() } }, destructive = true)
+                SagaButton("Excluir", { vm.run { vm.repo.deletePage(page.id); vm.clearDraftsWithPrefix(draftPrefix); deleteDialog = false; onBack() } }, destructive = true)
             },
             dismissButton = { TextButton({ deleteDialog = false }) { Text("Cancelar") } }
         ) {
@@ -1141,8 +1330,17 @@ fun FlashcardReviewScreen(
     var goodCount by rememberSaveable(notebookId) { mutableIntStateOf(0) }
     var easyCount by rememberSaveable(notebookId) { mutableIntStateOf(0) }
     var revealed by rememberSaveable(notebookId) { mutableStateOf(false) }
+    var repeatMissedInSession by rememberSaveable(notebookId) { mutableStateOf(true) }
+    var retryQueueCsv by rememberSaveable(notebookId) { mutableStateOf("") }
 
-    val currentCard = pending.firstOrNull()
+    val retryIds = remember(retryQueueCsv) { retryQueueCsv.split(',').filter { it.isNotBlank() } }
+    val retryCards = remember(retryIds, s.flashcards, s.notebooks) {
+        val activeNbs = s.notebooks.filter { !it.archived }.mapTo(HashSet()) { it.id }
+        val byId = s.flashcards.filter { !it.archived && it.notebookId in activeNbs }.associateBy { it.id }
+        retryIds.mapNotNull { byId[it] }
+    }
+    val isRetryPhase = pending.isEmpty() && retryCards.isNotEmpty()
+    val currentCard = pending.firstOrNull() ?: retryCards.firstOrNull()
     val nbTitle = if (notebookId.isBlank()) "Todos os cadernos" else s.notebooks.find { it.id == notebookId }?.name ?: "Caderno"
 
     Page {
@@ -1168,9 +1366,7 @@ fun FlashcardReviewScreen(
                 } else {
                     Eyebrow("Memória em dia", Green)
                     Text("Nenhuma revisão pendente hoje", style = MaterialTheme.typography.titleLarge)
-                    val nextDate = s.flashcards
-                        .filter { !it.archived && (notebookId.isBlank() || it.notebookId == notebookId) }
-                        .minOfOrNull { it.nextReviewDate }
+                    val nextDate = nextFlashcardReviewDate(s, notebookId)
                     Text(
                         if (nextDate != null) "Próxima revisão agendada para ${displayDate(nextDate)}."
                         else "Crie flashcards em seus cadernos da Biblioteca de Mímir para começar.",
@@ -1186,18 +1382,27 @@ fun FlashcardReviewScreen(
         val totalForBar = maxOf(sessionTotal, reviewed + pending.size).coerceAtLeast(1)
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("Progresso da sessão", color = Muted, fontSize = 12.sp)
-                Text("$reviewed de $totalForBar · ${pending.size} restantes", color = Blue, fontSize = 12.sp)
+                Text(
+                    if (isRetryPhase) "Reforço da sessão" else "Progresso da sessão",
+                    color = Muted,
+                    fontSize = 12.sp
+                )
+                Text(
+                    if (isRetryPhase) "${retryCards.size} para fixar" else "$reviewed de $totalForBar · ${pending.size} restantes",
+                    color = if (isRetryPhase) Gold else Blue,
+                    fontSize = 12.sp
+                )
             }
-            Meter(reviewed.toFloat() / totalForBar, Blue, slim = true)
+            Meter(reviewed.toFloat() / totalForBar, if (isRetryPhase) Gold else Blue, slim = true)
         }
 
         val cardNotebook = s.notebooks.find { it.id == currentCard.notebookId }
         val cardPage = s.knowledgePages.find { it.id == currentCard.pageId }
         AetherSurface(SurfaceKind.Operational, Modifier.testTag("flashcard_stage")) {
             Eyebrow(
-                listOfNotNull(cardNotebook?.name, cardPage?.title).joinToString(" · ").ifBlank { "Runa da Memória" },
-                Gold
+                if (isRetryPhase) "Reforço da sessão · não duplica histórico"
+                else listOfNotNull(cardNotebook?.name, cardPage?.title).joinToString(" · ").ifBlank { "Runa da Memória" },
+                if (isRetryPhase) Blue else Gold
             )
             Text(currentCard.question, style = MaterialTheme.typography.headlineSmall)
             if (currentCard.tags.isNotBlank()) {
@@ -1211,39 +1416,84 @@ fun FlashcardReviewScreen(
                 Eyebrow("Resposta", Green)
                 Text(currentCard.answer, color = Ink, fontSize = 15.sp, lineHeight = 23.sp)
                 Hairline()
-                Text("Avalie sua lembrança:", color = Muted, fontSize = 12.sp)
-                val outcomes = remember(currentCard.id, day) {
-                    (0..3).map { r -> computeNextReview(currentCard, r, day) }
-                }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    RatingButton("Errei", "+${outcomes[0].intervalDays}d", MaterialTheme.colorScheme.error, Modifier.weight(1f)) {
-                        vm.run {
-                            vm.repo.reviewFlashcard(currentCard.id, 0, day)
-                            reviewed++; againCount++; revealed = false
+                if (isRetryPhase) {
+                    Text(
+                        "Prática imediata sem alterar o agendamento já salvo para amanhã:",
+                        color = Muted,
+                        fontSize = 12.sp
+                    )
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        SagaButton(
+                            "Rever novamente",
+                            {
+                                val rest = retryIds.drop(1) + currentCard.id
+                                retryQueueCsv = rest.joinToString(",")
+                                revealed = false
+                            },
+                            Modifier.weight(1f),
+                            secondary = true
+                        )
+                        Action(
+                            "Lembrei agora",
+                            {
+                                retryQueueCsv = retryIds.drop(1).joinToString(",")
+                                revealed = false
+                            },
+                            Modifier.weight(1f)
+                        )
+                    }
+                    TextButton({ retryQueueCsv = ""; revealed = false }, Modifier.align(Alignment.End)) {
+                        Text("Encerrar reforço", color = Muted, fontSize = 12.sp)
+                    }
+                } else {
+                    Text("Avalie sua lembrança:", color = Muted, fontSize = 12.sp)
+                    val outcomes = remember(currentCard.id, day) {
+                        (0..3).map { r -> computeNextReview(currentCard, r, day) }
+                    }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        RatingButton("Errei", "+${outcomes[0].intervalDays}d", MaterialTheme.colorScheme.error, Modifier.weight(1f)) {
+                            val id = currentCard.id
+                            vm.run {
+                                vm.repo.reviewFlashcard(id, 0, day)
+                                reviewed++; againCount++; revealed = false
+                                if (repeatMissedInSession && id !in retryIds) {
+                                    retryQueueCsv = (retryIds + id).joinToString(",")
+                                }
+                            }
+                        }
+                        RatingButton("Difícil", "+${outcomes[1].intervalDays}d", Gold, Modifier.weight(1f)) {
+                            val id = currentCard.id
+                            vm.run {
+                                vm.repo.reviewFlashcard(id, 1, day)
+                                reviewed++; hardCount++; revealed = false
+                            }
                         }
                     }
-                    RatingButton("Difícil", "+${outcomes[1].intervalDays}d", Gold, Modifier.weight(1f)) {
-                        vm.run {
-                            vm.repo.reviewFlashcard(currentCard.id, 1, day)
-                            reviewed++; hardCount++; revealed = false
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        RatingButton("Bom", "+${outcomes[2].intervalDays}d", Blue, Modifier.weight(1f)) {
+                            val id = currentCard.id
+                            vm.run {
+                                vm.repo.reviewFlashcard(id, 2, day)
+                                reviewed++; goodCount++; revealed = false
+                            }
                         }
-                    }
-                }
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    RatingButton("Bom", "+${outcomes[2].intervalDays}d", Blue, Modifier.weight(1f)) {
-                        vm.run {
-                            vm.repo.reviewFlashcard(currentCard.id, 2, day)
-                            reviewed++; goodCount++; revealed = false
-                        }
-                    }
-                    RatingButton("Fácil", "+${outcomes[3].intervalDays}d", Green, Modifier.weight(1f)) {
-                        vm.run {
-                            vm.repo.reviewFlashcard(currentCard.id, 3, day)
-                            reviewed++; easyCount++; revealed = false
+                        RatingButton("Fácil", "+${outcomes[3].intervalDays}d", Green, Modifier.weight(1f)) {
+                            val id = currentCard.id
+                            vm.run {
+                                vm.repo.reviewFlashcard(id, 3, day)
+                                reviewed++; easyCount++; revealed = false
+                            }
                         }
                     }
                 }
             }
+        }
+        if (!isRetryPhase) {
+            Toggle(
+                "Repetir cartões avaliados como \"Errei\" ao fim da sessão (sem duplicar histórico)",
+                repeatMissedInSession,
+                { repeatMissedInSession = it }
+            )
         }
         Text(
             "Você pode interromper a qualquer momento: cada card avaliado já está salvo.",
@@ -1282,19 +1532,28 @@ private fun RatingButton(
 @Composable
 private fun NotebookEditorDialog(
     initial: KnowledgeNotebook,
+    vm: GameViewModel,
+    draftPrefix: String,
     paths: List<PersonalPath>,
     onDismiss: () -> Unit,
     onSave: (KnowledgeNotebook) -> Unit
 ) {
-    var name by remember { mutableStateOf(initial.name) }
-    var description by remember { mutableStateOf(initial.description) }
-    var category by remember { mutableStateOf(initial.category.ifBlank { notebookCategories.first() }) }
-    var cover by remember { mutableIntStateOf(initial.cover.coerceIn(mimirCoverNames.indices)) }
-    var pathId by remember { mutableStateOf(initial.pathId) }
+    var name by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}name", initial.name)) }
+    var description by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}desc", initial.description)) }
+    var category by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}cat", initial.category.ifBlank { notebookCategories.first() })) }
+    var cover by remember(draftPrefix) {
+        mutableIntStateOf(vm.getDraft("${draftPrefix}cover", initial.cover.toString()).toIntOrNull()?.coerceIn(mimirCoverNames.indices) ?: initial.cover.coerceIn(mimirCoverNames.indices))
+    }
+    var pathId by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}path", initial.pathId)) }
+    var discardConfirm by remember { mutableStateOf(false) }
+
+    val dirty = name != initial.name || description != initial.description ||
+        category != initial.category.ifBlank { notebookCategories.first() } ||
+        cover != initial.cover.coerceIn(mimirCoverNames.indices) || pathId != initial.pathId
 
     FullForm(
         if (initial.name.isBlank()) "Novo caderno" else "Editar caderno",
-        onDismiss = onDismiss,
+        onDismiss = { if (dirty) discardConfirm = true else onDismiss() },
         onSave = {
             onSave(initial.copy(name = name, description = description, category = category, cover = cover, pathId = pathId))
         }
@@ -1302,38 +1561,47 @@ private fun NotebookEditorDialog(
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             MimirCodexArt(cover, Modifier.size(96.dp))
         }
-        FormField(name, { name = it.take(120) }, "Nome do caderno")
-        FormField(description, { description = it.take(2000) }, "Descrição (opcional)", multi = true)
+        FormField(name, { name = it.take(120); vm.setDraft("${draftPrefix}name", name) }, "Nome do caderno")
+        FormField(description, { description = it.take(2000); vm.setDraft("${draftPrefix}desc", description) }, "Descrição (opcional)", multi = true)
         Eyebrow("Categoria", Gold)
-        ChipRow(notebookCategories, notebookCategories.indexOf(category).coerceAtLeast(0), { category = notebookCategories[it] })
+        ChipRow(notebookCategories, notebookCategories.indexOf(category).coerceAtLeast(0), { category = notebookCategories[it]; vm.setDraft("${draftPrefix}cat", category) })
         Eyebrow("Capa pictórica", Gold)
-        ChipRow(mimirCoverNames, cover, { cover = it })
+        ChipRow(mimirCoverNames, cover, { cover = it; vm.setDraft("${draftPrefix}cover", cover.toString()) })
         if (paths.isNotEmpty()) {
             Eyebrow("Vincular a um Caminho (opcional)", Violet)
             val labels = listOf("Nenhum") + paths.map { it.name }
             val idx = if (pathId.isBlank()) 0 else (paths.indexOfFirst { it.id == pathId } + 1).coerceAtLeast(0)
-            ChipRow(labels, idx, { pathId = if (it == 0) "" else paths[it - 1].id })
+            ChipRow(labels, idx, { pathId = if (it == 0) "" else paths[it - 1].id; vm.setDraft("${draftPrefix}path", pathId) })
         }
+    }
+    if (discardConfirm) {
+        DiscardEdits(onDiscard = { discardConfirm = false; onDismiss() }, onKeep = { discardConfirm = false })
     }
 }
 
 @Composable
 private fun ReferenceEditorDialog(
     initial: KnowledgeReference,
+    vm: GameViewModel,
+    draftPrefix: String,
     onDismiss: () -> Unit,
     onSave: (KnowledgeReference) -> Unit
 ) {
-    var title by remember { mutableStateOf(initial.title) }
-    var author by remember { mutableStateOf(initial.author) }
-    var year by remember { mutableStateOf(initial.year) }
-    var source by remember { mutableStateOf(initial.source) }
-    var location by remember { mutableStateOf(initial.location) }
-    var url by remember { mutableStateOf(initial.url) }
-    var notes by remember { mutableStateOf(initial.notes) }
+    var title by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}title", initial.title)) }
+    var author by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}author", initial.author)) }
+    var year by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}year", initial.year)) }
+    var source by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}source", initial.source)) }
+    var location by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}location", initial.location)) }
+    var url by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}url", initial.url)) }
+    var notes by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}notes", initial.notes)) }
+    var discardConfirm by remember { mutableStateOf(false) }
+
+    val dirty = title != initial.title || author != initial.author || year != initial.year ||
+        source != initial.source || location != initial.location || url != initial.url || notes != initial.notes
 
     FullForm(
         if (initial.title.isBlank()) "Nova referência" else "Editar referência",
-        onDismiss = onDismiss,
+        onDismiss = { if (dirty) discardConfirm = true else onDismiss() },
         onSave = {
             onSave(
                 initial.copy(
@@ -1348,35 +1616,44 @@ private fun ReferenceEditorDialog(
             )
         }
     ) {
-        FormField(title, { title = it.take(300) }, "Título da obra ou artigo")
-        FormField(author, { author = it.take(200) }, "Autor(a)")
-        FormField(year, { year = it.take(20) }, "Ano")
-        FormField(source, { source = it.take(300) }, "Fonte, livro ou revista")
-        FormField(location, { location = it.take(120) }, "Página ou capítulo (opcional)")
-        FormField(url, { url = it.take(1000) }, "URL (opcional)")
-        FormField(notes, { notes = it.take(4000) }, "Observações", multi = true)
+        FormField(title, { title = it.take(300); vm.setDraft("${draftPrefix}title", title) }, "Título da obra ou artigo")
+        FormField(author, { author = it.take(200); vm.setDraft("${draftPrefix}author", author) }, "Autor(a)")
+        FormField(year, { year = it.take(20); vm.setDraft("${draftPrefix}year", year) }, "Ano")
+        FormField(source, { source = it.take(300); vm.setDraft("${draftPrefix}source", source) }, "Fonte, livro ou revista")
+        FormField(location, { location = it.take(120); vm.setDraft("${draftPrefix}location", location) }, "Página ou capítulo (opcional)")
+        FormField(url, { url = it.take(1000); vm.setDraft("${draftPrefix}url", url) }, "URL (opcional)")
+        FormField(notes, { notes = it.take(4000); vm.setDraft("${draftPrefix}notes", notes) }, "Observações", multi = true)
+    }
+    if (discardConfirm) {
+        DiscardEdits(onDiscard = { discardConfirm = false; onDismiss() }, onKeep = { discardConfirm = false })
     }
 }
 
 @Composable
 private fun FlashcardEditorDialog(
     initial: Flashcard,
+    vm: GameViewModel,
+    draftPrefix: String,
     notebooks: List<KnowledgeNotebook>,
     pages: List<KnowledgePage>,
     onDismiss: () -> Unit,
     onSave: (Flashcard) -> Unit
 ) {
-    var notebookId by remember { mutableStateOf(initial.notebookId.ifBlank { notebooks.firstOrNull()?.id.orEmpty() }) }
-    var pageId by remember { mutableStateOf(initial.pageId) }
-    var question by remember { mutableStateOf(initial.question) }
-    var answer by remember { mutableStateOf(initial.answer) }
-    var tags by remember { mutableStateOf(initial.tags) }
+    val defaultNb = initial.notebookId.ifBlank { notebooks.firstOrNull()?.id.orEmpty() }
+    var notebookId by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}nb", defaultNb)) }
+    var pageId by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}page", initial.pageId)) }
+    var question by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}q", initial.question)) }
+    var answer by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}a", initial.answer)) }
+    var tags by remember(draftPrefix) { mutableStateOf(vm.getDraft("${draftPrefix}tags", initial.tags)) }
+    var discardConfirm by remember { mutableStateOf(false) }
 
     val matchingPages = remember(pages, notebookId) { pages.filter { it.notebookId == notebookId } }
+    val dirty = notebookId != defaultNb || pageId != initial.pageId || question != initial.question ||
+        answer != initial.answer || tags != initial.tags
 
     FullForm(
         if (initial.question.isBlank()) "Novo flashcard" else "Editar flashcard",
-        onDismiss = onDismiss,
+        onDismiss = { if (dirty) discardConfirm = true else onDismiss() },
         onSave = {
             onSave(initial.copy(notebookId = notebookId, pageId = pageId, question = question, answer = answer, tags = tags))
         }
@@ -1388,7 +1665,11 @@ private fun FlashcardEditorDialog(
                 notebooks.indexOfFirst { it.id == notebookId }.coerceAtLeast(0),
                 { idx ->
                     notebookId = notebooks[idx].id
-                    if (pages.none { it.id == pageId && it.notebookId == notebookId }) pageId = ""
+                    vm.setDraft("${draftPrefix}nb", notebookId)
+                    if (pages.none { it.id == pageId && it.notebookId == notebookId }) {
+                        pageId = ""
+                        vm.setDraft("${draftPrefix}page", "")
+                    }
                 }
             )
         }
@@ -1396,10 +1677,13 @@ private fun FlashcardEditorDialog(
             Eyebrow("Página relacionada (opcional)", Blue)
             val labels = listOf("Nenhuma") + matchingPages.take(12).map { it.title.take(24) }
             val idx = if (pageId.isBlank()) 0 else (matchingPages.take(12).indexOfFirst { it.id == pageId } + 1).coerceAtLeast(0)
-            ChipRow(labels, idx, { pageId = if (it == 0) "" else matchingPages[it - 1].id })
+            ChipRow(labels, idx, { pageId = if (it == 0) "" else matchingPages[it - 1].id; vm.setDraft("${draftPrefix}page", pageId) })
         }
-        FormField(question, { question = it }, "Pergunta (frente)", multi = true)
-        FormField(answer, { answer = it }, "Resposta (verso)", multi = true)
-        FormField(tags, { tags = it }, "Tags (opcional)")
+        FormField(question, { question = it; vm.setDraft("${draftPrefix}q", question) }, "Pergunta (frente)", multi = true)
+        FormField(answer, { answer = it; vm.setDraft("${draftPrefix}a", answer) }, "Resposta (verso)", multi = true)
+        FormField(tags, { tags = it; vm.setDraft("${draftPrefix}tags", tags) }, "Tags (opcional)")
+    }
+    if (discardConfirm) {
+        DiscardEdits(onDiscard = { discardConfirm = false; onDismiss() }, onKeep = { discardConfirm = false })
     }
 }
