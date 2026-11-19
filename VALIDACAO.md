@@ -1,3 +1,20 @@
+# ASCEND 1.7.3 — Validação
+
+19/11/2026. Base `feat/ascend-1.7.2` (`dafcb03`). Branch `feat/ascend-1.7.3`. GitHub Actions execução `44603318077` (commits `f02e20b` / `8978f95`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL**.
+
+- **Testes:** **191 testes aprovados** (`181` preservados da `1.7.2` + `7` unitários/migração/backup/correções em `LivingHeroAndForgeTest` + `3` testes de UI gerando 14 capturas em `LivingHeroAndForgeUiTest`), zero falhas, erros ou ignorados.
+- **Android Lint:** **0 erros e 29 avisos** no CI (`28` localmente), sem novas supressões.
+- **APK oficial assinado:** [downloads/ASCEND-1.7.3.apk](downloads/ASCEND-1.7.3.apk?raw=true) com **26.505.226 bytes**, `versionName='1.7.3'`, `versionCode='24'`, `package: name='br.com.ascend.aetheris'`, `minSdkVersion='26'`, `targetSdkVersion='35'`, sem permissão `INTERNET`.
+- **Checksum SHA-256 do APK:** `a5259328c70d34bc9b7261e3829e9a7496af8c35ea9486f39779d89b126094f2` (`sha256sum -c downloads/ASCEND-1.7.3.apk.sha256`: **OK**).
+- **Assinatura e alinhamento:** `Zipalign OK`; APK Signature Scheme v2 válida com o certificado oficial preservado `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
+- **Persistência e retrocompatibilidade:** **Room v9** (`MIGRATION_8_9` aditiva criando `equipment_loadouts`, esquema `app/schemas/br.com.ascend.aetheris.GameDatabase/9.json`) e **backup v11** (compatibilidade `v1`–`v11`, round-trip completo e rollback atômico validados em teste), preservando integralmente os dados históricos, retratos base e economia de XP/moedas.
+- **Acervo pictórico e capturas:** 8 novos recursos WebP originais (`1` prancha conceitual em `docs/art/concepts/hero-living-173.webp` fora do APK + `7` atlas de produção somando `621.042 bytes` / `606,5 KB` / `0,59 MB` dentro do APK, abaixo do limite de `3 MB`). 14 capturas reais de produção em `docs/screenshots/1.7.3/`, cobrindo Retrato Vivo (base nos 3 tons, equipado e zoom), Jornada, Perfil do Herói, Arsenal dos Nove Reinos, Estúdio (prévia normal e bloqueada), 3 Conjuntos, Vila/A Forja, Oficina de Darian, diálogo/selo *Mestre da Forja*, Tema Claro e `320 dp` / fonte `130%`.
+- **Limites:** validação executada em Robolectric e GitHub Actions; instalação física por cima da `1.7.2` em aparelho Android, animações em GPU real, teclado IME físico e TalkBack não foram executados.
+
+[APK](downloads/ASCEND-1.7.3.apk?raw=true) · [Build](docs/validation/BUILD-1.7.3.txt) · [Lint](docs/validation/LINT-1.7.3.txt) · [Certificado e manifesto](docs/validation/APK-1.7.3.txt) · [Retrato Vivo 1.7.3](docs/RETRATO-VIVO-1.7.3.md) · [Forja de Darian 1.7.3](docs/FORJA-DARIAN-1.7.3.md) · [Arsenal 1.7.3](docs/ARSENAL-1.7.3.md) · [Visual 1.7.3](docs/VISUAL-1.7.3.md) · [Diário 1.7.3](docs/DESENVOLVIMENTO-1.7.3.md)
+
+---
+
 # ASCEND 1.7.2 — Validação
 
 19/11/2026. Base `feat/ascend-1.7.1` (`88565d6`). Branch `feat/ascend-1.7.2`. GitHub Actions execução `44468019721` (commits `f3e369b` / `e0f12f8`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL**.
