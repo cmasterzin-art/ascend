@@ -1,3 +1,21 @@
+# ASCEND 1.7.5 — Validação
+
+20/11/2026. Base autorizada `feat/ascend-1.7.3.1` (`13922af`, sem o módulo 1.7.4 *Oráculo de Aetheris*, conforme autorização expressa do usuário). Branch `feat/ascend-1.7.5`. GitHub Actions execução `44820394866` (commits `d20b794` / `d8fa158`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL**.
+
+- **Testes:** **218 testes aprovados** (`202` preservados da `1.7.3.1` + `15` unitários/algoritmos/migração/backup/desempenho em `OdinCouncilTest` + `1` teste de UI gerando 17 capturas em `OdinCouncilUiTest`), zero falhas, erros ou ignorados.
+- **Desempenho determinístico (`OdinPlanningEngine`):** `50 tarefas (40 dep.) = 68 ms`; `200 tarefas (160 dep.) = 47 ms`; `1.000 tarefas (800 dep.) = 94 ms` (detecção de ciclos, ordenação topológica, CPM, alocação 14 dias e simulação de capacidade 7 dias — 100% offline, sem IA externa e sem força bruta).
+- **Android Lint:** **0 erros e 35 avisos** no CI (`docs/validation/LINT-1.7.5.txt`), sem novas supressões.
+- **APK oficial assinado:** [downloads/ASCEND-1.7.5.apk](downloads/ASCEND-1.7.5.apk?raw=true) com **28.525.803 bytes**, `versionName='1.7.5'`, `versionCode='27'`, `package: name='br.com.ascend.aetheris'`, `minSdkVersion='26'`, `targetSdkVersion='35'`, sem permissão `INTERNET`.
+- **Checksum SHA-256 do APK:** `4f7e671a5393f59339cfdf17500d3a5d253450aef356ec4b113530dab1024b22` (`sha256sum -c ASCEND-1.7.5.apk.sha256` em `downloads/`: **OK**).
+- **Assinatura e alinhamento:** `Zipalign OK`; APK Signature Scheme v2 válida com o certificado oficial preservado `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
+- **Persistência e retrocompatibilidade:** **Room v11** (`MIGRATION_10_11` puramente aditiva criando 9 novas tabelas estratégicas e colunas aditivas com `DEFAULT`, esquema `app/schemas/br.com.ascend.aetheris.GameDatabase/11.json`, sem migração destrutiva) e **backup v13** (compatibilidade `v1`–`v13`, validação estrita de ciclos/intervalos, round-trip completo e rollback atômico validados em teste), preservando integralmente progresso, ledger, retratos, coleções, heráldica e economia de XP/moedas.
+- **Acervo pictórico e capturas:** 10 novos recursos WebP originais (`1` prancha conceitual em `docs/art/concepts/nordic-council-175.webp` fora do APK + `9` atlas de produção somando `664.174 bytes` / `648,6 KB` / `0,63 MB` dentro do APK, abaixo do teto de `4 MB`, com `10/12` gerações usadas e `2` em reserva). **17 capturas reais** de produção inspecionadas em `docs/screenshots/1.7.5/`, incluindo Tema Claro e `320 dp` com fonte `130%`.
+- **Limites:** validação executada em Robolectric (Native Graphics) e GitHub Actions; instalação física por cima da `1.7.3.1` em aparelho Android real, renderização em GPU física, reprodução de áudio em alto-falante físico (`AmbientAudioEngine` validado via síntese PCM determinística em JVM), notificações locais reais, teclado IME físico e TalkBack não foram executados.
+
+[APK](downloads/ASCEND-1.7.5.apk?raw=true) · [Build](docs/validation/BUILD-1.7.5.txt) · [Lint](docs/validation/LINT-1.7.5.txt) · [Certificado e manifesto](docs/validation/APK-1.7.5.txt) · [Mesa de Odin](docs/MESA-DE-ODIN.md) · [Caminhos 3.0](docs/CAMINHOS-3.0.md) · [Agenda 3.0](docs/AGENDA-3.0.md) · [Forja do Tempo](docs/FORJA-DO-TEMPO.md) · [Conselho dos Nove](docs/CONSELHO-DOS-NOVE.md) · [Design System 3.2](docs/DESIGN-SYSTEM-3.2.md) · [Visual 1.7.5](docs/VISUAL-1.7.5.md) · [Diário 1.7.5](docs/DESENVOLVIMENTO-1.7.5.md)
+
+---
+
 # ASCEND 1.7.3.1 — Validação
 
 19/11/2026. Base `feat/ascend-1.7.3` (`cd2d1e2`). Branch `feat/ascend-1.7.3.1`. GitHub Actions execução `44629276894` (commits `baacce7` / `179e7e6`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL**.
