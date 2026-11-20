@@ -1030,6 +1030,8 @@ class GameViewModel(app:Application):AndroidViewModel(app){
     val narrativeNames=app.preferences.data.map{it[booleanPreferencesKey("narrative_names")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
     val catalogInterests=app.preferences.data.map{it[stringSetPreferencesKey("catalog_interests")]?:emptySet()}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptySet())
     val dismissedSuggestions=app.preferences.data.map{it[stringSetPreferencesKey("catalog_dismissed")]?:emptySet()}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptySet())
+    val codexFavorites=app.preferences.data.map{it[stringSetPreferencesKey("codex_favorite_runes")]?:emptySet()}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptySet())
+    fun toggleCodexFavorite(runeName:String)=run{getApplication<Application>().preferences.edit{p->val key=stringSetPreferencesKey("codex_favorite_runes");val old=p[key]?:emptySet();p[key]=if(runeName in old)old-runeName else old+runeName}}
     fun interest(category:String)=run{getApplication<Application>().preferences.edit{p->val key=stringSetPreferencesKey("catalog_interests");val old=p[key]?:emptySet();p[key]=if(category in old)old-category else old+category}}
     fun dismissSuggestion(id:String)=run{getApplication<Application>().preferences.edit{p->val key=stringSetPreferencesKey("catalog_dismissed");p[key]=(p[key]?:emptySet())+id}}
     fun resetSuggestions()=run{getApplication<Application>().preferences.edit{it.remove(stringSetPreferencesKey("catalog_dismissed"))}}

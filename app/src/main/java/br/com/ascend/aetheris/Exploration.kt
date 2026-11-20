@@ -512,6 +512,15 @@ fun expeditionMinFocusSecondsFor(q: Quest): Long =
  if (q.focusRuleVersion >= EXPEDITION_FOCUS_RULE_V1_300S) EXPEDITION_MIN_FOCUS_SECONDS else 1L
 
 /**
+ * 1.7.5 (6.3): Política conservadora e explícita para fases de foco sem metadado histórico pré-1.7.3.1:
+ * - focusRuleVersion == 0: preserva resgates e fases legadas sem inventar versão histórica;
+ * - focusRuleVersion >= 1: exige duração efetiva >= 300s (5 minutos) em todas as novas fases e claims.
+ */
+fun expeditionFocusRulePolicy(q: Quest): String =
+ if (q.focusRuleVersion >= EXPEDITION_FOCUS_RULE_V1_300S) "Regra v1: sessões concluídas com pelo menos 5 min (300s)."
+ else "Regra legada preservada (sem metadado v1): sessões concluídas (>0s) permanecem válidas."
+
+/**
  * Evaluates expanded expedition metrics (4=Focus Sessions with versioned minimum, 5=Mímir Flashcard Days, 6=Path Tasks).
  * Archiving a completed PathTask preserves expedition credit (16.2); reopening or deleting removes it.
  */

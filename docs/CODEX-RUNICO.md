@@ -15,8 +15,8 @@ O **Codex Rúnico** completa a biblioteca histórica vetorial do ASCEND, expandi
 ## 2. Preservação de Compatibilidade Vetorial
 
 Em [`VikingDesignSystem.kt`](../app/src/main/java/br/com/ascend/aetheris/VikingDesignSystem.kt):
-- As **12 runas originais** preservam exatamente seus nomes estáveis e ordinais `0..11` (`Fehu`, `Ansuz`, `Raido`, `Kenaz`, `Algiz`, `Sowilo`, `Tiwaz`, `Berkano`, `Mannaz`, `Laguz`, `Othala`, `Dagaz`).
-- As **12 runas adicionais** completam os três Ættir na ordem canônica (`futharkOrder = 1..24`): `Uruz`, `Thurisaz`, `Gebo`, `Wunjo`, `Hagalaz`, `Nauthiz`, `Isa`, `Jera`, `Eihwaz`, `Perthro`, `Ehwaz`, `Ingwaz`.
+- As **12 runas originais** preservam exatamente seus nomes estáveis e ordinais `0..11` (`Fehu`, `Ansuz`, `Raido`, `Kenaz`, `Gebo`, `Wunjo`, `Isa`, `Berkano`, `Ehwaz`, `Mannaz`, `Laguz`, `Dagaz`).
+- As **12 runas adicionais** (`12..23`) completam os três Ættir na ordem canônica (`futharkOrder = 1..24`): `Uruz`, `Thurisaz`, `Hagalaz`, `Nauthiz`, `Jera`, `Eihwaz`, `Perthro`, `Algiz`, `Sowilo`, `Tiwaz`, `Ingwaz`, `Othala`.
 - O fallback de `AetherisSeal` deixou de usar aritmética por `ordinal %` e passou a utilizar o mapeamento explícito `sealFallbackRune(seal: AetherisSealKind)`.
 
 ## 3. Superfícies Materiais e Recursos da Tela

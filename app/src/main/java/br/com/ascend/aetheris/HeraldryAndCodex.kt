@@ -530,15 +530,18 @@ fun HeraldryEditorScreen(
 fun RunicCodexScreen(
     onOpenHeraldry: () -> Unit,
     onBack: () -> Unit,
-    initialRuneName: String? = null
+    initialRuneName: String? = null,
+    vm: GameViewModel? = null
 ) {
     var query by rememberSaveable { mutableStateOf("") }
     var aettFilter by rememberSaveable { mutableIntStateOf(0) } // 0=Todas, 1=Freyr, 2=Hagal, 3=Tyr, 4=Favoritas
     var surfaceIndex by rememberSaveable { mutableIntStateOf(0) } // 0..5 runic_codex_surfaces_atlas
     var selectedRuneName by rememberSaveable { mutableStateOf(initialRuneName ?: "") }
-    var favoritesRaw by rememberSaveable { mutableStateOf("") }
+    var localFavoritesRaw by rememberSaveable { mutableStateOf("") }
 
-    val favorites = remember(favoritesRaw) { favoritesRaw.split(',').filter { it.isNotBlank() }.toSet() }
+    val persistedFavorites by (vm?.codexFavorites?.collectAsState() ?: remember { mutableStateOf(emptySet()) })
+    val localFavorites = remember(localFavoritesRaw) { localFavoritesRaw.split(',').filter { it.isNotBlank() }.toSet() }
+    val favorites = if (vm != null) persistedFavorites else localFavorites
     val surface = codexSurfaces[surfaceIndex.coerceIn(codexSurfaces.indices)]
 
     val filtered = remember(query, aettFilter, favorites) {
@@ -611,8 +614,12 @@ fun RunicCodexScreen(
                     Eyebrow("${selectedEntry.aett} · #${selectedEntry.rune.futharkOrder}/24", Gold)
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         TextButton({
-                            val next = if (isFav) favorites - selectedEntry.rune.name else favorites + selectedEntry.rune.name
-                            favoritesRaw = next.joinToString(",")
+                            if (vm != null) {
+                                vm.toggleCodexFavorite(selectedEntry.rune.name)
+                            } else {
+                                val next = if (isFav) favorites - selectedEntry.rune.name else favorites + selectedEntry.rune.name
+                                localFavoritesRaw = next.joinToString(",")
+                            }
                         }) { Text(if (isFav) "★ Favorita" else "☆ Favoritar", fontSize = 12.sp) }
                         TextButton({ selectedRuneName = "" }) { Text("Fechar", fontSize = 12.sp) }
                     }

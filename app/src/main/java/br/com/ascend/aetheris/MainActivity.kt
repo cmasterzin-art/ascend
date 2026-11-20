@@ -95,7 +95,7 @@ class MainActivity:ComponentActivity(){var widgetHabit by mutableStateOf<String?
                         composable("world"){WorldScreen(state,vm,{nav.navigate("weekly")},{nav.navigate("memories")},{nav.navigate("region/$it")},{nav.navigate("mimir")},{nav.navigate("forge")},{nav.navigate("codex_runico")})}
                         composable("forge"){ForgeScreen(state,vm,{nav.popBackStack()})}
                         composable("heraldry"){HeraldryEditorScreen(state,vm,{nav.navigate("codex_runico")},{nav.popBackStack()})}
-                        composable("codex_runico"){RunicCodexScreen({nav.navigate("heraldry")},{nav.popBackStack()})}
+                        composable("codex_runico"){RunicCodexScreen({nav.navigate("heraldry")},{nav.popBackStack()},vm=vm)}
                         composable("mimir"){MimirLibraryScreen(state,vm,{nav.navigate("mimir_notebook/$it")},{nav.navigate("mimir_page/$it")},{nbId->if(nbId.isBlank())nav.navigate("mimir_review") else nav.navigate("mimir_review/$nbId")},{nav.navigate("codex_runico")})}
                         composable("mimir_notebook/{id}"){back->NotebookDetailScreen(back.arguments?.getString("id")?:"",state,vm,{nav.popBackStack()},{nav.navigate("mimir_page/$it")},{nbId->nav.navigate("mimir_review/$nbId")})}
                         composable("mimir_page/{id}"){back->PageDetailScreen(back.arguments?.getString("id")?:"",state,vm,{nav.popBackStack()},{nav.navigate("mimir_page/$it")})}
