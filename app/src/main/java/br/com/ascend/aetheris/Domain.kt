@@ -17,7 +17,7 @@ fun uid(): String = java.util.UUID.randomUUID().toString()
 @Entity(tableName="player")
 data class Player(@PrimaryKey val id: Int = 1, val name: String = "", val heroClass: Int = 1, val color: Int = 1, val face: Int = 0, val outfit: Int = 0, val frame: Int = 0, val title: String = "O Desperto", val goals: String = "", val created: String = today(), @ColumnInfo(defaultValue="''") val specialization: String = "")
 @Entity(tableName="habits")
-data class Habit(@PrimaryKey val id: String = uid(), val name: String = "", val description: String = "", val icon: Int = 0, val color: Int = 1, val category: String = "Estudo", val attribute: Int = 0, val difficulty: Int = 1, val type: Int = 0, val target: Int = 1, val unit: String = "vez", val days: String = "1,2,3,4,5,6,7", val time: String = "08:00", val xp: Int = 50, val coins: Int = 5, val points: Int = 5, val proportional: Boolean = false, val reminder: Boolean = false, val paused: Boolean = false, val archived: Boolean = false, val deleted: Boolean = false, val position: Int = 0, val created: String = today(), val scheduleHistory: String = "", @ColumnInfo(defaultValue="''") val templateId:String="", @ColumnInfo(defaultValue="''") val narrativeName:String="", @ColumnInfo(defaultValue="1") val trackStreak:Boolean=true)
+data class Habit(@PrimaryKey val id: String = uid(), val name: String = "", val description: String = "", val icon: Int = 0, val color: Int = 1, val category: String = "Estudo", val attribute: Int = 0, val difficulty: Int = 1, val type: Int = 0, val target: Int = 1, val unit: String = "vez", val days: String = "1,2,3,4,5,6,7", val time: String = "08:00", val xp: Int = 50, val coins: Int = 5, val points: Int = 5, val proportional: Boolean = false, val reminder: Boolean = false, val paused: Boolean = false, val archived: Boolean = false, val deleted: Boolean = false, val position: Int = 0, val created: String = today(), val scheduleHistory: String = "", @ColumnInfo(defaultValue="''") val templateId:String="", @ColumnInfo(defaultValue="''") val narrativeName:String="", @ColumnInfo(defaultValue="1") val trackStreak:Boolean=true, @ColumnInfo(defaultValue="''") val areaId:String="")
 @Entity(tableName="records", foreignKeys=[ForeignKey(entity=Habit::class,parentColumns=["id"], childColumns=["habitId"], onDelete=ForeignKey.RESTRICT)], indices=[Index("habitId")])
 data class HabitRecord(@PrimaryKey val id: String, val habitId: String, val date: String, val progress: Int, val target: Int, val xp: Int, val coins: Int, val points: Int, val attribute: Int, val proportional: Boolean, val type: Int, val category: String, val unit: String, val name: String, val scheduled: Boolean = true) { val complete get() = progress >= target }
 @Entity(tableName="ledger")
@@ -37,11 +37,64 @@ data class Routine(@PrimaryKey val id: String = uid(), val name: String, val hab
 @Entity(tableName="rest_days")
 data class RestDay(@PrimaryKey val date: String)
 @Entity(tableName="focus", indices=[Index("habitId"), Index("pathId"), Index("taskId")])
-data class Focus(@PrimaryKey val id: Int = 1, val habitId: String = "", val date: String = today(), val duration: Int = 25, val elapsed: Long = 0, val startedAt: Long = 0, val baseline: Int = 0, @ColumnInfo(defaultValue="''") val sessionId:String="", @ColumnInfo(defaultValue="0") val beganAt:Long=0, @ColumnInfo(defaultValue="''") val pathId:String="", @ColumnInfo(defaultValue="''") val taskId:String="", @ColumnInfo(defaultValue="''") val targetLabel:String="") {
-    fun seconds(now: Long = System.currentTimeMillis()) = (elapsed + if(startedAt>0) max(0L,(now-startedAt)/1000) else 0).coerceAtMost(duration*60L)
+data class Focus(
+    @PrimaryKey val id: Int = 1,
+    val habitId: String = "",
+    val date: String = today(),
+    val duration: Int = 25,
+    val elapsed: Long = 0,
+    val startedAt: Long = 0,
+    val baseline: Int = 0,
+    @ColumnInfo(defaultValue="''") val sessionId:String="",
+    @ColumnInfo(defaultValue="0") val beganAt:Long=0,
+    @ColumnInfo(defaultValue="''") val pathId:String="",
+    @ColumnInfo(defaultValue="''") val taskId:String="",
+    @ColumnInfo(defaultValue="''") val targetLabel:String="",
+    @ColumnInfo(defaultValue="''") val blockId:String="",
+    @ColumnInfo(defaultValue="'free'") val mode:String="free",
+    @ColumnInfo(defaultValue="'work'") val phase:String="work",
+    @ColumnInfo(defaultValue="25") val workMinutes:Int=25,
+    @ColumnInfo(defaultValue="5") val shortBreakMinutes:Int=5,
+    @ColumnInfo(defaultValue="15") val longBreakMinutes:Int=15,
+    @ColumnInfo(defaultValue="4") val totalCycles:Int=4,
+    @ColumnInfo(defaultValue="1") val currentCycle:Int=1,
+    @ColumnInfo(defaultValue="0") val autoAdvance:Boolean=false,
+    @ColumnInfo(defaultValue="0") val startedRealtimeMs:Long=0L,
+    @ColumnInfo(defaultValue="0") val pauseCount:Int=0,
+    @ColumnInfo(defaultValue="''") val intervalsJson:String="",
+    @ColumnInfo(defaultValue="0") val clockAnomaly:Boolean=false
+) {
+    val isBreakPhase get() = phase == "short_break" || phase == "long_break"
+    fun activePhaseMinutes(): Int = when (phase) {
+        "short_break" -> shortBreakMinutes.coerceAtLeast(1)
+        "long_break" -> longBreakMinutes.coerceAtLeast(1)
+        else -> duration.coerceAtLeast(1)
+    }
+    fun seconds(now: Long = System.currentTimeMillis(), nowRealtimeMs: Long = 0L): Long {
+        val monoDelta = if (startedRealtimeMs > 0L && nowRealtimeMs > 0L && nowRealtimeMs >= startedRealtimeMs) {
+            (nowRealtimeMs - startedRealtimeMs) / 1000L
+        } else 0L
+        val delta = when {
+            startedAt <= 0L -> 0L
+            monoDelta > 0L -> monoDelta
+            else -> max(0L, (now - startedAt) / 1000L)
+        }
+        return (elapsed + delta).coerceAtMost(activePhaseMinutes() * 60L)
+    }
+    fun hasClockAnomaly(now: Long = System.currentTimeMillis(), nowRealtimeMs: Long = 0L): Boolean {
+        if (clockAnomaly) return true
+        if (startedAt <= 0L) return false
+        if (now < startedAt - 5_000L) return true
+        if (startedRealtimeMs > 0L && nowRealtimeMs > 0L && nowRealtimeMs >= startedRealtimeMs) {
+            val monoSec = (nowRealtimeMs - startedRealtimeMs) / 1000L
+            val wallSec = (now - startedAt) / 1000L
+            if (kotlin.math.abs(wallSec - monoSec) > 120L) return true
+        }
+        return false
+    }
 }
 
-data class GameState(val player: Player? = null, val habits: List<Habit> = emptyList(), val records: List<HabitRecord> = emptyList(), val ledger: List<Reward> = emptyList(), val quests: List<Quest> = emptyList(), val claims: List<Claim> = emptyList(), val assets: List<Asset> = emptyList(), val achievements: List<Unlocked> = emptyList(), val journal: List<Journal> = emptyList(), val routines: List<Routine> = emptyList(), val focus: Focus? = null, val restDays: List<RestDay> = emptyList(), val plans:List<PlanException> = emptyList(), val focusSessions:List<FocusSession> = emptyList(), val paths:List<PersonalPath> = emptyList(), val pathStages:List<PathStage> = emptyList(), val pathTasks:List<PathTask> = emptyList(), val pathSubtasks:List<PathSubtask> = emptyList(), val pathHabitLinks:List<PathHabitLink> = emptyList(), val timeBlocks:List<TimeBlock> = emptyList(), val agendaEvents:List<AgendaEvent> = emptyList(), val inboxItems:List<InboxItem> = emptyList(), val notebooks:List<KnowledgeNotebook> = emptyList(), val knowledgePages:List<KnowledgePage> = emptyList(), val knowledgeLinks:List<KnowledgePageLink> = emptyList(), val knowledgeReferences:List<KnowledgeReference> = emptyList(), val flashcards:List<Flashcard> = emptyList(), val flashcardReviews:List<FlashcardReview> = emptyList(), val loadouts:List<EquipmentLoadout> = emptyList(), val heraldry:HeraldryProfile? = null) {
+data class GameState(val player: Player? = null, val habits: List<Habit> = emptyList(), val records: List<HabitRecord> = emptyList(), val ledger: List<Reward> = emptyList(), val quests: List<Quest> = emptyList(), val claims: List<Claim> = emptyList(), val assets: List<Asset> = emptyList(), val achievements: List<Unlocked> = emptyList(), val journal: List<Journal> = emptyList(), val routines: List<Routine> = emptyList(), val focus: Focus? = null, val restDays: List<RestDay> = emptyList(), val plans:List<PlanException> = emptyList(), val focusSessions:List<FocusSession> = emptyList(), val paths:List<PersonalPath> = emptyList(), val pathStages:List<PathStage> = emptyList(), val pathTasks:List<PathTask> = emptyList(), val pathSubtasks:List<PathSubtask> = emptyList(), val pathHabitLinks:List<PathHabitLink> = emptyList(), val timeBlocks:List<TimeBlock> = emptyList(), val agendaEvents:List<AgendaEvent> = emptyList(), val inboxItems:List<InboxItem> = emptyList(), val notebooks:List<KnowledgeNotebook> = emptyList(), val knowledgePages:List<KnowledgePage> = emptyList(), val knowledgeLinks:List<KnowledgePageLink> = emptyList(), val knowledgeReferences:List<KnowledgeReference> = emptyList(), val flashcards:List<Flashcard> = emptyList(), val flashcardReviews:List<FlashcardReview> = emptyList(), val loadouts:List<EquipmentLoadout> = emptyList(), val heraldry:HeraldryProfile? = null, val availabilityWindows:List<AvailabilityWindow> = emptyList(), val availabilityExceptions:List<AvailabilityException> = emptyList(), val planningConfig:PlanningConfig? = null, val taskDependencies:List<TaskDependency> = emptyList(), val pathMilestones:List<PathMilestone> = emptyList(), val lifeAreas:List<LifeArea> = emptyList(), val strategicGoals:List<StrategicGoal> = emptyList(), val appliedPlans:List<AppliedPlanRecord> = emptyList(), val recurrenceRules:List<RecurrenceRule> = emptyList()) {
     val xp get() = ledger.sumOf{it.xp}.coerceAtLeast(0)
     val level get() = Progression.level(xp)
     val rawCoins get() = ledger.sumOf{it.coins}

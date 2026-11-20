@@ -409,7 +409,7 @@ class LivingHeroAndForgeTest {
         repo.saveCurrentAsLoadout("loadout:1", "Guarda Real")
 
         val jsonV11 = Backup.encode(s())
-        assertTrue(jsonV11.contains("\"version\":12"))
+        assertTrue(jsonV11.contains("\"version\":13"))
         assertTrue(jsonV11.contains("Guarda Real"))
 
         // Round-trip v12 preserves loadouts & forged assets
@@ -452,7 +452,7 @@ class LivingHeroAndForgeTest {
         legacyDatabase(context, dbName, 8, before)
 
         val migrated = Room.databaseBuilder(context, GameDatabase::class.java, dbName)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
             .allowMainThreadQueries()
             .build()
         try {

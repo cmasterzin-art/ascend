@@ -27,7 +27,8 @@ data class PersonalPath(
     val criteria: String = "",
     val notes: String = "",
     val completedDate: String = "",
-    val position: Int = 0
+    val position: Int = 0,
+    @ColumnInfo(defaultValue = "''") val areaId: String = ""
 )
 
 @Entity(
@@ -63,7 +64,11 @@ data class PathTask(
     val archived: Boolean = false,
     val position: Int = 0,
     val notes: String = "",
-    val created: String = today()
+    val created: String = today(),
+    @ColumnInfo(defaultValue = "0") val workflowStatus: Int = 0, // 0 = A fazer, 1 = Em andamento
+    @ColumnInfo(defaultValue = "0") val urgent: Boolean = false,
+    @ColumnInfo(defaultValue = "0") val important: Boolean = false,
+    @ColumnInfo(defaultValue = "''") val areaId: String = ""
 )
 
 @Entity(
@@ -109,7 +114,12 @@ data class TimeBlock(
     val description: String = "",
     val pathId: String = "",
     val taskId: String = "",
-    val habitId: String = ""
+    val habitId: String = "",
+    @ColumnInfo(defaultValue = "0") val pinned: Boolean = false,
+    @ColumnInfo(defaultValue = "''") val sourcePlanId: String = "",
+    @ColumnInfo(defaultValue = "''") val recurrenceId: String = "",
+    @ColumnInfo(defaultValue = "''") val areaId: String = "",
+    @ColumnInfo(defaultValue = "0") val modifiedManually: Boolean = false
 )
 
 @Entity(
@@ -125,7 +135,9 @@ data class AgendaEvent(
     val kind: String = "Compromisso",
     val description: String = "",
     val completed: Boolean = false,
-    val archived: Boolean = false
+    val archived: Boolean = false,
+    @ColumnInfo(defaultValue = "''") val recurrenceId: String = "",
+    @ColumnInfo(defaultValue = "''") val areaId: String = ""
 )
 
 @Entity(tableName = "inbox_items")

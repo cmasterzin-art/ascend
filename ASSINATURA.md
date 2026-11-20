@@ -1,10 +1,10 @@
 # Continuidade de assinatura
 
-Identificador estável: `br.com.ascend.aetheris`. Versão `1.7.3.1`, `versionCode 25`. O certificado do APK oficial é preservado via `ASCEND_KEYSTORE_BASE64` e coincide com as versões `1.1` a `1.7.3`. [Relatório de assinatura](docs/validation/APK-1.7.3.1.txt).
+Identificador estável: `br.com.ascend.aetheris`. Versão `1.7.5`, `versionCode 27`. O certificado do APK oficial é preservado via `ASCEND_KEYSTORE_BASE64` e coincide com as versões `1.1` a `1.7.3.1`. [Relatório de assinatura](docs/validation/APK-1.7.5.txt).
 
-## Estado dos APKs 1.6.9 a 1.7.3.1 e preservação do certificado
+## Estado dos APKs 1.6.9 a 1.7.5 e preservação do certificado
 
-Os APKs publicados em `downloads/ASCEND-1.7.3.1.apk`, `downloads/ASCEND-1.7.3.apk`, `downloads/ASCEND-1.7.2.apk`, `downloads/ASCEND-1.7.1.apk`, `downloads/ASCEND-1.7.0.1.apk`, `downloads/ASCEND-1.7.0.apk`, `downloads/ASCEND-1.6.9.19.apk`, `downloads/ASCEND-1.6.9.15.apk`, `downloads/ASCEND-1.6.9.10.apk`, `downloads/ASCEND-1.6.9.apk` e `downloads/ASCEND-1.6.8.apk` reutilizam a chave privada oficial das versões `1.1` a `1.7.3` (`ascend-1.1.keystore`), com certificado SHA-256 verificado por `apksigner verify --verbose --print-certs`:
+Os APKs publicados em `downloads/ASCEND-1.7.5.apk`, `downloads/ASCEND-1.7.3.1.apk`, `downloads/ASCEND-1.7.3.apk`, `downloads/ASCEND-1.7.2.apk`, `downloads/ASCEND-1.7.1.apk`, `downloads/ASCEND-1.7.0.1.apk`, `downloads/ASCEND-1.7.0.apk`, `downloads/ASCEND-1.6.9.19.apk`, `downloads/ASCEND-1.6.9.15.apk`, `downloads/ASCEND-1.6.9.10.apk`, `downloads/ASCEND-1.6.9.apk` e `downloads/ASCEND-1.6.8.apk` reutilizam a chave privada oficial das versões `1.1` a `1.7.3.1` (`ascend-1.1.keystore`), com certificado SHA-256 verificado por `apksigner verify --verbose --print-certs`:
 
 `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`
 
@@ -12,7 +12,7 @@ O secret `ASCEND_KEYSTORE_BASE64` está configurado no repositório GitHub (`cma
 
 ## APKs publicados e migração de dados
 
-Instale a `1.7.3.1` diretamente por cima dos APKs `1.1` a `1.7.3` fornecidos no repositório. A identidade de assinatura é a mesma; a `1.7.3.1` evolui o esquema aditivamente para **Room v10 (`MIGRATION_9_10`)** e **backup v12** sem migração destrutiva, mantendo todas as migrações anteriores (`1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10`) e leitura dos backups **v1 a v12**. A atualização em telefone físico não foi executada. A chave permanece fora do Git público, no arquivo privado preservado `ascend-1.1.keystore`.
+Instale a `1.7.5` diretamente por cima dos APKs `1.1` a `1.7.3.1` fornecidos no repositório. A identidade de assinatura é a mesma; a `1.7.5` evolui o esquema aditivamente para **Room v11 (`MIGRATION_10_11`)** e **backup v13** sem migração destrutiva, mantendo todas as migrações anteriores (`1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 → 9 → 10 → 11`) e leitura dos backups **v1 a v13**. A atualização em telefone físico não foi executada. A chave permanece fora do Git público, no arquivo privado preservado `ascend-1.1.keystore`.
 
 A chave original da 1.0 não está disponível; seu certificado é diferente. Para sair da 1.0, exporte um backup e siga [INSTALACAO.md](INSTALACAO.md). Se possui a chave da sua instalação, pode recompilar a atualização com ela.
 

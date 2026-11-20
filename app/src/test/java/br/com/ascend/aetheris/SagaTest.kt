@@ -42,7 +42,7 @@ class SagaTest{
  @Test fun realV3MigrationPreservesEntireState()=runBlocking{
  val h=Habit(name="Antigo");repo.habit(h);repo.progress(h,today(),1);val old=repo.state.value!!
  val ctx=(RuntimeEnvironment.getApplication() as AscendApp);val name="north-migration.db";legacyDatabase(ctx,name,3,old)
- val disk=Room.databaseBuilder(ctx,GameDatabase::class.java,name).addMigrations(MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8,MIGRATION_8_9,MIGRATION_9_10).build()
+ val disk=Room.databaseBuilder(ctx,GameDatabase::class.java,name).addMigrations(MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8,MIGRATION_8_9,MIGRATION_9_10,MIGRATION_10_11).build()
  try{val migrated=GameRepository(disk);migrated.refresh();assertEquals(old,migrated.state.value);migrated.saga(Quest(name="Nova",habitIds=h.id));assertEquals(old.xp,migrated.state.value!!.xp)}finally{disk.close();ctx.deleteDatabase(name)}
  }
  @Test fun consolidatedRewardsUseActualDeltasAndNarrativesAreAcknowledged()=runBlocking{

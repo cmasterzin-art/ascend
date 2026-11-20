@@ -66,7 +66,7 @@ class ProductivityTest{
   repo.habit(h.copy(name="Outro nome",archived=true,deleted=true));assertEquals(saved,s().focusSessions);repo.importState(Backup.decode(Backup.encode(s())));assertEquals(saved,s().focusSessions)
  }
  @Test fun backupEightRoundTripAndInvalidRestoreAreAtomic()=runBlocking{
-  repo.plan(h.id,today(),2);repo.startFocus(h,25);db.dao().focus(s().focus!!.copy(elapsed=65,startedAt=0));repo.endFocus(true);val before=s();val data=Backup.encode(before);assertTrue(data.contains("\"version\":12"));assertEquals(before,Backup.decode(data))
+  repo.plan(h.id,today(),2);repo.startFocus(h,25);db.dao().focus(s().focus!!.copy(elapsed=65,startedAt=0));repo.endFocus(true);val before=s();val data=Backup.encode(before);assertTrue(data.contains("\"version\":13"));assertEquals(before,Backup.decode(data))
   val payload=Gson().toJson(before);val v8Hash=MessageDigest.getInstance("SHA-256").digest(payload.toByteArray()).joinToString(""){"%02x".format(it)}
   assertEquals(before,Backup.decode(Gson().toJson(BackupEnvelope(version=8,sha256=v8Hash,payload=payload))))
   val invalid=before.copy(plans=listOf(PlanException("wrong",h.id,today(),true)));assertTrue(runCatching{repo.importState(invalid)}.isFailure);assertEquals(before,s());repo.importState(Backup.decode(data));assertEquals(before,s())
@@ -77,7 +77,7 @@ class ProductivityTest{
  }
  @Test fun schemaFiveMigrationPreservesAllOldDataAndRunningLegacyFocus()=runBlocking{
   repo.progress(h,today(),30);val before=s().copy(focus=Focus(habitId=h.id,elapsed=60,startedAt=0,baseline=30));val name="v160-v5.db";legacyDatabase(context,name,5,before)
-  val disk=Room.databaseBuilder(context,GameDatabase::class.java,name).addMigrations(MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8,MIGRATION_8_9,MIGRATION_9_10).build()
+  val disk=Room.databaseBuilder(context,GameDatabase::class.java,name).addMigrations(MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8,MIGRATION_8_9,MIGRATION_9_10,MIGRATION_10_11).build()
   try{val r=GameRepository(disk);r.refresh();assertEquals(before,r.state.value);r.endFocus(true);assertTrue(r.state.value!!.focusSessions.isEmpty());assertEquals(31L,r.state.value!!.xp)}finally{disk.close();context.deleteDatabase(name)}
  }
  @Test fun analysisPeriodsCorrectionsAndEmptyInsightsAreDeterministic()=runBlocking{

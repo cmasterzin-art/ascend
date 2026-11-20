@@ -1,3 +1,12 @@
+# 1.7.5 — A Mesa de Odin
+
+Planejamento estratégico pessoal offline, Caminhos 3.0, Agenda 3.0, A Forja do Tempo, Conselho dos Nove e Design System 3.2 sobre a base autorizada `feat/ascend-1.7.3.1`:
+- **Etapa 0:** favoritos do Codex Rúnico persistidos em DataStore (`codex_favorite_runes`), zero chamadas UI legadas a `equip()`, política documentada `expeditionFocusRulePolicy` e tabela corrigida de runas em `docs/CODEX-RUNICO.md`.
+- **Mesa de Odin (`OdinPlanningEngine.kt`, `OdinCouncilScreens.kt`):** disponibilidade configurável (nunca presume 24h livres), 6 estratégias de pesos (sem alterar RPG), Simulador de Capacidade (5 períodos, deduplicação real), propostas determinísticas explicáveis com comparação, aplicação transacional `applyOdinProposal`, desfazer inteligente `undoAppliedPlan` preservando blocos editados manualmente, replanejamento adaptativo (5 opções, zero punição RPG) e Matriz de Eisenhower explícita.
+- **Caminhos 3.0 (`Paths30Screens.kt`):** dependências *finish-to-start* sem ciclos + liberação manual auditada, Caminho Crítico (CPM) com projeção por esforço vs disponibilidade, Gantt interativo Compose, Kanban acessível em 4 colunas sobre a mesma `PathTask`, Marcos e 6 modelos reutilizáveis de projeto.
+- **Agenda 3.0 & Forja do Tempo (`AgendaScreens.kt`, `TimeForgeScreen.kt`, `AmbientAudio.kt`):** fixação de blocos, recorrência com exceção única sem mutar histórico, 5 modos de foco, Pomodoro real sem contar pausas, relógio monotônico com detecção de anomalia, Modo Imersivo Nórdico opcional e 3 paisagens sonoras procedurais offline via `AudioTrack`.
+- **Conselho dos Nove, DS 3.2 & Validação:** 9 áreas opcionais da vida + Objetivos Pessoais com progresso verificável; 10 novos recursos pictóricos (`648,6 KB / 0,63 MB` no APK + prancha conceitual fora do APK); **Room v11 (`MIGRATION_10_11`)**, **Backup v13 (`v1`–`v13`)**, **218 testes aprovados** (incluindo benchmarks 50/200/1.000 tarefas), `lintDebug` com **0 erros**, `versionCode 27`, assinatura oficial `e1f003ef...`. [Mesa de Odin](docs/MESA-DE-ODIN.md) · [Caminhos 3.0](docs/CAMINHOS-3.0.md) · [Agenda 3.0](docs/AGENDA-3.0.md) · [Forja do Tempo](docs/FORJA-DO-TEMPO.md) · [Conselho dos Nove](docs/CONSELHO-DOS-NOVE.md) · [Design System 3.2](docs/DESIGN-SYSTEM-3.2.md) · [Visual 1.7.5](docs/VISUAL-1.7.5.md).
+
 # 1.7.3.1 — O Legado das Runas
 
 Heráldica Rúnica, Codex Rúnico de 24 runas, 3 Coleções Lendárias, Forja de 12 receitas com 3 estágios de aprimoramento, Retrato Vivo 1.1, Arsenal 2.1 e correções da 1.7.3 sobre a base `feat/ascend-1.7.3`:

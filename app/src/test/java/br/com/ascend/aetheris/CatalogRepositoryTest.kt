@@ -78,7 +78,7 @@ class CatalogRepositoryTest {
     @Test fun migrateActualV2PreservesAllProgressAndAllowsCatalog()=runBlocking{
         val h=Habit(name="Anterior",xp=500,coins=300);repo.habit(h);repo.progress(h,today(),1);repo.buy(shopItems.first{it.id=="cloak"});repo.rest(today(),true);repo.journal(Journal(text="Minha memória"));repo.routine(Routine(name="Minha rotina",habitIds=h.id));repo.restore(0)
         val before=repo.state.value!!;val name="migration-catalog.db";legacyDatabase(context,name,2,before)
-        val disk=Room.databaseBuilder(context,GameDatabase::class.java,name).addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8,MIGRATION_8_9,MIGRATION_9_10).build()
+        val disk=Room.databaseBuilder(context,GameDatabase::class.java,name).addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8,MIGRATION_8_9,MIGRATION_9_10,MIGRATION_10_11).build()
         try{val migrated=GameRepository(disk);migrated.refresh();assertEquals(before,migrated.state.value);migrated.addCatalogHabit(habitTemplates.first().instantiate());assertEquals(before.xp,migrated.state.value!!.xp);assertEquals(before.coins,migrated.state.value!!.coins)}finally{disk.close();context.deleteDatabase(name)}
     }
     @Test fun disabledStreakDoesNotRemoveHabitRewards()=runBlocking{

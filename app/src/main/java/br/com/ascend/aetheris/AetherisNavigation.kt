@@ -23,7 +23,7 @@ private val mainVikingIcons=listOf(VikingIcon.Hearth,VikingIcon.OakTree,VikingIc
 /** The five areas share the carved glyph family. Decorative canvas; text provides tab semantics. */
 @Composable fun NavigationSigil(index:Int,color:Color,modifier:Modifier=Modifier){CarvedGlyph(listOf(Glyph.Journey,Glyph.Habits,Glyph.Missions,Glyph.World,Glyph.Hero)[index%5],color,modifier,26.dp)}
 @Composable fun AetherisNavigation(route:String,onSelect:(String)->Unit){
- val selected=if(route=="mimir"||route.startsWith("mimir_")||route=="codex_runico"||route.startsWith("region/")||route.startsWith("location/")||route.startsWith("expedition/"))"world" else if(route.startsWith("path/")||route in listOf("paths","inbox","pending"))"journey" else when(route){"grimoire","planner","analysis","focus_history"->"habits";"settings","journal","memories","portrait","heraldry"->"character";"weekly"->"world";else->route}
+ val selected=if(route=="mimir"||route.startsWith("mimir_")||route=="codex_runico"||route.startsWith("region/")||route.startsWith("location/")||route.startsWith("expedition/"))"world" else if(route.startsWith("path/")||route.startsWith("odin")||route.startsWith("council_nine")||route in listOf("paths","inbox","pending"))"journey" else if(route.startsWith("time_forge"))"habits" else when(route){"grimoire","planner","analysis","focus_history"->"habits";"settings","journal","memories","portrait","heraldry"->"character";"weekly"->"world";else->route}
  val dark=LocalAppearance.current.dark;val motion=LocalAppearance.current.reducedMotion;val minimal=LocalAppearance.current.minimal
  val bronze=Gold;val base=if(dark)Color(0xFF0E1011) else Color(0xFFE2DCD0)
  val inactiveIcon=if(dark)Color(0xFFC8D0DA) else Color(0xFF3E4752)

@@ -16,7 +16,7 @@ import java.security.MessageDigest
 
 val Context.preferences by preferencesDataStore("ascend_settings")
 class AscendApp:Application(){
-    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8,MIGRATION_8_9,MIGRATION_9_10).build() }
+    val database by lazy { Room.databaseBuilder(this,GameDatabase::class.java,"ascend.db").addMigrations(MIGRATION_1_2,MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7,MIGRATION_7_8,MIGRATION_8_9,MIGRATION_9_10,MIGRATION_10_11).build() }
     val repository by lazy { GameRepository(database){s->HabitWidget.refresh(this,s)} }
 }
 data class GameEvent(val message:String,val level:Int=0,val xp:Long=0,val coins:Long=0,val points:List<Long> = emptyList(),val highlights:List<String> = emptyList())
@@ -24,7 +24,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     private val d=db.dao(); private val lock=Mutex()
     val state=MutableStateFlow<GameState?>(null)
     val events=MutableSharedFlow<GameEvent>(extraBufferCapacity=10)
-    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus(),d.restDays(),d.plans(),d.focusSessions(),d.paths(),d.pathStages(),d.pathTasks(),d.pathSubtasks(),d.pathHabitLinks(),d.timeBlocks(),d.agendaEvents(),d.inboxItems(),d.notebooks(),d.knowledgePages(),d.knowledgeLinks(),d.knowledgeReferences(),d.flashcards(),d.flashcardReviews(),d.loadouts(),d.heraldry())
+    private suspend fun read()=GameState(d.player(),d.habits(),d.records(),d.ledger(),d.quests(),d.claims(),d.assets(),d.achievements(),d.journal(),d.routines(),d.focus(),d.restDays(),d.plans(),d.focusSessions(),d.paths(),d.pathStages(),d.pathTasks(),d.pathSubtasks(),d.pathHabitLinks(),d.timeBlocks(),d.agendaEvents(),d.inboxItems(),d.notebooks(),d.knowledgePages(),d.knowledgeLinks(),d.knowledgeReferences(),d.flashcards(),d.flashcardReviews(),d.loadouts(),d.heraldry(),d.availabilityWindows(),d.availabilityExceptions(),d.planningConfig(),d.taskDependencies(),d.pathMilestones(),d.lifeAreas(),d.strategicGoals(),d.appliedPlans(),d.recurrenceRules())
     suspend fun refresh()=lock.withLock { state.value=read() }
     private suspend fun change(message:String="Salvo",block:suspend ()->Unit){
         lock.withLock {
@@ -431,12 +431,19 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         val id="$habitId@$date"
         if(mode==0)d.deletePlan(id) else d.plan(PlanException(id,habitId,date,mode==1))
     }
+    private fun monotonicNow():Long=runCatching{android.os.SystemClock.elapsedRealtime()}.getOrDefault(0L)
+    private fun appendInterval(existing:String,startMs:Long,endMs:Long):String {
+        if(startMs<=0L || endMs<startMs) return existing
+        val entry="[$startMs,$endMs]"
+        return if(existing.isBlank()) "[$entry]" else existing.removeSuffix("]") + ",$entry]"
+    }
     suspend fun startFocus(h:Habit,minutes:Int)=change("Sessão iniciada"){
         val savedHabit=requireNotNull(d.habits().find{it.id==h.id}){"Este hábito não está mais disponível."}
         require(savedHabit.type==2 && !savedHabit.deleted && !savedHabit.archived && !savedHabit.paused && minutes in 1..1440){"Escolha um hábito cronometrado ativo e duração de 1 a 1440 minutos."}
         require(d.focus()==null){"Encerre a sessão atual antes de iniciar outra."}
         val date=today();val r=d.records().find{it.habitId==savedHabit.id && it.date==date}
-        val now=System.currentTimeMillis();d.focus(Focus(habitId=savedHabit.id,date=date,duration=minutes,startedAt=now,baseline=r?.progress?:0,sessionId=uid(),beganAt=now,targetLabel=savedHabit.name))
+        val now=System.currentTimeMillis();val mono=monotonicNow()
+        d.focus(Focus(habitId=savedHabit.id,date=date,duration=minutes,startedAt=now,baseline=r?.progress?:0,sessionId=uid(),beganAt=now,targetLabel=savedHabit.name,mode="free",phase="work",workMinutes=minutes,startedRealtimeMs=mono))
     }
     suspend fun startPathFocus(pathId:String="",taskId:String="",minutes:Int)=change("Sessão de caminho iniciada"){
         require(minutes in 1..1440){"Escolha uma duração de 1 a 1440 minutos."}
@@ -449,29 +456,155 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         val path=if(resolvedPathId.isNotBlank()) requireNotNull(d.paths().find{it.id==resolvedPathId}){"Caminho não encontrado."} else null
         require(path!=null || task!=null){"Selecione um caminho ou tarefa."}
         val label=task?.title ?: path?.name ?: ""
-        val now=System.currentTimeMillis()
-        d.focus(Focus(habitId="",date=today(),duration=minutes,startedAt=now,baseline=0,sessionId=uid(),beganAt=now,pathId=resolvedPathId,taskId=taskId,targetLabel=label))
+        val now=System.currentTimeMillis();val mono=monotonicNow()
+        d.focus(Focus(habitId="",date=today(),duration=minutes,startedAt=now,baseline=0,sessionId=uid(),beganAt=now,pathId=resolvedPathId,taskId=taskId,targetLabel=label,mode="free",phase="work",workMinutes=minutes,startedRealtimeMs=mono))
+    }
+    suspend fun startTimeForgeFocus(
+        mode:String="pomodoro",
+        workMinutes:Int=25,
+        shortBreakMinutes:Int=5,
+        longBreakMinutes:Int=15,
+        totalCycles:Int=4,
+        autoAdvance:Boolean=false,
+        habitId:String="",
+        pathId:String="",
+        taskId:String="",
+        blockId:String="",
+        targetLabel:String=""
+    )=change("Forja do Tempo iniciada"){
+        require(mode in setOf("free","pomodoro","deep","countdown","custom")){"Modo de foco inválido."}
+        require(workMinutes in 1..1440 && shortBreakMinutes in 0..120 && longBreakMinutes in 0..180 && totalCycles in 1..12){"Revise durações e ciclos."}
+        require(d.focus()==null){"Encerre a sessão atual antes de iniciar outra."}
+        val block=if(blockId.isNotBlank()) requireNotNull(d.timeBlocks().find{it.id==blockId}){"Bloco de tempo não encontrado."} else null
+        val effHabitId=habitId.ifBlank{block?.habitId.orEmpty()}
+        val effTaskId=taskId.ifBlank{block?.taskId.orEmpty()}
+        val task=if(effTaskId.isNotBlank()) d.pathTasks().find{it.id==effTaskId && !it.archived} else null
+        val effPathId=pathId.ifBlank{task?.pathId ?: block?.pathId.orEmpty()}
+        val path=if(effPathId.isNotBlank()) d.paths().find{it.id==effPathId} else null
+        val habit=if(effHabitId.isNotBlank()) d.habits().find{it.id==effHabitId && !it.deleted && !it.archived && !it.paused} else null
+        val label=targetLabel.trim().ifBlank{block?.title ?: task?.title ?: path?.name ?: habit?.name ?: "Foco livre"}
+        val date=today()
+        val baseline=if(habit!=null && habit.type==2) d.records().find{it.habitId==habit.id && it.date==date}?.progress?:0 else 0
+        val now=System.currentTimeMillis();val mono=monotonicNow()
+        d.focus(Focus(
+            habitId=if(habit!=null && habit.type==2) habit.id else "",
+            date=date,
+            duration=workMinutes,
+            elapsed=0L,
+            startedAt=now,
+            baseline=baseline,
+            sessionId=uid(),
+            beganAt=now,
+            pathId=effPathId,
+            taskId=task?.id.orEmpty(),
+            targetLabel=label,
+            blockId=block?.id.orEmpty(),
+            mode=mode,
+            phase="work",
+            workMinutes=workMinutes,
+            shortBreakMinutes=shortBreakMinutes,
+            longBreakMinutes=longBreakMinutes,
+            totalCycles=totalCycles,
+            currentCycle=1,
+            autoAdvance=autoAdvance,
+            startedRealtimeMs=mono,
+            pauseCount=0,
+            intervalsJson="",
+            clockAnomaly=false
+        ))
     }
     suspend fun pauseFocus()=change("Foco atualizado"){
-        val f=d.focus()?:return@change;d.focus(f.copy(elapsed=f.seconds(),startedAt=if(f.startedAt==0L) System.currentTimeMillis() else 0))
-    }
-    suspend fun endFocus(register:Boolean)=change(if(register) "Tempo efetivo registrado" else "Sessão descartada"){
         val f=d.focus()?:return@change
+        val now=System.currentTimeMillis();val mono=monotonicNow()
+        if(f.startedAt>0L){
+            val anomaly=f.hasClockAnomaly(now,mono)
+            val secs=f.seconds(now,mono)
+            d.focus(f.copy(
+                elapsed=secs,
+                startedAt=0L,
+                startedRealtimeMs=0L,
+                pauseCount=f.pauseCount+1,
+                intervalsJson=if(!f.isBreakPhase) appendInterval(f.intervalsJson,f.startedAt,now.coerceAtLeast(f.startedAt)) else f.intervalsJson,
+                clockAnomaly=anomaly
+            ))
+        }else{
+            d.focus(f.copy(startedAt=now,startedRealtimeMs=mono))
+        }
+    }
+    private suspend fun recordWorkFocusIfNeeded(f:Focus,register:Boolean,now:Long,mono:Long){
+        if(f.isBreakPhase) return // Pausas NUNCA contam como tempo de foco!
         val h=if(f.habitId.isNotBlank()) d.habits().find{it.id==f.habitId} else null
+        val seconds=f.seconds(now,mono)
+        val anomaly=f.hasClockAnomaly(now,mono)
+        val finalIntervals=if(f.startedAt>0L) appendInterval(f.intervalsJson,f.startedAt,now.coerceAtLeast(f.startedAt)) else f.intervalsJson
         if(register && f.habitId.isNotBlank()){
             val habit=h?:error("Hábito não encontrado")
             val existing=d.records().find{it.habitId==f.habitId && it.date==f.date}
             val r=existing?:HabitRecord("${habit.id}@${f.date}",habit.id,f.date,0,habit.target,habit.xp,habit.coins,habit.points,habit.attribute,habit.proportional,habit.type,habit.category,habit.unit,habit.name,scheduled(habit,f.date,d.restDays().map{it.date}.toSet(),d.plans()))
             // Absolute baseline makes overlapping manual progress idempotent.
-            val next=maxOf(r.progress,f.baseline+(f.seconds()/60).toInt()).coerceAtMost(r.target)
+            val next=maxOf(r.progress,f.baseline+(seconds/60).toInt()).coerceAtMost(r.target)
             d.record(r.copy(progress=next))
             d.reward(Reward("habit:${r.id}",Progression.reward(r.xp,next,r.target,r.proportional),Progression.reward(r.coins,next,r.target,r.proportional),Progression.reward(r.points,next,r.target,r.proportional),r.attribute,r.date,"Hábito · ${r.name}"))
         }
-        if(f.sessionId.isNotBlank()){
-            val now=System.currentTimeMillis().coerceAtLeast(f.beganAt);val seconds=f.seconds(now)
+        if(f.sessionId.isNotBlank() && d.focusSessions().none{it.id==f.sessionId}){
+            val endTs=now.coerceAtLeast(f.beganAt)
             val label=h?.name ?: f.targetLabel.ifBlank{ d.pathTasks().find{it.id==f.taskId}?.title ?: d.paths().find{it.id==f.pathId}?.name ?: "Sessão" }
-            d.focusSession(FocusSession(f.sessionId,f.habitId,h?.name?:"",f.date,f.beganAt,now,seconds,f.duration,if(!register)"cancelled" else if(seconds>=f.duration*60L)"completed" else "interrupted",register,f.pathId,f.taskId,label))
+            d.focusSession(FocusSession(f.sessionId,f.habitId,h?.name?:"",f.date,f.beganAt,endTs,seconds,f.duration,if(!register)"cancelled" else if(seconds>=f.duration*60L)"completed" else "interrupted",register,f.pathId,f.taskId,label,f.blockId,f.mode,f.pauseCount,finalIntervals,anomaly))
         }
+    }
+    /**
+     * Avança entre trabalho e pausa nos modos Pomodoro/Concentração/Personalizado.
+     * Registra apenas o tempo real de trabalho; pausas nunca geram FocusSession nem somam minutos de foco.
+     */
+    suspend fun advanceFocusPhase()=change("Fase da Forja do Tempo atualizada"){
+        val f=d.focus()?:return@change
+        val now=System.currentTimeMillis();val mono=monotonicNow()
+        val spec=focusModeSpec(f.mode)
+        if(!f.isBreakPhase){
+            recordWorkFocusIfNeeded(f,register=true,now=now,mono=mono)
+            val hasBreak=spec.usesBreaks && (f.shortBreakMinutes>0 || f.longBreakMinutes>0)
+            if(!hasBreak || f.currentCycle>=f.totalCycles){
+                d.clearFocus()
+            }else{
+                val isLong=(f.currentCycle % 4 == 0) && f.longBreakMinutes>0
+                val nextPhase=if(isLong) "long_break" else if(f.shortBreakMinutes>0) "short_break" else "long_break"
+                val breakMins=if(nextPhase=="long_break") f.longBreakMinutes.coerceAtLeast(1) else f.shortBreakMinutes.coerceAtLeast(1)
+                d.focus(f.copy(
+                    phase=nextPhase,
+                    duration=breakMins,
+                    elapsed=0L,
+                    startedAt=if(f.autoAdvance) now else 0L,
+                    startedRealtimeMs=if(f.autoAdvance) mono else 0L,
+                    sessionId="",
+                    pauseCount=0,
+                    intervalsJson="",
+                    clockAnomaly=false
+                ))
+            }
+        }else{
+            val nextCycle=(f.currentCycle+1).coerceAtMost(f.totalCycles)
+            val updatedBaseline=if(f.habitId.isNotBlank()) d.records().find{it.habitId==f.habitId && it.date==today()}?.progress?:0 else 0
+            d.focus(f.copy(
+                date=today(),
+                phase="work",
+                duration=f.workMinutes.coerceAtLeast(1),
+                elapsed=0L,
+                startedAt=if(f.autoAdvance) now else 0L,
+                startedRealtimeMs=if(f.autoAdvance) mono else 0L,
+                baseline=updatedBaseline,
+                sessionId=uid(),
+                beganAt=now,
+                currentCycle=nextCycle,
+                pauseCount=0,
+                intervalsJson="",
+                clockAnomaly=false
+            ))
+        }
+    }
+    suspend fun endFocus(register:Boolean)=change(if(register) "Tempo efetivo registrado" else "Sessão descartada"){
+        val f=d.focus()?:return@change
+        val now=System.currentTimeMillis();val mono=monotonicNow()
+        recordWorkFocusIfNeeded(f,register=register,now=now,mono=mono)
         d.clearFocus()
     }
     suspend fun savePath(p: PersonalPath, confirmedOpenTasks: Set<String> = emptySet()) = change("Caminho salvo") {
@@ -540,7 +673,13 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
             d.knowledgePage(pg.copy(pathId=if(pg.pathId==pathId)"" else pg.pathId,taskId=if(pg.taskId in taskIds)"" else pg.taskId))
         }
         d.deletePathHabitLinksByPath(pathId)
-        tasks.forEach{t->d.deletePathSubtasksByTask(t.id);d.deletePathTask(t.id)}
+        d.deletePathMilestonesByPath(pathId)
+        tasks.forEach{t->d.deleteDependenciesForTask(t.id);d.deletePathSubtasksByTask(t.id);d.deletePathTask(t.id)}
+        d.strategicGoals().forEach{g->
+            val parts=g.linkedPathIds.split(',').map{it.trim()}.filter{it.isNotBlank() && it!=pathId}
+            val joined=parts.joinToString(",")
+            if(joined!=g.linkedPathIds) d.strategicGoal(g.copy(linkedPathIds=joined))
+        }
         d.deletePathStagesByPath(pathId)
         d.deletePath(pathId)
     }
@@ -573,6 +712,9 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         val t=requireNotNull(d.pathTasks().find{it.id==taskId}){"Tarefa não encontrada."}
         if(targetPathId.isNotBlank()) require(d.paths().any{it.id==targetPathId}){"Caminho de destino não encontrado."}
         if(targetStageId.isNotBlank()) require(d.pathStages().any{it.id==targetStageId && it.pathId==targetPathId}){"Etapa de destino incompatível com o caminho."}
+        if(t.pathId!=targetPathId){
+            d.deleteDependenciesForTask(taskId)
+        }
         d.pathTask(t.copy(pathId=targetPathId,stageId=if(targetPathId.isBlank())"" else targetStageId))
     }
     suspend fun duplicateTask(taskId:String)=change("Tarefa duplicada"){
@@ -590,6 +732,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         d.focusSessions().filter{it.taskId==taskId}.forEach{fs->d.focusSession(fs.copy(taskId="",targetLabel=fs.targetLabel.ifBlank{t.title}))}
         d.timeBlocks().filter{it.taskId==taskId}.forEach{tb->d.timeBlock(tb.copy(taskId="",pathId=""))}
         d.knowledgePages().filter{it.taskId==taskId}.forEach{pg->d.knowledgePage(pg.copy(taskId=""))}
+        d.deleteDependenciesForTask(taskId)
         d.deletePathSubtasksByTask(taskId)
         d.deletePathTask(taskId)
     }
@@ -624,7 +767,12 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         }
     }
     suspend fun saveTimeBlock(b:TimeBlock)=change("Bloco de tempo salvo"){
-        val clean=b.copy(title=b.title.trim(),category=b.category.trim().ifBlank{"Foco"})
+        val existing=d.timeBlocks().find{it.id==b.id}
+        val clean=b.copy(
+            title=b.title.trim(),
+            category=b.category.trim().ifBlank{"Foco"},
+            modifiedManually=if(existing!=null && existing.sourcePlanId.isNotBlank()) true else b.modifiedManually
+        )
         val tasks = d.pathTasks()
         val habits = d.habits()
         validateTimeBlockInput(clean,d.paths(),tasks,habits)
@@ -857,8 +1005,437 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
             reviewedAt=System.currentTimeMillis()
         ))
     }
+
+    // =========================================================================
+    // 1.7.5 — MESA DE ODIN (DISPONIBILIDADE, CONFIGURAÇÃO, APPLY/UNDO, REPLANEJAMENTO)
+    // =========================================================================
+
+    suspend fun saveAvailabilityWindow(w:AvailabilityWindow)=change("Janela de disponibilidade salva"){
+        require(w.id.isNotBlank() && w.dayOfWeek in 1..7 && validTimeInterval(w.startTime,w.endTime)){"Informe dia válido e horário final posterior ao inicial."}
+        d.availabilityWindow(w.copy(label=w.label.trim().take(60),preferredCategory=w.preferredCategory.trim().take(40)))
+    }
+    suspend fun deleteAvailabilityWindow(id:String)=change("Janela removida"){
+        d.deleteAvailabilityWindow(id)
+    }
+    suspend fun applyDefaultAvailability()=change("Horários base configurados"){
+        defaultAvailabilityWindows().forEach{d.availabilityWindow(it)}
+    }
+    suspend fun saveAvailabilityException(ex:AvailabilityException)=change("Exceção de disponibilidade salva"){
+        require(ex.id.isNotBlank() && validIsoDate(ex.date)){"Informe uma data válida."}
+        if(!ex.blocked) require(validTimeInterval(ex.startTime,ex.endTime)){"Para janela especial, informe início e fim válidos."}
+        d.availabilityException(ex.copy(note=ex.note.trim().take(120)))
+    }
+    suspend fun deleteAvailabilityException(id:String)=change("Exceção removida"){
+        d.deleteAvailabilityException(id)
+    }
+    suspend fun savePlanningConfig(cfg:PlanningConfig)=change("Configuração da Mesa de Odin salva"){
+        validatePlanningConfig(cfg)
+        d.savePlanningConfig(cfg.copy(id=1,updated=today()))
+    }
+    suspend fun setOdinStrategy(strategyId:String)=change("Estratégia de Odin atualizada"){
+        require(odinStrategies.any{it.id==strategyId}){"Estratégia desconhecida."}
+        val cur=d.planningConfig()?:PlanningConfig()
+        d.savePlanningConfig(cur.copy(id=1,strategyId=strategyId,updated=today()))
+    }
+
+    /**
+     * Aplica uma proposta (completa ou parcial) de forma transacional.
+     * Revalida disponibilidade, compromissos fixos e blocos existentes antes de persistir;
+     * em qualquer conflito, toda a transação sofre rollback sem corromper a agenda.
+     */
+    suspend fun applyOdinProposal(
+        proposal:OdinProposal,
+        selectedIds:Set<String> = proposal.suggestions.filter{it.selected}.map{it.id}.toSet(),
+        pinnedIds:Set<String> = proposal.suggestions.filter{it.pinned}.map{it.id}.toSet()
+    ):AppliedPlanRecord {
+        lateinit var createdRecord:AppliedPlanRecord
+        change("Plano da Mesa de Odin aplicado"){
+            val chosen=proposal.suggestions.filter{it.id in selectedIds}
+            require(chosen.isNotEmpty()){"Selecione ao menos uma sugestão para aplicar."}
+            val s=read()
+            val planId=uid()
+            val createdBlockIds=mutableListOf<String>()
+            val taskSnapshots=mutableMapOf<String,Pair<String,String>>()
+            val newIntervalsByDate=mutableMapOf<String,MutableList<MinuteInterval>>()
+
+            for(sug in chosen){
+                require(validIsoDate(sug.date) && validTimeInterval(sug.startTime,sug.endTime)){"Intervalo inválido em '${sug.title}'."}
+                val st=requireNotNull(parseTimeToMinutes(sug.startTime))
+                val en=requireNotNull(parseTimeToMinutes(sug.endTime))
+                val candidateIv=MinuteInterval(st,en)
+
+                // Revalidação obrigatória contra disponibilidade real autorizada
+                val auth=OdinPlanningEngine.authorizedWindowsForDate(s,sug.date)
+                require(auth.any{it.start<=st && it.end>=en}){"Horário ${sug.date} ${sug.startTime}–${sug.endTime} fora da disponibilidade autorizada."}
+                // Revalidação obrigatória contra compromissos fixos e blocos existentes
+                val busy=OdinPlanningEngine.busyIntervalsForDate(s,sug.date,includeUnpinnedBlocks=true)
+                require(busy.none{it.overlaps(candidateIv)}){"Conflito detectado em ${sug.date} ${sug.startTime}–${sug.endTime} para '${sug.title}'."}
+                // Evita sobreposição entre sugestões do próprio plano
+                val added=newIntervalsByDate.getOrPut(sug.date){mutableListOf()}
+                require(added.none{it.overlaps(candidateIv)}){"Duas sugestões se sobrepõem em ${sug.date} ${sug.startTime}–${sug.endTime}."}
+                added += candidateIv
+
+                val validTask=sug.taskId.takeIf{id->id.isNotBlank() && s.pathTasks.any{it.id==id && !it.archived && !it.completed}}?:""
+                val validPath=sug.pathId.takeIf{id->id.isNotBlank() && s.paths.any{it.id==id}}?:""
+                val validHabit=if(validTask.isBlank() && validPath.isBlank()) sug.habitId.takeIf{id->id.isNotBlank() && s.habits.any{it.id==id && !it.deleted}}?:"" else ""
+                val blockId="odinblk-${planId.take(8)}-${createdBlockIds.size+1}"
+                createdBlockIds += blockId
+
+                d.timeBlock(TimeBlock(
+                    id=blockId,
+                    title=sug.title.take(160),
+                    date=sug.date,
+                    startTime=sug.startTime,
+                    endTime=sug.endTime,
+                    category=sug.category.ifBlank{"Foco"},
+                    color=sug.color.coerceIn(palette.indices),
+                    description="Mesa de Odin (${proposal.strategy.name}): ${sug.reason}",
+                    pathId=validPath,
+                    taskId=validTask,
+                    habitId=validHabit,
+                    pinned=sug.id in pinnedIds,
+                    sourcePlanId=planId,
+                    areaId=sug.areaId,
+                    modifiedManually=false
+                ))
+
+                if(validTask.isNotBlank() && validTask !in taskSnapshots){
+                    val t=s.pathTasks.first{it.id==validTask}
+                    taskSnapshots[validTask]=t.scheduledDate to t.scheduledTime
+                    if(t.scheduledDate.isBlank()){
+                        d.pathTask(t.copy(scheduledDate=sug.date,scheduledTime=sug.startTime))
+                    }
+                }
+            }
+
+            val snapJson=com.google.gson.Gson().toJson(taskSnapshots.mapValues{listOf(it.value.first,it.value.second)})
+            createdRecord=AppliedPlanRecord(
+                id=planId,
+                appliedAt=System.currentTimeMillis(),
+                dateFrom=proposal.dateFrom,
+                dateTo=proposal.dateTo,
+                strategyId=proposal.strategy.id,
+                blockIds=createdBlockIds.joinToString(","),
+                taskSnapshotsJson=snapJson,
+                undone=false,
+                summary="${createdBlockIds.size} bloco(s) aplicados · ${proposal.strategy.name}"
+            )
+            d.appliedPlan(createdRecord)
+        }
+        return createdRecord
+    }
+
+    /**
+     * Desfaz um plano aplicado de forma segura: remove apenas blocos ainda intactos,
+     * detecta e preserva blocos editados manualmente ou fixados posteriormente (a menos que forceDeleteModified=true).
+     */
+    suspend fun undoAppliedPlan(planId:String,forceDeleteModified:Boolean=false):Pair<Int,Int> {
+        var removedCount=0
+        var preservedCount=0
+        change("Plano revertido com segurança"){
+            val record=requireNotNull(d.appliedPlans().find{it.id==planId}){"Plano aplicado não encontrado."}
+            require(!record.undone){"Este plano já foi desfeito."}
+            val ids=record.blockIds.split(',').map{it.trim()}.filter{it.isNotBlank()}.toSet()
+            val blocks=d.timeBlocks().filter{it.id in ids || it.sourcePlanId==planId}
+            val untouchedTaskIds=mutableSetOf<String>()
+            val preservedTaskIds=mutableSetOf<String>()
+            for(b in blocks){
+                val editedLater=b.modifiedManually || b.pinned
+                if(editedLater && !forceDeleteModified){
+                    preservedCount++
+                    if(b.taskId.isNotBlank()) preservedTaskIds += b.taskId
+                }else{
+                    d.deleteTimeBlock(b.id)
+                    removedCount++
+                    if(b.taskId.isNotBlank()) untouchedTaskIds += b.taskId
+                }
+            }
+            if(record.taskSnapshotsJson.isNotBlank()){
+                val map=runCatching{
+                    com.google.gson.JsonParser.parseString(record.taskSnapshotsJson).asJsonObject
+                }.getOrNull()
+                if(map!=null){
+                    val allTasks=d.pathTasks().associateBy{it.id}
+                    for(entry in map.entrySet()){
+                        val tid=entry.key
+                        if(tid in preservedTaskIds) continue
+                        val arr=entry.value.asJsonArray
+                        if(arr.size()>=2){
+                            val prevDate=arr[0].asString
+                            val prevTime=arr[1].asString
+                            allTasks[tid]?.let{t->
+                                if(!t.completed && !t.archived){
+                                    d.pathTask(t.copy(scheduledDate=prevDate,scheduledTime=prevTime))
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            d.appliedPlan(record.copy(undone=true,summary="${record.summary} · desfeito ($removedCount removidos, $preservedCount preservados)"))
+        }
+        return removedCount to preservedCount
+    }
+
+    suspend fun applyReplanChoice(item:ReplanItem,option:ReplanSlotOption)=change("Item replanejado sem penalidades"){
+        val task=item.taskId.takeIf{it.isNotBlank()}?.let{id->d.pathTasks().find{it.id==id}}
+        val oldBlock=item.blockId.takeIf{it.isNotBlank()}?.let{id->d.timeBlocks().find{it.id==id}}
+        when(option.action){
+            ReplanActionKind.TRANSFER, ReplanActionKind.POSTPONE -> {
+                require(validIsoDate(option.targetDate) && validTimeInterval(option.startTime,option.endTime)){"Horário de destino inválido."}
+                if(oldBlock!=null){
+                    d.timeBlock(oldBlock.copy(date=option.targetDate,startTime=option.startTime,endTime=option.endTime,modifiedManually=true))
+                }else{
+                    d.timeBlock(TimeBlock(
+                        title=item.title.take(160),
+                        date=option.targetDate,
+                        startTime=option.startTime,
+                        endTime=option.endTime,
+                        category="Foco",
+                        pathId=item.pathId,
+                        taskId=item.taskId,
+                        areaId=item.areaId
+                    ))
+                }
+                if(task!=null && !task.completed){
+                    d.pathTask(task.copy(scheduledDate=option.targetDate,scheduledTime=option.startTime))
+                }
+            }
+            ReplanActionKind.SPLIT -> {
+                require(validIsoDate(option.targetDate) && validTimeInterval(option.startTime,option.endTime)){"Primeiro bloco inválido."}
+                require(validIsoDate(option.secondDate) && validTimeInterval(option.secondStartTime,option.secondEndTime)){"Segundo bloco inválido."}
+                if(oldBlock!=null) d.deleteTimeBlock(oldBlock.id)
+                d.timeBlock(TimeBlock(title="${item.title} (1/2)".take(160),date=option.targetDate,startTime=option.startTime,endTime=option.endTime,category="Foco",pathId=item.pathId,taskId=item.taskId,areaId=item.areaId))
+                d.timeBlock(TimeBlock(title="${item.title} (2/2)".take(160),date=option.secondDate,startTime=option.secondStartTime,endTime=option.secondEndTime,category="Foco",pathId=item.pathId,taskId=item.taskId,areaId=item.areaId))
+                if(task!=null && !task.completed){
+                    d.pathTask(task.copy(scheduledDate=option.targetDate,scheduledTime=option.startTime))
+                }
+            }
+            ReplanActionKind.SEND_TO_PENDING -> {
+                if(oldBlock!=null) d.deleteTimeBlock(oldBlock.id)
+                if(task!=null && !task.completed){
+                    d.pathTask(task.copy(scheduledDate="",scheduledTime=""))
+                }
+            }
+            ReplanActionKind.REMOVE_SCHEDULE -> {
+                if(oldBlock!=null) d.deleteTimeBlock(oldBlock.id)
+                if(task!=null && !task.completed){
+                    d.pathTask(task.copy(scheduledDate="",scheduledTime=""))
+                }
+            }
+        }
+    }
+
+    // =========================================================================
+    // 1.7.5 — CAMINHOS 3.0 (DEPENDÊNCIAS, KANBAN, EISENHOWER, MARCOS, MODELOS)
+    // =========================================================================
+
+    suspend fun addTaskDependency(taskId:String,dependsOnTaskId:String)=change("Dependência registrada"){
+        require(taskId.isNotBlank() && dependsOnTaskId.isNotBlank() && taskId!=dependsOnTaskId){"Uma tarefa não pode depender de si mesma."}
+        val tasks=d.pathTasks()
+        require(tasks.any{it.id==taskId} && tasks.any{it.id==dependsOnTaskId}){"Ambas as tarefas devem existir."}
+        val existing=d.taskDependencies()
+        require(existing.none{it.taskId==taskId && it.dependsOnTaskId==dependsOnTaskId}){"Esta dependência já está registrada."}
+        require(!OdinPlanningEngine.wouldCreateCycle(existing,taskId,dependsOnTaskId)){"Dependência circular detectada: esta ligação criaria um ciclo."}
+        d.taskDependency(TaskDependency(id="$taskId<-$dependsOnTaskId",taskId=taskId,dependsOnTaskId=dependsOnTaskId,created=today()))
+    }
+    suspend fun removeTaskDependency(depId:String)=change("Dependência removida"){
+        d.deleteTaskDependency(depId)
+    }
+    suspend fun overrideTaskDependency(depId:String,reason:String)=change("Dependência liberada manualmente"){
+        val dep=requireNotNull(d.taskDependencies().find{it.id==depId}){"Dependência não encontrada."}
+        val cleanReason=reason.trim()
+        require(cleanReason.isNotBlank()){"Registre o motivo da liberação manual."}
+        d.taskDependency(dep.copy(overridden=true,overrideReason=cleanReason.take(200),overrideDate=today()))
+    }
+    suspend fun setTaskKanbanColumn(taskId:String,column:String,overrideReason:String="")=change("Tarefa movida no quadro"){
+        val t=requireNotNull(d.pathTasks().find{it.id==taskId}){"Tarefa não encontrada."}
+        val tasksById=d.pathTasks().associateBy{it.id}
+        val deps=d.taskDependencies()
+        val blocking=OdinPlanningEngine.blockingPrerequisites(taskId,tasksById,deps)
+        when(column){
+            "todo" -> d.pathTask(t.copy(completed=false,completedDate="",workflowStatus=0))
+            "doing" -> {
+                if(blocking.isNotEmpty()){
+                    require(overrideReason.isNotBlank()){"Tarefa bloqueada por pré-requisito (${blocking.first().title}). Libere a dependência com justificativa antes de iniciar."}
+                    deps.filter{it.taskId==taskId && !it.overridden}.forEach{dep->
+                        d.taskDependency(dep.copy(overridden=true,overrideReason=overrideReason.trim().take(200),overrideDate=today()))
+                    }
+                }
+                d.pathTask(t.copy(completed=false,completedDate="",workflowStatus=1))
+            }
+            "done" -> {
+                if(blocking.isNotEmpty() && overrideReason.isNotBlank()){
+                    deps.filter{it.taskId==taskId && !it.overridden}.forEach{dep->
+                        d.taskDependency(dep.copy(overridden=true,overrideReason=overrideReason.trim().take(200),overrideDate=today()))
+                    }
+                }
+                d.pathTask(t.copy(completed=true,completedDate=today(),workflowStatus=0))
+            }
+            else -> error("Coluna Kanban inválida.")
+        }
+    }
+    suspend fun setTaskEisenhower(taskId:String,important:Boolean,urgent:Boolean)=change("Prioridade Eisenhower atualizada"){
+        val t=requireNotNull(d.pathTasks().find{it.id==taskId}){"Tarefa não encontrada."}
+        d.pathTask(t.copy(important=important,urgent=urgent))
+    }
+    suspend fun savePathMilestone(m:PathMilestone)=change("Marco salvo"){
+        val clean=m.copy(title=m.title.trim(),notes=m.notes.trim())
+        require(clean.id.isNotBlank() && clean.title.isNotBlank() && clean.title.length<=160 && validIsoDate(clean.targetDate)){"Informe título e data válida para o marco."}
+        require(d.paths().any{it.id==clean.pathId}){"Caminho do marco não encontrado."}
+        d.pathMilestone(clean)
+    }
+    suspend fun togglePathMilestone(id:String)=change("Marco atualizado"){
+        val m=requireNotNull(d.pathMilestones().find{it.id==id}){"Marco não encontrado."}
+        val next=!m.completed
+        d.pathMilestone(m.copy(completed=next,completedDate=if(next) today() else ""))
+    }
+    suspend fun deletePathMilestone(id:String)=change("Marco removido"){
+        d.deletePathMilestone(id)
+    }
+    suspend fun createPathFromTemplate(templateId:String,customName:String="",startDate:String=today(),areaId:String=""):String {
+        lateinit var newPathId:String
+        change("Caminho criado a partir de modelo"){
+            val tpl=requireNotNull(projectTemplates.find{it.id==templateId}){"Modelo de projeto desconhecido."}
+            val start=LocalDate.parse(startDate)
+            newPathId=uid()
+            val pos=(d.paths().maxOfOrNull{it.position}?:-1)+1
+            val deadline=start.plusDays(tpl.durationDays.toLong()).toString()
+            d.path(PersonalPath(
+                id=newPathId,
+                name=customName.trim().ifBlank{tpl.name}.take(120),
+                description=tpl.summary,
+                category=tpl.category,
+                icon=0,
+                color=tpl.attribute.coerceIn(palette.indices),
+                startDate=startDate,
+                deadline=deadline,
+                priority=2,
+                state=1,
+                attribute=tpl.attribute,
+                position=pos,
+                areaId=areaId
+            ))
+            val stageIds=tpl.stages.mapIndexed{idx,st->
+                val sid=uid()
+                d.pathStage(PathStage(id=sid,pathId=newPathId,name=st.name,targetNote=st.note,position=idx))
+                sid
+            }
+            val taskIds=tpl.tasks.mapIndexed{idx,tk->
+                val tid=uid()
+                val dl=start.plusDays(tk.offsetDays.toLong()).toString()
+                d.pathTask(PathTask(
+                    id=tid,
+                    pathId=newPathId,
+                    stageId=stageIds.getOrElse(tk.stageIndex){""},
+                    title=tk.title,
+                    priority=tk.priority.coerceIn(priorityLabels.indices),
+                    deadline=dl,
+                    estimateMinutes=tk.estimateMinutes,
+                    completed=false,
+                    completedDate="",
+                    archived=false,
+                    position=idx,
+                    created=startDate,
+                    areaId=areaId
+                ))
+                tid
+            }
+            tpl.tasks.forEachIndexed{idx,tk->
+                val curId=taskIds[idx]
+                tk.dependsOnIndices.forEach{preIdx->
+                    val preId=taskIds.getOrNull(preIdx)
+                    if(preId!=null && preId!=curId){
+                        d.taskDependency(TaskDependency(id="$curId<-$preId",taskId=curId,dependsOnTaskId=preId,created=startDate))
+                    }
+                }
+            }
+            tpl.milestones.forEachIndexed{idx,ms->
+                d.pathMilestone(PathMilestone(
+                    id=uid(),
+                    pathId=newPathId,
+                    title=ms.title,
+                    targetDate=start.plusDays(ms.offsetDays.toLong()).toString(),
+                    completed=false,
+                    completedDate="",
+                    position=idx
+                ))
+            }
+        }
+        return newPathId
+    }
+
+    // =========================================================================
+    // 1.7.5 — AGENDA 3.0 (FIXAÇÃO E RECORRÊNCIA)
+    // =========================================================================
+
+    suspend fun togglePinTimeBlock(blockId:String)=change("Fixação do bloco atualizada"){
+        val b=requireNotNull(d.timeBlocks().find{it.id==blockId}){"Bloco não encontrado."}
+        d.timeBlock(b.copy(pinned=!b.pinned))
+    }
+    suspend fun saveRecurrenceRule(rule:RecurrenceRule)=change("Recorrência salva"){
+        validateRecurrenceRule(rule)
+        d.recurrenceRule(rule)
+    }
+    suspend fun deleteRecurrenceRule(id:String)=change("Recorrência removida"){
+        d.deleteRecurrenceRule(id)
+    }
+    suspend fun excludeRecurrenceDate(ruleId:String,date:String)=change("Ocorrência ajustada sem alterar o histórico"){
+        val r=requireNotNull(d.recurrenceRules().find{it.id==ruleId}){"Regra de recorrência não encontrada."}
+        LocalDate.parse(date)
+        val set=r.excludedDates.split(',').map{it.trim()}.filter{it.isNotBlank()}.toMutableSet()
+        set += date
+        d.recurrenceRule(r.copy(excludedDates=set.sorted().joinToString(",")))
+    }
+
+    // =========================================================================
+    // 1.7.5 — CONSELHO DOS NOVE (ÁREAS DA VIDA E OBJETIVOS PESSOAIS)
+    // =========================================================================
+
+    suspend fun seedDefaultLifeAreas()=change("Áreas do Conselho dos Nove ativadas"){
+        val existing=d.lifeAreas().map{it.id}.toSet()
+        defaultLifeAreas().filter{it.id !in existing}.forEach{d.lifeArea(it)}
+    }
+    suspend fun saveLifeArea(area:LifeArea)=change("Área da vida salva"){
+        val clean=area.copy(name=area.name.trim(),description=area.description.trim())
+        require(clean.id.isNotBlank() && clean.name.isNotBlank() && clean.name.length<=60 && clean.sealIndex in 0..8 && clean.color in palette.indices && clean.weeklyTargetMinutes in 0..10080){"Revise os dados da área da vida."}
+        d.lifeArea(clean)
+    }
+    suspend fun archiveLifeArea(id:String,archived:Boolean)=change(if(archived)"Área arquivada" else "Área reativada"){
+        val a=requireNotNull(d.lifeAreas().find{it.id==id}){"Área não encontrada."}
+        d.lifeArea(a.copy(archived=archived))
+    }
+    suspend fun reorderLifeArea(id:String,step:Int)=change("Ordem do Conselho atualizada"){
+        val list=d.lifeAreas().sortedBy{it.position}.toMutableList()
+        val i=list.indexOfFirst{it.id==id};val j=(i+step).coerceIn(0,(list.size-1).coerceAtLeast(0))
+        if(i>=0 && i!=j){java.util.Collections.swap(list,i,j);list.forEachIndexed{idx,v->d.lifeArea(v.copy(position=idx))}}
+    }
+    suspend fun deleteLifeArea(id:String)=change("Área removida"){
+        d.habits().filter{it.areaId==id}.forEach{d.habit(it.copy(areaId=""))}
+        d.paths().filter{it.areaId==id}.forEach{d.path(it.copy(areaId=""))}
+        d.pathTasks().filter{it.areaId==id}.forEach{d.pathTask(it.copy(areaId=""))}
+        d.notebooks().filter{it.areaId==id}.forEach{d.notebook(it.copy(areaId=""))}
+        d.timeBlocks().filter{it.areaId==id}.forEach{d.timeBlock(it.copy(areaId=""))}
+        d.agendaEvents().filter{it.areaId==id}.forEach{d.agendaEvent(it.copy(areaId=""))}
+        d.strategicGoals().filter{it.areaId==id}.forEach{d.strategicGoal(it.copy(areaId=""))}
+        d.deleteLifeArea(id)
+    }
+    suspend fun saveStrategicGoal(goal:StrategicGoal)=change("Objetivo pessoal salvo"){
+        val clean=goal.copy(title=goal.title.trim(),description=goal.description.trim(),periodLabel=goal.periodLabel.trim())
+        validateStrategicGoal(clean)
+        d.strategicGoal(clean)
+    }
+    suspend fun archiveStrategicGoal(id:String,archived:Boolean)=change(if(archived)"Objetivo arquivado" else "Objetivo reativado"){
+        val g=requireNotNull(d.strategicGoals().find{it.id==id}){"Objetivo não encontrado."}
+        d.strategicGoal(g.copy(archived=archived))
+    }
+    suspend fun deleteStrategicGoal(id:String)=change("Objetivo excluído"){
+        d.deleteStrategicGoal(id)
+    }
+
     suspend fun importState(s:GameState)=change("Backup restaurado"){
         validateState(s)
+        d.clearRecurrenceRules();d.clearAppliedPlans();d.clearStrategicGoals();d.clearLifeAreas();d.clearPathMilestones();d.clearTaskDependencies();d.clearPlanningConfig();d.clearAvailabilityExceptions();d.clearAvailabilityWindows()
         d.clearHeraldry()
         d.clearLoadouts()
         d.clearFlashcardReviews();d.clearFlashcards();d.clearKnowledgeReferences();d.clearKnowledgeLinks();d.clearKnowledgePages();d.clearNotebooks()
@@ -870,8 +1447,40 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         s.notebooks.forEach{d.notebook(it)};s.knowledgePages.forEach{d.knowledgePage(it)};s.knowledgeLinks.forEach{d.knowledgeLink(it)};s.knowledgeReferences.forEach{d.knowledgeReference(it)};s.flashcards.forEach{d.flashcard(it)};s.flashcardReviews.forEach{d.flashcardReview(it)}
         s.loadouts.forEach{d.loadout(it)}
         s.heraldry?.let{d.saveHeraldry(it)}
-        s.focusSessions.forEach{d.focusSession(it)};s.focus?.let{d.focus(it.copy(elapsed=it.seconds(),startedAt=0))}
+        s.availabilityWindows.forEach{d.availabilityWindow(it)}
+        s.availabilityExceptions.forEach{d.availabilityException(it)}
+        s.planningConfig?.let{d.savePlanningConfig(it)}
+        s.taskDependencies.forEach{d.taskDependency(it)}
+        s.pathMilestones.forEach{d.pathMilestone(it)}
+        s.lifeAreas.forEach{d.lifeArea(it)}
+        s.strategicGoals.forEach{d.strategicGoal(it)}
+        s.appliedPlans.forEach{d.appliedPlan(it)}
+        s.recurrenceRules.forEach{d.recurrenceRule(it)}
+        s.focusSessions.forEach{d.focusSession(it)};s.focus?.let{d.focus(it.copy(elapsed=it.seconds(),startedAt=0,startedRealtimeMs=0L))}
     }
+}
+fun validatePlanningConfig(cfg:PlanningConfig){
+    require(cfg.id==1 && odinStrategies.any{it.id==cfg.strategyId}){"Estratégia de Odin inválida."}
+    require(cfg.dailyLimitMinutes in 30..960 && cfg.bufferMinutes in 0..60 && cfg.minBlockMinutes in 10..120 && cfg.maxBlockMinutes in cfg.minBlockMinutes..240){"Revise limites diários e durações de bloco."}
+    require(cfg.preferredStudyPeriod in setOf("morning","afternoon","evening","any")){"Período preferencial inválido."}
+    LocalDate.parse(cfg.updated)
+}
+fun validateStrategicGoal(g:StrategicGoal){
+    require(g.id.isNotBlank() && g.title.isNotBlank() && g.title.length<=160){"Informe um título para o objetivo."}
+    require(g.horizon in setOf("quarterly","annual") && g.targetValue in 1..1000000){"Horizonte ou meta inválida."}
+    LocalDate.parse(g.created)
+    if(g.deadline.isNotBlank()) LocalDate.parse(g.deadline)
+}
+fun validateRecurrenceRule(r:RecurrenceRule){
+    require(r.id.isNotBlank() && r.entityType in setOf("block","event") && r.templateId.isNotBlank()){"Regra de recorrência incompleta."}
+    require(r.pattern in setOf("daily","weekly","weekdays","monthly")){"Padrão de recorrência inválido."}
+    LocalDate.parse(r.startDate)
+    if(r.endDate.isNotBlank()){
+        LocalDate.parse(r.endDate)
+        require(r.endDate>=r.startDate){"A data final da recorrência deve ser igual ou posterior ao início."}
+    }
+    if(r.daysOfWeek.isNotBlank()) require(r.daysOfWeek.split(',').all{it.trim().toIntOrNull() in 1..7}){"Dias da semana inválidos na recorrência."}
+    if(r.excludedDates.isNotBlank()) r.excludedDates.split(',').filter{it.isNotBlank()}.forEach{LocalDate.parse(it.trim())}
 }
 fun validatePathInput(p:PersonalPath){
     require(p.id.isNotBlank() && p.name.isNotBlank() && p.name.length<=120){"Informe um nome para o caminho (até 120 caracteres)."}
@@ -885,7 +1494,7 @@ fun validatePathInput(p:PersonalPath){
 }
 fun validateTaskInput(t:PathTask,paths:List<PersonalPath>,stages:List<PathStage>, legacy:Boolean=false){
     require(t.id.isNotBlank() && t.title.isNotBlank() && t.title.length<=200){"Informe um título para a tarefa."}
-    require(t.priority in priorityLabels.indices && t.estimateMinutes in 0..1440 && t.position>=0){"Revise prioridade ou estimativa."}
+    require(t.priority in priorityLabels.indices && t.estimateMinutes in 0..1440 && t.position>=0 && t.workflowStatus in 0..1){"Revise prioridade ou estimativa."}
     LocalDate.parse(t.created)
     if(t.deadline.isNotBlank()) LocalDate.parse(t.deadline)
     if(t.scheduledDate.isNotBlank()) LocalDate.parse(t.scheduledDate)
@@ -924,7 +1533,7 @@ fun validateHabitInput(h:Habit){
     require(h.difficulty in 0..2 && h.icon in glyphs.indices && h.color in palette.indices){"Revise a dificuldade, o ícone e a cor."}
     require(h.templateId.length<=100 && h.narrativeName.length<=200){"Nome narrativo muito longo."}
 }
-data class BackupEnvelope(val format:String="ASCEND",val version:Int=12,val sha256:String,val payload:String)
+data class BackupEnvelope(val format:String="ASCEND",val version:Int=13,val sha256:String,val payload:String)
 object Backup {
     private val gson=Gson()
     private fun digest(s:String)=MessageDigest.getInstance("SHA-256").digest(s.toByteArray(Charsets.UTF_8)).joinToString(""){"%02x".format(it)}
@@ -932,15 +1541,35 @@ object Backup {
     fun decode(text:String):GameState {
         require(text.length<=20_000_000){"Backup muito grande (máximo 20 MB)."}
         val b=gson.fromJson(text,BackupEnvelope::class.java)
-        require(b.format=="ASCEND" && b.version in 1..12 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
+        require(b.format=="ASCEND" && b.version in 1..13 && b.sha256==digest(b.payload)){"Backup inválido, corrompido ou de versão incompatível."}
         val json=com.google.gson.JsonParser.parseString(b.payload).asJsonObject
         json["player"]?.takeIf{it.isJsonObject}?.asJsonObject?.let{p->if(!p.has("specialization"))p.addProperty("specialization","")}
         listOf("quests","claims").forEach{table->json.getAsJsonArray(table)?.forEach{row->val obj=row.asJsonObject;listOf("sagaStart","sagaBaseline").forEach{key->if(!obj.has(key))obj.addProperty(key,"")};if(!obj.has("focusRuleVersion"))obj.addProperty("focusRuleVersion",0)}}
         json.getAsJsonArray("quests")?.forEach{row->val obj=row.asJsonObject;if(!obj.has("sagaState"))obj.addProperty("sagaState",0);if(!obj.has("sagaEnd"))obj.addProperty("sagaEnd","");if(!obj.has("sagaStopped"))obj.addProperty("sagaStopped",0)}
         json.getAsJsonArray("assets")?.forEach{row->listOf("memorySpeaker","memoryText").forEach{key->if(!row.asJsonObject.has(key))row.asJsonObject.addProperty(key,"")}}
-        listOf("plans","focusSessions","paths","pathStages","pathTasks","pathSubtasks","pathHabitLinks","timeBlocks","agendaEvents","inboxItems","notebooks","knowledgePages","knowledgeLinks","knowledgeReferences","flashcards","flashcardReviews","loadouts").forEach{if(!json.has(it))json.add(it,com.google.gson.JsonArray())}
-        json["focus"]?.takeIf{it.isJsonObject}?.asJsonObject?.let{f->if(!f.has("sessionId"))f.addProperty("sessionId","");if(!f.has("beganAt"))f.addProperty("beganAt",0);if(!f.has("pathId"))f.addProperty("pathId","");if(!f.has("taskId"))f.addProperty("taskId","");if(!f.has("targetLabel"))f.addProperty("targetLabel","")}
-        json.getAsJsonArray("focusSessions")?.forEach{row->val obj=row.asJsonObject;listOf("pathId","taskId","targetLabel").forEach{k->if(!obj.has(k))obj.addProperty(k,"")}}
+        listOf("plans","focusSessions","paths","pathStages","pathTasks","pathSubtasks","pathHabitLinks","timeBlocks","agendaEvents","inboxItems","notebooks","knowledgePages","knowledgeLinks","knowledgeReferences","flashcards","flashcardReviews","loadouts","availabilityWindows","availabilityExceptions","taskDependencies","pathMilestones","lifeAreas","strategicGoals","appliedPlans","recurrenceRules").forEach{if(!json.has(it))json.add(it,com.google.gson.JsonArray())}
+        json.getAsJsonArray("habits")?.forEach{row->val o=row.asJsonObject;if(!o.has("areaId"))o.addProperty("areaId","")}
+        json.getAsJsonArray("paths")?.forEach{row->val o=row.asJsonObject;if(!o.has("areaId"))o.addProperty("areaId","")}
+        json.getAsJsonArray("pathTasks")?.forEach{row->val o=row.asJsonObject;if(!o.has("workflowStatus"))o.addProperty("workflowStatus",0);if(!o.has("urgent"))o.addProperty("urgent",false);if(!o.has("important"))o.addProperty("important",false);if(!o.has("areaId"))o.addProperty("areaId","")}
+        json.getAsJsonArray("notebooks")?.forEach{row->val o=row.asJsonObject;if(!o.has("areaId"))o.addProperty("areaId","")}
+        json.getAsJsonArray("timeBlocks")?.forEach{row->val o=row.asJsonObject;if(!o.has("pinned"))o.addProperty("pinned",false);if(!o.has("sourcePlanId"))o.addProperty("sourcePlanId","");if(!o.has("recurrenceId"))o.addProperty("recurrenceId","");if(!o.has("areaId"))o.addProperty("areaId","");if(!o.has("modifiedManually"))o.addProperty("modifiedManually",false)}
+        json.getAsJsonArray("agendaEvents")?.forEach{row->val o=row.asJsonObject;if(!o.has("recurrenceId"))o.addProperty("recurrenceId","");if(!o.has("areaId"))o.addProperty("areaId","")}
+        json["focus"]?.takeIf{it.isJsonObject}?.asJsonObject?.let{f->
+            listOf("sessionId","pathId","taskId","targetLabel","blockId","intervalsJson").forEach{k->if(!f.has(k))f.addProperty(k,"")}
+            if(!f.has("beganAt"))f.addProperty("beganAt",0)
+            if(!f.has("mode"))f.addProperty("mode","free")
+            if(!f.has("phase"))f.addProperty("phase","work")
+            if(!f.has("workMinutes"))f.addProperty("workMinutes",f["duration"]?.asInt?:25)
+            if(!f.has("shortBreakMinutes"))f.addProperty("shortBreakMinutes",5)
+            if(!f.has("longBreakMinutes"))f.addProperty("longBreakMinutes",15)
+            if(!f.has("totalCycles"))f.addProperty("totalCycles",4)
+            if(!f.has("currentCycle"))f.addProperty("currentCycle",1)
+            if(!f.has("autoAdvance"))f.addProperty("autoAdvance",false)
+            if(!f.has("startedRealtimeMs"))f.addProperty("startedRealtimeMs",0L)
+            if(!f.has("pauseCount"))f.addProperty("pauseCount",0)
+            if(!f.has("clockAnomaly"))f.addProperty("clockAnomaly",false)
+        }
+        json.getAsJsonArray("focusSessions")?.forEach{row->val obj=row.asJsonObject;listOf("pathId","taskId","targetLabel","blockId","intervalsJson").forEach{k->if(!obj.has(k))obj.addProperty(k,"")};if(!obj.has("mode"))obj.addProperty("mode","free");if(!obj.has("pauseCount"))obj.addProperty("pauseCount",0);if(!obj.has("clockAnomaly"))obj.addProperty("clockAnomaly",false)}
         val s=gson.fromJson(json,GameState::class.java);validateState(s);return s
     }
 }
@@ -1003,11 +1632,31 @@ fun validateState(s:GameState){
     s.knowledgeReferences.forEach{validateReferenceInput(it,s.knowledgePages)}
     s.flashcards.forEach{validateFlashcardInput(it,s.notebooks,s.knowledgePages)}
     s.flashcardReviews.forEach{r->LocalDate.parse(r.reviewDate);require(r.rating in 0..3 && r.intervalBefore in 0..3650 && r.intervalAfter in 1..3650 && !r.easeAfter.isNaN() && !r.easeAfter.isInfinite() && r.easeAfter in 1.3..3.5 && r.reviewedAt>=0 && s.flashcards.any{it.id==r.flashcardId})}
+
+    // 1.7.5 — Validação estrita de disponibilidade, dependências, marcos, áreas, metas, planos e recorrências
+    require(s.availabilityWindows.size<=500 && s.availabilityExceptions.size<=5000 && s.taskDependencies.size<=200000 && s.pathMilestones.size<=50000 && s.lifeAreas.size<=100 && s.strategicGoals.size<=5000 && s.appliedPlans.size<=5000 && s.recurrenceRules.size<=5000)
+    distinct(s.availabilityWindows.map{it.id});distinct(s.availabilityExceptions.map{it.id});distinct(s.taskDependencies.map{it.id});distinct(s.pathMilestones.map{it.id});distinct(s.lifeAreas.map{it.id});distinct(s.strategicGoals.map{it.id});distinct(s.appliedPlans.map{it.id});distinct(s.recurrenceRules.map{it.id})
+    s.availabilityWindows.forEach{w->require(w.dayOfWeek in 1..7 && validTimeInterval(w.startTime,w.endTime)){"Janela de disponibilidade inválida no backup."}}
+    s.availabilityExceptions.forEach{ex->LocalDate.parse(ex.date);if(!ex.blocked) require(validTimeInterval(ex.startTime,ex.endTime)){"Exceção de disponibilidade inválida no backup."}}
+    s.planningConfig?.let{validatePlanningConfig(it)}
+    val taskIdSet=s.pathTasks.map{it.id}.toSet()
+    s.taskDependencies.forEach{dep->
+        LocalDate.parse(dep.created)
+        require(dep.taskId!=dep.dependsOnTaskId && dep.taskId in taskIdSet && dep.dependsOnTaskId in taskIdSet){"Dependência de tarefa inválida no backup."}
+        if(dep.overrideDate.isNotBlank()) LocalDate.parse(dep.overrideDate)
+    }
+    require(!OdinPlanningEngine.hasDependencyCycle(s.taskDependencies)){"Ciclo inválido de dependências no backup."}
+    s.pathMilestones.forEach{m->LocalDate.parse(m.targetDate);if(m.completedDate.isNotBlank())LocalDate.parse(m.completedDate);require(m.title.isNotBlank() && m.title.length<=160 && s.paths.any{it.id==m.pathId})}
+    s.lifeAreas.forEach{a->require(a.name.isNotBlank() && a.name.length<=60 && a.sealIndex in 0..8 && a.color in palette.indices && a.weeklyTargetMinutes in 0..10080)}
+    s.strategicGoals.forEach{validateStrategicGoal(it)}
+    s.appliedPlans.forEach{ap->LocalDate.parse(ap.dateFrom);LocalDate.parse(ap.dateTo);require(odinStrategies.any{it.id==ap.strategyId})}
+    s.recurrenceRules.forEach{validateRecurrenceRule(it)}
+
     s.focusSessions.forEach{f->LocalDate.parse(f.date);require((f.habitId.isNotBlank()||f.pathId.isNotBlank()||f.taskId.isNotBlank()||f.targetLabel.isNotBlank()) && (f.habitId.isBlank()||s.habits.any{it.id==f.habitId}) && (f.pathId.isBlank()||s.paths.any{it.id==f.pathId}) && (f.taskId.isBlank()||s.pathTasks.any{it.id==f.taskId}) && f.date<=today() && f.startedAt>0 && f.endedAt>=f.startedAt && f.plannedMinutes in 1..1440 && f.elapsedSeconds in 0..f.plannedMinutes*60L && f.status in listOf("completed","interrupted","cancelled") && f.registered==(f.status!="cancelled"))}
     s.focus?.let{f->
         LocalDate.parse(f.date)
         require(f.sessionId.isBlank() || s.focusSessions.none { it.id == f.sessionId }) { "Sessão ativa já existe no histórico." }
-        require(f.id==1 && (f.habitId.isNotBlank()||f.pathId.isNotBlank()||f.taskId.isNotBlank()||f.targetLabel.isNotBlank()) && (f.habitId.isBlank()||s.habits.any{it.id==f.habitId && f.date>=it.created}) && (f.pathId.isBlank()||s.paths.any{it.id==f.pathId}) && (f.taskId.isBlank()||s.pathTasks.any{it.id==f.taskId}) && f.date<=today() && f.duration in 1..1440 && f.elapsed in 0..f.duration*60L && f.startedAt>=0 && f.baseline in 0..1000000){"Sessão de foco inválida no backup."}
+        require(f.id==1 && (f.habitId.isNotBlank()||f.pathId.isNotBlank()||f.taskId.isNotBlank()||f.targetLabel.isNotBlank()) && (f.habitId.isBlank()||s.habits.any{it.id==f.habitId && f.date>=it.created}) && (f.pathId.isBlank()||s.paths.any{it.id==f.pathId}) && (f.taskId.isBlank()||s.pathTasks.any{it.id==f.taskId}) && f.date<=today() && f.duration in 1..1440 && f.elapsed in 0..f.activePhaseMinutes()*60L && f.startedAt>=0 && f.baseline in 0..1000000 && f.mode in setOf("free","pomodoro","deep","countdown","custom") && f.phase in setOf("work","short_break","long_break")){"Sessão de foco inválida no backup."}
     }
 }
 class GameViewModel(app:Application):AndroidViewModel(app){
@@ -1032,6 +1681,16 @@ class GameViewModel(app:Application):AndroidViewModel(app){
     val dismissedSuggestions=app.preferences.data.map{it[stringSetPreferencesKey("catalog_dismissed")]?:emptySet()}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptySet())
     val codexFavorites=app.preferences.data.map{it[stringSetPreferencesKey("codex_favorite_runes")]?:emptySet()}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),emptySet())
     fun toggleCodexFavorite(runeName:String)=run{getApplication<Application>().preferences.edit{p->val key=stringSetPreferencesKey("codex_favorite_runes");val old=p[key]?:emptySet();p[key]=if(runeName in old)old-runeName else old+runeName}}
+    // 1.7.5 — Preferências locais da Forja do Tempo (modo imersivo, som ambiente, notificações)
+    val immersiveFocus=app.preferences.data.map{it[booleanPreferencesKey("immersive_focus")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
+    val ambientSceneId=app.preferences.data.map{it[stringPreferencesKey("ambient_scene_id")]?:"off"}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),"off")
+    val ambientVolume=app.preferences.data.map{it[floatPreferencesKey("ambient_volume")]?:0.45f}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),0.45f)
+    val notifyFocusEnd=app.preferences.data.map{it[booleanPreferencesKey("notify_focus_end")]?:true}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),true)
+    val notifyBreakEnd=app.preferences.data.map{it[booleanPreferencesKey("notify_break_end")]?:true}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),true)
+    val notifyNextBlock=app.preferences.data.map{it[booleanPreferencesKey("notify_next_block")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
+    val notifyUpcomingEvent=app.preferences.data.map{it[booleanPreferencesKey("notify_upcoming_event")]?:false}.stateIn(viewModelScope,SharingStarted.WhileSubscribed(5000),false)
+    fun setAmbientScene(id:String)=run{getApplication<Application>().preferences.edit{it[stringPreferencesKey("ambient_scene_id")]=id}}
+    fun setAmbientVolume(v:Float)=run{getApplication<Application>().preferences.edit{it[floatPreferencesKey("ambient_volume")]=v.coerceIn(0f,1f)}}
     fun interest(category:String)=run{getApplication<Application>().preferences.edit{p->val key=stringSetPreferencesKey("catalog_interests");val old=p[key]?:emptySet();p[key]=if(category in old)old-category else old+category}}
     fun dismissSuggestion(id:String)=run{getApplication<Application>().preferences.edit{p->val key=stringSetPreferencesKey("catalog_dismissed");p[key]=(p[key]?:emptySet())+id}}
     fun resetSuggestions()=run{getApplication<Application>().preferences.edit{it.remove(stringSetPreferencesKey("catalog_dismissed"))}}

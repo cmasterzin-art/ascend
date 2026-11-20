@@ -94,6 +94,7 @@ fun PathsScreen(
     var priorityFilter by rememberSaveable { mutableIntStateOf(0) } // 0=Todas, 1..4=priorityLabels
     var categoryFilter by rememberSaveable { mutableStateOf("Todas") }
     var deleteCandidate by remember { mutableStateOf<PersonalPath?>(null) }
+    var showTemplates by remember { mutableStateOf(false) }
 
     val categories = remember(s.paths) {
         listOf("Todas") + s.paths.map { it.category.ifBlank { "Pessoal" } }.distinct().sorted()
@@ -127,7 +128,7 @@ fun PathsScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Title("Caminhos", "Projetos pessoais com etapas, tarefas, tempo real e propósito.")
+            Title("Caminhos", "Projetos pessoais com etapas, tarefas, Gantt, Kanban, caminho crítico e marcos.")
         }
         item {
             AetherSurface(SurfaceKind.Heroic) {
@@ -145,7 +146,10 @@ fun PathsScreen(
             }
         }
         item {
-            Action("+ Novo caminho", onNewPath, Modifier.fillMaxWidth())
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Action("+ Novo caminho", onNewPath, Modifier.weight(1f))
+                SagaButton("Modelos (6)", { showTemplates = true }, Modifier.weight(1f), secondary = true)
+            }
         }
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -290,6 +294,14 @@ fun PathsScreen(
         ) {
             Text("Etapas, tarefas, subtarefas e vínculos deste caminho serão removidos. Sessões de foco históricas preservam o rótulo do trabalho realizado.")
         }
+    }
+    if (showTemplates) {
+        ProjectTemplatesDialog(
+            s = s,
+            vm = vm,
+            onDismiss = { showTemplates = false },
+            onCreated = { newId -> onOpenPath(newId) }
+        )
     }
 }
 
@@ -689,6 +701,10 @@ fun PathDetailScreen(
                     }
                 }
             }
+        }
+
+        item(key = "path_30_advanced") {
+            Path30AdvancedSection(path = p, s = s, vm = vm)
         }
 
         item {

@@ -111,6 +111,45 @@ interface GameDao {
     @Upsert suspend fun saveHeraldry(v:HeraldryProfile)
     @Query("DELETE FROM heraldry_profile") suspend fun clearHeraldry()
 
+    // 1.7.5 — Mesa de Odin, Caminhos 3.0, Agenda 3.0, Conselho dos Nove
+    @Query("SELECT * FROM availability_windows ORDER BY dayOfWeek, startTime") suspend fun availabilityWindows():List<AvailabilityWindow>
+    @Query("SELECT * FROM availability_exceptions ORDER BY date, startTime") suspend fun availabilityExceptions():List<AvailabilityException>
+    @Query("SELECT * FROM planning_config LIMIT 1") suspend fun planningConfig():PlanningConfig?
+    @Query("SELECT * FROM task_dependencies ORDER BY created") suspend fun taskDependencies():List<TaskDependency>
+    @Query("SELECT * FROM path_milestones ORDER BY targetDate, position") suspend fun pathMilestones():List<PathMilestone>
+    @Query("SELECT * FROM life_areas ORDER BY position, name") suspend fun lifeAreas():List<LifeArea>
+    @Query("SELECT * FROM strategic_goals ORDER BY deadline, created") suspend fun strategicGoals():List<StrategicGoal>
+    @Query("SELECT * FROM applied_plans ORDER BY appliedAt DESC") suspend fun appliedPlans():List<AppliedPlanRecord>
+    @Query("SELECT * FROM recurrence_rules ORDER BY startDate") suspend fun recurrenceRules():List<RecurrenceRule>
+    @Upsert suspend fun availabilityWindow(v:AvailabilityWindow)
+    @Upsert suspend fun availabilityException(v:AvailabilityException)
+    @Upsert suspend fun savePlanningConfig(v:PlanningConfig)
+    @Upsert suspend fun taskDependency(v:TaskDependency)
+    @Upsert suspend fun pathMilestone(v:PathMilestone)
+    @Upsert suspend fun lifeArea(v:LifeArea)
+    @Upsert suspend fun strategicGoal(v:StrategicGoal)
+    @Upsert suspend fun appliedPlan(v:AppliedPlanRecord)
+    @Upsert suspend fun recurrenceRule(v:RecurrenceRule)
+    @Query("DELETE FROM availability_windows WHERE id=:id") suspend fun deleteAvailabilityWindow(id:String)
+    @Query("DELETE FROM availability_exceptions WHERE id=:id") suspend fun deleteAvailabilityException(id:String)
+    @Query("DELETE FROM task_dependencies WHERE id=:id") suspend fun deleteTaskDependency(id:String)
+    @Query("DELETE FROM task_dependencies WHERE taskId=:taskId OR dependsOnTaskId=:taskId") suspend fun deleteDependenciesForTask(taskId:String)
+    @Query("DELETE FROM path_milestones WHERE id=:id") suspend fun deletePathMilestone(id:String)
+    @Query("DELETE FROM path_milestones WHERE pathId=:pathId") suspend fun deletePathMilestonesByPath(pathId:String)
+    @Query("DELETE FROM life_areas WHERE id=:id") suspend fun deleteLifeArea(id:String)
+    @Query("DELETE FROM strategic_goals WHERE id=:id") suspend fun deleteStrategicGoal(id:String)
+    @Query("DELETE FROM applied_plans WHERE id=:id") suspend fun deleteAppliedPlan(id:String)
+    @Query("DELETE FROM recurrence_rules WHERE id=:id") suspend fun deleteRecurrenceRule(id:String)
+    @Query("DELETE FROM availability_windows") suspend fun clearAvailabilityWindows()
+    @Query("DELETE FROM availability_exceptions") suspend fun clearAvailabilityExceptions()
+    @Query("DELETE FROM planning_config") suspend fun clearPlanningConfig()
+    @Query("DELETE FROM task_dependencies") suspend fun clearTaskDependencies()
+    @Query("DELETE FROM path_milestones") suspend fun clearPathMilestones()
+    @Query("DELETE FROM life_areas") suspend fun clearLifeAreas()
+    @Query("DELETE FROM strategic_goals") suspend fun clearStrategicGoals()
+    @Query("DELETE FROM applied_plans") suspend fun clearAppliedPlans()
+    @Query("DELETE FROM recurrence_rules") suspend fun clearRecurrenceRules()
+
     @Query("DELETE FROM diary WHERE id=:id") suspend fun deleteJournal(id:String)
     @Query("DELETE FROM routines WHERE id=:id") suspend fun deleteRoutine(id:String)
     @Query("DELETE FROM player") suspend fun clearPlayer()
@@ -136,7 +175,7 @@ val MIGRATION_2_3 = object : androidx.room.migration.Migration(2,3) {
         db.execSQL("ALTER TABLE habits ADD COLUMN trackStreak INTEGER NOT NULL DEFAULT 1")
     }
 }
-@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class,PlanException::class,FocusSession::class,PersonalPath::class,PathStage::class,PathTask::class,PathSubtask::class,PathHabitLink::class,TimeBlock::class,AgendaEvent::class,InboxItem::class,KnowledgeNotebook::class,KnowledgePage::class,KnowledgePageLink::class,KnowledgeReference::class,Flashcard::class,FlashcardReview::class,EquipmentLoadout::class,HeraldryProfile::class],version=10,exportSchema=true)
+@Database(entities=[Player::class,Habit::class,HabitRecord::class,Reward::class,Quest::class,Claim::class,Asset::class,Unlocked::class,Journal::class,Routine::class,Focus::class,RestDay::class,PlanException::class,FocusSession::class,PersonalPath::class,PathStage::class,PathTask::class,PathSubtask::class,PathHabitLink::class,TimeBlock::class,AgendaEvent::class,InboxItem::class,KnowledgeNotebook::class,KnowledgePage::class,KnowledgePageLink::class,KnowledgeReference::class,Flashcard::class,FlashcardReview::class,EquipmentLoadout::class,HeraldryProfile::class,AvailabilityWindow::class,AvailabilityException::class,PlanningConfig::class,TaskDependency::class,PathMilestone::class,LifeArea::class,StrategicGoal::class,AppliedPlanRecord::class,RecurrenceRule::class],version=11,exportSchema=true)
 abstract class GameDatabase:RoomDatabase(){abstract fun dao():GameDao}
 
 val MIGRATION_3_4 = object : androidx.room.migration.Migration(3,4) {
@@ -248,3 +287,71 @@ val MIGRATION_9_10=object:androidx.room.migration.Migration(9,10){
   db.execSQL("CREATE TABLE IF NOT EXISTS `heraldry_profile` (`id` INTEGER NOT NULL, `symbolId` TEXT NOT NULL, `shapeId` TEXT NOT NULL, `metalId` TEXT NOT NULL, `secondaryColorId` TEXT NOT NULL, `inscriptionRunes` TEXT NOT NULL, `ornamentId` TEXT NOT NULL, `bannerId` TEXT NOT NULL, `showOnPortrait` INTEGER NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`))")
  }
 }
+
+val MIGRATION_10_11=object:androidx.room.migration.Migration(10,11){
+ override fun migrate(db:androidx.sqlite.db.SupportSQLiteDatabase){
+  // Additive columns on existing tables (zero destructive migration)
+  db.execSQL("ALTER TABLE `habits` ADD COLUMN `areaId` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE `paths` ADD COLUMN `areaId` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE `path_tasks` ADD COLUMN `workflowStatus` INTEGER NOT NULL DEFAULT 0")
+  db.execSQL("ALTER TABLE `path_tasks` ADD COLUMN `urgent` INTEGER NOT NULL DEFAULT 0")
+  db.execSQL("ALTER TABLE `path_tasks` ADD COLUMN `important` INTEGER NOT NULL DEFAULT 0")
+  db.execSQL("ALTER TABLE `path_tasks` ADD COLUMN `areaId` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE `knowledge_notebooks` ADD COLUMN `areaId` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE `time_blocks` ADD COLUMN `pinned` INTEGER NOT NULL DEFAULT 0")
+  db.execSQL("ALTER TABLE `time_blocks` ADD COLUMN `sourcePlanId` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE `time_blocks` ADD COLUMN `recurrenceId` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE `time_blocks` ADD COLUMN `areaId` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE `time_blocks` ADD COLUMN `modifiedManually` INTEGER NOT NULL DEFAULT 0")
+  db.execSQL("ALTER TABLE `agenda_events` ADD COLUMN `recurrenceId` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE `agenda_events` ADD COLUMN `areaId` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE `focus` ADD COLUMN `blockId` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE `focus` ADD COLUMN `mode` TEXT NOT NULL DEFAULT 'free'")
+  db.execSQL("ALTER TABLE `focus` ADD COLUMN `phase` TEXT NOT NULL DEFAULT 'work'")
+  db.execSQL("ALTER TABLE `focus` ADD COLUMN `workMinutes` INTEGER NOT NULL DEFAULT 25")
+  db.execSQL("ALTER TABLE `focus` ADD COLUMN `shortBreakMinutes` INTEGER NOT NULL DEFAULT 5")
+  db.execSQL("ALTER TABLE `focus` ADD COLUMN `longBreakMinutes` INTEGER NOT NULL DEFAULT 15")
+  db.execSQL("ALTER TABLE `focus` ADD COLUMN `totalCycles` INTEGER NOT NULL DEFAULT 4")
+  db.execSQL("ALTER TABLE `focus` ADD COLUMN `currentCycle` INTEGER NOT NULL DEFAULT 1")
+  db.execSQL("ALTER TABLE `focus` ADD COLUMN `autoAdvance` INTEGER NOT NULL DEFAULT 0")
+  db.execSQL("ALTER TABLE `focus` ADD COLUMN `startedRealtimeMs` INTEGER NOT NULL DEFAULT 0")
+  db.execSQL("ALTER TABLE `focus` ADD COLUMN `pauseCount` INTEGER NOT NULL DEFAULT 0")
+  db.execSQL("ALTER TABLE `focus` ADD COLUMN `intervalsJson` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE `focus` ADD COLUMN `clockAnomaly` INTEGER NOT NULL DEFAULT 0")
+  db.execSQL("ALTER TABLE `focus_sessions` ADD COLUMN `blockId` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE `focus_sessions` ADD COLUMN `mode` TEXT NOT NULL DEFAULT 'free'")
+  db.execSQL("ALTER TABLE `focus_sessions` ADD COLUMN `pauseCount` INTEGER NOT NULL DEFAULT 0")
+  db.execSQL("ALTER TABLE `focus_sessions` ADD COLUMN `intervalsJson` TEXT NOT NULL DEFAULT ''")
+  db.execSQL("ALTER TABLE `focus_sessions` ADD COLUMN `clockAnomaly` INTEGER NOT NULL DEFAULT 0")
+
+  // 9 new strategic tables for 1.7.5
+  db.execSQL("CREATE TABLE IF NOT EXISTS `availability_windows` (`id` TEXT NOT NULL, `dayOfWeek` INTEGER NOT NULL, `startTime` TEXT NOT NULL, `endTime` TEXT NOT NULL, `label` TEXT NOT NULL, `preferredCategory` TEXT NOT NULL, `enabled` INTEGER NOT NULL, PRIMARY KEY(`id`))")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_availability_windows_dayOfWeek` ON `availability_windows` (`dayOfWeek`)")
+
+  db.execSQL("CREATE TABLE IF NOT EXISTS `availability_exceptions` (`id` TEXT NOT NULL, `date` TEXT NOT NULL, `blocked` INTEGER NOT NULL, `startTime` TEXT NOT NULL, `endTime` TEXT NOT NULL, `note` TEXT NOT NULL, PRIMARY KEY(`id`))")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_availability_exceptions_date` ON `availability_exceptions` (`date`)")
+
+  db.execSQL("CREATE TABLE IF NOT EXISTS `planning_config` (`id` INTEGER NOT NULL, `strategyId` TEXT NOT NULL, `dailyLimitMinutes` INTEGER NOT NULL, `bufferMinutes` INTEGER NOT NULL, `minBlockMinutes` INTEGER NOT NULL, `maxBlockMinutes` INTEGER NOT NULL, `groupSimilar` INTEGER NOT NULL, `reduceContextSwitch` INTEGER NOT NULL, `useHistorySoftPreference` INTEGER NOT NULL, `preferredStudyPeriod` TEXT NOT NULL, `updated` TEXT NOT NULL, PRIMARY KEY(`id`))")
+
+  db.execSQL("CREATE TABLE IF NOT EXISTS `task_dependencies` (`id` TEXT NOT NULL, `taskId` TEXT NOT NULL, `dependsOnTaskId` TEXT NOT NULL, `overridden` INTEGER NOT NULL, `overrideReason` TEXT NOT NULL, `overrideDate` TEXT NOT NULL, `created` TEXT NOT NULL, PRIMARY KEY(`id`))")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_task_dependencies_taskId` ON `task_dependencies` (`taskId`)")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_task_dependencies_dependsOnTaskId` ON `task_dependencies` (`dependsOnTaskId`)")
+
+  db.execSQL("CREATE TABLE IF NOT EXISTS `path_milestones` (`id` TEXT NOT NULL, `pathId` TEXT NOT NULL, `title` TEXT NOT NULL, `targetDate` TEXT NOT NULL, `completed` INTEGER NOT NULL, `completedDate` TEXT NOT NULL, `notes` TEXT NOT NULL, `position` INTEGER NOT NULL, PRIMARY KEY(`id`))")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_path_milestones_pathId` ON `path_milestones` (`pathId`)")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_path_milestones_targetDate` ON `path_milestones` (`targetDate`)")
+
+  db.execSQL("CREATE TABLE IF NOT EXISTS `life_areas` (`id` TEXT NOT NULL, `name` TEXT NOT NULL, `description` TEXT NOT NULL, `sealIndex` INTEGER NOT NULL, `color` INTEGER NOT NULL, `weeklyTargetMinutes` INTEGER NOT NULL, `archived` INTEGER NOT NULL, `position` INTEGER NOT NULL, PRIMARY KEY(`id`))")
+
+  db.execSQL("CREATE TABLE IF NOT EXISTS `strategic_goals` (`id` TEXT NOT NULL, `title` TEXT NOT NULL, `description` TEXT NOT NULL, `areaId` TEXT NOT NULL, `horizon` TEXT NOT NULL, `periodLabel` TEXT NOT NULL, `deadline` TEXT NOT NULL, `linkedPathIds` TEXT NOT NULL, `linkedHabitIds` TEXT NOT NULL, `targetValue` INTEGER NOT NULL, `archived` INTEGER NOT NULL, `created` TEXT NOT NULL, PRIMARY KEY(`id`))")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_strategic_goals_areaId` ON `strategic_goals` (`areaId`)")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_strategic_goals_horizon` ON `strategic_goals` (`horizon`)")
+
+  db.execSQL("CREATE TABLE IF NOT EXISTS `applied_plans` (`id` TEXT NOT NULL, `appliedAt` INTEGER NOT NULL, `dateFrom` TEXT NOT NULL, `dateTo` TEXT NOT NULL, `strategyId` TEXT NOT NULL, `blockIds` TEXT NOT NULL, `taskSnapshotsJson` TEXT NOT NULL, `undone` INTEGER NOT NULL, `summary` TEXT NOT NULL, PRIMARY KEY(`id`))")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_applied_plans_appliedAt` ON `applied_plans` (`appliedAt`)")
+
+  db.execSQL("CREATE TABLE IF NOT EXISTS `recurrence_rules` (`id` TEXT NOT NULL, `entityType` TEXT NOT NULL, `templateId` TEXT NOT NULL, `pattern` TEXT NOT NULL, `daysOfWeek` TEXT NOT NULL, `startDate` TEXT NOT NULL, `endDate` TEXT NOT NULL, `excludedDates` TEXT NOT NULL, `active` INTEGER NOT NULL, PRIMARY KEY(`id`))")
+  db.execSQL("CREATE INDEX IF NOT EXISTS `index_recurrence_rules_templateId` ON `recurrence_rules` (`templateId`)")
+ }
+}
+

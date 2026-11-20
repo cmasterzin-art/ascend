@@ -30,7 +30,8 @@ data class KnowledgeNotebook(
     val pathId: String = "",
     val archived: Boolean = false,
     val created: String = today(),
-    val updated: String = today()
+    val updated: String = today(),
+    @ColumnInfo(defaultValue = "''") val areaId: String = ""
 )
 
 @Entity(

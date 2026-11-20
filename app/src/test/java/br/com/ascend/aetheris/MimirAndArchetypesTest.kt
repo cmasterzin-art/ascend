@@ -465,7 +465,7 @@ class MimirAndArchetypesTest {
         legacyDatabase(context, dbName, 7, before)
 
         val migrated = Room.databaseBuilder(context, GameDatabase::class.java, dbName)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
             .allowMainThreadQueries()
             .build()
         try {
@@ -563,7 +563,7 @@ class MimirAndArchetypesTest {
 
         val snapshot = s()
         val encodedV10 = Backup.encode(snapshot)
-        assertTrue(encodedV10.contains("\"version\":12"))
+        assertTrue(encodedV10.contains("\"version\":13"))
         val decodedV10 = Backup.decode(encodedV10)
         assertEquals("erudito", decodedV10.player!!.specialization)
         assertEquals(1, decodedV10.notebooks.size)

@@ -31,7 +31,10 @@ fun PlannerScreen(
     onOpenPath: (String) -> Unit = {},
     onInbox: () -> Unit = {},
     onPending: () -> Unit = {},
-    onStartPathFocus: (pathId: String, taskId: String, label: String) -> Unit = { _, _, _ -> }
+    onStartPathFocus: (pathId: String, taskId: String, label: String) -> Unit = { _, _, _ -> },
+    onOpenOdin: () -> Unit = {},
+    onOpenReplan: () -> Unit = {},
+    onStartBlockFocus: (TimeBlock) -> Unit = {}
 ) {
     val current = currentDay()
     var mode by rememberSaveable { mutableIntStateOf(1) } // 0=Dia, 1=Semana (default preserves existing planner flow), 2=Mês
@@ -42,6 +45,7 @@ fun PlannerScreen(
     var eventEditor by remember { mutableStateOf<AgendaEvent?>(null) }
     var deleteBlock by remember { mutableStateOf<TimeBlock?>(null) }
     var deleteEvent by remember { mutableStateOf<AgendaEvent?>(null) }
+    var recurrenceBlock by remember { mutableStateOf<TimeBlock?>(null) }
 
     val start = LocalDate.parse(week)
     val days = (0..6).map { start.plusDays(it.toLong()).toString() }
@@ -59,7 +63,7 @@ fun PlannerScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Title("Planejador Semanal", "Agenda integrada de hábitos, tarefas, blocos e compromissos.")
+            Title("Planejador Semanal", "Agenda 3.0 integrada à Mesa de Odin, blocos fixados, recorrência e Forja do Tempo.")
         }
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -68,6 +72,12 @@ fun PlannerScreen(
                     listOf(
                         Triple("Entrada ($inboxCount)", Glyph.Chronicles, onInbox),
                         Triple("Pendências ($pendingCount)", Glyph.Claims, onPending)
+                    )
+                )
+                ShortcutStrip(
+                    listOf(
+                        Triple("Mesa de Odin", Glyph.World, onOpenOdin),
+                        Triple("Replanejar", Glyph.Planner, onOpenReplan)
                     )
                 )
                 BoxWithConstraints(Modifier.fillMaxWidth()) {
@@ -362,14 +372,25 @@ fun PlannerScreen(
                     b.habitId.isNotBlank() -> s.habits.find { it.id == b.habitId }?.name
                     else -> null
                 }
+                val recRule = s.recurrenceRules.find { it.active && it.entityType == "block" && (it.templateId == b.id || it.id == b.recurrenceId) }
                 AetherSurface(
                     modifier = Modifier.testTag("block:${b.id}").then(
-                        if (overlap) Modifier.border(1.dp, Gold.copy(alpha = .75f), CutCornerShape(4.dp)) else Modifier
+                        if (overlap) Modifier.border(1.dp, Gold.copy(alpha = .75f), CutCornerShape(4.dp))
+                        else if (b.pinned) Modifier.border(1.dp, Gold.copy(alpha = .55f), CutCornerShape(4.dp))
+                        else Modifier
                     )
                 ) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        RunicCalendarGlyph(col = if (b.pinned) 1 else if (recRule != null) 1 else 2, row = if (recRule != null) 1 else 0, modifier = Modifier.size(22.dp))
                         Column(Modifier.weight(1f)) {
-                            Text("${b.startTime} – ${b.endTime} · ${b.category}", color = habitColor(b.color.coerceIn(0, 4)), fontSize = 12.sp)
+                            val tags = buildList {
+                                add("${b.startTime} – ${b.endTime}")
+                                add(b.category)
+                                if (b.pinned) add("Fixado")
+                                if (b.sourcePlanId.isNotBlank()) add("Odin")
+                                if (recRule != null) add("Recorrente")
+                            }.joinToString(" · ")
+                            Text(tags, color = habitColor(b.color.coerceIn(0, 4)), fontSize = 12.sp)
                             Text(b.title, style = MaterialTheme.typography.titleMedium)
                             if (!linkLabel.isNullOrBlank()) Text("Vínculo: $linkLabel", color = Muted, fontSize = 11.sp)
                         }
@@ -377,11 +398,20 @@ fun PlannerScreen(
                     }
                     Text("Planejado: $plannedMin min · ${if (measured.uncertain) "Foco comprovado: ≥" else "Foco real: "}$actualMin min", color = if (actualMin > 0) Violet else Muted, fontSize = 12.sp)
                     if (measured.uncertain) Text("Parte da sessão não tem horário efetivo comprovável.", color = Muted, fontSize = 11.sp)
-                    FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        TextButton({ onStartBlockFocus(b) }, enabled = s.focus == null) {
+                            Text("Forja do Tempo", color = Gold, fontSize = 12.sp)
+                        }
                         if (b.pathId.isNotBlank() || b.taskId.isNotBlank()) {
                             TextButton({ onStartPathFocus(b.pathId, b.taskId, b.title) }, enabled = s.focus == null && (b.taskId.isBlank() || s.pathTasks.any { it.id == b.taskId && !it.archived && (b.pathId.isBlank() || it.pathId == b.pathId) })) {
                                 Text("Iniciar foco", color = Violet, fontSize = 12.sp)
                             }
+                        }
+                        TextButton({ vm.run { vm.repo.togglePinTimeBlock(b.id) } }) {
+                            Text(if (b.pinned) "Desafixar" else "Fixar", color = if (b.pinned) Gold else Muted, fontSize = 12.sp)
+                        }
+                        TextButton({ recurrenceBlock = b }) {
+                            Text(if (recRule != null) "Recorrência ✓" else "Repetir", color = Blue, fontSize = 12.sp)
                         }
                         TextButton({ blockEditor = b }) { Text("Editar", fontSize = 12.sp) }
                         TextButton({ deleteBlock = b }) { Text("Excluir", color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
@@ -533,6 +563,65 @@ fun PlannerScreen(
                 vm.run { vm.repo.saveTimeBlock(updated); blockEditor = null }
             }
         )
+    }
+
+    recurrenceBlock?.let { b ->
+        val existing = s.recurrenceRules.find { it.entityType == "block" && (it.templateId == b.id || it.id == b.recurrenceId) }
+        var patternIdx by remember(b) { mutableIntStateOf(listOf("daily", "weekly", "weekdays", "monthly").indexOf(existing?.pattern ?: "weekly").coerceAtLeast(0)) }
+        var daysText by remember(b) { mutableStateOf(existing?.daysOfWeek?.ifBlank { "1,3,5" } ?: "1,3,5") }
+        var endDateText by remember(b) { mutableStateOf(existing?.endDate ?: "") }
+        val patterns = listOf("daily", "weekly", "weekdays", "monthly")
+        val patternLabels = listOf("Diária", "Semanal", "Dias selecionados", "Mensal")
+        AetherDialog(
+            onDismissRequest = { recurrenceBlock = null },
+            title = "Recorrência · ${b.title}",
+            confirmButton = {
+                SagaButton("Salvar série", {
+                    val rule = RecurrenceRule(
+                        id = existing?.id ?: "rec-${b.id}",
+                        entityType = "block",
+                        templateId = b.id,
+                        pattern = patterns[patternIdx],
+                        daysOfWeek = if (patterns[patternIdx] == "weekdays") daysText.trim() else "",
+                        startDate = b.date,
+                        endDate = endDateText.trim(),
+                        excludedDates = existing?.excludedDates ?: "",
+                        active = true
+                    )
+                    recurrenceBlock = null
+                    vm.run { vm.repo.saveRecurrenceRule(rule) }
+                })
+            },
+            dismissButton = {
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    if (existing != null) {
+                        TextButton({
+                            val id = existing.id
+                            recurrenceBlock = null
+                            vm.run { vm.repo.deleteRecurrenceRule(id) }
+                        }) { Text("Encerrar", color = MaterialTheme.colorScheme.error) }
+                    }
+                    TextButton({ recurrenceBlock = null }) { Text("Cancelar") }
+                }
+            }
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text("Alterações futuras preservam intactas as ocorrências históricas anteriores.", color = Muted, fontSize = 12.sp)
+                ChipRow(patternLabels, patternIdx, { patternIdx = it })
+                if (patterns[patternIdx] == "weekdays") {
+                    FormField(daysText, { daysText = it }, "Dias da semana (1=Seg .. 7=Dom, ex: 1,3,5)")
+                }
+                FormField(endDateText, { endDateText = it }, "Data final opcional (AAAA-MM-DD)")
+                if (existing != null) {
+                    SagaButton("Dispensar apenas hoje (${selected})", {
+                        val id = existing.id
+                        val d = selected
+                        recurrenceBlock = null
+                        vm.run { vm.repo.excludeRecurrenceDate(id, d) }
+                    }, Modifier.fillMaxWidth(), secondary = true)
+                }
+            }
+        }
     }
 
     eventEditor?.let { ev ->
