@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.MimirAndArchetypesUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-19T22:35:45" hostname="runnervm0hi8g" time="17.688">
+<testsuite name="br.com.ascend.aetheris.MimirAndArchetypesUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-20T21:32:30" hostname="runnervmccnms" time="21.183">
   <properties/>
-  <testcase name="mimirLibraryNotebookPageAndSpacedReviewFlow" classname="br.com.ascend.aetheris.MimirAndArchetypesUiTest" time="6.522"/>
-  <testcase name="mimirNarrow320DpLightThemeLargeTextAndMinimalModeStayReadable" classname="br.com.ascend.aetheris.MimirAndArchetypesUiTest" time="5.165"/>
-  <testcase name="heroSpecializationsAndExpandedSkillTreeFlow" classname="br.com.ascend.aetheris.MimirAndArchetypesUiTest" time="6.001"/>
+  <testcase name="mimirLibraryNotebookPageAndSpacedReviewFlow" classname="br.com.ascend.aetheris.MimirAndArchetypesUiTest" time="7.495"/>
+  <testcase name="mimirNarrow320DpLightThemeLargeTextAndMinimalModeStayReadable" classname="br.com.ascend.aetheris.MimirAndArchetypesUiTest" time="6.333"/>
+  <testcase name="heroSpecializationsAndExpandedSkillTreeFlow" classname="br.com.ascend.aetheris.MimirAndArchetypesUiTest" time="7.355"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

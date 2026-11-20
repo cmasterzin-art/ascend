@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.RunicHeritageUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-19T22:38:00" hostname="runnervm0hi8g" time="36.945">
+<testsuite name="br.com.ascend.aetheris.RunicHeritageUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-20T21:35:18" hostname="runnervmccnms" time="41.606">
   <properties/>
-  <testcase name="captureHeraldryAndCodexScreenshots" classname="br.com.ascend.aetheris.RunicHeritageUiTest" time="14.918"/>
-  <testcase name="captureArsenalLivingPortrait11LightThemeNarrowAndEtapa0Flows" classname="br.com.ascend.aetheris.RunicHeritageUiTest" time="10.938"/>
-  <testcase name="captureForgeUpgradesAndCollectionsScreenshots" classname="br.com.ascend.aetheris.RunicHeritageUiTest" time="11.089"/>
+  <testcase name="captureHeraldryAndCodexScreenshots" classname="br.com.ascend.aetheris.RunicHeritageUiTest" time="15.268"/>
+  <testcase name="captureArsenalLivingPortrait11LightThemeNarrowAndEtapa0Flows" classname="br.com.ascend.aetheris.RunicHeritageUiTest" time="12.846"/>
+  <testcase name="captureForgeUpgradesAndCollectionsScreenshots" classname="br.com.ascend.aetheris.RunicHeritageUiTest" time="13.492"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

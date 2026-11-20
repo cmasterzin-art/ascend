@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.SagaTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-19T22:38:37" hostname="runnervm0hi8g" time="0.936">
+<testsuite name="br.com.ascend.aetheris.SagaTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-20T21:36:00" hostname="runnervmccnms" time="0.579">
   <properties/>
-  <testcase name="consolidatedRewardsUseActualDeltasAndNarrativesAreAcknowledged" classname="br.com.ascend.aetheris.SagaTest" time="0.14"/>
-  <testcase name="baselineMilestonesCorrectionsAndUniqueClaim" classname="br.com.ascend.aetheris.SagaTest" time="0.27"/>
-  <testcase name="completionAndPageMetricsExcludePriorRecords" classname="br.com.ascend.aetheris.SagaTest" time="0.158"/>
-  <testcase name="persistenceBackupAndFrozenTerms" classname="br.com.ascend.aetheris.SagaTest" time="0.114"/>
-  <testcase name="legacyV4BackupWithoutSagaFieldsRemainsReadable" classname="br.com.ascend.aetheris.SagaTest" time="0.141"/>
-  <testcase name="realV3MigrationPreservesEntireState" classname="br.com.ascend.aetheris.SagaTest" time="0.113"/>
+  <testcase name="consolidatedRewardsUseActualDeltasAndNarrativesAreAcknowledged" classname="br.com.ascend.aetheris.SagaTest" time="0.08"/>
+  <testcase name="baselineMilestonesCorrectionsAndUniqueClaim" classname="br.com.ascend.aetheris.SagaTest" time="0.157"/>
+  <testcase name="completionAndPageMetricsExcludePriorRecords" classname="br.com.ascend.aetheris.SagaTest" time="0.066"/>
+  <testcase name="persistenceBackupAndFrozenTerms" classname="br.com.ascend.aetheris.SagaTest" time="0.08"/>
+  <testcase name="legacyV4BackupWithoutSagaFieldsRemainsReadable" classname="br.com.ascend.aetheris.SagaTest" time="0.092"/>
+  <testcase name="realV3MigrationPreservesEntireState" classname="br.com.ascend.aetheris.SagaTest" time="0.104"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

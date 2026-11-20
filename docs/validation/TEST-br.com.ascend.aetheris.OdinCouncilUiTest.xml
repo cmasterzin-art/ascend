@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.OdinCouncilUiTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-20T21:32:59" hostname="runnervmccnms" time="15.324">
+  <properties/>
+  <testcase name="captureAll17RequiredScreenshotsFor175" classname="br.com.ascend.aetheris.OdinCouncilUiTest" time="15.324"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
