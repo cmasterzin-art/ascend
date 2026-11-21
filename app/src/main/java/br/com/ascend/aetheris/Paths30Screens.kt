@@ -18,12 +18,13 @@ import java.time.temporal.ChronoUnit
 import kotlin.math.max
 
 /**
- * ASCEND 1.7.5 — Caminhos 3.0
+ * ASCEND 1.7.5.1 — Caminhos 3.0 (Refinamento Visual DS 3.2.1)
  * Componentes integrados ao detalhe de cada Caminho:
  * - Dependências finish-to-start (sem ciclos, liberação manual com justificativa registrada)
  * - Caminho Crítico (CPM: ES/EF/LS/LF/folga, data por esforço vs disponibilidade real, premissas)
- * - Gráfico de Gantt interativo em Compose (escala diária/semanal, linha de hoje, marcos, tarefas críticas, toque para inspecionar)
- * - Quadro Kanban 4 colunas na MESMA PathTask (A fazer, Em andamento, Bloqueadas, Concluídas) com botões acessíveis
+ * - Gráfico de Gantt interativo em Compose com trilhos metálicos, títulos completos legíveis,
+ *   marcadores nórdicos de caminho crítico/dependência/marcos, linha de hoje e toque para inspecionar
+ * - Quadro Kanban 4 colunas na MESMA PathTask com identidade material distinta e botões táteis acessíveis
  * - Marcos (PathMilestone) e 6 Modelos Reutilizáveis de Projeto
  */
 
@@ -39,13 +40,11 @@ fun Path30AdvancedSection(
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth().testTag("path_30_panel")) {
         CouncilMaterialSurface(CouncilMaterial.ProjectLeather) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                StrategyControlGlyph(col = 0, row = 0, modifier = Modifier.size(24.dp))
-                Column(Modifier.weight(1f)) {
-                    Eyebrow("Caminhos 3.0 · Planejamento de Projeto")
-                    Text("Gantt interativo, Kanban unificado, caminho crítico e marcos sobre as mesmas tarefas.", color = Muted, fontSize = 12.sp)
-                }
-            }
+            NordicSectionHeader(
+                eyebrow = "Caminhos 3.0 · Planejamento de Projeto",
+                subtitle = "Gantt interativo em trilhos metálicos, Kanban unificado, caminho crítico e marcos sobre as mesmas tarefas.",
+                mark = PlanningMark.Milestone
+            )
             AetherisTabs(tabs, mode, { mode = it })
         }
 
@@ -68,6 +67,7 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
     val milestones = remember(s.pathMilestones, path.id) {
         s.pathMilestones.filter { it.pathId == path.id }.sortedBy { it.targetDate }
     }
+    val tasksById = remember(s.pathTasks) { s.pathTasks.associateBy { it.id } }
     val tasks = cpm.nodes
     val baseDate = remember(path.startDate, todayDate, tasks) {
         val starts = buildList {
@@ -94,18 +94,24 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
     }
 
     val totalDays = (ChronoUnit.DAYS.between(baseDate, endDate).toInt() + 1).coerceIn(7, 46)
-    val dayWidth = if (weeklyScale) 22.dp else 44.dp
+    val dayWidth = if (weeklyScale) 26.dp else 48.dp
     val todayOffsetDays = ChronoUnit.DAYS.between(baseDate, LocalDate.parse(todayDate)).toInt()
     val scroll = rememberScrollState()
+    val dark = LocalAppearance.current.dark
 
     CouncilMaterialSurface(CouncilMaterial.DarkIron) {
-        Eyebrow("Cronograma Gantt (${tasks.size} tarefas)")
+        NordicSectionHeader(
+            eyebrow = "Cronograma Gantt (${tasks.size} tarefas)",
+            subtitle = "Toque em qualquer trilho para consultar detalhes, folga e pré-requisitos.",
+            rune = HistoricalFutharkRune.Raido
+        )
         ChipRow(listOf("Escala diária", "Escala semanal"), if (weeklyScale) 1 else 0, { weeklyScale = it == 1 })
 
         if (tasks.isEmpty()) {
             Text("Adicione tarefas neste Caminho para visualizar a linha do tempo Gantt.", color = Muted, fontSize = 13.sp)
         } else {
             val timelineWidth = dayWidth * totalDays
+            val rowHeight = 56.dp
             Column(
                 Modifier
                     .fillMaxWidth()
@@ -113,15 +119,23 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
                     .testTag("gantt_chart_canvas"),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Cabeçalho de datas
-                Row(Modifier.width(timelineWidth), verticalAlignment = Alignment.CenterVertically) {
+                // Cabeçalho de datas em placa metálica
+                Row(
+                    Modifier
+                        .width(timelineWidth)
+                        .clip(CutCornerShape(4.dp))
+                        .background(if (dark) Color(0xFF1A1F28) else Color(0xFFE0D9CC))
+                        .border(1.dp, ColdIron.copy(alpha = 0.35f), CutCornerShape(4.dp))
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     val step = if (weeklyScale) 7 else 1
                     var i = 0
                     while (i < totalDays) {
                         val d = baseDate.plusDays(i.toLong())
                         val isToday = d.toString() == todayDate
                         Box(
-                            Modifier.width(dayWidth * minOf(step, totalDays - i)).padding(vertical = 2.dp),
+                            Modifier.width(dayWidth * minOf(step, totalDays - i)).padding(horizontal = 3.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
                             Text(
@@ -136,86 +150,166 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
                     }
                 }
 
-                // Marcos no topo do Gantt
+                // Marcos no topo do Gantt com obelisco rúnico
                 if (milestones.isNotEmpty()) {
                     Box(Modifier.width(timelineWidth).height(26.dp)) {
                         milestones.forEach { m ->
                             val off = ChronoUnit.DAYS.between(baseDate, runCatching { LocalDate.parse(m.targetDate) }.getOrElse { baseDate }).toInt().coerceIn(0, totalDays - 1)
                             Row(
-                                Modifier.offset(x = dayWidth * off),
+                                Modifier
+                                    .offset(x = dayWidth * off)
+                                    .clip(CutCornerShape(4.dp))
+                                    .background(if (m.completed) Green.copy(alpha = 0.16f) else Gold.copy(alpha = 0.14f))
+                                    .border(1.dp, (if (m.completed) Green else Gold).copy(alpha = 0.5f), CutCornerShape(4.dp))
+                                    .padding(horizontal = 6.dp, vertical = 2.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(3.dp)
+                                horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
-                                StrategyControlGlyph(col = 2, row = 0, modifier = Modifier.size(16.dp))
-                                Text(m.title, color = if (m.completed) Green else Gold, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                NordicPlanningMark(PlanningMark.Milestone, Modifier.size(14.dp), tintFallback = if (m.completed) Green else Gold)
+                                Text(m.title, color = if (m.completed) Green else Gold, fontSize = 10.sp, fontWeight = FontWeight.SemiBold, maxLines = 1)
                             }
                         }
                     }
                 }
 
-                // Trilhos de tarefas com linha de hoje e destaque de caminho crítico
+                // Trilhos metálicos com linha de hoje, título completo legível acima da barra e destaque de caminho crítico
                 Box(Modifier.width(timelineWidth)) {
                     if (todayOffsetDays in 0 until totalDays) {
                         Box(
                             Modifier
                                 .offset(x = dayWidth * todayOffsetDays)
                                 .width(2.dp)
-                                .height((tasks.size * 38).dp.coerceAtLeast(48.dp))
-                                .background(Gold.copy(alpha = 0.65f))
+                                .height((tasks.size * (rowHeight.value + 8f)).dp.coerceAtLeast(56.dp))
+                                .background(Gold.copy(alpha = 0.72f))
                         )
                     }
-                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         tasks.forEach { node ->
                             val stDate = runCatching { LocalDate.parse(node.task.scheduledDate.ifBlank { node.earliestDate }) }.getOrElse { baseDate }
                             val enDate = runCatching { LocalDate.parse(node.task.deadline.ifBlank { node.finishDate }) }.getOrElse { stDate }
                             val startIdx = ChronoUnit.DAYS.between(baseDate, stDate).toInt().coerceIn(0, totalDays - 1)
                             val spanDays = max(1, ChronoUnit.DAYS.between(stDate, if (enDate.isBefore(stDate)) stDate else enDate).toInt() + 1)
                                 .coerceAtMost(totalDays - startIdx)
+                            val hasDeps = s.taskDependencies.any { !it.overridden && it.taskId == node.task.id }
                             val barColor = when {
                                 node.task.completed -> Green
                                 node.isCritical -> Gold
                                 else -> Blue
                             }
-                            val shape = CutCornerShape(4.dp)
-                            Row(
+                            val isSelected = inspectedNode?.task?.id == node.task.id
+                            val shape = CutCornerShape(5.dp)
+
+                            Column(
                                 Modifier
-                                    .offset(x = dayWidth * startIdx)
-                                    .width((dayWidth * spanDays).coerceAtLeast(88.dp))
-                                    .height(32.dp)
-                                    .clip(shape)
-                                    .background(barColor.copy(alpha = 0.24f))
-                                    .border(1.dp, barColor.copy(alpha = 0.85f), shape)
-                                    .clickable { inspectedNode = node }
-                                    .padding(horizontal = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                    .width(timelineWidth)
+                                    .height(rowHeight)
+                                    .clickable { inspectedNode = node },
+                                verticalArrangement = Arrangement.spacedBy(3.dp)
                             ) {
-                                if (node.isCritical) StrategyControlGlyph(col = 3, row = 0, modifier = Modifier.size(14.dp))
-                                Text(
-                                    node.task.title,
-                                    color = Ink,
-                                    fontSize = 11.sp,
-                                    fontWeight = if (node.isCritical) FontWeight.Bold else FontWeight.Medium,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis
-                                )
+                                // Rótulo completo legível (sem truncamento agressivo em barras estreitas)
+                                Row(
+                                    Modifier.offset(x = (dayWidth * startIdx).coerceAtMost((timelineWidth - 180.dp).coerceAtLeast(0.dp))),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(5.dp)
+                                ) {
+                                    NordicPlanningMark(
+                                        mark = when {
+                                            node.task.completed -> PlanningMark.PlanCompleted
+                                            node.isCritical -> PlanningMark.CriticalTask
+                                            hasDeps -> PlanningMark.Dependency
+                                            else -> PlanningMark.Deadline
+                                        },
+                                        modifier = Modifier.size(14.dp),
+                                        tintFallback = barColor
+                                    )
+                                    Text(
+                                        text = node.task.title,
+                                        color = if (node.isCritical) Gold else Ink,
+                                        fontSize = 11.sp,
+                                        fontWeight = if (node.isCritical || isSelected) FontWeight.Bold else FontWeight.Medium,
+                                        maxLines = 1
+                                    )
+                                    val fullStatus = when {
+                                        node.task.completed -> "Concluída"
+                                        node.isCritical -> "Crítica"
+                                        else -> "Folga ${node.slackMinutes}m"
+                                    }
+                                    Text(
+                                        text = "${node.durationMinutes}m · $fullStatus${if (hasDeps) " · dep" else ""}",
+                                        color = Muted,
+                                        fontSize = 10.sp,
+                                        maxLines = 1
+                                    )
+                                }
+                                // Trilho metálico do Gantt
+                                Box(
+                                    Modifier
+                                        .width(timelineWidth)
+                                        .height(26.dp)
+                                        .clip(CutCornerShape(3.dp))
+                                        .background(if (dark) Color(0xFF101318) else Color(0xFFE1DDD4))
+                                ) {
+                                    val barWidthDp = (dayWidth * spanDays).coerceAtLeast(48.dp)
+                                    val innerLabel = when {
+                                        barWidthDp >= 78.dp && node.task.completed -> "Concluída"
+                                        barWidthDp >= 78.dp && node.isCritical -> "Crítica"
+                                        barWidthDp >= 78.dp -> "Folga ${node.slackMinutes}m"
+                                        node.task.completed -> "✓"
+                                        node.isCritical -> "◆"
+                                        else -> "+${node.slackMinutes}m"
+                                    }
+                                    Row(
+                                        Modifier
+                                            .offset(x = dayWidth * startIdx)
+                                            .width(barWidthDp)
+                                            .fillMaxHeight()
+                                            .clip(shape)
+                                            .background(barColor.copy(alpha = if (isSelected) 0.38f else 0.26f))
+                                            .border(if (isSelected || node.isCritical) 1.5.dp else 1.dp, barColor.copy(alpha = 0.90f), shape)
+                                            .padding(horizontal = 6.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = if (barWidthDp >= 78.dp) Arrangement.Start else Arrangement.Center
+                                    ) {
+                                        Text(
+                                            text = innerLabel,
+                                            color = Ink,
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            maxLines = 1
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
                 }
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text("■ Crítica", color = Gold, fontSize = 11.sp)
-                Text("■ Regular", color = Blue, fontSize = 11.sp)
-                Text("■ Concluída", color = Green, fontSize = 11.sp)
-                Text("| Hoje", color = Gold, fontSize = 11.sp)
+            NordicStrategyDivider(StrategyFrameAsset.BorreDivider)
+
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    NordicPlanningMark(PlanningMark.CriticalTask, Modifier.size(14.dp), tintFallback = Gold)
+                    Text("Crítica", color = Gold, fontSize = 11.sp)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    NordicPlanningMark(PlanningMark.Dependency, Modifier.size(14.dp), tintFallback = Blue)
+                    Text("Regular / Dep.", color = Blue, fontSize = 11.sp)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    NordicPlanningMark(PlanningMark.PlanCompleted, Modifier.size(14.dp), tintFallback = Green)
+                    Text("Concluída", color = Green, fontSize = 11.sp)
+                }
+                Text("| Hoje", color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
 
             inspectedNode?.let { node ->
+                val prereqTitles = s.taskDependencies
+                    .filter { !it.overridden && it.taskId == node.task.id }
+                    .mapNotNull { tasksById[it.dependsOnTaskId]?.title }
                 CouncilMaterialSurface(CouncilMaterial.AgedVellum, accent = Gold) {
-                    Eyebrow("Tarefa inspecionada no Gantt")
-                    Text(node.task.title, color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
+                    NordicSectionHeader("Tarefa inspecionada no Gantt", mark = if (node.isCritical) PlanningMark.CriticalTask else PlanningMark.Deadline)
+                    Text(node.task.title, color = Ink, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     Text(
                         "Estimativa: ${if (node.estimatedMissing) "sem estimativa (ref. ${node.durationMinutes} min)" else "${node.durationMinutes} min"} · " +
                             "Folga: ${node.slackMinutes} min · ${if (node.isCritical) "No caminho crítico" else "Com folga"}",
@@ -223,6 +317,9 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
                         fontSize = 12.sp
                     )
                     Text("Janela projetada: ${displayDate(node.earliestDate)} → ${displayDate(node.finishDate)}", color = Blue, fontSize = 12.sp)
+                    if (prereqTitles.isNotEmpty()) {
+                        Text("Pré-requisitos: ${prereqTitles.joinToString(", ")}", color = Gold, fontSize = 12.sp)
+                    }
                 }
             }
         }
@@ -237,78 +334,144 @@ fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
     var overrideTarget by remember { mutableStateOf<PathTask?>(null) }
     var overrideReason by remember { mutableStateOf("") }
 
+    data class KanbanColumnSpec(
+        val key: String,
+        val title: String,
+        val list: List<PathTask>,
+        val material: CouncilMaterial,
+        val accent: Color,
+        val mark: PlanningMark,
+        val rune: HistoricalFutharkRune
+    )
+
     val cols = listOf(
-        Triple("todo", "A fazer", tasks.filter {
-            val st = OdinPlanningEngine.taskWorkflowState(it, tasksById, s.taskDependencies, todayDate)
-            st == TaskWorkflowState.AVAILABLE || st == TaskWorkflowState.OVERDUE
-        }),
-        Triple("doing", "Em andamento", tasks.filter {
-            OdinPlanningEngine.taskWorkflowState(it, tasksById, s.taskDependencies, todayDate) == TaskWorkflowState.IN_PROGRESS
-        }),
-        Triple("blocked", "Bloqueadas", tasks.filter {
-            OdinPlanningEngine.taskWorkflowState(it, tasksById, s.taskDependencies, todayDate) == TaskWorkflowState.BLOCKED
-        }),
-        Triple("done", "Concluídas", tasks.filter { it.completed })
+        KanbanColumnSpec(
+            key = "todo",
+            title = "A fazer",
+            list = tasks.filter {
+                val st = OdinPlanningEngine.taskWorkflowState(it, tasksById, s.taskDependencies, todayDate)
+                st == TaskWorkflowState.AVAILABLE || st == TaskWorkflowState.OVERDUE
+            },
+            material = CouncilMaterial.NordicWood,
+            accent = Gold,
+            mark = PlanningMark.Deadline,
+            rune = HistoricalFutharkRune.Raido
+        ),
+        KanbanColumnSpec(
+            key = "doing",
+            title = "Em andamento",
+            list = tasks.filter {
+                OdinPlanningEngine.taskWorkflowState(it, tasksById, s.taskDependencies, todayDate) == TaskWorkflowState.IN_PROGRESS
+            },
+            material = CouncilMaterial.ProjectLeather,
+            accent = Blue,
+            mark = PlanningMark.CriticalTask,
+            rune = HistoricalFutharkRune.Kenaz
+        ),
+        KanbanColumnSpec(
+            key = "blocked",
+            title = "Bloqueadas",
+            list = tasks.filter {
+                OdinPlanningEngine.taskWorkflowState(it, tasksById, s.taskDependencies, todayDate) == TaskWorkflowState.BLOCKED
+            },
+            material = CouncilMaterial.DarkIron,
+            accent = MaterialTheme.colorScheme.error,
+            mark = PlanningMark.Dependency,
+            rune = HistoricalFutharkRune.Isa
+        ),
+        KanbanColumnSpec(
+            key = "done",
+            title = "Concluídas",
+            list = tasks.filter { it.completed },
+            material = CouncilMaterial.AgedVellum,
+            accent = Green,
+            mark = PlanningMark.PlanCompleted,
+            rune = HistoricalFutharkRune.Jera
+        )
     )
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.testTag("kanban_board")) {
-        cols.forEach { (colKey, colTitle, list) ->
-            val accent = when (colKey) {
-                "doing" -> Blue
-                "blocked" -> MaterialTheme.colorScheme.error
-                "done" -> Green
-                else -> Gold
-            }
-            CouncilMaterialSurface(CouncilMaterial.DarkIron, accent = accent) {
+        cols.forEach { col ->
+            CouncilMaterialSurface(col.material, accent = col.accent) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    StrategyControlGlyph(col = 1, row = 1, modifier = Modifier.size(18.dp))
-                    Eyebrow("$colTitle (${list.size})", accent)
+                    NordicPlanningMark(col.mark, Modifier.size(22.dp), tintFallback = col.accent)
+                    Eyebrow("${col.title} (${col.list.size})", col.accent)
+                    Spacer(Modifier.weight(1f))
+                    FutharkRuneGlyph(col.rune, col.accent.copy(alpha = 0.78f), size = 15.dp)
                 }
-                if (list.isEmpty()) {
+                if (col.list.isEmpty()) {
                     Text("Sem tarefas nesta coluna.", color = Muted, fontSize = 12.sp)
                 } else {
-                    list.forEach { t ->
+                    col.list.forEach { t ->
                         val blockers = OdinPlanningEngine.blockingPrerequisites(t.id, tasksById, s.taskDependencies)
                         val shape = CutCornerShape(6.dp)
+                        val priorityLabel = priorityLabels[t.priority.coerceIn(priorityLabels.indices)]
                         Column(
                             Modifier
                                 .fillMaxWidth()
                                 .clip(shape)
-                                .background(Surface.copy(alpha = 0.65f))
-                                .border(1.dp, accent.copy(alpha = 0.35f), shape)
-                                .padding(10.dp),
+                                .background(Surface.copy(alpha = 0.76f))
+                                .border(1.dp, col.accent.copy(alpha = 0.42f), shape)
+                                .padding(12.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text(t.title, color = Ink, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
+                                Text(
+                                    t.title,
+                                    color = Ink,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 14.sp,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                StatusSeal(priorityLabel, if (t.priority >= 2) Gold else Muted)
+                            }
                             val meta = buildString {
                                 if (t.estimateMinutes > 0) append("${t.estimateMinutes} min") else append("sem estimativa")
                                 if (t.deadline.isNotBlank()) append(" · prazo ${displayDate(t.deadline)}")
-                                if (blockers.isNotEmpty()) append(" · aguarda: ${blockers.joinToString { it.title }}")
                             }
                             Text(meta, color = Muted, fontSize = 11.sp)
-                            // Botões acessíveis de movimentação (nunca depende apenas de drag-and-drop!)
-                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                                if (colKey != "todo" && colKey != "blocked") {
-                                    TextButton({ vm.run { vm.repo.setTaskKanbanColumn(t.id, "todo") } }) {
-                                        Text("→ A fazer", color = Gold, fontSize = 12.sp)
-                                    }
+                            if (blockers.isNotEmpty()) {
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    NordicPlanningMark(PlanningMark.Dependency, Modifier.size(15.dp), tintFallback = MaterialTheme.colorScheme.error)
+                                    Text(
+                                        "Aguarda: ${blockers.joinToString { it.title }}",
+                                        color = MaterialTheme.colorScheme.error,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium
+                                    )
                                 }
-                                if (colKey != "doing") {
-                                    TextButton({
-                                        if (blockers.isNotEmpty()) {
-                                            overrideTarget = t
-                                            overrideReason = ""
-                                        } else {
-                                            vm.run { vm.repo.setTaskKanbanColumn(t.id, "doing") }
-                                        }
-                                    }) {
-                                        Text(if (blockers.isNotEmpty()) "Liberar & Iniciar" else "→ Em andamento", color = Blue, fontSize = 12.sp)
-                                    }
+                            }
+                            // Botões táteis e acessíveis de movimentação (nunca depende apenas de drag-and-drop!)
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                                if (col.key != "todo" && col.key != "blocked") {
+                                    NordicCompactAction(
+                                        text = "→ A fazer",
+                                        onClick = { vm.run { vm.repo.setTaskKanbanColumn(t.id, "todo") } },
+                                        accent = Gold
+                                    )
                                 }
-                                if (colKey != "done") {
-                                    TextButton({ vm.run { vm.repo.setTaskKanbanColumn(t.id, "done") } }) {
-                                        Text("→ Concluir", color = Green, fontSize = 12.sp)
-                                    }
+                                if (col.key != "doing") {
+                                    NordicCompactAction(
+                                        text = if (blockers.isNotEmpty()) "Liberar & Iniciar" else "→ Em andamento",
+                                        onClick = {
+                                            if (blockers.isNotEmpty()) {
+                                                overrideTarget = t
+                                                overrideReason = ""
+                                            } else {
+                                                vm.run { vm.repo.setTaskKanbanColumn(t.id, "doing") }
+                                            }
+                                        },
+                                        accent = Blue,
+                                        rune = if (blockers.isNotEmpty()) HistoricalFutharkRune.Thurisaz else HistoricalFutharkRune.Kenaz
+                                    )
+                                }
+                                if (col.key != "done") {
+                                    NordicCompactAction(
+                                        text = "→ Concluir",
+                                        onClick = { vm.run { vm.repo.setTaskKanbanColumn(t.id, "done") } },
+                                        accent = Green,
+                                        rune = HistoricalFutharkRune.Fehu
+                                    )
                                 }
                             }
                         }
@@ -323,12 +486,17 @@ fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
             onDismissRequest = { overrideTarget = null },
             title = "Liberar dependência manualmente?",
             confirmButton = {
-                SagaButton("Confirmar liberação", {
-                    val target = t
-                    val reason = overrideReason
-                    overrideTarget = null
-                    vm.run { vm.repo.setTaskKanbanColumn(target.id, "doing", reason) }
-                }, enabled = overrideReason.isNotBlank())
+                SagaButton(
+                    "Confirmar liberação",
+                    {
+                        val target = t
+                        val reason = overrideReason
+                        overrideTarget = null
+                        vm.run { vm.repo.setTaskKanbanColumn(target.id, "doing", reason) }
+                    },
+                    enabled = overrideReason.isNotBlank(),
+                    style = VikingButtonStyle.Confirmacao
+                )
             },
             dismissButton = { TextButton({ overrideTarget = null }) { Text("Cancelar") } }
         ) {
@@ -355,21 +523,30 @@ fun PathCriticalAndDepsPanel(path: PersonalPath, s: GameState, vm: GameViewModel
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         // Caminho Crítico (CPM)
         CouncilMaterialSurface(CouncilMaterial.HammeredBronze, accent = if (cpm.deadlineRisk) MaterialTheme.colorScheme.error else Gold) {
-            Eyebrow("Caminho Crítico (CPM)", if (cpm.deadlineRisk) MaterialTheme.colorScheme.error else Gold)
+            NordicSectionHeader(
+                eyebrow = "Caminho Crítico (CPM)",
+                mark = if (cpm.deadlineRisk) PlanningMark.Conflict else PlanningMark.CriticalTask,
+                accent = if (cpm.deadlineRisk) MaterialTheme.colorScheme.error else Gold
+            )
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                CouncilKpiTile("Esforço crítico", "${cpm.totalCriticalMinutes} min", "Projeção esforço: ${cpm.effortProjectedDate?.let { displayDate(it) } ?: "—"}", Gold, Modifier.weight(1f))
+                CouncilKpiTile("Esforço crítico", "${cpm.totalCriticalMinutes} min", "Projeção esforço: ${cpm.effortProjectedDate?.let { displayDate(it) } ?: "—"}", Gold, Modifier.weight(1f), rune = HistoricalFutharkRune.Tiwaz)
                 CouncilKpiTile(
                     "Data real",
                     cpm.availabilityProjectedDate?.let { displayDate(it) } ?: "Indefinida",
                     if (cpm.deadlineRisk) "Risco de atraso no prazo" else "Pela disponibilidade",
                     if (cpm.deadlineRisk) MaterialTheme.colorScheme.error else Green,
-                    Modifier.weight(1f)
+                    Modifier.weight(1f),
+                    rune = HistoricalFutharkRune.Dagaz
                 )
             }
             if (cpm.criticalSequence.isNotEmpty()) {
+                NordicStrategyDivider(StrategyFrameAsset.UrnesDivider)
                 Text("Sequência crítica:", color = Gold, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
                 cpm.criticalSequence.forEachIndexed { idx, n ->
-                    Text("${idx + 1}. ${n.task.title} (${n.durationMinutes} min · folga 0)", color = Ink, fontSize = 13.sp)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        NordicPlanningMark(PlanningMark.CriticalTask, Modifier.size(15.dp))
+                        Text("${idx + 1}. ${n.task.title} (${n.durationMinutes} min · folga 0)", color = Ink, fontSize = 13.sp)
+                    }
                 }
             }
             cpm.premises.forEach { p -> Text("• $p", color = Muted, fontSize = 11.sp) }
@@ -377,7 +554,7 @@ fun PathCriticalAndDepsPanel(path: PersonalPath, s: GameState, vm: GameViewModel
 
         // Editor de dependências finish-to-start
         CouncilMaterialSurface(CouncilMaterial.DarkIron) {
-            Eyebrow("Dependências (término → início)")
+            NordicSectionHeader("Dependências (término → início)", mark = PlanningMark.Dependency, accent = Blue)
             if (tasks.size < 2) {
                 Text("Crie ao menos duas tarefas neste Caminho para estabelecer dependências.", color = Muted, fontSize = 12.sp)
             } else {
@@ -393,7 +570,8 @@ fun PathCriticalAndDepsPanel(path: PersonalPath, s: GameState, vm: GameViewModel
                         vm.run { vm.repo.addTaskDependency(depTask.id, preTask.id) }
                     },
                     Modifier.fillMaxWidth(),
-                    secondary = true
+                    style = VikingButtonStyle.FerroRunico,
+                    leadingRune = HistoricalFutharkRune.Gebo
                 )
             }
 
@@ -403,7 +581,8 @@ fun PathCriticalAndDepsPanel(path: PersonalPath, s: GameState, vm: GameViewModel
                 pathDeps.forEach { dep ->
                     val tName = tasksById[dep.taskId]?.title ?: dep.taskId
                     val pName = tasksById[dep.dependsOnTaskId]?.title ?: dep.dependsOnTaskId
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        NordicPlanningMark(PlanningMark.Dependency, Modifier.size(16.dp), tintFallback = Blue)
                         Column(Modifier.weight(1f)) {
                             Text("$pName  →  $tName", color = Ink, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                             if (dep.overridden) {
@@ -429,7 +608,7 @@ fun PathMilestonesPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
     var targetDate by rememberSaveable(path.id) { mutableStateOf(path.deadline.ifBlank { today() }) }
 
     CouncilMaterialSurface(CouncilMaterial.AgedVellum) {
-        Eyebrow("Marcos do Caminho (${milestones.count { it.completed }}/${milestones.size})")
+        NordicSectionHeader("Marcos do Caminho (${milestones.count { it.completed }}/${milestones.size})", mark = PlanningMark.Milestone)
         FormField(title, { title = it }, "Título do marco (ex.: Protótipo validado)")
         FormField(targetDate, { targetDate = it }, "Data-alvo (AAAA-MM-DD)")
         SagaButton(
@@ -448,7 +627,8 @@ fun PathMilestonesPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
                 }
             },
             Modifier.fillMaxWidth(),
-            secondary = true
+            style = VikingButtonStyle.BronzeForjado,
+            leadingRune = HistoricalFutharkRune.Sowilo
         )
 
         if (milestones.isEmpty()) {
@@ -456,14 +636,16 @@ fun PathMilestonesPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
         } else {
             milestones.forEach { m ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    StrategyControlGlyph(col = 2, row = 0, modifier = Modifier.size(20.dp))
+                    NordicPlanningMark(if (m.completed) PlanningMark.PlanCompleted else PlanningMark.Milestone, Modifier.size(22.dp), tintFallback = if (m.completed) Green else Gold)
                     Column(Modifier.weight(1f)) {
                         Text(m.title, color = if (m.completed) Green else Ink, fontWeight = FontWeight.Medium, fontSize = 14.sp)
                         Text("Alvo: ${displayDate(m.targetDate)}${if (m.completed) " · Concluído" else ""}", color = Muted, fontSize = 11.sp)
                     }
-                    TextButton({ vm.run { vm.repo.togglePathMilestone(m.id) } }) {
-                        Text(if (m.completed) "Reabrir" else "Concluir", color = Gold, fontSize = 12.sp)
-                    }
+                    NordicCompactAction(
+                        text = if (m.completed) "Reabrir" else "Concluir",
+                        onClick = { vm.run { vm.repo.togglePathMilestone(m.id) } },
+                        accent = if (m.completed) Gold else Green
+                    )
                     TextButton({ vm.run { vm.repo.deletePathMilestone(m.id) } }) {
                         Text("×", color = MaterialTheme.colorScheme.error)
                     }
@@ -488,13 +670,18 @@ fun ProjectTemplatesDialog(
         onDismissRequest = onDismiss,
         title = "6 Modelos de Projeto",
         confirmButton = {
-            SagaButton("Criar Caminho", {
-                vm.run {
-                    val newId = vm.repo.createPathFromTemplate(selected.id, customName.trim())
-                    onDismiss()
-                    onCreated(newId)
-                }
-            })
+            SagaButton(
+                "Criar Caminho",
+                {
+                    vm.run {
+                        val newId = vm.repo.createPathFromTemplate(selected.id, customName.trim())
+                        onDismiss()
+                        onCreated(newId)
+                    }
+                },
+                style = VikingButtonStyle.CerimonialViking,
+                leadingRune = HistoricalFutharkRune.Raido
+            )
         },
         dismissButton = { TextButton(onDismiss) { Text("Cancelar") } }
     ) {

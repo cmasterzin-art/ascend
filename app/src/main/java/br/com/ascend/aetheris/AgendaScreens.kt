@@ -87,13 +87,13 @@ fun PlannerScreen(
                                 "+ Bloco de tempo",
                                 { blockEditor = TimeBlock(title = "", date = selected) },
                                 Modifier.fillMaxWidth(),
-                                secondary = true
+                                style = VikingButtonStyle.BronzeForjado
                             )
                             SagaButton(
                                 "+ Compromisso",
                                 { eventEditor = AgendaEvent(title = "", date = selected) },
                                 Modifier.fillMaxWidth(),
-                                secondary = true
+                                style = VikingButtonStyle.FerroRunico
                             )
                         }
                     } else {
@@ -102,13 +102,13 @@ fun PlannerScreen(
                                 "+ Bloco de tempo",
                                 { blockEditor = TimeBlock(title = "", date = selected) },
                                 Modifier.weight(1f),
-                                secondary = true
+                                style = VikingButtonStyle.BronzeForjado
                             )
                             SagaButton(
                                 "+ Compromisso",
                                 { eventEditor = AgendaEvent(title = "", date = selected) },
                                 Modifier.weight(1f),
-                                secondary = true
+                                style = VikingButtonStyle.FerroRunico
                             )
                         }
                     }
@@ -129,9 +129,9 @@ fun PlannerScreen(
                                 week = weekOf(prev)
                             },
                             Modifier.weight(1f).semantics { contentDescription = "Dia anterior" },
-                            secondary = true
+                            style = VikingButtonStyle.CompactoRunico
                         )
-                        SagaButton("Hoje", { selected = current; week = weekOf(current) }, Modifier.weight(1f), secondary = true)
+                        SagaButton("Hoje", { selected = current; week = weekOf(current) }, Modifier.weight(1f), style = VikingButtonStyle.FerroRunico)
                         SagaButton(
                             "›",
                             {
@@ -140,7 +140,7 @@ fun PlannerScreen(
                                 week = weekOf(next)
                             },
                             Modifier.weight(1f).semantics { contentDescription = "Próximo dia" },
-                            secondary = true
+                            style = VikingButtonStyle.CompactoRunico
                         )
                     }
                 }
@@ -152,14 +152,14 @@ fun PlannerScreen(
                             "‹",
                             { week = start.minusWeeks(1).toString(); selected = week },
                             Modifier.weight(1f).semantics { contentDescription = "Semana anterior" },
-                            secondary = true
+                            style = VikingButtonStyle.CompactoRunico
                         )
-                        SagaButton("Hoje", { week = weekOf(current); selected = current }, Modifier.weight(1f), secondary = true)
+                        SagaButton("Hoje", { week = weekOf(current); selected = current }, Modifier.weight(1f), style = VikingButtonStyle.FerroRunico)
                         SagaButton(
                             "›",
                             { week = start.plusWeeks(1).toString(); selected = week },
                             Modifier.weight(1f).semantics { contentDescription = "Próxima semana" },
-                            secondary = true
+                            style = VikingButtonStyle.CompactoRunico
                         )
                     }
                 }
@@ -307,13 +307,24 @@ fun PlannerScreen(
                 if (selected in s.restDates) {
                     Text("O descanso tem prioridade sobre inclusões pontuais. As exceções ficam guardadas.", color = Muted, fontSize = 13.sp)
                 }
-                Hairline()
+                NordicStrategyDivider(StrategyFrameAsset.BorreDivider, rune = HistoricalFutharkRune.Dagaz, accent = Gold)
             }
         }
 
         if (daySummary.overlappingBlockIds.isNotEmpty()) {
             item {
-                StatusSeal("Atenção: há blocos de tempo com horários sobrepostos nesta data.", Gold)
+                CouncilMaterialSurface(CouncilMaterial.DarkIron, accent = Gold, ornamentCorners = false) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        NordicPlanningMark(PlanningMark.Conflict, Modifier.size(24.dp), tintFallback = Gold)
+                        Text(
+                            "Atenção: há blocos de tempo com horários sobrepostos nesta data.",
+                            color = Gold,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                }
             }
         }
 
@@ -321,7 +332,8 @@ fun PlannerScreen(
             item { SectionHeader("Prazos de Caminhos") }
             items(daySummary.deadlines, key = { "deadline:${it.id}" }) { p ->
                 AetherSurface(SurfaceKind.Heroic, Modifier.clickable { onOpenPath(p.id) }) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        NordicPlanningMark(PlanningMark.Deadline, Modifier.size(24.dp), tintFallback = Gold)
                         Column(Modifier.weight(1f)) {
                             Eyebrow("Prazo do caminho", Gold)
                             Text(p.name, style = MaterialTheme.typography.titleMedium)
@@ -335,12 +347,27 @@ fun PlannerScreen(
         if (daySummary.events.isNotEmpty()) {
             item { SectionHeader("Compromissos", "Agendamentos pessoais · não concedem XP") }
             items(daySummary.events, key = { "event:${it.id}" }) { ev ->
-                AetherSurface(modifier = Modifier.testTag("event:${ev.id}")) {
+                val isVirtualEvent = "@rec:" in ev.id
+                CouncilMaterialSurface(
+                    material = if (isVirtualEvent) CouncilMaterial.OxidizedSilver else CouncilMaterial.DarkIron,
+                    accent = if (ev.completed) Green else if (isVirtualEvent) Blue else Gold,
+                    modifier = Modifier.testTag("event:${ev.id}"),
+                    ornamentCorners = false
+                ) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Checkbox(
                             checked = ev.completed,
                             onCheckedChange = { vm.run { vm.repo.toggleEvent(ev.id) } },
-                            modifier = Modifier.size(48.dp).semantics { contentDescription = "Concluir compromisso ${ev.title}" }
+                            modifier = Modifier.size(44.dp).semantics { contentDescription = "Concluir compromisso ${ev.title}" }
+                        )
+                        NordicPlanningMark(
+                            mark = when {
+                                ev.completed -> PlanningMark.PlanCompleted
+                                isVirtualEvent -> PlanningMark.Recurring
+                                else -> PlanningMark.Deadline
+                            },
+                            modifier = Modifier.size(22.dp),
+                            tintFallback = if (ev.completed) Green else if (isVirtualEvent) Blue else Gold
                         )
                         Column(Modifier.weight(1f)) {
                             Text(
@@ -349,12 +376,26 @@ fun PlannerScreen(
                                 textDecoration = if (ev.completed) TextDecoration.LineThrough else TextDecoration.None
                             )
                             val timeLabel = if (ev.startTime.isNotBlank()) "${ev.startTime}${if (ev.endTime.isNotBlank()) "–${ev.endTime}" else ""}" else "Sem horário"
-                            Text("${ev.kind} · $timeLabel", color = Muted, fontSize = 12.sp)
+                            Text(
+                                buildList {
+                                    add(ev.kind)
+                                    add(timeLabel)
+                                    if (isVirtualEvent) add("Série projetada")
+                                }.joinToString(" · "),
+                                color = if (isVirtualEvent) Blue else Muted,
+                                fontSize = 12.sp
+                            )
                         }
-                        TextButton({ eventEditor = ev }) { Text("Editar", fontSize = 12.sp) }
-                        TextButton({ deleteEvent = ev }) { Text("Excluir", color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
                     }
                     if (ev.description.isNotBlank()) Text(ev.description, color = Muted, fontSize = 12.sp)
+                    FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        NordicCompactAction("Editar", { eventEditor = ev }, accent = Gold)
+                        NordicCompactAction(
+                            if (isVirtualEvent) "Omitir data" else "Excluir",
+                            { deleteEvent = ev },
+                            accent = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             }
         }
@@ -366,55 +407,104 @@ fun PlannerScreen(
                 val measured = blockFocus[b.id] ?: BlockFocus()
                 val actualMin = measured.minutes
                 val overlap = b.id in daySummary.overlappingBlockIds
+                val isVirtualRec = "@rec:" in b.id
+                val baseBlockId = b.id.substringBefore("@rec:")
                 val linkLabel = when {
                     b.taskId.isNotBlank() -> s.pathTasks.find { it.id == b.taskId }?.title
                     b.pathId.isNotBlank() -> s.paths.find { it.id == b.pathId }?.name
                     b.habitId.isNotBlank() -> s.habits.find { it.id == b.habitId }?.name
                     else -> null
                 }
-                val recRule = s.recurrenceRules.find { it.active && it.entityType == "block" && (it.templateId == b.id || it.id == b.recurrenceId) }
-                AetherSurface(
-                    modifier = Modifier.testTag("block:${b.id}").then(
-                        if (overlap) Modifier.border(1.dp, Gold.copy(alpha = .75f), CutCornerShape(4.dp))
-                        else if (b.pinned) Modifier.border(1.dp, Gold.copy(alpha = .55f), CutCornerShape(4.dp))
-                        else Modifier
-                    )
+                val recRule = s.recurrenceRules.find {
+                    it.active && it.entityType == "block" && (it.templateId == baseBlockId || it.templateId == b.id || it.id == b.recurrenceId)
+                }
+                val blockMark = when {
+                    overlap -> PlanningMark.Conflict
+                    b.pinned -> PlanningMark.Pinned
+                    isVirtualRec || recRule != null -> PlanningMark.Recurring
+                    b.sourcePlanId.isNotBlank() -> PlanningMark.CriticalTask
+                    else -> PlanningMark.Milestone
+                }
+                val blockMaterial = when {
+                    overlap -> CouncilMaterial.DarkIron
+                    isVirtualRec -> CouncilMaterial.OxidizedSilver
+                    b.pinned -> CouncilMaterial.HammeredBronze
+                    b.sourcePlanId.isNotBlank() -> CouncilMaterial.NordicWood
+                    else -> CouncilMaterial.DarkIron
+                }
+                val blockAccent = when {
+                    overlap -> Gold
+                    isVirtualRec -> Blue
+                    b.pinned -> Gold
+                    b.sourcePlanId.isNotBlank() -> Violet
+                    else -> ColdIron
+                }
+                CouncilMaterialSurface(
+                    material = blockMaterial,
+                    accent = blockAccent,
+                    modifier = Modifier.testTag("block:${b.id}"),
+                    ornamentCorners = false
                 ) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        RunicCalendarGlyph(col = if (b.pinned) 1 else if (recRule != null) 1 else 2, row = if (recRule != null) 1 else 0, modifier = Modifier.size(22.dp))
-                        Column(Modifier.weight(1f)) {
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        NordicPlanningMark(blockMark, Modifier.size(26.dp), tintFallback = blockAccent)
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             val tags = buildList {
                                 add("${b.startTime} – ${b.endTime}")
                                 add(b.category)
                                 if (b.pinned) add("Fixado")
                                 if (b.sourcePlanId.isNotBlank()) add("Odin")
-                                if (recRule != null) add("Recorrente")
+                                if (isVirtualRec) add("Série projetada")
+                                else if (recRule != null) add("Recorrente")
                             }.joinToString(" · ")
-                            Text(tags, color = habitColor(b.color.coerceIn(0, 4)), fontSize = 12.sp)
+                            Text(tags, color = habitColor(b.color.coerceIn(0, 4)), fontSize = 12.sp, fontWeight = FontWeight.Medium)
                             Text(b.title, style = MaterialTheme.typography.titleMedium)
                             if (!linkLabel.isNullOrBlank()) Text("Vínculo: $linkLabel", color = Muted, fontSize = 11.sp)
                         }
-                        if (overlap) StatusSeal("Sobreposto", Gold)
+                        when {
+                            overlap -> StatusSeal("Sobreposto", Gold)
+                            isVirtualRec -> StatusSeal("Recorrente", Blue)
+                            b.pinned -> StatusSeal("Fixado", Gold)
+                        }
                     }
                     Text("Planejado: $plannedMin min · ${if (measured.uncertain) "Foco comprovado: ≥" else "Foco real: "}$actualMin min", color = if (actualMin > 0) Violet else Muted, fontSize = 12.sp)
                     if (measured.uncertain) Text("Parte da sessão não tem horário efetivo comprovável.", color = Muted, fontSize = 11.sp)
-                    FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        TextButton({ onStartBlockFocus(b) }, enabled = s.focus == null) {
-                            Text("Forja do Tempo", color = Gold, fontSize = 12.sp)
-                        }
+                    if (isVirtualRec) {
+                        Text("Ocorrência projetada pela regra de recorrência; editar cria exceção ou ajusta a série.", color = Blue, fontSize = 11.sp)
+                    }
+                    FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        NordicCompactAction(
+                            text = "Forja do Tempo",
+                            onClick = { onStartBlockFocus(b) },
+                            accent = Gold,
+                            rune = HistoricalFutharkRune.Kenaz,
+                            enabled = s.focus == null
+                        )
                         if (b.pathId.isNotBlank() || b.taskId.isNotBlank()) {
-                            TextButton({ onStartPathFocus(b.pathId, b.taskId, b.title) }, enabled = s.focus == null && (b.taskId.isBlank() || s.pathTasks.any { it.id == b.taskId && !it.archived && (b.pathId.isBlank() || it.pathId == b.pathId) })) {
-                                Text("Iniciar foco", color = Violet, fontSize = 12.sp)
-                            }
+                            NordicCompactAction(
+                                text = "Iniciar foco",
+                                onClick = { onStartPathFocus(b.pathId, b.taskId, b.title) },
+                                accent = Violet,
+                                enabled = s.focus == null && (b.taskId.isBlank() || s.pathTasks.any { it.id == b.taskId && !it.archived && (b.pathId.isBlank() || it.pathId == b.pathId) })
+                            )
                         }
-                        TextButton({ vm.run { vm.repo.togglePinTimeBlock(b.id) } }) {
-                            Text(if (b.pinned) "Desafixar" else "Fixar", color = if (b.pinned) Gold else Muted, fontSize = 12.sp)
-                        }
-                        TextButton({ recurrenceBlock = b }) {
-                            Text(if (recRule != null) "Recorrência ✓" else "Repetir", color = Blue, fontSize = 12.sp)
-                        }
-                        TextButton({ blockEditor = b }) { Text("Editar", fontSize = 12.sp) }
-                        TextButton({ deleteBlock = b }) { Text("Excluir", color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
+                        NordicCompactAction(
+                            text = if (b.pinned) "Desafixar" else "Fixar",
+                            onClick = { vm.run { vm.repo.togglePinTimeBlock(b.id) } },
+                            accent = if (b.pinned) Gold else Muted,
+                            rune = HistoricalFutharkRune.Isa
+                        )
+                        NordicCompactAction(
+                            text = if (recRule != null) "Recorrência ✓" else "Repetir",
+                            onClick = { recurrenceBlock = b },
+                            accent = Blue,
+                            rune = HistoricalFutharkRune.Jera
+                        )
+                        NordicCompactAction("Editar", { blockEditor = b }, accent = Ink)
+                        NordicCompactAction(
+                            text = if (isVirtualRec) "Omitir data" else "Excluir",
+                            onClick = { deleteBlock = b },
+                            accent = MaterialTheme.colorScheme.error
+                        )
                     }
                 }
             }

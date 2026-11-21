@@ -65,18 +65,48 @@ fun CouncilOfNineScreen(
         if (tab == 0) {
             item {
                 CouncilMaterialSurface(CouncilMaterial.NordicWood) {
-                    Text(
-                        "Todas as áreas são opcionais: hábitos, caminhos, cadernos e compromissos sem área continuam funcionando normalmente.",
-                        color = Muted,
-                        fontSize = 12.sp
+                    NordicSectionHeader(
+                        eyebrow = "As nove casas do Conselho",
+                        subtitle = "Todas as áreas são opcionais: hábitos, caminhos, cadernos e compromissos sem área continuam funcionando normalmente.",
+                        rune = HistoricalFutharkRune.Othala,
+                        accent = Gold
                     )
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        if (s.lifeAreas.isEmpty()) {
-                            SagaButton("Ativar as 9 áreas padrão", { vm.run { vm.repo.seedDefaultLifeAreas() } }, Modifier.weight(1f))
+                    BoxWithConstraints(Modifier.fillMaxWidth()) {
+                        if (maxWidth < 310.dp) {
+                            Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                if (s.lifeAreas.isEmpty()) {
+                                    SagaButton(
+                                        "Ativar as 9 áreas padrão",
+                                        { vm.run { vm.repo.seedDefaultLifeAreas() } },
+                                        Modifier.fillMaxWidth(),
+                                        style = VikingButtonStyle.CerimonialViking
+                                    )
+                                }
+                                SagaButton(
+                                    "+ Nova área",
+                                    { editingArea = LifeArea(name = "", sealIndex = s.lifeAreas.size % 9, position = s.lifeAreas.size) },
+                                    Modifier.fillMaxWidth(),
+                                    style = if (s.lifeAreas.isEmpty()) VikingButtonStyle.FerroRunico else VikingButtonStyle.BronzeForjado
+                                )
+                            }
+                        } else {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                if (s.lifeAreas.isEmpty()) {
+                                    SagaButton(
+                                        "Ativar as 9 áreas padrão",
+                                        { vm.run { vm.repo.seedDefaultLifeAreas() } },
+                                        Modifier.weight(1f),
+                                        style = VikingButtonStyle.CerimonialViking
+                                    )
+                                }
+                                SagaButton(
+                                    "+ Nova área",
+                                    { editingArea = LifeArea(name = "", sealIndex = s.lifeAreas.size % 9, position = s.lifeAreas.size) },
+                                    Modifier.weight(1f),
+                                    style = if (s.lifeAreas.isEmpty()) VikingButtonStyle.FerroRunico else VikingButtonStyle.BronzeForjado
+                                )
+                            }
                         }
-                        SagaButton("+ Nova área", {
-                            editingArea = LifeArea(name = "", sealIndex = s.lifeAreas.size % 9, position = s.lifeAreas.size)
-                        }, Modifier.weight(1f), secondary = s.lifeAreas.isEmpty())
                     }
                     Toggle("Exibir áreas arquivadas", showArchived, { showArchived = it })
                 }
@@ -89,9 +119,12 @@ fun CouncilOfNineScreen(
                 val linkedPaths = s.paths.count { it.state !in 3..5 && it.areaId == area.id }
                 val linkedGoals = s.strategicGoals.count { !it.archived && it.areaId == area.id }
 
-                CouncilMaterialSurface(CouncilMaterial.DarkIron, accent = if (area.archived) Muted else Gold) {
+                CouncilMaterialSurface(
+                    material = if (area.archived) CouncilMaterial.DarkIron else CouncilMaterial.ProjectLeather,
+                    accent = if (area.archived) Muted else Gold
+                ) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        LifeAreaSeal(area.sealIndex, Modifier.size(48.dp))
+                        LifeAreaSeal(area.sealIndex, Modifier.size(52.dp))
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(area.name + if (area.archived) " (arquivada)" else "", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                             if (area.description.isNotBlank()) Text(area.description, color = Muted, fontSize = 12.sp)
@@ -105,31 +138,38 @@ fun CouncilOfNineScreen(
                     if (area.weeklyTargetMinutes > 0) {
                         Meter((weekMins.toFloat() / area.weeklyTargetMinutes.toFloat()).coerceIn(0f, 1f), Gold)
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        TextButton({ editingArea = area }) { Text("Editar", color = Gold, fontSize = 12.sp) }
-                        TextButton({ vm.run { vm.repo.reorderLifeArea(area.id, -1) } }) { Text("↑", color = Muted) }
-                        TextButton({ vm.run { vm.repo.reorderLifeArea(area.id, 1) } }) { Text("↓", color = Muted) }
-                        TextButton({ vm.run { vm.repo.archiveLifeArea(area.id, !area.archived) } }) {
-                            Text(if (area.archived) "Reativar" else "Arquivar", color = Muted, fontSize = 12.sp)
-                        }
+                    @OptIn(ExperimentalLayoutApi::class)
+                    FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        NordicCompactAction("Editar", { editingArea = area }, accent = Gold)
+                        NordicCompactAction("↑", { vm.run { vm.repo.reorderLifeArea(area.id, -1) } }, accent = Muted)
+                        NordicCompactAction("↓", { vm.run { vm.repo.reorderLifeArea(area.id, 1) } }, accent = Muted)
+                        NordicCompactAction(
+                            if (area.archived) "Reativar" else "Arquivar",
+                            { vm.run { vm.repo.archiveLifeArea(area.id, !area.archived) } },
+                            accent = if (area.archived) Green else Muted
+                        )
                     }
                 }
             }
         } else {
             item {
                 CouncilMaterialSurface(CouncilMaterial.AgedVellum) {
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OdinCouncilOrnament(col = 1, row = 1, modifier = Modifier.size(28.dp))
-                        Column(Modifier.weight(1f)) {
-                            Eyebrow("Objetivos pessoais")
-                            Text("Medidos apenas pelo avanço real dos Caminhos e Hábitos vinculados — zero economia paralela no RPG.", color = Muted, fontSize = 12.sp)
-                        }
-                    }
+                    NordicSectionHeader(
+                        eyebrow = "Objetivos pessoais",
+                        subtitle = "Medidos apenas pelo avanço real dos Caminhos e Hábitos vinculados — zero economia paralela no RPG.",
+                        rune = HistoricalFutharkRune.Sowilo,
+                        accent = Gold
+                    )
                     ChipRow(listOf("Todos", "Trimestrais", "Anuais"), horizonFilter, { horizonFilter = it })
-                    SagaButton("+ Novo objetivo pessoal", {
-                        val yr = LocalDate.parse(todayDate).year
-                        editingGoal = StrategicGoal(title = "", horizon = "quarterly", periodLabel = "$yr · T${((LocalDate.parse(todayDate).monthValue - 1) / 3) + 1}")
-                    }, Modifier.fillMaxWidth())
+                    SagaButton(
+                        "+ Novo objetivo pessoal",
+                        {
+                            val yr = LocalDate.parse(todayDate).year
+                            editingGoal = StrategicGoal(title = "", horizon = "quarterly", periodLabel = "$yr · T${((LocalDate.parse(todayDate).monthValue - 1) / 3) + 1}")
+                        },
+                        Modifier.fillMaxWidth(),
+                        style = VikingButtonStyle.CerimonialViking
+                    )
                 }
             }
             if (goals.isEmpty()) {
@@ -145,9 +185,9 @@ fun CouncilOfNineScreen(
                     CouncilMaterialSurface(CouncilMaterial.AgedVellum, accent = if (pct >= 100) Green else Gold) {
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             if (area != null) {
-                                LifeAreaSeal(area.sealIndex, Modifier.size(36.dp))
+                                LifeAreaSeal(area.sealIndex, Modifier.size(42.dp))
                             } else {
-                                OdinCouncilOrnament(col = 1, row = 1, modifier = Modifier.size(32.dp))
+                                NordicPlanningMark(PlanningMark.Milestone, Modifier.size(30.dp), tintFallback = Gold)
                             }
                             Column(Modifier.weight(1f)) {
                                 Text(goal.title, color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
@@ -164,14 +204,24 @@ fun CouncilOfNineScreen(
                         if (goal.description.isNotBlank()) Text(goal.description, color = Muted, fontSize = 12.sp)
                         Meter((pct / 100f).coerceIn(0f, 1f), if (pct >= 100) Green else Gold)
                         Text(detail, color = Muted, fontSize = 12.sp)
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            TextButton({ editingGoal = goal }) { Text("Editar", color = Gold, fontSize = 12.sp) }
-                            TextButton({ vm.run { vm.repo.archiveStrategicGoal(goal.id, !goal.archived) } }) {
-                                Text(if (goal.archived) "Reativar" else "Arquivar", color = Muted, fontSize = 12.sp)
-                            }
-                            TextButton({ vm.run { vm.repo.deleteStrategicGoal(goal.id) } }) {
-                                Text("Excluir", color = MaterialTheme.colorScheme.error, fontSize = 12.sp)
-                            }
+                        NordicStrategyDivider(
+                            style = StrategyFrameAsset.VellumDivider,
+                            rune = if (pct >= 100) HistoricalFutharkRune.Fehu else HistoricalFutharkRune.Sowilo,
+                            accent = if (pct >= 100) Green else Gold
+                        )
+                        @OptIn(ExperimentalLayoutApi::class)
+                        FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                            NordicCompactAction("Editar", { editingGoal = goal }, accent = Gold)
+                            NordicCompactAction(
+                                if (goal.archived) "Reativar" else "Arquivar",
+                                { vm.run { vm.repo.archiveStrategicGoal(goal.id, !goal.archived) } },
+                                accent = if (goal.archived) Green else Muted
+                            )
+                            NordicCompactAction(
+                                "Excluir",
+                                { vm.run { vm.repo.deleteStrategicGoal(goal.id) } },
+                                accent = MaterialTheme.colorScheme.error
+                            )
                         }
                     }
                 }

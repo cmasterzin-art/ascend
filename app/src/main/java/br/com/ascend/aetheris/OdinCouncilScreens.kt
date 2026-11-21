@@ -100,7 +100,8 @@ fun OdinCouncilScreen(
             OdinHallHeroBanner(
                 title = "Mesa de Odin",
                 subtitle = "Planejamento estratégico determinístico, 100% offline e orientado à sua disponibilidade real.",
-                activeStrategyName = "${activeStrategy.name} · ${activeStrategy.title}"
+                activeStrategyName = "${activeStrategy.name} · ${activeStrategy.title}",
+                activeStrategy = activeStrategy
             )
         }
         item {
@@ -179,8 +180,9 @@ private fun OdinHallOverviewSection(
     onOpenTimeForge: () -> Unit,
     onOpenMimir: () -> Unit
 ) {
-    val todayBlocks = remember(s.timeBlocks, todayDate) { s.timeBlocks.filter { it.date == todayDate }.sortedBy { it.startTime } }
-    val todayEvents = remember(s.agendaEvents, todayDate) { s.agendaEvents.filter { !it.archived && it.date == todayDate }.sortedBy { it.startTime } }
+    // Preserva projeções virtuais recorrentes da Etapa I no resumo diário da Mesa de Odin
+    val todayBlocks = remember(s, todayDate) { OdinPlanningEngine.effectiveBlocksForDate(s, todayDate).sortedBy { it.startTime } }
+    val todayEvents = remember(s, todayDate) { OdinPlanningEngine.effectiveEventsForDate(s, todayDate).sortedBy { it.startTime } }
     val dueMimir = remember(s, todayDate) { dueFlashcards(s, todayDate) }
     val tasksById = remember(s.pathTasks) { s.pathTasks.associateBy { it.id } }
     val blockedTasks = remember(s.pathTasks, s.taskDependencies) {
@@ -192,7 +194,7 @@ private fun OdinHallOverviewSection(
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        // KPIs do Conselho
+        // KPIs do Conselho com runas históricas contextuais
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             CouncilKpiTile(
                 label = "Capacidade 7d",
@@ -204,14 +206,16 @@ private fun OdinHallOverviewSection(
                     CapacityStatus.UNCONFIGURED -> Muted
                     else -> Green
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                rune = HistoricalFutharkRune.Jera
             )
             CouncilKpiTile(
                 label = "Hoje",
                 value = "${todayBlocks.size + todayEvents.size}",
                 detail = "${todayBlocks.size} blocos · ${todayEvents.size} eventos",
                 accent = Blue,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                rune = HistoricalFutharkRune.Dagaz
             )
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -220,27 +224,48 @@ private fun OdinHallOverviewSection(
                 value = "${replanItems.size}",
                 detail = if (replanItems.isEmpty()) "Agenda em dia" else "itens aguardando decisão",
                 accent = if (replanItems.isEmpty()) Green else Gold,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                rune = HistoricalFutharkRune.Raido
             )
             CouncilKpiTile(
                 label = "Mímir",
                 value = "${dueMimir.size}",
                 detail = if (dueMimir.isEmpty()) "Sem revisões hoje" else "runas para revisar",
                 accent = Gold,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                rune = HistoricalFutharkRune.Ansuz
             )
         }
 
-        // Atalhos rápidos estratégicos
+        // Atalhos rápidos estratégicos com hierarquia real entre famílias de botões vikings
         CouncilMaterialSurface(CouncilMaterial.NordicWood) {
-            Eyebrow("Centro de comando estratégico")
+            NordicSectionHeader("Centro de comando estratégico", rune = HistoricalFutharkRune.Tiwaz)
+            SagaButton(
+                "Gerar plano",
+                { onGoTab(1) },
+                Modifier.fillMaxWidth(),
+                style = VikingButtonStyle.CerimonialViking,
+                leadingRune = HistoricalFutharkRune.Ansuz
+            )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                SagaButton(
+                    "Forja do Tempo",
+                    onOpenTimeForge,
+                    Modifier.weight(1f),
+                    style = VikingButtonStyle.BronzeForjado,
+                    leadingRune = HistoricalFutharkRune.Kenaz
+                )
+                SagaButton(
+                    "Disponibilidade",
+                    { onGoTab(5) },
+                    Modifier.weight(1f),
+                    style = VikingButtonStyle.FerroRunico
+                )
+            }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                SagaButton("Gerar plano", { onGoTab(1) }, secondary = false)
-                SagaButton("Disponibilidade", { onGoTab(5) }, secondary = true)
-                SagaButton("Forja do Tempo", onOpenTimeForge, secondary = true)
-                SagaButton("Conselho dos 9", onOpenCouncilNine, secondary = true)
-                SagaButton("Caminhos 3.0", onOpenPaths, secondary = true)
-                SagaButton("Agenda 3.0", onOpenAgenda, secondary = true)
+                SagaButton("Conselho dos 9", onOpenCouncilNine, style = VikingButtonStyle.FerroRunico)
+                SagaButton("Caminhos 3.0", onOpenPaths, style = VikingButtonStyle.CompactoRunico)
+                SagaButton("Agenda 3.0", onOpenAgenda, style = VikingButtonStyle.CompactoRunico)
             }
             if (!OdinPlanningEngine.hasConfiguredAvailability(s)) {
                 Text(
@@ -248,34 +273,37 @@ private fun OdinHallOverviewSection(
                     color = Gold,
                     fontSize = 12.sp
                 )
-                SagaButton("Aplicar horários base (Seg–Sáb)", { vm.run { vm.repo.applyDefaultAvailability() } }, Modifier.fillMaxWidth(), secondary = true)
+                SagaButton("Aplicar horários base (Seg–Sáb)", { vm.run { vm.repo.applyDefaultAvailability() } }, Modifier.fillMaxWidth(), style = VikingButtonStyle.Confirmacao)
             }
         }
 
-        // Estratégia ativa
+        // Estratégia ativa com os 6 selos metálicos refinados (odin_council_seals_refined_atlas.webp)
         CouncilMaterialSurface(CouncilMaterial.HammeredBronze) {
-            Eyebrow("Estratégias de Odin (apenas pesos de planejamento)")
-            Text("Alteram prioridades, margem entre blocos e carga alvo — nunca alteram XP, moedas ou classes.", color = Muted, fontSize = 12.sp)
+            NordicSectionHeader(
+                eyebrow = "Estratégias de Odin (apenas pesos de planejamento)",
+                subtitle = "Alteram prioridades, margem entre blocos e carga alvo — nunca alteram XP, moedas ou classes.",
+                rune = HistoricalFutharkRune.Sowilo
+            )
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 odinStrategies.chunked(2).forEach { pair ->
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         pair.forEach { st ->
                             val selected = st.id == activeStrategy.id
-                            val shape = CutCornerShape(6.dp)
+                            val shape = CutCornerShape(7.dp)
                             Row(
                                 Modifier
                                     .weight(1f)
                                     .clip(shape)
-                                    .background(if (selected) Gold.copy(alpha = 0.16f) else Surface.copy(alpha = 0.55f))
-                                    .border(1.dp, if (selected) Gold else ColdIron.copy(alpha = 0.4f), shape)
+                                    .background(if (selected) Gold.copy(alpha = 0.18f) else Surface.copy(alpha = 0.62f))
+                                    .border(if (selected) 1.5.dp else 1.dp, if (selected) Gold else ColdIron.copy(alpha = 0.38f), shape)
                                     .clickable { vm.run { vm.repo.setOdinStrategy(st.id) } }
-                                    .padding(8.dp),
+                                    .padding(9.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                OdinStrategyMedal(st, Modifier.size(40.dp))
-                                Column(Modifier.weight(1f)) {
-                                    Text(st.name, color = if (selected) Gold else Ink, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, maxLines = 1)
+                                OdinStrategyMedal(st, Modifier.size(46.dp))
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Text(st.name, color = if (selected) Gold else Ink, fontWeight = FontWeight.Bold, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
                                     Text(st.title, color = Muted, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
                                 }
                             }
@@ -285,27 +313,54 @@ private fun OdinHallOverviewSection(
             }
         }
 
-        // Plano de hoje
+        // Plano de hoje com marcadores nórdicos de planejamento
         CouncilMaterialSurface(CouncilMaterial.DarkIron) {
-            Eyebrow("Plano de hoje · ${displayDate(todayDate)}")
+            NordicSectionHeader("Plano de hoje · ${displayDate(todayDate)}", rune = HistoricalFutharkRune.Dagaz, accent = Blue)
             if (todayBlocks.isEmpty() && todayEvents.isEmpty()) {
                 Text("Nenhum bloco ou compromisso agendado para hoje.", color = Muted, fontSize = 13.sp)
             } else {
                 todayEvents.forEach { ev ->
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        RunicCalendarGlyph(col = 0, row = 1, modifier = Modifier.size(20.dp))
+                    val isRec = ev.recurrenceId.isNotBlank() || "@rec:" in ev.id
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        NordicPlanningMark(
+                            mark = when {
+                                ev.completed -> PlanningMark.PlanCompleted
+                                isRec -> PlanningMark.Recurring
+                                else -> PlanningMark.Deadline
+                            },
+                            modifier = Modifier.size(22.dp),
+                            tintFallback = Blue
+                        )
                         Column(Modifier.weight(1f)) {
                             Text(ev.title, color = Ink, fontWeight = FontWeight.Medium, fontSize = 14.sp)
-                            Text("${ev.kind} · ${ev.startTime.ifBlank { "Dia todo" }}${if (ev.endTime.isNotBlank()) "–${ev.endTime}" else ""}", color = Muted, fontSize = 12.sp)
+                            Text(
+                                "${ev.kind} · ${ev.startTime.ifBlank { "Dia todo" }}${if (ev.endTime.isNotBlank()) "–${ev.endTime}" else ""}${if (isRec) " · Recorrente" else ""}",
+                                color = Muted,
+                                fontSize = 12.sp
+                            )
                         }
                     }
                 }
                 todayBlocks.forEach { blk ->
-                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        RunicCalendarGlyph(col = 2, row = 0, modifier = Modifier.size(20.dp))
+                    val isRec = blk.recurrenceId.isNotBlank() || "@rec:" in blk.id
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        NordicPlanningMark(
+                            mark = when {
+                                blk.pinned -> PlanningMark.Pinned
+                                isRec -> PlanningMark.Recurring
+                                blk.sourcePlanId.isNotBlank() -> PlanningMark.CriticalTask
+                                else -> PlanningMark.Milestone
+                            },
+                            modifier = Modifier.size(22.dp),
+                            tintFallback = Gold
+                        )
                         Column(Modifier.weight(1f)) {
                             Text(blk.title, color = Ink, fontWeight = FontWeight.Medium, fontSize = 14.sp)
-                            Text("${blk.startTime}–${blk.endTime} · ${blk.category}${if (blk.pinned) " · Fixado" else ""}${if (blk.sourcePlanId.isNotBlank()) " · Odin" else ""}", color = Muted, fontSize = 12.sp)
+                            Text(
+                                "${blk.startTime}–${blk.endTime} · ${blk.category}${if (blk.pinned) " · Fixado" else ""}${if (blk.sourcePlanId.isNotBlank()) " · Odin" else ""}${if (isRec) " · Recorrente" else ""}",
+                                color = Muted,
+                                fontSize = 12.sp
+                            )
                         }
                     }
                 }
@@ -314,26 +369,38 @@ private fun OdinHallOverviewSection(
 
         // Prazos próximos, bloqueios e áreas prioritárias
         CouncilMaterialSurface(CouncilMaterial.AgedVellum) {
-            Eyebrow("Prazos, dependências e revisões")
+            NordicSectionHeader("Prazos, dependências e revisões", mark = PlanningMark.Deadline, accent = Gold)
             if (nextDeadlines.isEmpty()) {
                 Text("Nenhuma tarefa com prazo definido no momento.", color = Muted, fontSize = 13.sp)
             } else {
                 nextDeadlines.forEach { t ->
                     val overdue = t.deadline < todayDate
-                    Text(
-                        "• ${t.title} — ${displayDate(t.deadline)}${if (overdue) " (atrasada)" else ""}",
-                        color = if (overdue) MaterialTheme.colorScheme.error else Ink,
-                        fontSize = 13.sp
-                    )
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        NordicPlanningMark(
+                            mark = if (overdue) PlanningMark.Conflict else PlanningMark.Deadline,
+                            modifier = Modifier.size(16.dp),
+                            tintFallback = if (overdue) MaterialTheme.colorScheme.error else Gold
+                        )
+                        Text(
+                            "${t.title} — ${displayDate(t.deadline)}${if (overdue) " (atrasada)" else ""}",
+                            color = if (overdue) MaterialTheme.colorScheme.error else Ink,
+                            fontSize = 13.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
             if (blockedTasks.isNotEmpty()) {
-                Text("${blockedTasks.size} tarefa(s) bloqueada(s) por dependências em Caminhos 3.0.", color = Gold, fontSize = 12.sp)
+                NordicStrategyDivider(StrategyFrameAsset.VellumDivider)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    NordicPlanningMark(PlanningMark.Dependency, Modifier.size(18.dp))
+                    Text("${blockedTasks.size} tarefa(s) bloqueada(s) por dependências em Caminhos 3.0.", color = Gold, fontSize = 12.sp)
+                }
             }
             if (dueMimir.isNotEmpty()) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Text("${dueMimir.size} flashcard(s) aguardando revisão em Mímir.", color = Blue, fontSize = 12.sp, modifier = Modifier.weight(1f))
-                    TextButton(onOpenMimir) { Text("Revisar", color = Gold) }
+                    NordicCompactAction("Revisar", onOpenMimir, accent = Gold, rune = HistoricalFutharkRune.Ansuz)
                 }
             }
         }
@@ -371,7 +438,7 @@ private fun OdinProposalSection(
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         CouncilMaterialSurface(CouncilMaterial.NordicWood) {
-            Eyebrow("Simulação de plano · ${displayPeriod(proposal.dateFrom, proposal.dateTo)}")
+            NordicSectionHeader("Simulação de plano · ${displayPeriod(proposal.dateFrom, proposal.dateTo)}", rune = HistoricalFutharkRune.Ansuz)
             ChipRow(
                 listOf("Hoje", "3 dias", "7 dias", "14 dias"),
                 listOf(1, 3, 7, 14).indexOf(proposalDays).coerceAtLeast(2),
@@ -387,8 +454,8 @@ private fun OdinProposalSection(
             Toggle("Incluir revisões pendentes de Mímir", includeMimir, onIncludeMimir)
 
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                CouncilKpiTile("Disponível", "${proposal.totalAvailableMinutes} min", modifier = Modifier.weight(1f), accent = Blue)
-                CouncilKpiTile("Proposto", "${proposal.totalSuggestedMinutes} min", "${proposal.suggestions.size} blocos", modifier = Modifier.weight(1f), accent = Gold)
+                CouncilKpiTile("Disponível", "${proposal.totalAvailableMinutes} min", modifier = Modifier.weight(1f), accent = Blue, rune = HistoricalFutharkRune.Jera)
+                CouncilKpiTile("Proposto", "${proposal.totalSuggestedMinutes} min", "${proposal.suggestions.size} blocos", modifier = Modifier.weight(1f), accent = Gold, rune = HistoricalFutharkRune.Tiwaz)
             }
             if (proposal.usedHistoryPreference && proposal.preferredHistoryBucket != null) {
                 val label = when (proposal.preferredHistoryBucket) {
@@ -399,6 +466,8 @@ private fun OdinProposalSection(
                 Text("Preferência suave aplicada a partir do histórico real de foco: período da $label.", color = Green, fontSize = 12.sp)
             }
 
+            NordicStrategyDivider(StrategyFrameAsset.UrnesDivider, HistoricalFutharkRune.Sowilo)
+
             // Comparação opcional de duas estratégias
             Text("Comparar com outra estratégia", color = Muted, fontSize = 12.sp)
             val compOptions = listOf("Nenhuma") + odinStrategies.filter { it.id != previewStrategyId }.map { it.name }
@@ -407,7 +476,7 @@ private fun OdinProposalSection(
 
             compareProposal?.let { cp ->
                 CouncilMaterialSurface(CouncilMaterial.DarkIron, accent = Blue) {
-                    Eyebrow("Comparativo: ${proposal.strategy.name} × ${cp.strategy.name}", Blue)
+                    NordicSectionHeader("Comparativo: ${proposal.strategy.name} × ${cp.strategy.name}", rune = HistoricalFutharkRune.Gebo, accent = Blue)
                     Text(
                         "${proposal.strategy.name}: ${proposal.suggestions.size} blocos (${proposal.totalSuggestedMinutes} min) · ${proposal.unscheduled.size} não alocados\n" +
                             "${cp.strategy.name}: ${cp.suggestions.size} blocos (${cp.totalSuggestedMinutes} min) · ${cp.unscheduled.size} não alocados",
@@ -421,19 +490,19 @@ private fun OdinProposalSection(
         // Conflitos explícitos (nunca ocultos)
         if (proposal.conflicts.isNotEmpty()) {
             CouncilMaterialSurface(CouncilMaterial.DarkIron, accent = MaterialTheme.colorScheme.error) {
-                Eyebrow("Conflitos e restrições detectadas", MaterialTheme.colorScheme.error)
+                NordicSectionHeader("Conflitos e restrições detectadas", mark = PlanningMark.Conflict, accent = MaterialTheme.colorScheme.error)
                 proposal.conflicts.forEach { c ->
                     Text("• $c", color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
                 }
                 if (!OdinPlanningEngine.hasConfiguredAvailability(s)) {
-                    SagaButton("Configurar disponibilidade", onGoAvailability, Modifier.fillMaxWidth(), secondary = true)
+                    SagaButton("Configurar disponibilidade", onGoAvailability, Modifier.fillMaxWidth(), style = VikingButtonStyle.FerroRunico)
                 }
             }
         }
 
         // Lista de sugestões com justificativa explicável, seleção parcial e fixação
         CouncilMaterialSurface(CouncilMaterial.ProjectLeather) {
-            Eyebrow("Blocos propostos ($selectedCount/${proposal.suggestions.size} selecionados)")
+            NordicSectionHeader("Blocos propostos ($selectedCount/${proposal.suggestions.size} selecionados)", mark = PlanningMark.Milestone)
             if (proposal.suggestions.isEmpty()) {
                 Text("Nenhuma sugestão pôde ser encaixada neste período.", color = Muted, fontSize = 13.sp)
             } else {
@@ -445,8 +514,8 @@ private fun OdinProposalSection(
                         Modifier
                             .fillMaxWidth()
                             .clip(shape)
-                            .background(if (checked) Surface.copy(alpha = 0.72f) else Surface.copy(alpha = 0.3f))
-                            .border(1.dp, if (isPinned) Gold else ColdIron.copy(alpha = 0.35f), shape)
+                            .background(if (checked) Surface.copy(alpha = 0.78f) else Surface.copy(alpha = 0.34f))
+                            .border(if (isPinned) 1.4.dp else 1.dp, if (isPinned) Gold else ColdIron.copy(alpha = 0.38f), shape)
                             .padding(10.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
@@ -461,11 +530,12 @@ private fun OdinProposalSection(
                                 Text(sug.title, color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
                                 Text("${displayDate(sug.date)} · ${sug.startTime}–${sug.endTime} (${sug.minutes} min) · ${sug.category}", color = Blue, fontSize = 12.sp)
                             }
-                            TextButton({
-                                pinnedIds = if (isPinned) pinnedIds - sug.id else pinnedIds + sug.id
-                            }) {
-                                Text(if (isPinned) "Fixado" else "Fixar", color = if (isPinned) Gold else Muted, fontSize = 12.sp)
-                            }
+                            NordicCompactAction(
+                                text = if (isPinned) "Fixado" else "Fixar",
+                                onClick = { pinnedIds = if (isPinned) pinnedIds - sug.id else pinnedIds + sug.id },
+                                accent = if (isPinned) Gold else Muted,
+                                rune = if (isPinned) HistoricalFutharkRune.Isa else null
+                            )
                         }
                         Text("Motivo: ${sug.reason}", color = Muted, fontSize = 11.sp)
                     }
@@ -484,7 +554,9 @@ private fun OdinProposalSection(
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !applying && selectedCount > 0
+                    enabled = !applying && selectedCount > 0,
+                    style = VikingButtonStyle.CerimonialViking,
+                    leadingRune = HistoricalFutharkRune.Fehu
                 )
             }
         }
@@ -492,8 +564,12 @@ private fun OdinProposalSection(
         // Itens não encaixados — transparência obrigatória!
         if (proposal.unscheduled.isNotEmpty()) {
             CouncilMaterialSurface(CouncilMaterial.AgedVellum, accent = Gold) {
-                Eyebrow("Itens não alocados (${proposal.unscheduled.size})", Gold)
-                Text("A Mesa de Odin nunca esconde itens que excedem sua disponibilidade real.", color = Muted, fontSize = 12.sp)
+                NordicSectionHeader(
+                    eyebrow = "Itens não alocados (${proposal.unscheduled.size})",
+                    subtitle = "A Mesa de Odin nunca esconde itens que excedem sua disponibilidade real.",
+                    mark = PlanningMark.Conflict,
+                    accent = Gold
+                )
                 proposal.unscheduled.take(10).forEach { u ->
                     Text("• ${u.title} (${u.remainingMinutes} min) — ${u.reason}", color = Ink, fontSize = 12.sp)
                 }
@@ -503,7 +579,7 @@ private fun OdinProposalSection(
         // Histórico de planos aplicados com desfazer inteligente
         if (activeAppliedPlans.isNotEmpty() || undoReport != null) {
             CouncilMaterialSurface(CouncilMaterial.DarkIron) {
-                Eyebrow("Planos aplicados recentemente")
+                NordicSectionHeader("Planos aplicados recentemente", mark = PlanningMark.PlanCompleted, accent = Green)
                 undoReport?.let { Text(it, color = Green, fontSize = 12.sp) }
                 activeAppliedPlans.forEach { rec ->
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -511,14 +587,16 @@ private fun OdinProposalSection(
                             Text(rec.summary, color = Ink, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                             Text("${displayPeriod(rec.dateFrom, rec.dateTo)}", color = Muted, fontSize = 11.sp)
                         }
-                        TextButton({
-                            vm.run {
-                                val (removed, preserved) = vm.repo.undoAppliedPlan(rec.id)
-                                onUndoReport("Desfeito: $removed bloco(s) removido(s); $preserved bloco(s) editados/fixados preservado(s).")
-                            }
-                        }) {
-                            Text("Desfazer", color = Gold)
-                        }
+                        NordicCompactAction(
+                            text = "Desfazer",
+                            onClick = {
+                                vm.run {
+                                    val (removed, preserved) = vm.repo.undoAppliedPlan(rec.id)
+                                    onUndoReport("Desfeito: $removed bloco(s) removido(s); $preserved bloco(s) editados/fixados preservado(s).")
+                                }
+                            },
+                            accent = Gold
+                        )
                     }
                 }
             }
@@ -542,7 +620,7 @@ private fun CapacitySimulatorSection(
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         CouncilMaterialSurface(CouncilMaterial.NordicWood) {
-            Eyebrow("Simulador de capacidade")
+            NordicSectionHeader("Simulador de capacidade", rune = HistoricalFutharkRune.Jera)
             ChipRow(CapacityPeriodKind.entries.map { it.label }, periodIdx, { periodIdx = it })
             if (kind == CapacityPeriodKind.CUSTOM) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -552,13 +630,14 @@ private fun CapacitySimulatorSection(
             }
             Text("Período analisado: ${displayPeriod(sim.dateFrom, sim.dateTo)}", color = Muted, fontSize = 12.sp)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                CouncilKpiTile("Disponível", "${sim.configuredAvailableMinutes} min", "Livre: ${sim.freeCapacityMinutes} min", Blue, Modifier.weight(1f))
+                CouncilKpiTile("Disponível", "${sim.configuredAvailableMinutes} min", "Livre: ${sim.freeCapacityMinutes} min", Blue, Modifier.weight(1f), rune = HistoricalFutharkRune.Dagaz)
                 CouncilKpiTile(
                     "Saldo",
                     "${if (sim.balanceMinutes >= 0) "+" else ""}${sim.balanceMinutes} min",
                     sim.status.label,
                     if (sim.balanceMinutes < 0) MaterialTheme.colorScheme.error else Green,
-                    Modifier.weight(1f)
+                    Modifier.weight(1f),
+                    rune = HistoricalFutharkRune.Sowilo
                 )
             }
             Meter((sim.utilizationPercent.coerceAtMost(100) / 100f), if (sim.balanceMinutes < 0) MaterialTheme.colorScheme.error else Gold)
@@ -570,19 +649,21 @@ private fun CapacitySimulatorSection(
                 fontSize = 12.sp
             )
             if (sim.status == CapacityStatus.UNCONFIGURED) {
-                SagaButton("Configurar horários disponíveis", onConfigureAvailability, Modifier.fillMaxWidth(), secondary = true)
+                SagaButton("Configurar horários disponíveis", onConfigureAvailability, Modifier.fillMaxWidth(), style = VikingButtonStyle.BronzeForjado)
             }
         }
 
         if (sim.warnings.isNotEmpty() || sim.unestimatedTasks.isNotEmpty() || sim.incompatibleDeadlineTasks.isNotEmpty()) {
             CouncilMaterialSurface(CouncilMaterial.AgedVellum, accent = Gold) {
-                Eyebrow("Alertas e premissas explícitas", Gold)
+                NordicSectionHeader("Alertas e premissas explícitas", mark = PlanningMark.Conflict, accent = Gold)
                 sim.warnings.forEach { w -> Text("• $w", color = Ink, fontSize = 13.sp) }
                 if (sim.unestimatedTasks.isNotEmpty()) {
+                    NordicStrategyDivider(StrategyFrameAsset.VellumDivider)
                     Text("Tarefas sem duração estimada:", color = Gold, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
                     sim.unestimatedTasks.take(6).forEach { t -> Text("  – ${t.title}", color = Muted, fontSize = 12.sp) }
                 }
                 if (sim.incompatibleDeadlineTasks.isNotEmpty()) {
+                    NordicStrategyDivider(StrategyFrameAsset.VellumDivider)
                     Text("Prazos incompatíveis com a capacidade:", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.SemiBold, fontSize = 12.sp)
                     sim.incompatibleDeadlineTasks.take(6).forEach { t -> Text("  – ${t.title} (${displayDate(t.deadline)})", color = MaterialTheme.colorScheme.error, fontSize = 12.sp) }
                 }
@@ -595,28 +676,41 @@ private fun CapacitySimulatorSection(
 private fun AdaptiveReplanSection(s: GameState, vm: GameViewModel, items: List<ReplanItem>) {
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         CouncilMaterialSurface(CouncilMaterial.NordicWood) {
-            Eyebrow("Replanejamento adaptativo")
-            Text(
-                "Itens passados ou não concluídos nunca são alterados automaticamente e nunca geram penalidades no RPG. Escolha a ação desejada para cada item.",
-                color = Muted,
-                fontSize = 13.sp
+            NordicSectionHeader(
+                eyebrow = "Replanejamento adaptativo",
+                subtitle = "Itens passados ou não concluídos nunca são alterados automaticamente e nunca geram penalidades no RPG. Escolha a ação desejada para cada item.",
+                rune = HistoricalFutharkRune.Raido
             )
         }
         if (items.isEmpty()) {
             CouncilMaterialSurface(CouncilMaterial.DarkIron, accent = Green) {
-                Text("Nenhum item atrasado ou bloco pendente para replanejar.", color = Green, fontWeight = FontWeight.Medium)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    NordicPlanningMark(PlanningMark.PlanCompleted, Modifier.size(24.dp), tintFallback = Green)
+                    Text("Nenhum item atrasado ou bloco pendente para replanejar.", color = Green, fontWeight = FontWeight.Medium)
+                }
             }
         } else {
             items.forEach { item ->
                 CouncilMaterialSurface(CouncilMaterial.ProjectLeather) {
-                    Text(item.title, color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
-                    Text("${item.reason} · ${item.minutes} min", color = Muted, fontSize = 12.sp)
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        NordicPlanningMark(PlanningMark.Deadline, Modifier.size(22.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(item.title, color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                            Text("${item.reason} · ${item.minutes} min", color = Muted, fontSize = 12.sp)
+                        }
+                    }
                     item.options.forEach { opt ->
+                        val btnStyle = when (opt.action) {
+                            ReplanActionKind.TRANSFER -> VikingButtonStyle.BronzeForjado
+                            ReplanActionKind.SPLIT, ReplanActionKind.POSTPONE -> VikingButtonStyle.FerroRunico
+                            ReplanActionKind.SEND_TO_PENDING -> VikingButtonStyle.CompactoRunico
+                            ReplanActionKind.REMOVE_SCHEDULE -> VikingButtonStyle.Destrutivo
+                        }
                         SagaButton(
                             text = "${opt.action.label}: ${opt.summary}",
                             onClick = { vm.run { vm.repo.applyReplanChoice(item, opt) } },
                             modifier = Modifier.fillMaxWidth(),
-                            secondary = opt.action != ReplanActionKind.TRANSFER
+                            style = btnStyle
                         )
                     }
                 }
@@ -630,11 +724,10 @@ private fun EisenhowerMatrixSection(s: GameState, vm: GameViewModel) {
     val grouped = remember(s.pathTasks) { OdinPlanningEngine.groupByEisenhower(s.pathTasks) }
     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         CouncilMaterialSurface(CouncilMaterial.AgedVellum) {
-            Eyebrow("Matriz de Eisenhower")
-            Text(
-                "Classificação baseada exclusivamente nos critérios explícitos de Importância e Urgência definidos por você em cada tarefa.",
-                color = Muted,
-                fontSize = 12.sp
+            NordicSectionHeader(
+                eyebrow = "Matriz de Eisenhower",
+                subtitle = "Classificação baseada exclusivamente nos critérios explícitos de Importância e Urgência definidos por você em cada tarefa.",
+                rune = HistoricalFutharkRune.Tiwaz
             )
         }
         EisenhowerQuadrant.entries.forEach { q ->
@@ -645,8 +738,14 @@ private fun EisenhowerMatrixSection(s: GameState, vm: GameViewModel) {
                 EisenhowerQuadrant.Q3_DELEGATE -> Blue
                 EisenhowerQuadrant.Q4_ELIMINATE -> Muted
             }
+            val mark = when (q) {
+                EisenhowerQuadrant.Q1_DO -> PlanningMark.CriticalTask
+                EisenhowerQuadrant.Q2_PLAN -> PlanningMark.Milestone
+                EisenhowerQuadrant.Q3_DELEGATE -> PlanningMark.Deadline
+                EisenhowerQuadrant.Q4_ELIMINATE -> PlanningMark.Dependency
+            }
             CouncilMaterialSurface(CouncilMaterial.DarkIron, accent = accent) {
-                Eyebrow("${q.title} · ${q.subtitle} (${tasks.size})", accent)
+                NordicSectionHeader("${q.title} · ${q.subtitle} (${tasks.size})", mark = mark, accent = accent)
                 if (tasks.isEmpty()) {
                     Text("Nenhuma tarefa classificada neste quadrante.", color = Muted, fontSize = 12.sp)
                 } else {
@@ -656,12 +755,16 @@ private fun EisenhowerMatrixSection(s: GameState, vm: GameViewModel) {
                                 Text(t.title, color = Ink, fontSize = 13.sp, fontWeight = FontWeight.Medium)
                                 if (t.deadline.isNotBlank()) Text("Prazo: ${displayDate(t.deadline)}", color = Muted, fontSize = 11.sp)
                             }
-                            TextButton({ vm.run { vm.repo.setTaskEisenhower(t.id, !t.important, t.urgent) } }) {
-                                Text(if (t.important) "Imp ★" else "Imp ☆", color = if (t.important) Gold else Muted, fontSize = 11.sp)
-                            }
-                            TextButton({ vm.run { vm.repo.setTaskEisenhower(t.id, t.important, !t.urgent) } }) {
-                                Text(if (t.urgent) "Urg !" else "Urg ·", color = if (t.urgent) MaterialTheme.colorScheme.error else Muted, fontSize = 11.sp)
-                            }
+                            NordicCompactAction(
+                                text = if (t.important) "Imp ★" else "Imp ☆",
+                                onClick = { vm.run { vm.repo.setTaskEisenhower(t.id, !t.important, t.urgent) } },
+                                accent = if (t.important) Gold else Muted
+                            )
+                            NordicCompactAction(
+                                text = if (t.urgent) "Urg !" else "Urg ·",
+                                onClick = { vm.run { vm.repo.setTaskEisenhower(t.id, t.important, !t.urgent) } },
+                                accent = if (t.urgent) MaterialTheme.colorScheme.error else Muted
+                            )
                         }
                     }
                 }
@@ -691,10 +794,13 @@ private fun AvailabilityAndConfigSection(s: GameState, vm: GameViewModel, config
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         CouncilMaterialSurface(CouncilMaterial.NordicWood) {
-            Eyebrow("Janelas semanais autorizadas")
-            Text("A Mesa de Odin só aloca atividades dentro das janelas que você autorizar abaixo.", color = Muted, fontSize = 12.sp)
+            NordicSectionHeader(
+                eyebrow = "Janelas semanais autorizadas",
+                subtitle = "A Mesa de Odin só aloca atividades dentro das janelas que você autorizar abaixo.",
+                rune = HistoricalFutharkRune.Dagaz
+            )
             if (s.availabilityWindows.isEmpty()) {
-                SagaButton("Preencher semana padrão (Seg–Sáb)", { vm.run { vm.repo.applyDefaultAvailability() } }, Modifier.fillMaxWidth())
+                SagaButton("Preencher semana padrão (Seg–Sáb)", { vm.run { vm.repo.applyDefaultAvailability() } }, Modifier.fillMaxWidth(), style = VikingButtonStyle.Confirmacao)
             }
             ChipRow(listOf("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"), selectedDay - 1, { selectedDay = it + 1 })
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -717,7 +823,7 @@ private fun AvailabilityAndConfigSection(s: GameState, vm: GameViewModel, config
                     }
                 },
                 Modifier.fillMaxWidth(),
-                secondary = true
+                style = VikingButtonStyle.FerroRunico
             )
             s.availabilityWindows.sortedWith(compareBy<AvailabilityWindow> { it.dayOfWeek }.thenBy { it.startTime }).forEach { w ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -735,7 +841,7 @@ private fun AvailabilityAndConfigSection(s: GameState, vm: GameViewModel, config
         }
 
         CouncilMaterialSurface(CouncilMaterial.DarkIron) {
-            Eyebrow("Exceções por data (feriados, folgas ou janelas extras)")
+            NordicSectionHeader("Exceções por data (feriados, folgas ou janelas extras)", rune = HistoricalFutharkRune.Wunjo)
             FormField(exDate, { exDate = it }, "Data (AAAA-MM-DD)")
             Toggle("Dia indisponível (folga/feriado)", exBlocked, { exBlocked = it })
             if (!exBlocked) {
@@ -758,7 +864,7 @@ private fun AvailabilityAndConfigSection(s: GameState, vm: GameViewModel, config
                     )
                     exNote = ""
                 }
-            }, Modifier.fillMaxWidth(), secondary = true)
+            }, Modifier.fillMaxWidth(), style = VikingButtonStyle.FerroRunico)
             s.availabilityExceptions.forEach { ex ->
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -775,7 +881,7 @@ private fun AvailabilityAndConfigSection(s: GameState, vm: GameViewModel, config
         }
 
         CouncilMaterialSurface(CouncilMaterial.AgedVellum) {
-            Eyebrow("Limites e preferências flexíveis")
+            NordicSectionHeader("Limites e preferências flexíveis", rune = HistoricalFutharkRune.Isa)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Box(Modifier.weight(1f)) { FormField(dailyLimit, { dailyLimit = it }, "Limite diário", true) }
                 Box(Modifier.weight(1f)) { FormField(bufferMin, { bufferMin = it }, "Margem (min)", true) }
@@ -795,7 +901,7 @@ private fun AvailabilityAndConfigSection(s: GameState, vm: GameViewModel, config
                         )
                     )
                 }
-            }, Modifier.fillMaxWidth())
+            }, Modifier.fillMaxWidth(), style = VikingButtonStyle.Confirmacao)
         }
     }
 }
