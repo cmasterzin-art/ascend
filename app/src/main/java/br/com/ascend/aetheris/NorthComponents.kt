@@ -81,20 +81,21 @@ import androidx.compose.ui.unit.*
   isBronze->.56f
   else->.40f
  }
- val atlasImg=if(appearance.minimal)null else ImageBitmap.imageResource(R.drawable.viking_button_atlas)
+ val atlasImg=if(appearance.minimal)null else ImageBitmap.imageResource(R.drawable.restored_council_buttons_atlas)
  val atlasAlpha=when{
-  !enabled->.28f
-  !dark->if(isBronze||isCeremonial||isConfirm).78f else .70f
-  isCeremonial->.88f
-  isBronze||isConfirm||isDestructive->.82f
-  else->.76f
+  !enabled->.32f
+  !dark->if(isBronze||isCeremonial||isConfirm).86f else .80f
+  isCeremonial->.94f
+  isBronze||isConfirm||isDestructive->.90f
+  else->.86f
  }
  val disabledFilter=if(!enabled)ColorFilter.colorMatrix(ColorMatrix().apply{setToSaturation(0.1f)}) else null
  val contentClr=when{
-  !enabled->Color(0xFF889099)
-  isIron->Color(0xFFE0E5EB)
-  isConfirm->Color(0xFFE5F0E3)
-  else->Color(0xFFF3EBDC)
+  !enabled->Color(0xFF9199A2)
+  isIron->Color(0xFFE7ECF2)
+  isConfirm->Color(0xFFEBF5EA)
+  isDestructive->Color(0xFFF6E7E5)
+  else->Color(0xFFF7F0E2)
  }
  Button(
   onClick=onClick,
@@ -113,18 +114,21 @@ import androidx.compose.ui.unit.*
        index=resolvedStyle.cellIndex,
        columns=2,
        rows=3,
-       capXRatio=if(isCeremonial).18f else .16f,
-       capYRatio=.28f,
+       capXRatio=if(isCeremonial).15f else .13f,
+       capYRatio=.24f,
        alpha=atlasAlpha,
        colorFilter=disabledFilter
       )
      }
      val d=1.dp.toPx();val w=size.width;val h=size.height;val cx=w*.5f
-     drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha=if(enabled).07f else .02f),Color.Transparent,Color.Black.copy(alpha=.36f))))
-     if(isDestructive)drawRect(Brush.horizontalGradient(listOf(accent.copy(alpha=.22f),Color.Transparent)))
-     if(isConfirm&&enabled)drawLine(accent.copy(alpha=.78f),Offset(10*d,h-2.5f*d),Offset(w-10*d,h-2.5f*d),1.3f*d)
+     // Subtle center reading veil guarantees AAA text contrast over hammered bronze/verdigris in both themes
+     val centerVeil=if(isConfirm||isBronze||isCeremonial) Color(0x420A0C10) else Color(0x220A0C10)
+     drawRect(centerVeil)
+     drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha=if(enabled).08f else .02f),Color.Transparent,Color.Black.copy(alpha=.34f))))
+     if(isDestructive)drawRect(Brush.horizontalGradient(listOf(accent.copy(alpha=.20f),Color.Transparent,accent.copy(alpha=.16f))))
+     if(isConfirm&&enabled)drawLine(accent.copy(alpha=.82f),Offset(10*d,h-2.5f*d),Offset(w-10*d,h-2.5f*d),1.4f*d)
      if(selected&&enabled){
-      drawRect(goldColor.copy(alpha=.12f))
+      drawRect(goldColor.copy(alpha=.14f))
       drawLine(Color(0xFFE5C88F),Offset(12*d,2*d),Offset(w-12*d,2*d),1.5f*d)
       drawLine(Color(0xFFE5C88F),Offset(12*d,h-2*d),Offset(w-12*d,h-2*d),1.5f*d)
      }
