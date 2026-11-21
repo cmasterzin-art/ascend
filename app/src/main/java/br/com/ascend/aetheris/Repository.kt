@@ -475,7 +475,13 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         require(mode in setOf("free","pomodoro","deep","countdown","custom")){"Modo de foco inválido."}
         require(workMinutes in 1..1440 && shortBreakMinutes in 0..120 && longBreakMinutes in 0..180 && totalCycles in 1..12){"Revise durações e ciclos."}
         require(d.focus()==null){"Encerre a sessão atual antes de iniciar outra."}
-        val block=if(blockId.isNotBlank()) requireNotNull(d.timeBlocks().find{it.id==blockId}){"Bloco de tempo não encontrado."} else null
+        val block=if(blockId.isNotBlank()){
+            d.timeBlocks().find{it.id==blockId} ?: if("@rec:" in blockId){
+                val occDate=blockId.substringAfter("@rec:")
+                OdinPlanningEngine.effectiveBlocksForDate(read(),occDate).find{it.id==blockId}
+                    ?: error("Bloco de tempo não encontrado.")
+            } else error("Bloco de tempo não encontrado.")
+        } else null
         val effHabitId=habitId.ifBlank{block?.habitId.orEmpty()}
         val effTaskId=taskId.ifBlank{block?.taskId.orEmpty()}
         val task=if(effTaskId.isNotBlank()) d.pathTasks().find{it.id==effTaskId && !it.archived} else null
@@ -552,13 +558,7 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
             d.focusSession(FocusSession(f.sessionId,f.habitId,h?.name?:"",f.date,f.beganAt,endTs,seconds,f.duration,if(!register)"cancelled" else if(seconds>=f.duration*60L)"completed" else "interrupted",register,f.pathId,f.taskId,label,f.blockId,f.mode,f.pauseCount,finalIntervals,anomaly))
         }
     }
-    /**
-     * Avança entre trabalho e pausa nos modos Pomodoro/Concentração/Personalizado.
-     * Registra apenas o tempo real de trabalho; pausas nunca geram FocusSession nem somam minutos de foco.
-     */
-    suspend fun advanceFocusPhase()=change("Fase da Forja do Tempo atualizada"){
-        val f=d.focus()?:return@change
-        val now=System.currentTimeMillis();val mono=monotonicNow()
+    private suspend fun advanceFocusPhaseInternal(f:Focus,now:Long,mono:Long){
         val spec=focusModeSpec(f.mode)
         if(!f.isBreakPhase){
             recordWorkFocusIfNeeded(f,register=true,now=now,mono=mono)
@@ -600,6 +600,47 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
                 clockAnomaly=false
             ))
         }
+    }
+    /**
+     * Avança entre trabalho e pausa nos modos Pomodoro/Concentração/Personalizado.
+     * Registra apenas o tempo real de trabalho; pausas nunca geram FocusSession nem somam minutos de foco.
+     */
+    suspend fun advanceFocusPhase()=change("Fase da Forja do Tempo atualizada"){
+        val f=d.focus()?:return@change
+        val now=System.currentTimeMillis();val mono=monotonicNow()
+        advanceFocusPhaseInternal(f,now,mono)
+    }
+    /**
+     * 1.7.5.1 (P0): Reconcilia automaticamente o término real de uma fase quando autoAdvance=true
+     * (seja pelo tick do cronômetro ou ao retornar do segundo plano / recriar a Activity).
+     * Protegido pelo Mutex do repositório: evita transições ou sessões duplicadas e nunca inventa foco
+     * de múltiplos ciclos não supervisionados.
+     */
+    suspend fun reconcileFocusTimer(
+        now:Long=System.currentTimeMillis(),
+        mono:Long=monotonicNow()
+    ):Boolean {
+        var transitioned=false
+        lock.withLock {
+            val f=d.focus()
+            if(f!=null && f.autoAdvance && f.startedAt>0L && f.isPhaseCompleted(now,mono)){
+                val old=state.value?:read()
+                db.withTransaction {
+                    val current=d.focus()
+                    if(current!=null && current.autoAdvance && current.startedAt>0L && current.isPhaseCompleted(now,mono)){
+                        advanceFocusPhaseInternal(current,now,mono)
+                        transitioned=true
+                    }
+                    if(transitioned) reconcile()
+                }
+                if(transitioned){
+                    val next=read(); state.value=next
+                    runCatching{onChanged(next)}
+                    events.emit(rewardEvent("Fase da Forja do Tempo concluída automaticamente",old,next))
+                }
+            }
+        }
+        return transitioned
     }
     suspend fun endFocus(register:Boolean)=change(if(register) "Tempo efetivo registrado" else "Sessão descartada"){
         val f=d.focus()?:return@change
@@ -787,8 +828,20 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         }
         d.timeBlock(clean)
     }
+    private suspend fun excludeVirtualOccurrenceIfPresent(virtualId:String,entityType:String):Boolean {
+        if("@rec:" !in virtualId) return false
+        val templateId=virtualId.substringBefore("@rec:")
+        val occDate=virtualId.substringAfter("@rec:")
+        val rule=d.recurrenceRules().find{it.active && it.entityType==entityType && it.templateId==templateId} ?: return false
+        val set=rule.excludedDates.split(',').map{it.trim()}.filter{it.isNotBlank()}.toMutableSet()
+        set += occDate
+        d.recurrenceRule(rule.copy(excludedDates=set.sorted().joinToString(",")))
+        return true
+    }
     suspend fun deleteTimeBlock(id:String)=change("Bloco de tempo removido"){
-        d.deleteTimeBlock(id)
+        if(!excludeVirtualOccurrenceIfPresent(id,"block")){
+            d.deleteTimeBlock(id)
+        }
     }
     suspend fun saveEvent(e:AgendaEvent)=change("Compromisso salvo"){
         val clean=e.copy(title=e.title.trim(),kind=e.kind.trim().ifBlank{"Compromisso"})
@@ -796,11 +849,23 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         d.agendaEvent(clean)
     }
     suspend fun toggleEvent(id:String)=change("Compromisso atualizado"){
-        val e=requireNotNull(d.agendaEvents().find{it.id==id}){"Compromisso não encontrado."}
-        d.agendaEvent(e.copy(completed=!e.completed))
+        val existing=d.agendaEvents().find{it.id==id}
+        if(existing!=null){
+            d.agendaEvent(existing.copy(completed=!existing.completed))
+        }else if("@rec:" in id){
+            val occDate=id.substringAfter("@rec:")
+            val s=read()
+            val projected=OdinPlanningEngine.effectiveEventsForDate(s,occDate).find{it.id==id}
+                ?: error("Compromisso não encontrado.")
+            d.agendaEvent(projected.copy(completed=!projected.completed))
+        }else{
+            error("Compromisso não encontrado.")
+        }
     }
     suspend fun deleteEvent(id:String)=change("Compromisso excluído"){
-        d.deleteAgendaEvent(id)
+        if(!excludeVirtualOccurrenceIfPresent(id,"event")){
+            d.deleteAgendaEvent(id)
+        }
     }
     suspend fun saveInboxItem(item:InboxItem)=change("Item guardado na Caixa de Entrada"){
         val clean=item.copy(title=item.title.trim())
@@ -1039,8 +1104,63 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     }
 
     /**
+     * 1.7.5.1 (P1 — Replanejamento e Conflitos): Validação centralizada reutilizável para intervalos de agendamento.
+     * Revalida disponibilidade autorizada (incluindo descanso e exceções), horários ocupados (compromissos fixos,
+     * blocos existentes/fixados e ocorrências recorrentes), intervalos adicionados na mesma transação e limite diário.
+     */
+    private fun validateScheduledSlot(
+        s:GameState,
+        date:String,
+        startTime:String,
+        endTime:String,
+        label:String,
+        addedByDate:MutableMap<String,MutableList<MinuteInterval>>,
+        ignoreBlockId:String="",
+        enforceDailyLimit:Boolean=false,
+        bufferMinutes:Int=0
+    ):MinuteInterval {
+        require(validIsoDate(date) && validTimeInterval(startTime,endTime)){"Intervalo inválido em '$label'."}
+        val st=requireNotNull(parseTimeToMinutes(startTime))
+        val en=requireNotNull(parseTimeToMinutes(endTime))
+        val candidateIv=MinuteInterval(st,en)
+
+        // 1) Disponibilidade autorizada (respeita dias de descanso e exceções bloqueadas)
+        val auth=OdinPlanningEngine.authorizedWindowsForDate(s,date)
+        require(auth.any{it.start<=st && it.end>=en}){
+            "Horário $date $startTime–$endTime fora da disponibilidade autorizada."
+        }
+        // 2) Horários ocupados (compromissos fixos, blocos existentes/fixados e recorrências)
+        val busy=OdinPlanningEngine.busyIntervalsForDate(s,date,includeUnpinnedBlocks=true,ignoreBlockId=ignoreBlockId)
+        require(busy.none{it.overlaps(candidateIv)}){
+            "Conflito detectado em $date $startTime–$endTime para '$label'."
+        }
+        // 3) Evita sobreposição (e exige buffer mínimo quando configurado) entre blocos da mesma operação
+        val added=addedByDate.getOrPut(date){mutableListOf()}
+        require(added.none{iv ->
+            val bufferedExisting=MinuteInterval((iv.start-bufferMinutes).coerceAtLeast(0),minOf(24*60,iv.end+bufferMinutes))
+            bufferedExisting.overlaps(candidateIv)
+        }){
+            "Sobreposição ou intervalo mínimo insuficiente em $date $startTime–$endTime."
+        }
+        // 4) Limite diário configurado
+        if(enforceDailyLimit){
+            val config=resolvedPlanningConfig(s)
+            val existingMin=OdinPlanningEngine.effectiveBlocksForDate(s,date)
+                .filter{it.id!=ignoreBlockId}
+                .sumOf{blockDurationMinutes(it)}
+            val addedMin=added.sumOf{it.minutes}
+            require(existingMin + addedMin + candidateIv.minutes <= config.dailyLimitMinutes){
+                "Limite diário de ${config.dailyLimitMinutes} min excedido em $date."
+            }
+        }
+        added += candidateIv
+        return candidateIv
+    }
+
+    /**
      * Aplica uma proposta (completa ou parcial) de forma transacional.
-     * Revalida disponibilidade, compromissos fixos e blocos existentes antes de persistir;
+     * Revalida disponibilidade, compromissos fixos, recorrências, blocos existentes, estado de tarefas/caminhos
+     * e integridade das dependências finish-to-start (mesmo em seleção parcial) antes de persistir;
      * em qualquer conflito, toda a transação sofre rollback sem corromper a agenda.
      */
     suspend fun applyOdinProposal(
@@ -1053,31 +1173,92 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
             val chosen=proposal.suggestions.filter{it.id in selectedIds}
             require(chosen.isNotEmpty()){"Selecione ao menos uma sugestão para aplicar."}
             val s=read()
+            val tasksById=s.pathTasks.associateBy{it.id}
+            val pathsById=s.paths.associateBy{it.id}
+            val habitsById=s.habits.associateBy{it.id}
+
+            // 1.7.5.1 (Seção 9 & 12): Valida integridade referencial e dependências finish-to-start na seleção (completa ou parcial)
+            val existingAllocByTask=mutableMapOf<String,Int>()
+            val latestEndByTask=mutableMapOf<String,Pair<String,Int>>()
+            for(b in s.timeBlocks){
+                if(b.taskId.isNotBlank()){
+                    existingAllocByTask[b.taskId]=(existingAllocByTask[b.taskId]?:0)+blockDurationMinutes(b)
+                    val endM=parseTimeToMinutes(b.endTime)
+                    if(endM!=null){
+                        val prev=latestEndByTask[b.taskId]
+                        if(prev==null || b.date>prev.first || (b.date==prev.first && endM>prev.second)){
+                            latestEndByTask[b.taskId]=b.date to endM
+                        }
+                    }
+                }
+            }
+            val chosenAllocByTask=mutableMapOf<String,Int>()
+            val earliestChosenStartByTask=mutableMapOf<String,Pair<String,Int>>()
+            for(sug in chosen){
+                if(sug.sourceType=="task" || sug.taskId.isNotBlank()){
+                    val t=requireNotNull(tasksById[sug.taskId]){"A tarefa '${sug.title}' foi excluída após a geração da proposta."}
+                    require(!t.completed && !t.archived){"A tarefa '${t.title}' já foi concluída ou arquivada."}
+                    if(t.pathId.isNotBlank()){
+                        val p=requireNotNull(pathsById[t.pathId]){"O caminho da tarefa '${t.title}' não foi encontrado."}
+                        require(!isPathInactiveForPending(p.state)){"O caminho '${p.name}' foi concluído ou arquivado após a geração da proposta."}
+                    }
+                    val st=requireNotNull(parseTimeToMinutes(sug.startTime))
+                    val en=requireNotNull(parseTimeToMinutes(sug.endTime))
+                    chosenAllocByTask[t.id]=(chosenAllocByTask[t.id]?:0)+(en-st).coerceAtLeast(0)
+                    val prevStart=earliestChosenStartByTask[t.id]
+                    if(prevStart==null || sug.date<prevStart.first || (sug.date==prevStart.first && st<prevStart.second)){
+                        earliestChosenStartByTask[t.id]=sug.date to st
+                    }
+                    val prevEnd=latestEndByTask[t.id]
+                    if(prevEnd==null || sug.date>prevEnd.first || (sug.date==prevEnd.first && en>prevEnd.second)){
+                        latestEndByTask[t.id]=sug.date to en
+                    }
+                }
+                if(sug.sourceType=="habit" || (sug.habitId.isNotBlank() && sug.taskId.isBlank())){
+                    val h=requireNotNull(habitsById[sug.habitId]){"O hábito '${sug.title}' não foi encontrado."}
+                    require(!h.deleted && !h.archived && !h.paused){"O hábito '${h.name}' não está ativo."}
+                }
+            }
+
+            // Verifica se todas as tarefas selecionadas têm seus pré-requisitos ativos concluídos ou integralmente agendados antes delas
+            for((taskId,depStart) in earliestChosenStartByTask){
+                val t=tasksById[taskId] ?: continue
+                val prereqs=OdinPlanningEngine.blockingPrerequisites(taskId,tasksById,s.taskDependencies)
+                for(pre in prereqs){
+                    val baseEst=if(pre.estimateMinutes>0) pre.estimateMinutes else 30
+                    val totalPreAlloc=(existingAllocByTask[pre.id]?:0)+(chosenAllocByTask[pre.id]?:0)
+                    require(totalPreAlloc>=baseEst){
+                        "Seleção parcial inválida: '${t.title}' depende de '${pre.title}', que não está integralmente agendada ($totalPreAlloc/$baseEst min)."
+                    }
+                    val preEnd=requireNotNull(latestEndByTask[pre.id]){
+                        "Seleção parcial inválida: '${t.title}' depende de '${pre.title}', que não possui horário de conclusão."
+                    }
+                    val precedes=preEnd.first<depStart.first || (preEnd.first==depStart.first && preEnd.second<=depStart.second)
+                    require(precedes){
+                        "Ordem de dependência violada: '${t.title}' não pode iniciar antes do término de '${pre.title}'."
+                    }
+                }
+            }
+
             val planId=uid()
             val createdBlockIds=mutableListOf<String>()
-            val taskSnapshots=mutableMapOf<String,Pair<String,String>>()
+            // Armazena [prevDate, prevTime, appliedDate, appliedTime] para desfazimento condicional seguro (Seção 10)
+            val taskSnapshots=mutableMapOf<String,List<String>>()
             val newIntervalsByDate=mutableMapOf<String,MutableList<MinuteInterval>>()
 
             for(sug in chosen){
-                require(validIsoDate(sug.date) && validTimeInterval(sug.startTime,sug.endTime)){"Intervalo inválido em '${sug.title}'."}
-                val st=requireNotNull(parseTimeToMinutes(sug.startTime))
-                val en=requireNotNull(parseTimeToMinutes(sug.endTime))
-                val candidateIv=MinuteInterval(st,en)
+                validateScheduledSlot(
+                    s=s,
+                    date=sug.date,
+                    startTime=sug.startTime,
+                    endTime=sug.endTime,
+                    label=sug.title,
+                    addedByDate=newIntervalsByDate
+                )
 
-                // Revalidação obrigatória contra disponibilidade real autorizada
-                val auth=OdinPlanningEngine.authorizedWindowsForDate(s,sug.date)
-                require(auth.any{it.start<=st && it.end>=en}){"Horário ${sug.date} ${sug.startTime}–${sug.endTime} fora da disponibilidade autorizada."}
-                // Revalidação obrigatória contra compromissos fixos e blocos existentes
-                val busy=OdinPlanningEngine.busyIntervalsForDate(s,sug.date,includeUnpinnedBlocks=true)
-                require(busy.none{it.overlaps(candidateIv)}){"Conflito detectado em ${sug.date} ${sug.startTime}–${sug.endTime} para '${sug.title}'."}
-                // Evita sobreposição entre sugestões do próprio plano
-                val added=newIntervalsByDate.getOrPut(sug.date){mutableListOf()}
-                require(added.none{it.overlaps(candidateIv)}){"Duas sugestões se sobrepõem em ${sug.date} ${sug.startTime}–${sug.endTime}."}
-                added += candidateIv
-
-                val validTask=sug.taskId.takeIf{id->id.isNotBlank() && s.pathTasks.any{it.id==id && !it.archived && !it.completed}}?:""
-                val validPath=sug.pathId.takeIf{id->id.isNotBlank() && s.paths.any{it.id==id}}?:""
-                val validHabit=if(validTask.isBlank() && validPath.isBlank()) sug.habitId.takeIf{id->id.isNotBlank() && s.habits.any{it.id==id && !it.deleted}}?:"" else ""
+                val validTask=sug.taskId.takeIf{id->id.isNotBlank() && tasksById[id]?.let{!it.archived && !it.completed}==true}?:""
+                val validPath=sug.pathId.takeIf{id->id.isNotBlank() && pathsById[id]?.let{!isPathInactiveForPending(it.state)}==true}?:""
+                val validHabit=if(validTask.isBlank() && validPath.isBlank()) sug.habitId.takeIf{id->id.isNotBlank() && habitsById[id]?.let{!it.deleted && !it.archived && !it.paused}==true}?:"" else ""
                 val blockId="odinblk-${planId.take(8)}-${createdBlockIds.size+1}"
                 createdBlockIds += blockId
 
@@ -1100,15 +1281,19 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
                 ))
 
                 if(validTask.isNotBlank() && validTask !in taskSnapshots){
-                    val t=s.pathTasks.first{it.id==validTask}
-                    taskSnapshots[validTask]=t.scheduledDate to t.scheduledTime
-                    if(t.scheduledDate.isBlank()){
-                        d.pathTask(t.copy(scheduledDate=sug.date,scheduledTime=sug.startTime))
+                    val t=tasksById.getValue(validTask)
+                    val prevDate=t.scheduledDate
+                    val prevTime=t.scheduledTime
+                    val appliedDate=if(prevDate.isBlank()) sug.date else prevDate
+                    val appliedTime=if(prevDate.isBlank()) sug.startTime else prevTime
+                    taskSnapshots[validTask]=listOf(prevDate,prevTime,appliedDate,appliedTime)
+                    if(prevDate.isBlank()){
+                        d.pathTask(t.copy(scheduledDate=appliedDate,scheduledTime=appliedTime))
                     }
                 }
             }
 
-            val snapJson=com.google.gson.Gson().toJson(taskSnapshots.mapValues{listOf(it.value.first,it.value.second)})
+            val snapJson=com.google.gson.Gson().toJson(taskSnapshots)
             createdRecord=AppliedPlanRecord(
                 id=planId,
                 appliedAt=System.currentTimeMillis(),
@@ -1126,8 +1311,11 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     }
 
     /**
-     * Desfaz um plano aplicado de forma segura: remove apenas blocos ainda intactos,
-     * detecta e preserva blocos editados manualmente ou fixados posteriormente (a menos que forceDeleteModified=true).
+     * 1.7.5.1 (P1 — Desfazimento Seguro):
+     * Remove apenas blocos intactos deste plano, preservando blocos editados manualmente ou fixados.
+     * Restaura [scheduledDate] e [scheduledTime] de uma tarefa SOMENTE se o estado atual da tarefa
+     * ainda corresponder exatamente ao estado aplicado por este plano (sem sobrescrever edições manuais
+     * posteriores na tarefa, conclusões ou agendamentos de planos aplicados depois).
      */
     suspend fun undoAppliedPlan(planId:String,forceDeleteModified:Boolean=false):Pair<Int,Int> {
         var removedCount=0
@@ -1136,9 +1324,14 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
             val record=requireNotNull(d.appliedPlans().find{it.id==planId}){"Plano aplicado não encontrado."}
             require(!record.undone){"Este plano já foi desfeito."}
             val ids=record.blockIds.split(',').map{it.trim()}.filter{it.isNotBlank()}.toSet()
-            val blocks=d.timeBlocks().filter{it.id in ids || it.sourcePlanId==planId}
-            val untouchedTaskIds=mutableSetOf<String>()
+            val allCurrentBlocks=d.timeBlocks()
+            val blocks=allCurrentBlocks.filter{it.id in ids || it.sourcePlanId==planId}
+            val earliestCreatedByTask=blocks
+                .filter{it.taskId.isNotBlank()}
+                .groupBy{it.taskId}
+                .mapValues{(_,list)->list.minWithOrNull(compareBy<TimeBlock>{it.date}.thenBy{it.startTime})}
             val preservedTaskIds=mutableSetOf<String>()
+            val removedBlockIds=mutableSetOf<String>()
             for(b in blocks){
                 val editedLater=b.modifiedManually || b.pinned
                 if(editedLater && !forceDeleteModified){
@@ -1146,10 +1339,11 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
                     if(b.taskId.isNotBlank()) preservedTaskIds += b.taskId
                 }else{
                     d.deleteTimeBlock(b.id)
+                    removedBlockIds += b.id
                     removedCount++
-                    if(b.taskId.isNotBlank()) untouchedTaskIds += b.taskId
                 }
             }
+            val remainingBlocks=allCurrentBlocks.filter{it.id !in removedBlockIds}
             if(record.taskSnapshotsJson.isNotBlank()){
                 val map=runCatching{
                     com.google.gson.JsonParser.parseString(record.taskSnapshotsJson).asJsonObject
@@ -1159,12 +1353,27 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
                     for(entry in map.entrySet()){
                         val tid=entry.key
                         if(tid in preservedTaskIds) continue
+                        val t=allTasks[tid] ?: continue
+                        if(t.completed || t.archived) continue
                         val arr=entry.value.asJsonArray
                         if(arr.size()>=2){
                             val prevDate=arr[0].asString
                             val prevTime=arr[1].asString
-                            allTasks[tid]?.let{t->
-                                if(!t.completed && !t.archived){
+                            val firstBlk=earliestCreatedByTask[tid]
+                            val appliedDate=if(arr.size()>=3) arr[2].asString else (prevDate.ifBlank{firstBlk?.date.orEmpty()})
+                            val appliedTime=if(arr.size()>=4) arr[3].asString else (if(prevDate.isBlank()) firstBlk?.startTime.orEmpty() else prevTime)
+
+                            // Só altera a tarefa se seu agendamento atual ainda for aquele produzido por este plano!
+                            val matchesAppliedState=(appliedDate.isNotBlank() && t.scheduledDate==appliedDate && t.scheduledTime==appliedTime) ||
+                                (arr.size()<3 && firstBlk!=null && t.scheduledDate==firstBlk.date && t.scheduledTime==firstBlk.startTime)
+                            if(matchesAppliedState){
+                                // Se outro plano ativo posterior ainda possui bloco para esta tarefa, adota o bloco remanescente
+                                val otherPlanBlock=remainingBlocks
+                                    .filter{it.taskId==tid && it.sourcePlanId!=planId}
+                                    .minWithOrNull(compareBy<TimeBlock>{it.date}.thenBy{it.startTime})
+                                if(otherPlanBlock!=null && prevDate.isBlank()){
+                                    d.pathTask(t.copy(scheduledDate=otherPlanBlock.date,scheduledTime=otherPlanBlock.startTime))
+                                }else{
                                     d.pathTask(t.copy(scheduledDate=prevDate,scheduledTime=prevTime))
                                 }
                             }
@@ -1177,12 +1386,48 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
         return removedCount to preservedCount
     }
 
+    /**
+     * 1.7.5.1 (P1 — Replanejamento e Conflitos):
+     * Aplica uma escolha de replanejamento de forma 100% transacional com revalidação completa de disponibilidade,
+     * conflitos, recorrências, blocos fixados, dias de descanso, limite diário, estado da tarefa e dependências.
+     */
     suspend fun applyReplanChoice(item:ReplanItem,option:ReplanSlotOption)=change("Item replanejado sem penalidades"){
-        val task=item.taskId.takeIf{it.isNotBlank()}?.let{id->d.pathTasks().find{it.id==id}}
-        val oldBlock=item.blockId.takeIf{it.isNotBlank()}?.let{id->d.timeBlocks().find{it.id==id}}
+        val s=read()
+        val tasksById=s.pathTasks.associateBy{it.id}
+        val pathsById=s.paths.associateBy{it.id}
+        val task=item.taskId.takeIf{it.isNotBlank()}?.let{id->
+            requireNotNull(tasksById[id]){"A tarefa '${item.title}' não está mais disponível."}
+        }
+        if(task!=null){
+            require(!task.completed && !task.archived){"A tarefa '${task.title}' já foi concluída ou arquivada."}
+            if(task.pathId.isNotBlank()){
+                val p=requireNotNull(pathsById[task.pathId]){"O caminho da tarefa '${task.title}' não foi encontrado."}
+                require(!isPathInactiveForPending(p.state)){"O caminho '${p.name}' não está ativo."}
+            }
+        }
+        val oldBlock=item.blockId.takeIf{it.isNotBlank()}?.let{id->s.timeBlocks.find{it.id==id}}
+        val config=resolvedPlanningConfig(s)
+        val addedByDate=mutableMapOf<String,MutableList<MinuteInterval>>()
+
         when(option.action){
             ReplanActionKind.TRANSFER, ReplanActionKind.POSTPONE -> {
-                require(validIsoDate(option.targetDate) && validTimeInterval(option.startTime,option.endTime)){"Horário de destino inválido."}
+                if(task!=null){
+                    val blocking=OdinPlanningEngine.blockingPrerequisites(task.id,tasksById,s.taskDependencies)
+                    require(blocking.isEmpty()){
+                        "A tarefa '${task.title}' possui pré-requisito não concluído (${blocking.first().title})."
+                    }
+                }
+                validateScheduledSlot(
+                    s=s,
+                    date=option.targetDate,
+                    startTime=option.startTime,
+                    endTime=option.endTime,
+                    label=item.title,
+                    addedByDate=addedByDate,
+                    ignoreBlockId=oldBlock?.id.orEmpty(),
+                    enforceDailyLimit=true,
+                    bufferMinutes=config.bufferMinutes
+                )
                 if(oldBlock!=null){
                     d.timeBlock(oldBlock.copy(date=option.targetDate,startTime=option.startTime,endTime=option.endTime,modifiedManually=true))
                 }else{
@@ -1202,8 +1447,34 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
                 }
             }
             ReplanActionKind.SPLIT -> {
-                require(validIsoDate(option.targetDate) && validTimeInterval(option.startTime,option.endTime)){"Primeiro bloco inválido."}
-                require(validIsoDate(option.secondDate) && validTimeInterval(option.secondStartTime,option.secondEndTime)){"Segundo bloco inválido."}
+                if(task!=null){
+                    val blocking=OdinPlanningEngine.blockingPrerequisites(task.id,tasksById,s.taskDependencies)
+                    require(blocking.isEmpty()){
+                        "A tarefa '${task.title}' possui pré-requisito não concluído (${blocking.first().title})."
+                    }
+                }
+                validateScheduledSlot(
+                    s=s,
+                    date=option.targetDate,
+                    startTime=option.startTime,
+                    endTime=option.endTime,
+                    label="${item.title} (1/2)",
+                    addedByDate=addedByDate,
+                    ignoreBlockId=oldBlock?.id.orEmpty(),
+                    enforceDailyLimit=true,
+                    bufferMinutes=config.bufferMinutes
+                )
+                validateScheduledSlot(
+                    s=s,
+                    date=option.secondDate,
+                    startTime=option.secondStartTime,
+                    endTime=option.secondEndTime,
+                    label="${item.title} (2/2)",
+                    addedByDate=addedByDate,
+                    ignoreBlockId=oldBlock?.id.orEmpty(),
+                    enforceDailyLimit=true,
+                    bufferMinutes=config.bufferMinutes
+                )
                 if(oldBlock!=null) d.deleteTimeBlock(oldBlock.id)
                 d.timeBlock(TimeBlock(title="${item.title} (1/2)".take(160),date=option.targetDate,startTime=option.startTime,endTime=option.endTime,category="Foco",pathId=item.pathId,taskId=item.taskId,areaId=item.areaId))
                 d.timeBlock(TimeBlock(title="${item.title} (2/2)".take(160),date=option.secondDate,startTime=option.secondStartTime,endTime=option.secondEndTime,category="Foco",pathId=item.pathId,taskId=item.taskId,areaId=item.areaId))
@@ -1370,8 +1641,18 @@ class GameRepository(private val db:GameDatabase,private val onChanged:(GameStat
     // =========================================================================
 
     suspend fun togglePinTimeBlock(blockId:String)=change("Fixação do bloco atualizada"){
-        val b=requireNotNull(d.timeBlocks().find{it.id==blockId}){"Bloco não encontrado."}
-        d.timeBlock(b.copy(pinned=!b.pinned))
+        val existing=d.timeBlocks().find{it.id==blockId}
+        if(existing!=null){
+            d.timeBlock(existing.copy(pinned=!existing.pinned))
+        }else if("@rec:" in blockId){
+            val occDate=blockId.substringAfter("@rec:")
+            val s=read()
+            val projected=OdinPlanningEngine.effectiveBlocksForDate(s,occDate).find{it.id==blockId}
+                ?: error("Bloco não encontrado.")
+            d.timeBlock(projected.copy(pinned=!projected.pinned))
+        }else{
+            error("Bloco não encontrado.")
+        }
     }
     suspend fun saveRecurrenceRule(rule:RecurrenceRule)=change("Recorrência salva"){
         validateRecurrenceRule(rule)
