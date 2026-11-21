@@ -166,3 +166,19 @@ Dez novos recursos pictóricos originais gerados via `generate_image` (orçament
 | `nordic_strategy_controls_atlas.webp` | Atlas de controles `4 × 2` | `1024 × 512` · WebP RGBA | 55,016 | `53db7344b0dcc16ce1f2483bab9577571265fb2a7095437488acbf8d8c764d54` | Trilho Gantt, ponta de dependência, marco de bronze, estrela de prioridade, placa de tarefa, cartão Kanban, broche de fixação e brasão de risco | `Paths30Screens.kt`, `OdinCouncilScreens.kt`, `AgendaScreens.kt` |
 | `nordic_council_materials_atlas.webp` | Atlas de materiais DS 3.2 `3 × 2` | `960 × 640` · WebP RGB | 46,780 | `ba93432d504aa10e9c32fb5e93124a98a568fdeed6a15b0b418b3d3157361262` | 6 superfícies limpas (Madeira nórdica, Velino, Couro de projeto, Bronze martelado, Prata oxidada, Ferro escuro) | `CouncilMaterialSurface` (`NordicCouncilDesign.kt`) |
 | `odin_council_ornaments_atlas.webp` | Atlas ornamental `4 × 2` | `1024 × 512` · WebP RGBA | 91,542 | `cdac45fe7fe389fb9c73b765865f3ec928cacab3ea6f9afedd2a83f65a651992` | Cantoneira Urnes, 3 divisores estratégicos, rosa-dos-ventos rúnica, selo hexagonal de meta, corvos gêmeos e moldura vazada | `NordicCouncilDesign.kt`, `OdinCouncilScreens.kt`, `CouncilOfNineScreen.kt` |
+
+## 1.7.5.1 — O Conselho Restaurado (Etapa II · Design System 3.2.1)
+
+Seis gerações pictóricas originais realizadas via `generate_image` (orçamento `6 / 8`, com `2` gerações de reserva preservadas sem uso), otimizadas em WebP RGBA com recortes limpos e zero texto dinâmico incorporado:
+
+- `concepts/nordic-council-refined-1751.webp`: prancha conceitual de direção artística (fora do APK).
+- `5` atlas WebP de produção em `app/src/main/res/drawable-nodpi/`, somando **374,380 bytes (365.6 KB / 0.36 MB)** adicionais no APK (teto: `2 MB`).
+
+| Arquivo WebP (1.7.5.1) | Dimensões | Bytes | SHA-256 | Finalidade |
+|---|---|---:|---|---|
+| `nordic-council-refined-1751.webp` | `1280×720` | 139,048 | `59c32cb02b385a83dd4244fc9f1be7741ada7a8e9920c10d7da16071345d4bae` | Prancha conceitual de refinamento 1.7.5.1 (fora do APK) |
+| `restored_council_buttons_atlas.webp` | `960×450` | 51,922 | `7c29c38f419a8056aff506f534b5dd4c9c5c29c10d55d53bbbc8000a10845482` | 6 placas metálicas de botões vikings nine-slice (2×3) |
+| `time_forge_refinement_atlas.webp` | `960×640` | 114,968 | `a67247a93d0bac8b74338bd38a65ed7bada269d25bb80b054778d41a7e71859e` | 6 instrumentos da Forja do Tempo (3×2: trabalho, pausa, ciclo, selos) |
+| `nordic_planning_marks_atlas.webp` | `768×384` | 60,656 | `4565b50b8ffe2bc2c076cefa448e4053608c6e0a346b09c1a8921b6efa4a86fa` | 8 marcadores nórdicos de planejamento (4×2) |
+| `nordic_strategy_frames_atlas.webp` | `1024×512` | 45,336 | `a10be7e1ca7d778c5fd0bd0e0499cb308b0503f228857be23b64adce9343bcee` | 8 molduras, cantoneiras, divisores e placa rúnica (4×2) |
+| `odin_council_seals_refined_atlas.webp` | `768×512` | 101,498 | `0d836aaea6763df86409d24cfb3dfd1898f832ab119f13892fc3d0047a4add3e` | 6 selos refinados das estratégias de Odin (3×2) |
