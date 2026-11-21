@@ -1,3 +1,10 @@
+# 1.7.5.1 — O Conselho Restaurado
+
+Consolidação técnica (Etapa I) e refinamento visual nórdico DS 3.2.1 (Etapa II) sobre `feat/ascend-1.7.5`, preservando Room v11, Backup v13, os 218 testes anteriores e a economia do RPG:
+- **Etapa I (Estabilidade):** `reconcileFocusTimer` em segundo plano (`ON_RESUME` / `TimeForgeScreen`), projeção real de recorrências `@rec:YYYY-MM-DD` em toda a cadeia de planejamento e Agenda, validação centralizada `validateScheduledSlot` sem fallback `09:00`, gating estrito de dependências em agendamento completo e parcial (`TaskScheduleState`), desfazer condicional preservando edições manuais de `PathTask`, `PlanningClock` injetável e `8` novos testes de regressão (`Stability1751AuditTest`).
+- **Etapa II (Design System 3.2.1 & Visual):** 6 novos recursos pictóricos WebP originais (`365,6 KB / 0,36 MB` no APK + prancha conceitual fora do APK), 6 famílias metálicas de `SagaButton` (`restored_council_buttons_atlas`), 8 `PlanningMark`, 6 selos refinados das estratégias de Odin, instrumentos de trabalho/descanso/ciclo/pausa na Forja do Tempo, divisores Urnes/Borre/Velino, runas contextuais *Elder Futhark*, Gantt sem truncamento, Kanban em 4 colunas distintas com `NordicCompactAction`, distinção visual de recorrências `@rec:` e **14 capturas reais comparativas** (`VisualRefinement1751UiTest`).
+- **Validação:** **227 testes aprovados**, `lintDebug` com **0 erros**, `versionCode 28`, assinatura oficial `e1f003ef...`. [Auditoria](docs/AUDITORIA-1.7.5.1.md) · [Estabilidade](docs/ESTABILIDADE-1.7.5.1.md) · [DS 3.2.1](docs/DESIGN-SYSTEM-3.2.1.md) · [Visual 1.7.5.1](docs/VISUAL-1.7.5.1.md) · [Diário 1.7.5.1](docs/DESENVOLVIMENTO-1.7.5.1.md).
+
 # 1.7.5 — A Mesa de Odin
 
 Planejamento estratégico pessoal offline, Caminhos 3.0, Agenda 3.0, A Forja do Tempo, Conselho dos Nove e Design System 3.2 sobre a base autorizada `feat/ascend-1.7.3.1`:

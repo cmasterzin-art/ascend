@@ -2,7 +2,7 @@ name: Compilar ASCEND
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'feat/ascend-1.7.5']
+    branches: [main, 'feat/ascend-1.7.5.1']
 permissions:
   contents: write
 jobs:
@@ -12,14 +12,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Conferir APK já compilado e testado
-        if: hashFiles('downloads/ASCEND-1.7.5.apk.sha256') != ''
+        if: hashFiles('downloads/ASCEND-1.7.5.1.apk.sha256') != ''
         working-directory: downloads
-        run: sha256sum -c ASCEND-1.7.5.apk.sha256
+        run: sha256sum -c ASCEND-1.7.5.1.apk.sha256
       - uses: actions/upload-artifact@v4
-        if: hashFiles('downloads/ASCEND-1.7.5.apk.sha256') != ''
+        if: hashFiles('downloads/ASCEND-1.7.5.1.apk.sha256') != ''
         with:
           name: ASCEND-Android
-          path: downloads/ASCEND-1.7.5.apk
+          path: downloads/ASCEND-1.7.5.1.apk
           retention-days: 30
           if-no-files-found: error
   apk:
@@ -55,7 +55,7 @@ jobs:
       - name: Consolidar relatórios, capturas e verificação do APK
         id: verify
         run: |
-          mkdir -p docs/validation docs/screenshots/1.7.5
+          mkdir -p docs/validation docs/screenshots/1.7.5.1
           python3 - <<'PY'
           import glob, xml.etree.ElementTree as ET
           totals = {'tests': 0, 'failures': 0, 'errors': 0, 'skipped': 0}
@@ -63,7 +63,7 @@ jobs:
               r = ET.parse(p).getroot()
               for k in totals:
                   totals[k] += int(r.attrib.get(k, 0))
-          with open('docs/validation/BUILD-1.7.5.txt', 'w') as out:
+          with open('docs/validation/BUILD-1.7.5.1.txt', 'w') as out:
               out.write(str(totals) + '\n')
               with open('build_log.txt') as log:
                   out.write(log.read())
@@ -71,7 +71,7 @@ jobs:
           PY
           cp app/build/test-results/testDebugUnitTest/TEST-*.xml docs/validation/
           if [ -f app/build/reports/lint-results-debug.txt ]; then
-            cp app/build/reports/lint-results-debug.txt docs/validation/LINT-1.7.5.txt
+            cp app/build/reports/lint-results-debug.txt docs/validation/LINT-1.7.5.1.txt
           fi
           BT="$ANDROID_HOME/build-tools/35.0.0"
           APK="app/build/outputs/apk/debug/app-debug.apk"
@@ -84,19 +84,19 @@ jobs:
             if "$BT/zipalign" -c 4 "$APK"; then echo "Zipalign OK"; else echo "Zipalign FAIL"; fi
             "$BT/apksigner" verify --verbose --print-certs "$APK"
             "$BT/aapt2" dump permissions "$APK"
-          } > docs/validation/APK-1.7.5.txt
-          cat docs/validation/APK-1.7.5.txt
+          } > docs/validation/APK-1.7.5.1.txt
+          cat docs/validation/APK-1.7.5.1.txt
           EXPECTED="e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4"
-          if grep -qi "$EXPECTED" docs/validation/APK-1.7.5.txt; then
+          if grep -qi "$EXPECTED" docs/validation/APK-1.7.5.1.txt; then
             echo "compatible=true" >> "$GITHUB_OUTPUT"
-            cp "$APK" downloads/ASCEND-1.7.5.apk
-            (cd downloads && sha256sum ASCEND-1.7.5.apk > ASCEND-1.7.5.apk.sha256)
+            cp "$APK" downloads/ASCEND-1.7.5.1.apk
+            (cd downloads && sha256sum ASCEND-1.7.5.1.apk > ASCEND-1.7.5.1.apk.sha256)
           else
             echo "compatible=false" >> "$GITHUB_OUTPUT"
           fi
-          for f in 01-mesa-de-odin.png 02-configuracao-disponibilidade.png 03-proposta-plano-semanal.png 04-estrategias-odin.png 05-simulador-capacidade.png 06-replanejamento-adaptativo.png 07-matriz-eisenhower.png 08-caminhos-dependencias-critico.png 09-gantt-interativo.png 10-quadro-kanban.png 11-agenda-30-recorrencia-fixacao.png 12-forja-do-tempo-pomodoro.png 13-modo-imersivo-foco.png 14-conselho-dos-nove.png 15-objetivos-pessoais.png 16-tema-claro-175.png 17-estreito-320dp-fonte-130-175.png; do
-            if [ -f "app/build/reports/screenshots/$f" ]; then
-              cp "app/build/reports/screenshots/$f" "docs/screenshots/1.7.5/$f"
+          for f in 01-mesa-de-odin-refinada.png 02-botoes-vikings-refinados.png 03-estrategias-odin-refinadas.png 04-propostas-refinadas.png 05-simulador-capacidade-refinado.png 06-gantt-refinado.png 07-kanban-refinado.png 08-agenda-recorrencia-refinada.png 09-forja-do-tempo-trabalho.png 10-forja-do-tempo-descanso.png 11-modo-imersivo-refinado.png 12-conselho-dos-nove-refinado.png 13-tema-claro-1751.png 14-estreito-320dp-fonte-130-1751.png; do
+            if [ -f "app/build/reports/screenshots/1.7.5.1/$f" ]; then
+              cp "app/build/reports/screenshots/1.7.5.1/$f" "docs/screenshots/1.7.5.1/$f"
             fi
           done
       - uses: actions/upload-artifact@v4
@@ -115,33 +115,33 @@ jobs:
             app/build/reports/screenshots
           retention-days: 14
       - name: Publicar capturas e validação na branch
-        if: github.ref_name == 'feat/ascend-1.7.5'
+        if: github.ref_name == 'feat/ascend-1.7.5.1'
         run: |
           rm -f build_log.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/validation docs/screenshots/1.7.5
+          git add docs/validation docs/screenshots/1.7.5.1
           if [ "${{ steps.verify.outputs.compatible }}" = "true" ]; then
-            git add downloads/ASCEND-1.7.5.apk downloads/ASCEND-1.7.5.apk.sha256
+            git add downloads/ASCEND-1.7.5.1.apk downloads/ASCEND-1.7.5.1.apk.sha256
           fi
           if ! git diff --cached --quiet; then
-            git commit -m "ci: record 1.7.5 validation and screenshots [skip ci]"
-            git pull --rebase --autostash origin feat/ascend-1.7.5
-            git push origin feat/ascend-1.7.5
+            git commit -m "ci: record 1.7.5.1 validation, signed APK, and screenshots [skip ci]"
+            git pull --rebase --autostash origin feat/ascend-1.7.5.1
+            git push origin feat/ascend-1.7.5.1
           fi
       - name: Registrar log de erro na branch em caso de falha
-        if: failure() && github.ref_name == 'feat/ascend-1.7.5'
+        if: failure() && github.ref_name == 'feat/ascend-1.7.5.1'
         run: |
-          mkdir -p docs/validation docs/screenshots/1.7.5
-          if [ -f build_log.txt ]; then cp build_log.txt docs/validation/BUILD-1.7.5.txt; fi
+          mkdir -p docs/validation docs/screenshots/1.7.5.1
+          if [ -f build_log.txt ]; then cp build_log.txt docs/validation/BUILD-1.7.5.1.txt; fi
           cp app/build/test-results/testDebugUnitTest/TEST-*.xml docs/validation/ 2>/dev/null || true
-          if [ -f app/build/reports/lint-results-debug.txt ]; then cp app/build/reports/lint-results-debug.txt docs/validation/LINT-1.7.5.txt; fi
+          if [ -f app/build/reports/lint-results-debug.txt ]; then cp app/build/reports/lint-results-debug.txt docs/validation/LINT-1.7.5.1.txt; fi
           rm -f build_log.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add docs/validation docs/screenshots/1.7.5
+          git add docs/validation docs/screenshots/1.7.5.1
           if ! git diff --cached --quiet; then
-            git commit -m "ci: registrar log de falha da compilacao [skip ci]"
-            git pull --rebase --autostash origin feat/ascend-1.7.5
-            git push origin feat/ascend-1.7.5
+            git commit -m "ci: registrar log de falha da compilacao 1.7.5.1 [skip ci]"
+            git pull --rebase --autostash origin feat/ascend-1.7.5.1
+            git push origin feat/ascend-1.7.5.1
           fi
