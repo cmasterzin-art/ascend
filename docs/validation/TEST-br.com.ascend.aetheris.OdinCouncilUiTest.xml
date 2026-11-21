@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.OdinCouncilUiTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-20T21:32:59" hostname="runnervmccnms" time="15.324">
+<testsuite name="br.com.ascend.aetheris.OdinCouncilUiTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-21T09:32:10" hostname="runnervm0hi8g" time="15.731">
   <properties/>
-  <testcase name="captureAll17RequiredScreenshotsFor175" classname="br.com.ascend.aetheris.OdinCouncilUiTest" time="15.324"/>
+  <testcase name="captureAll17RequiredScreenshotsFor175" classname="br.com.ascend.aetheris.OdinCouncilUiTest" time="15.731"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

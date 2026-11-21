@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.OdinCouncilTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-11-20T21:32:58" hostname="runnervmccnms" time="1.506">
+<testsuite name="br.com.ascend.aetheris.OdinCouncilTest" tests="15" skipped="0" failures="0" errors="0" timestamp="2026-11-21T09:32:09" hostname="runnervm0hi8g" time="1.798">
   <properties/>
-  <testcase name="odin_capacitySimulatorDeduplicatesLinkedBlocksAndFlagsUnestimatedAndDeadlines" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.071"/>
-  <testcase name="councilOfNine_areasAndStrategicGoalsComputeVerifiableProgressWithoutRpgEconomy" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.099"/>
-  <testcase name="performanceBenchmarks_50_200_1000_Tasks" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.229"/>
-  <testcase name="odin_respectsFixedEventsRestDaysExceptionsDailyLimitAndBuffers" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.094"/>
-  <testcase name="odin_adaptiveReplanningNeverAutoAppliesAndAppliesWithoutRpgPenalty" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.061"/>
-  <testcase name="backupV13RoundTripAndCycleRejectionAreAtomic" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.091"/>
-  <testcase name="odin_isDeterministicAndSixStrategiesDifferWithoutChangingRpgEconomy" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.084"/>
-  <testcase name="agenda30_pinningAndRecurrenceExpansionAndSingleExclusion" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.058"/>
-  <testcase name="roomMigration10To11PreservesAllDataAndCreatesStrategicTables" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.176"/>
-  <testcase name="odin_historySoftPreferenceRequiresMinimumFiveSessions" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.044"/>
-  <testcase name="etapa0_codexFavoritesPersistInDataStoreAndFocusRulePolicyDocumented" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.174"/>
-  <testcase name="timeForge_pomodoroNeverCountsBreaksAndLinksToBlockAndSynthesizesAudio" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.076"/>
-  <testcase name="odin_transactionalApplyPartialRollbackAndSmartUndoPreservingManualEdits" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.065"/>
-  <testcase name="caminhos30_dependenciesCyclesOverrideCpmKanbanMilestonesAndTemplates" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.149"/>
-  <testcase name="odin_unconfiguredAvailabilityNeverAssumes24HoursFree" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.033"/>
-  <system-out><![CDATA[ODIN_BENCHMARK tasks=50 deps=40 elapsedMs=17 suggestions=54 unscheduled=2 cpmNodes=50 capStatus=BALANCED
-ODIN_BENCHMARK tasks=200 deps=160 elapsedMs=46 suggestions=62 unscheduled=145 cpmNodes=200 capStatus=OVERLOADED
-ODIN_BENCHMARK tasks=1000 deps=800 elapsedMs=82 suggestions=46 unscheduled=956 cpmNodes=1000 capStatus=OVERLOADED
+  <testcase name="odin_capacitySimulatorDeduplicatesLinkedBlocksAndFlagsUnestimatedAndDeadlines" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.132"/>
+  <testcase name="councilOfNine_areasAndStrategicGoalsComputeVerifiableProgressWithoutRpgEconomy" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.11"/>
+  <testcase name="performanceBenchmarks_50_200_1000_Tasks" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.237"/>
+  <testcase name="odin_respectsFixedEventsRestDaysExceptionsDailyLimitAndBuffers" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.127"/>
+  <testcase name="odin_adaptiveReplanningNeverAutoAppliesAndAppliesWithoutRpgPenalty" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.084"/>
+  <testcase name="backupV13RoundTripAndCycleRejectionAreAtomic" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.145"/>
+  <testcase name="odin_isDeterministicAndSixStrategiesDifferWithoutChangingRpgEconomy" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.102"/>
+  <testcase name="agenda30_pinningAndRecurrenceExpansionAndSingleExclusion" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.054"/>
+  <testcase name="roomMigration10To11PreservesAllDataAndCreatesStrategicTables" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.099"/>
+  <testcase name="odin_historySoftPreferenceRequiresMinimumFiveSessions" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.054"/>
+  <testcase name="etapa0_codexFavoritesPersistInDataStoreAndFocusRulePolicyDocumented" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.111"/>
+  <testcase name="timeForge_pomodoroNeverCountsBreaksAndLinksToBlockAndSynthesizesAudio" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.126"/>
+  <testcase name="odin_transactionalApplyPartialRollbackAndSmartUndoPreservingManualEdits" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.136"/>
+  <testcase name="caminhos30_dependenciesCyclesOverrideCpmKanbanMilestonesAndTemplates" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.239"/>
+  <testcase name="odin_unconfiguredAvailabilityNeverAssumes24HoursFree" classname="br.com.ascend.aetheris.OdinCouncilTest" time="0.042"/>
+  <system-out><![CDATA[ODIN_BENCHMARK tasks=50 deps=40 elapsedMs=24 suggestions=47 unscheduled=10 cpmNodes=50 capStatus=BALANCED
+ODIN_BENCHMARK tasks=200 deps=160 elapsedMs=40 suggestions=65 unscheduled=146 cpmNodes=200 capStatus=OVERLOADED
+ODIN_BENCHMARK tasks=1000 deps=800 elapsedMs=103 suggestions=46 unscheduled=956 cpmNodes=1000 capStatus=OVERLOADED
 ]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
