@@ -74,7 +74,7 @@ class MainActivity:ComponentActivity(){var widgetHabit by mutableStateOf<String?
     LaunchedEffect(Unit){vm.repo.events.collect{event->effectFor(event)?.let{audio.play(it)};if(event.highlights.isNotEmpty())levelup=event else {snack.currentSnackbarData?.dismiss();launch{snack.showSnackbar(rewardSummary(event).ifBlank{event.message},withDismissAction=true,duration=SnackbarDuration.Short)}}}}
     LaunchedEffect(s?.habits,s?.restDays,s?.plans){s?.let{Reminders.sync(context,it.habits,it.restDates,it.plans)}}
     val lifecycle=androidx.lifecycle.compose.LocalLifecycleOwner.current.lifecycle
-    DisposableEffect(lifecycle){val observer=LifecycleEventObserver{_,event->if(event==Lifecycle.Event.ON_RESUME)vm.run{vm.repo.refresh()}};lifecycle.addObserver(observer);onDispose{lifecycle.removeObserver(observer)}}
+    DisposableEffect(lifecycle){val observer=LifecycleEventObserver{_,event->if(event==Lifecycle.Event.ON_RESUME)vm.run{vm.repo.refresh();vm.repo.reconcileFocusTimer()}};lifecycle.addObserver(observer);onDispose{lifecycle.removeObserver(observer)}}
     val addHabit={habitEditor=Habit(position=s?.habits?.size?:0)}
     Surface(Modifier.fillMaxSize(),color=Night){
         when{

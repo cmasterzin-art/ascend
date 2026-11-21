@@ -81,6 +81,8 @@ data class Focus(
         }
         return (elapsed + delta).coerceAtMost(activePhaseMinutes() * 60L)
     }
+    fun isPhaseCompleted(now: Long = System.currentTimeMillis(), nowRealtimeMs: Long = 0L): Boolean =
+        seconds(now, nowRealtimeMs) >= activePhaseMinutes() * 60L
     fun hasClockAnomaly(now: Long = System.currentTimeMillis(), nowRealtimeMs: Long = 0L): Boolean {
         if (clockAnomaly) return true
         if (startedAt <= 0L) return false

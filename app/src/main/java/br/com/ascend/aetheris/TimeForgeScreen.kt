@@ -58,10 +58,37 @@ fun TimeForgeScreen(
 
     val focus = s.focus
     var tick by remember { mutableLongStateOf(System.currentTimeMillis()) }
-    LaunchedEffect(focus?.startedAt, focus?.phase) {
+    LaunchedEffect(focus?.startedAt, focus?.phase, focus?.currentCycle, focus?.autoAdvance) {
+        if (focus != null && focus.startedAt > 0L) {
+            val mono0 = runCatching { android.os.SystemClock.elapsedRealtime() }.getOrDefault(0L)
+            if (focus.autoAdvance && focus.isPhaseCompleted(System.currentTimeMillis(), mono0)) {
+                val wasBreak = focus.isBreakPhase
+                if (vm.repo.reconcileFocusTimer()) {
+                    if (wasBreak && notifyBreakEnd) {
+                        Reminders.notifyTimeForge(context, 1752, "Pausa concluída", "Hora de retornar à Forja do Tempo.")
+                    } else if (!wasBreak && notifyFocusEnd) {
+                        Reminders.notifyTimeForge(context, 1751, "Ciclo de foco concluído", "Seu tempo efetivo foi registrado.")
+                    }
+                    return@LaunchedEffect
+                }
+            }
+        }
         while (focus != null && focus.startedAt > 0L) {
             delay(1000L)
-            tick = System.currentTimeMillis()
+            val now = System.currentTimeMillis()
+            tick = now
+            val mono = runCatching { android.os.SystemClock.elapsedRealtime() }.getOrDefault(0L)
+            if (focus.autoAdvance && focus.isPhaseCompleted(now, mono)) {
+                val wasBreak = focus.isBreakPhase
+                if (vm.repo.reconcileFocusTimer(now, mono)) {
+                    if (wasBreak && notifyBreakEnd) {
+                        Reminders.notifyTimeForge(context, 1752, "Pausa concluída", "Hora de retornar à Forja do Tempo.")
+                    } else if (!wasBreak && notifyFocusEnd) {
+                        Reminders.notifyTimeForge(context, 1751, "Ciclo de foco concluído", "Seu tempo efetivo foi registrado.")
+                    }
+                    break
+                }
+            }
         }
     }
 
