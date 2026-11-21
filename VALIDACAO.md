@@ -1,3 +1,20 @@
+# ASCEND 1.7.5.1 — Validação
+
+21/11/2026. Base `feat/ascend-1.7.5` (`0b07076`), etapa técnica concluída em `1ee9e24` e refinamento visual DS 3.2.1 consolidado na branch `feat/ascend-1.7.5.1`. GitHub Actions execução `44889532479` (commits `ff73e2f` / `2c989ab`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL**.
+
+- **Testes:** **227 testes aprovados** (`218` preservados da `1.7.5` + `8` testes de regressão/estabilidade em `Stability1751AuditTest` + `1` suíte de 14 capturas reais comparativas em `VisualRefinement1751UiTest`), zero falhas, erros ou ignorados.
+- **Android Lint:** **0 erros e 39 avisos** no CI (`docs/validation/LINT-1.7.5.1.txt`; `0 erros e 38 avisos` localmente), sem novas supressões.
+- **APK oficial assinado:** [downloads/ASCEND-1.7.5.1.apk](downloads/ASCEND-1.7.5.1.apk?raw=true) com **28.967.440 bytes**, `versionName='1.7.5.1'`, `versionCode='28'`, `package: name='br.com.ascend.aetheris'`, `minSdkVersion='26'`, `targetSdkVersion='35'`, sem permissão `INTERNET`.
+- **Checksum SHA-256 do APK:** `8787de444cb35d506cb9c06ecec1c7ccf818b226ec476cc01af7fc96fdc925ee` (`sha256sum -c ASCEND-1.7.5.1.apk.sha256` em `downloads/`: **OK**).
+- **Assinatura e alinhamento:** `Zipalign OK`; APK Signature Scheme v2 válida com o certificado oficial preservado `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
+- **Persistência e retrocompatibilidade:** **Room v11** e **backup v13** preservados integralmente (sem alteração de esquema e sem migração destrutiva, compatibilidade `v1`–`v13`), mantendo todas as correções da Etapa I (`reconcileFocusTimer`, projeção `@rec:YYYY-MM-DD`, `validateScheduledSlot`, `TaskScheduleState`, `undoAppliedPlan` condicional, `PlanningClock`) e toda a economia do RPG.
+- **Acervo pictórico e capturas:** 6 novos recursos WebP originais (`1` prancha conceitual em `docs/art/concepts/nordic-council-refined-1751.webp` fora do APK + `5` atlas de produção somando `374.380 bytes` / `365,6 KB` / `0,36 MB` dentro do APK, abaixo do teto de `2 MB`, com `6/8` gerações usadas e `2` em reserva). **14 capturas reais comparativas** inspecionadas em `docs/screenshots/1.7.5.1/`, incluindo catálogo das 6 famílias de botões, trabalho vs descanso na Forja do Tempo, Modo Imersivo, Agenda com recorrência `@rec:`, Tema Claro e `320 dp` com fonte `130%`.
+- **Limites:** validação executada em Robolectric (Native Graphics) e GitHub Actions; instalação física por cima da `1.7.5` em aparelho Android real, renderização em GPU física (eliminando o recorte lateral em software canvas do Robolectric em parte dos quadros capturados via `View.draw()`), reprodução de áudio em alto-falante físico, notificações locais reais, teclado IME físico e TalkBack não foram executados.
+
+[APK](downloads/ASCEND-1.7.5.1.apk?raw=true) · [Build](docs/validation/BUILD-1.7.5.1.txt) · [Lint](docs/validation/LINT-1.7.5.1.txt) · [Certificado e manifesto](docs/validation/APK-1.7.5.1.txt) · [Auditoria 1.7.5.1](docs/AUDITORIA-1.7.5.1.md) · [Estabilidade 1.7.5.1](docs/ESTABILIDADE-1.7.5.1.md) · [Design System 3.2.1](docs/DESIGN-SYSTEM-3.2.1.md) · [Visual 1.7.5.1](docs/VISUAL-1.7.5.1.md) · [Diário 1.7.5.1](docs/DESENVOLVIMENTO-1.7.5.1.md)
+
+---
+
 # ASCEND 1.7.5 — Validação
 
 20/11/2026. Base autorizada `feat/ascend-1.7.3.1` (`13922af`, sem o módulo 1.7.4 *Oráculo de Aetheris*, conforme autorização expressa do usuário). Branch `feat/ascend-1.7.5`. GitHub Actions execução `44820394866` (commits `d20b794` / `d8fa158`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL**.
