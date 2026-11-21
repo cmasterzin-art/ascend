@@ -1,14 +1,17 @@
 package br.com.ascend.aetheris
 
+import java.time.Clock
 import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZonedDateTime
 import java.time.temporal.ChronoUnit
 import kotlin.math.ceil
 import kotlin.math.max
 import kotlin.math.min
 
 /**
- * ASCEND 1.7.5 — A Mesa de Odin
+ * ASCEND 1.7.5 / 1.7.5.1 — A Mesa de Odin
  * Motor determinístico, 100% offline, sem força bruta exponencial e sem IA externa.
  * Cobre disponibilidade, grafo de dependências, caminho crítico (CPM), geração de propostas
  * adaptativas, simulador de capacidade, replanejamento, Matriz de Eisenhower e recorrências.
@@ -17,6 +20,43 @@ import kotlin.math.min
 data class MinuteInterval(val start: Int, val end: Int) {
     val minutes: Int get() = (end - start).coerceAtLeast(0)
     fun overlaps(other: MinuteInterval): Boolean = start < other.end && other.start < end
+}
+
+/**
+ * 1.7.5.1 (P1 — Horários Passados): Referência temporal injetável e determinística.
+ * Evita consultas dispersas ao relógio do sistema durante uma mesma operação e permite
+ * filtrar janelas já transcorridas no dia corrente sem afetar consultas históricas explícitas.
+ */
+data class PlanningClock(
+    val referenceDate: String = today(),
+    val referenceMinuteOfDay: Int = 0
+) {
+    companion object {
+        fun fromClock(clock: Clock = Clock.systemDefaultZone()): PlanningClock {
+            val zdt = ZonedDateTime.now(clock)
+            return PlanningClock(
+                referenceDate = zdt.toLocalDate().toString(),
+                referenceMinuteOfDay = zdt.hour * 60 + zdt.minute
+            )
+        }
+
+        fun at(date: String, time: String = "00:00"): PlanningClock =
+            PlanningClock(
+                referenceDate = date,
+                referenceMinuteOfDay = parseTimeToMinutes(time) ?: 0
+            )
+    }
+}
+
+/**
+ * 1.7.5.1 (P1 — Dependências): Diferenciação explícita do estado de agendamento de uma tarefa.
+ * Uma tarefa parcialmente agendada NUNCA é tratada como conclusão projetada para liberar dependentes.
+ */
+enum class TaskScheduleState(val label: String) {
+    UNSCHEDULED("Não agendada"),
+    PARTIALLY_SCHEDULED("Parcialmente agendada"),
+    FULLY_SCHEDULED("Integralmente agendada"),
+    COMPLETED("Realmente concluída")
 }
 
 enum class TaskWorkflowState(val label: String) {
@@ -105,7 +145,8 @@ data class UnscheduledItem(
     val sourceType: String,
     val remainingMinutes: Int,
     val reason: String,
-    val deadline: String = ""
+    val deadline: String = "",
+    val scheduleState: TaskScheduleState = TaskScheduleState.UNSCHEDULED
 )
 
 data class OdinProposal(
@@ -118,7 +159,8 @@ data class OdinProposal(
     val totalAvailableMinutes: Int,
     val totalSuggestedMinutes: Int,
     val usedHistoryPreference: Boolean,
-    val preferredHistoryBucket: String?
+    val preferredHistoryBucket: String?,
+    val taskScheduleStates: Map<String, TaskScheduleState> = emptyMap()
 )
 
 data class CapacitySimulation(
@@ -179,7 +221,7 @@ object OdinPlanningEngine {
     const val DEFAULT_UNESTIMATED_CPM_FALLBACK_MIN = 30
 
     // =========================================================================
-    // 1. INTERVALOS E DISPONIBILIDADE REAL
+    // 1. INTERVALOS, PROJEÇÃO DE RECORRÊNCIAS E DISPONIBILIDADE REAL
     // =========================================================================
 
     fun mergeIntervals(intervals: List<MinuteInterval>): List<MinuteInterval> {
@@ -220,6 +262,72 @@ object OdinPlanningEngine {
     }
 
     /**
+     * 1.7.5.1 (P1 — Recorrências): Projeta virtualmente sob demanda blocos recorrentes para [date]
+     * sem materializar centenas de registros no banco e sem duplicar o template na data original
+     * ou instâncias já materializadas.
+     */
+    fun effectiveBlocksForDate(s: GameState, date: String): List<TimeBlock> {
+        val materialized = s.timeBlocks.filter { it.date == date }
+        if (s.recurrenceRules.isEmpty()) return materialized
+        val blocksById = s.timeBlocks.associateBy { it.id }
+        val projected = mutableListOf<TimeBlock>()
+        for (rule in s.recurrenceRules) {
+            if (!rule.active || rule.entityType != "block") continue
+            val template = blocksById[rule.templateId]
+                ?: s.timeBlocks.firstOrNull { it.recurrenceId == rule.id }
+                ?: continue
+            if (date !in expandRecurrenceOccurrences(rule, date, date)) continue
+            val alreadyMaterialized = materialized.any { b ->
+                b.id == template.id ||
+                    b.recurrenceId == rule.id ||
+                    (b.title == template.title && b.startTime == template.startTime && b.endTime == template.endTime)
+            }
+            if (!alreadyMaterialized) {
+                projected += template.copy(
+                    id = "${template.id}@rec:$date",
+                    date = date,
+                    recurrenceId = rule.id,
+                    sourcePlanId = ""
+                )
+            }
+        }
+        return materialized + projected
+    }
+
+    /**
+     * 1.7.5.1 (P1 — Recorrências): Projeta virtualmente sob demanda compromissos recorrentes para [date]
+     * sem duplicar o compromisso template na data original.
+     */
+    fun effectiveEventsForDate(s: GameState, date: String): List<AgendaEvent> {
+        val materialized = s.agendaEvents.filter { !it.archived && it.date == date }
+        if (s.recurrenceRules.isEmpty()) return materialized
+        val eventsById = s.agendaEvents.associateBy { it.id }
+        val projected = mutableListOf<AgendaEvent>()
+        for (rule in s.recurrenceRules) {
+            if (!rule.active || rule.entityType != "event") continue
+            val template = eventsById[rule.templateId]
+                ?: s.agendaEvents.firstOrNull { it.recurrenceId == rule.id }
+                ?: continue
+            if (template.archived) continue
+            if (date !in expandRecurrenceOccurrences(rule, date, date)) continue
+            val alreadyMaterialized = materialized.any { ev ->
+                ev.id == template.id ||
+                    ev.recurrenceId == rule.id ||
+                    (ev.title == template.title && ev.startTime == template.startTime && ev.endTime == template.endTime)
+            }
+            if (!alreadyMaterialized) {
+                projected += template.copy(
+                    id = "${template.id}@rec:$date",
+                    date = date,
+                    recurrenceId = rule.id,
+                    completed = false
+                )
+            }
+        }
+        return materialized + projected
+    }
+
+    /**
      * Retorna apenas as janelas AUTORIZADAS pelo usuário para [date], respeitando dias de descanso
      * e exceções de disponibilidade. Nunca presume 24 horas livres.
      */
@@ -247,26 +355,28 @@ object OdinPlanningEngine {
     }
 
     /**
-     * Retorna intervalos ocupados por compromissos fixos (AgendaEvent) e blocos de horário em [date].
+     * Retorna intervalos ocupados por compromissos fixos (incluindo ocorrências recorrentes)
+     * e blocos de horário (incluindo ocorrências recorrentes) em [date].
      */
     fun busyIntervalsForDate(
         s: GameState,
         date: String,
         includeUnpinnedBlocks: Boolean = true,
-        ignorePlanId: String = ""
+        ignorePlanId: String = "",
+        ignoreBlockId: String = ""
     ): List<MinuteInterval> {
         val busy = mutableListOf<MinuteInterval>()
-        for (ev in s.agendaEvents) {
-            if (!ev.archived && ev.date == date) {
-                val st = parseTimeToMinutes(ev.startTime)
-                val en = parseTimeToMinutes(ev.endTime)
-                if (st != null && en != null && en > st) busy += MinuteInterval(st, en)
-            }
+        for (ev in effectiveEventsForDate(s, date)) {
+            val st = parseTimeToMinutes(ev.startTime)
+            val en = parseTimeToMinutes(ev.endTime)
+            if (st != null && en != null && en > st) busy += MinuteInterval(st, en)
         }
-        for (blk in s.timeBlocks) {
-            if (blk.date != date) continue
+        for (blk in effectiveBlocksForDate(s, date)) {
+            if (ignoreBlockId.isNotBlank() && blk.id == ignoreBlockId) continue
             if (ignorePlanId.isNotBlank() && blk.sourcePlanId == ignorePlanId && !blk.pinned && !blk.modifiedManually) continue
-            if (!includeUnpinnedBlocks && !blk.pinned) continue
+            val isRecurringOccurrence = blk.recurrenceId.isNotBlank() ||
+                s.recurrenceRules.any { it.active && it.entityType == "block" && it.templateId == blk.id }
+            if (!includeUnpinnedBlocks && !blk.pinned && !isRecurringOccurrence) continue
             val st = parseTimeToMinutes(blk.startTime)
             val en = parseTimeToMinutes(blk.endTime)
             if (st != null && en != null && en > st) busy += MinuteInterval(st, en)
@@ -278,12 +388,19 @@ object OdinPlanningEngine {
         s: GameState,
         date: String,
         includeUnpinnedBlocks: Boolean = true,
-        ignorePlanId: String = ""
+        ignorePlanId: String = "",
+        ignoreBlockId: String = "",
+        minStartMinute: Int = 0
     ): List<MinuteInterval> {
         val auth = authorizedWindowsForDate(s, date)
         if (auth.isEmpty()) return emptyList()
-        val busy = busyIntervalsForDate(s, date, includeUnpinnedBlocks, ignorePlanId)
-        return subtractIntervals(auth, busy)
+        val busy = busyIntervalsForDate(s, date, includeUnpinnedBlocks, ignorePlanId, ignoreBlockId)
+        val free = subtractIntervals(auth, busy)
+        if (minStartMinute <= 0) return free
+        return free.mapNotNull { iv ->
+            val st = max(iv.start, minStartMinute)
+            if (iv.end > st) MinuteInterval(st, iv.end) else null
+        }
     }
 
     fun hasConfiguredAvailability(s: GameState): Boolean =
@@ -609,7 +726,8 @@ object OdinPlanningEngine {
         config: PlanningConfig = resolvedPlanningConfig(s),
         includeHabits: Boolean = true,
         includeMimirReviews: Boolean = true,
-        preserveExistingBlocks: Boolean = true
+        preserveExistingBlocks: Boolean = true,
+        clock: PlanningClock = PlanningClock(referenceDate = fromDate, referenceMinuteOfDay = 0)
     ): OdinProposal {
         val strategy = odinStrategyById(strategyId)
         val startLocal = runCatching { LocalDate.parse(fromDate) }.getOrElse { LocalDate.now() }
@@ -632,15 +750,26 @@ object OdinPlanningEngine {
         val minSlice = config.minBlockMinutes.coerceIn(15, 60)
         val maxSlice = min(config.maxBlockMinutes.coerceAtLeast(minSlice), strategy.preferredMaxBlockMinutes.coerceAtLeast(minSlice))
 
-        // Disponibilidade diária real (nunca assume 24h)
+        // Disponibilidade diária real (nunca assume 24h) + filtro de horários já transcorridos no dia de referência
         val freeByDate = linkedMapOf<String, MutableList<MinuteInterval>>()
         val remainingDailyCap = mutableMapOf<String, Int>()
         var totalAvailableMinutes = 0
         for (d in dates) {
-            val intervals = freeIntervalsForDate(s, d, includeUnpinnedBlocks = preserveExistingBlocks).toMutableList()
+            val minStart = if (d == clock.referenceDate && clock.referenceMinuteOfDay > 0) clock.referenceMinuteOfDay else 0
+            val intervals = freeIntervalsForDate(
+                s = s,
+                date = d,
+                includeUnpinnedBlocks = preserveExistingBlocks,
+                minStartMinute = minStart
+            ).toMutableList()
             val dayFree = intervals.sumOf { it.minutes }
             freeByDate[d] = intervals
-            val cap = min(dayFree, dailyCapacityCap)
+            val existingBlocksMin = if (preserveExistingBlocks) {
+                effectiveBlocksForDate(s, d).sumOf { blockDurationMinutes(it) }
+            } else {
+                effectiveBlocksForDate(s, d).filter { it.pinned || it.recurrenceId.isNotBlank() }.sumOf { blockDurationMinutes(it) }
+            }
+            val cap = min(dayFree, (dailyCapacityCap - existingBlocksMin).coerceAtLeast(0))
             remainingDailyCap[d] = cap
             totalAvailableMinutes += cap
         }
@@ -656,16 +785,41 @@ object OdinPlanningEngine {
             criticalTaskIds += cpm.criticalSequence.map { it.task.id }
         }
 
-        // Mapeamento de minutos já alocados em blocos existentes no período (para evitar duplicidade)
+        // Mapeamento de minutos já alocados em blocos existentes (para evitar duplicidade e verificar cobertura integral)
         val existingAllocatedByTask = mutableMapOf<String, Int>()
+        val existingLastSlotByTask = mutableMapOf<String, Pair<String, Int>>()
         val existingHabitBlocks = mutableSetOf<String>() // "habitId@date"
+        for (d in dates) {
+            for (b in effectiveBlocksForDate(s, d)) {
+                if (preserveExistingBlocks || b.pinned || b.recurrenceId.isNotBlank()) {
+                    if (b.taskId.isNotBlank()) {
+                        existingAllocatedByTask[b.taskId] = (existingAllocatedByTask[b.taskId] ?: 0) + blockDurationMinutes(b)
+                        val endM = parseTimeToMinutes(b.endTime)
+                        if (endM != null) {
+                            val prev = existingLastSlotByTask[b.taskId]
+                            if (prev == null || b.date > prev.first || (b.date == prev.first && endM > prev.second)) {
+                                existingLastSlotByTask[b.taskId] = b.date to endM
+                            }
+                        }
+                    }
+                    if (b.habitId.isNotBlank()) {
+                        existingHabitBlocks += "${b.habitId}@${b.date}"
+                    }
+                }
+            }
+        }
+        // Também considera blocos existentes fora do intervalo [fromDate..toDate] mas anteriores ou iguais a toDate para tarefas já integralmente alocadas
         for (b in s.timeBlocks) {
-            if (b.date in dates.first()..dates.last() && (preserveExistingBlocks || b.pinned)) {
+            if (b.date !in dates && b.date <= dates.last() && (preserveExistingBlocks || b.pinned)) {
                 if (b.taskId.isNotBlank()) {
                     existingAllocatedByTask[b.taskId] = (existingAllocatedByTask[b.taskId] ?: 0) + blockDurationMinutes(b)
-                }
-                if (b.habitId.isNotBlank()) {
-                    existingHabitBlocks += "${b.habitId}@${b.date}"
+                    val endM = parseTimeToMinutes(b.endTime)
+                    if (endM != null) {
+                        val prev = existingLastSlotByTask[b.taskId]
+                        if (prev == null || b.date > prev.first || (b.date == prev.first && endM > prev.second)) {
+                            existingLastSlotByTask[b.taskId] = b.date to endM
+                        }
+                    }
                 }
             }
         }
@@ -680,13 +834,29 @@ object OdinPlanningEngine {
         val historyBucket = if (config.useHistorySoftPreference) preferredBucketFromHistory(s) else null
         val targetStudyBucket = historyBucket ?: config.preferredStudyPeriod.takeIf { it != "any" }
 
+        // Mapa explícito do estado de agendamento de cada tarefa
+        val taskScheduleStates = mutableMapOf<String, TaskScheduleState>()
+        s.pathTasks.forEach { t ->
+            if (t.completed) {
+                taskScheduleStates[t.id] = TaskScheduleState.COMPLETED
+            }
+        }
+
+        // Mapa de conclusão projetada (date, endMinute) para respeitar finish-to-start!
+        // 1.7.5.1 (P1 — Dependências): Somente tarefas INTEGRALMENTE agendadas entram em scheduledCompletion!
+        val scheduledCompletion = mutableMapOf<String, Pair<String, Int>>()
+
         // Montar candidatos (tarefas, hábitos de tempo, revisões Mímir)
         val taskCandidates = mutableListOf<WorkCandidate>()
         for (t in topoTasks) {
             val alreadyAlloc = existingAllocatedByTask[t.id] ?: 0
             val baseEst = if (t.estimateMinutes > 0) t.estimateMinutes else 30
             val needed = baseEst - alreadyAlloc
-            if (needed <= 0) continue
+            if (needed <= 0) {
+                taskScheduleStates[t.id] = TaskScheduleState.FULLY_SCHEDULED
+                existingLastSlotByTask[t.id]?.let { scheduledCompletion[t.id] = it }
+                continue
+            }
 
             val path = activePathsById[t.pathId]
             val category = path?.category?.ifBlank { "Projeto" } ?: "Tarefa"
@@ -818,19 +988,6 @@ object OdinPlanningEngine {
             }
         }
 
-        // Mapa de conclusão projetada (date, endMinute) para respeitar finish-to-start!
-        val scheduledCompletion = mutableMapOf<String, Pair<String, Int>>()
-        // Se uma tarefa já está concluída, não bloqueia; se já tem bloco existente, usa o fim do último bloco dela
-        for (b in s.timeBlocks) {
-            if (b.taskId.isNotBlank()) {
-                val endM = parseTimeToMinutes(b.endTime) ?: continue
-                val prev = scheduledCompletion[b.taskId]
-                if (prev == null || b.date > prev.first || (b.date == prev.first && endM > prev.second)) {
-                    scheduledCompletion[b.taskId] = b.date to endM
-                }
-            }
-        }
-
         val suggestions = mutableListOf<PlannedSuggestion>()
         var suggestionSeq = 0
         val lastCategoryByDate = mutableMapOf<String, String>()
@@ -900,6 +1057,7 @@ object OdinPlanningEngine {
 
             if (plannedSlices.isNotEmpty()) {
                 val totalParts = plannedSlices.size
+                var latestSliceEnd: Pair<String, Int>? = existingLastSlotByTask[cand.taskId]
                 plannedSlices.forEachIndexed { idx, (d, st, en) ->
                     suggestionSeq++
                     val partNote = if (totalParts > 1) " (parte ${idx + 1}/$totalParts)" else ""
@@ -928,10 +1086,23 @@ object OdinPlanningEngine {
                         splitIndex = idx + 1,
                         splitTotal = totalParts
                     )
-                    if (cand.taskId.isNotBlank()) {
-                        scheduledCompletion[cand.taskId] = d to en
+                    val curEnd = latestSliceEnd
+                    if (curEnd == null || d > curEnd.first || (d == curEnd.first && en > curEnd.second)) {
+                        latestSliceEnd = d to en
                     }
                 }
+                if (cand.taskId.isNotBlank()) {
+                    if (remaining == 0) {
+                        // 1.7.5.1 (P1): Somente tarefas INTEGRALMENTE agendadas liberam dependentes finish-to-start!
+                        taskScheduleStates[cand.taskId] = TaskScheduleState.FULLY_SCHEDULED
+                        latestSliceEnd?.let { scheduledCompletion[cand.taskId] = it }
+                    } else {
+                        taskScheduleStates[cand.taskId] = TaskScheduleState.PARTIALLY_SCHEDULED
+                    }
+                }
+            } else if (cand.taskId.isNotBlank()) {
+                val hadExisting = (existingAllocatedByTask[cand.taskId] ?: 0) > 0
+                taskScheduleStates[cand.taskId] = if (hadExisting) TaskScheduleState.PARTIALLY_SCHEDULED else TaskScheduleState.UNSCHEDULED
             }
             return remaining
         }
@@ -943,8 +1114,6 @@ object OdinPlanningEngine {
                 .thenBy { it.id }
         )
 
-        // Priorização global respeitando precedência topológica para tarefas:
-        // hábitos/Mímir são ordenados por pontuação; se Guardião, hábitos entram primeiro.
         val nonTaskQueue = (habitCandidates + mimirCandidates).sortedWith(
             compareByDescending<WorkCandidate> { it.score }.thenBy { it.preferredDay }.thenBy { it.id }
         )
@@ -959,9 +1128,7 @@ object OdinPlanningEngine {
         }
 
         // Alocar tarefas respeitando estritamente pré-requisitos finish-to-start
-        // (ordem respeita precedência e desempata por score estratégico)
         val readyQueue = orderedTasks.toMutableList()
-        // Reordenar preservando invariante topológica: Kahn priority queue guiada pelo score!
         val taskCandById = taskCandidates.associateBy { it.taskId }
         val activeDepEdges = s.taskDependencies.filter { !it.overridden && it.taskId in taskCandById && it.dependsOnTaskId in taskCandById }
         val inDeg = mutableMapOf<String, Int>()
@@ -979,15 +1146,16 @@ object OdinPlanningEngine {
             val c = pq.poll() ?: break
             scheduledTaskIds += c.taskId
 
-            // Verifica pré-requisitos pendentes externos (não concluídos e não agendados)
+            // Verifica pré-requisitos pendentes (não concluídos)
             val unmetPrereqs = blockingPrerequisites(c.taskId, allTasksById, s.taskDependencies)
-            var blockedByUnscheduled = false
+            var blockedByIncompletePrereq = false
             var earliestDate = fromDate
             var earliestMin = 0
             for (pre in unmetPrereqs) {
+                val preState = taskScheduleStates[pre.id] ?: TaskScheduleState.UNSCHEDULED
                 val comp = scheduledCompletion[pre.id]
-                if (comp == null) {
-                    blockedByUnscheduled = true
+                if ((preState != TaskScheduleState.FULLY_SCHEDULED && preState != TaskScheduleState.COMPLETED) || comp == null) {
+                    blockedByIncompletePrereq = true
                     break
                 } else {
                     if (comp.first > earliestDate || (comp.first == earliestDate && comp.second + buffer > earliestMin)) {
@@ -997,25 +1165,46 @@ object OdinPlanningEngine {
                 }
             }
 
-            if (blockedByUnscheduled) {
-                val blockingNames = unmetPrereqs.filter { scheduledCompletion[it.id] == null }.joinToString(", ") { it.title }
+            if (blockedByIncompletePrereq) {
+                taskScheduleStates[c.taskId] = TaskScheduleState.UNSCHEDULED
+                val partialPrereqs = unmetPrereqs.filter { taskScheduleStates[it.id] == TaskScheduleState.PARTIALLY_SCHEDULED }
+                val unscheduledPrereqs = unmetPrereqs.filter { scheduledCompletion[it.id] == null && taskScheduleStates[it.id] != TaskScheduleState.PARTIALLY_SCHEDULED }
+                val reasonMsg = when {
+                    partialPrereqs.isNotEmpty() && unscheduledPrereqs.isNotEmpty() ->
+                        "Bloqueada por pré-requisito parcialmente agendado (${partialPrereqs.joinToString(", ") { it.title }}) e não agendado (${unscheduledPrereqs.joinToString(", ") { it.title }})."
+                    partialPrereqs.isNotEmpty() ->
+                        "Bloqueada por pré-requisito parcialmente agendado: ${partialPrereqs.joinToString(", ") { it.title }}."
+                    else ->
+                        "Bloqueada por pré-requisito não concluído/agendado: ${unscheduledPrereqs.joinToString(", ") { it.title }}."
+                }
                 unscheduled += UnscheduledItem(
                     id = c.taskId,
                     title = c.title,
                     sourceType = "task",
                     remainingMinutes = c.remainingMinutes,
-                    reason = "Bloqueada por pré-requisito não concluído/agendado: $blockingNames.",
-                    deadline = c.deadline
+                    reason = reasonMsg,
+                    deadline = c.deadline,
+                    scheduleState = TaskScheduleState.UNSCHEDULED
                 )
             } else {
                 val rem = allocateCandidate(c, earliestDate, earliestMin)
                 if (rem > 0) {
+                    val stateAfter = taskScheduleStates[c.taskId] ?: TaskScheduleState.UNSCHEDULED
                     val cause = when {
                         totalAvailableMinutes == 0 -> "Sem disponibilidade configurada no período."
                         c.deadline.isNotBlank() && c.deadline < dates.last() -> "Capacidade insuficiente antes do prazo (${c.deadline})."
+                        stateAfter == TaskScheduleState.PARTIALLY_SCHEDULED -> "Parcialmente agendada: capacidade livre insuficiente no período selecionado (faltam ${rem} min)."
                         else -> "Capacidade livre insuficiente no período selecionado (faltam ${rem} min)."
                     }
-                    unscheduled += UnscheduledItem(c.taskId, c.title, "task", rem, cause, c.deadline)
+                    unscheduled += UnscheduledItem(
+                        id = c.taskId,
+                        title = c.title,
+                        sourceType = "task",
+                        remainingMinutes = rem,
+                        reason = cause,
+                        deadline = c.deadline,
+                        scheduleState = stateAfter
+                    )
                 }
             }
 
@@ -1029,13 +1218,15 @@ object OdinPlanningEngine {
         // Tarefas eventualmente presas em ciclo
         for (c in readyQueue) {
             if (c.taskId !in scheduledTaskIds) {
+                taskScheduleStates[c.taskId] = TaskScheduleState.UNSCHEDULED
                 unscheduled += UnscheduledItem(
                     id = c.taskId,
                     title = c.title,
                     sourceType = "task",
                     remainingMinutes = c.remainingMinutes,
                     reason = "Bloqueada por ciclo de dependências.",
-                    deadline = c.deadline
+                    deadline = c.deadline,
+                    scheduleState = TaskScheduleState.UNSCHEDULED
                 )
             }
         }
@@ -1067,12 +1258,13 @@ object OdinPlanningEngine {
             totalAvailableMinutes = totalAvailableMinutes,
             totalSuggestedMinutes = sortedSuggestions.sumOf { it.minutes },
             usedHistoryPreference = historyBucket != null,
-            preferredHistoryBucket = historyBucket
+            preferredHistoryBucket = historyBucket,
+            taskScheduleStates = taskScheduleStates
         )
     }
 
     // =========================================================================
-    // 6. SIMULADOR DE CAPACIDADE (5 PERÍODOS, SEM CONTAGEM DUPLICADA)
+    // 6. SIMULADOR DE CAPACIDADE (5 PERÍODOS, SEM CONTAGEM DUPLICADA, COM RECORRÊNCIAS)
     // =========================================================================
 
     fun resolveCapacityRange(
@@ -1117,12 +1309,16 @@ object OdinPlanningEngine {
         var existingBlocksMin = 0
         var freeCapMin = 0
 
+        // Deduplicação real: minutos já alocados em blocos vinculados (incluindo recorrências) NÃO são somados de novo!
+        val allocatedByTask = mutableMapOf<String, Int>()
+        val allocatedHabitDates = mutableSetOf<String>()
+
         for (d in dates) {
             val auth = authorizedWindowsForDate(s, d)
             val authMin = min(auth.sumOf { it.minutes }, config.dailyLimitMinutes)
             configuredAvail += authMin
 
-            val dayEvents = s.agendaEvents.filter { !it.archived && it.date == d }
+            val dayEvents = effectiveEventsForDate(s, d)
                 .sumOf { ev ->
                     val st = parseTimeToMinutes(ev.startTime)
                     val en = parseTimeToMinutes(ev.endTime)
@@ -1130,18 +1326,11 @@ object OdinPlanningEngine {
                 }
             fixedEventsMin += dayEvents
 
-            val dayBlocks = s.timeBlocks.filter { it.date == d }.sumOf { blockDurationMinutes(it) }
+            val effBlocks = effectiveBlocksForDate(s, d)
+            val dayBlocks = effBlocks.sumOf { blockDurationMinutes(it) }
             existingBlocksMin += dayBlocks
 
-            val dayFree = min(freeIntervalsForDate(s, d).sumOf { it.minutes }, (config.dailyLimitMinutes - dayBlocks).coerceAtLeast(0))
-            freeCapMin += dayFree
-        }
-
-        // Deduplicação real: minutos já alocados em blocos vinculados a uma tarefa NÃO são somados de novo!
-        val allocatedByTask = mutableMapOf<String, Int>()
-        val allocatedHabitDates = mutableSetOf<String>()
-        for (b in s.timeBlocks) {
-            if (b.date in fromDate..toDate) {
+            for (b in effBlocks) {
                 if (b.taskId.isNotBlank()) {
                     allocatedByTask[b.taskId] = (allocatedByTask[b.taskId] ?: 0) + blockDurationMinutes(b)
                 }
@@ -1149,6 +1338,9 @@ object OdinPlanningEngine {
                     allocatedHabitDates += "${b.habitId}@${b.date}"
                 }
             }
+
+            val dayFree = min(freeIntervalsForDate(s, d).sumOf { it.minutes }, (config.dailyLimitMinutes - dayBlocks).coerceAtLeast(0))
+            freeCapMin += dayFree
         }
 
         val activePathIds = s.paths.filter { it.state !in 3..5 }.map { it.id }.toSet()
@@ -1244,40 +1436,71 @@ object OdinPlanningEngine {
     }
 
     // =========================================================================
-    // 7. REPLANEJAMENTO ADAPTATIVO (5 ALTERNATIVAS, ZERO PUNIÇÃO NO RPG)
+    // 7. REPLANEJAMENTO ADAPTATIVO (SEM FALLBACK FIXO ÀS 09H, ZERO PUNIÇÃO NO RPG)
     // =========================================================================
 
-    fun generateReplanProposal(s: GameState, todayDate: String = today()): List<ReplanItem> {
+    fun generateReplanProposal(
+        s: GameState,
+        todayDate: String = today(),
+        clock: PlanningClock = PlanningClock(referenceDate = todayDate, referenceMinuteOfDay = 0)
+    ): List<ReplanItem> {
         val base = runCatching { LocalDate.parse(todayDate) }.getOrElse { LocalDate.now() }
         val tasksById = s.pathTasks.associateBy { it.id }
+        val config = resolvedPlanningConfig(s)
+        val buffer = config.bufferMinutes.coerceAtLeast(0)
         val items = mutableListOf<ReplanItem>()
         val seenTaskIds = mutableSetOf<String>()
 
-        fun buildOptions(minutes: Int): List<ReplanSlotOption> {
+        fun buildOptions(minutes: Int, taskId: String = "", blockId: String = ""): List<ReplanSlotOption> {
             val dur = minutes.coerceIn(20, 120)
-            val half = max(15, dur / 2)
-            // Próximo horário livre em 1..7 dias
+            val half1 = max(15, dur / 2)
+            val half2 = max(15, dur - half1)
+            val blockedByPrereqs = taskId.isNotBlank() && blockingPrerequisites(taskId, tasksById, s.taskDependencies).isNotEmpty()
+
             var transferSlot: Triple<String, Int, Int>? = null
             val splitSlots = mutableListOf<Triple<String, Int, Int>>()
-            for (offset in 0..10) {
-                val d = base.plusDays(offset.toLong()).toString()
-                for (iv in freeIntervalsForDate(s, d)) {
-                    if (transferSlot == null && iv.minutes >= dur) {
-                        transferSlot = Triple(d, iv.start, iv.start + dur)
-                    }
-                    if (splitSlots.size < 2 && iv.minutes >= half && splitSlots.none { it.first == d && it.second == iv.start }) {
-                        splitSlots += Triple(d, iv.start, iv.start + half)
+            var nextWeekSlot: Triple<String, Int, Int>? = null
+
+            if (!blockedByPrereqs) {
+                // Próximo horário livre em 0..10 dias respeitando horário corrente, limite diário e buffers
+                for (offset in 0..10) {
+                    val d = base.plusDays(offset.toLong()).toString()
+                    val minStart = if (d == clock.referenceDate && clock.referenceMinuteOfDay > 0) clock.referenceMinuteOfDay else 0
+                    val existingMin = effectiveBlocksForDate(s, d).filter { it.id != blockId }.sumOf { blockDurationMinutes(it) }
+                    val remainingDaily = (config.dailyLimitMinutes - existingMin).coerceAtLeast(0)
+                    val freeIvs = freeIntervalsForDate(s, d, ignoreBlockId = blockId, minStartMinute = minStart)
+
+                    for (iv in freeIvs) {
+                        if (transferSlot == null && iv.minutes >= dur && remainingDaily >= dur) {
+                            transferSlot = Triple(d, iv.start, iv.start + dur)
+                        }
+                        if (splitSlots.isEmpty() && iv.minutes >= half1 && remainingDaily >= half1) {
+                            splitSlots += Triple(d, iv.start, iv.start + half1)
+                            // Se a mesma janela comportar a segunda metade após o buffer e dentro do limite diário
+                            val secondStartInSame = iv.start + half1 + buffer
+                            if (iv.end - secondStartInSame >= half2 && remainingDaily >= half1 + half2) {
+                                splitSlots += Triple(d, secondStartInSame, secondStartInSame + half2)
+                            }
+                        } else if (splitSlots.size == 1 && iv.minutes >= half2) {
+                            val first = splitSlots[0]
+                            if (d != first.first && remainingDaily >= half2) {
+                                splitSlots += Triple(d, iv.start, iv.start + half2)
+                            } else if (d == first.first && iv.start >= first.third + buffer && remainingDaily >= half1 + half2) {
+                                splitSlots += Triple(d, iv.start, iv.start + half2)
+                            }
+                        }
                     }
                 }
-            }
-            // Próxima semana (7..14 dias)
-            var nextWeekSlot: Triple<String, Int, Int>? = null
-            for (offset in 7..14) {
-                val d = base.plusDays(offset.toLong()).toString()
-                val found = freeIntervalsForDate(s, d).firstOrNull { it.minutes >= dur }
-                if (found != null) {
-                    nextWeekSlot = Triple(d, found.start, found.start + dur)
-                    break
+                // Próxima semana (7..14 dias) — somente janelas reais! Nunca inventa 09:00 se indisponível.
+                for (offset in 7..14) {
+                    val d = base.plusDays(offset.toLong()).toString()
+                    val existingMin = effectiveBlocksForDate(s, d).filter { it.id != blockId }.sumOf { blockDurationMinutes(it) }
+                    if (config.dailyLimitMinutes - existingMin < dur) continue
+                    val found = freeIntervalsForDate(s, d, ignoreBlockId = blockId).firstOrNull { it.minutes >= dur }
+                    if (found != null) {
+                        nextWeekSlot = Triple(d, found.start, found.start + dur)
+                        break
+                    }
                 }
             }
 
@@ -1296,7 +1519,7 @@ object OdinPlanningEngine {
                 val b = splitSlots[1]
                 opts += ReplanSlotOption(
                     action = ReplanActionKind.SPLIT,
-                    summary = "Dividir em ${a.first} (${formatMinutesToTime(a.second)}) + ${b.first} (${formatMinutesToTime(b.second)})",
+                    summary = "Dividir em ${a.first} (${formatMinutesToTime(a.second)}–${formatMinutesToTime(a.third)}) + ${b.first} (${formatMinutesToTime(b.second)}–${formatMinutesToTime(b.third)})",
                     targetDate = a.first,
                     startTime = formatMinutesToTime(a.second),
                     endTime = formatMinutesToTime(a.third),
@@ -1305,17 +1528,15 @@ object OdinPlanningEngine {
                     secondEndTime = formatMinutesToTime(b.third)
                 )
             }
-            opts += ReplanSlotOption(
-                action = ReplanActionKind.POSTPONE,
-                summary = if (nextWeekSlot != null) {
-                    "Adiar para ${nextWeekSlot.first} · ${formatMinutesToTime(nextWeekSlot.second)}–${formatMinutesToTime(nextWeekSlot.third)}"
-                } else {
-                    "Adiar data agendada para ${base.plusDays(7)}"
-                },
-                targetDate = nextWeekSlot?.first ?: base.plusDays(7).toString(),
-                startTime = nextWeekSlot?.let { formatMinutesToTime(it.second) } ?: "09:00",
-                endTime = nextWeekSlot?.let { formatMinutesToTime(it.third) } ?: formatMinutesToTime(9 * 60 + dur)
-            )
+            if (nextWeekSlot != null) {
+                opts += ReplanSlotOption(
+                    action = ReplanActionKind.POSTPONE,
+                    summary = "Adiar para ${nextWeekSlot.first} · ${formatMinutesToTime(nextWeekSlot.second)}–${formatMinutesToTime(nextWeekSlot.third)}",
+                    targetDate = nextWeekSlot.first,
+                    startTime = formatMinutesToTime(nextWeekSlot.second),
+                    endTime = formatMinutesToTime(nextWeekSlot.third)
+                )
+            }
             opts += ReplanSlotOption(
                 action = ReplanActionKind.SEND_TO_PENDING,
                 summary = "Retirar da data vencida e manter na Central de Pendências"
@@ -1327,12 +1548,17 @@ object OdinPlanningEngine {
             return opts
         }
 
+        val activePathIds = s.paths.filter { !isPathInactiveForPending(it.state) }.map { it.id }.toSet()
+
         // Blocos passados vinculados a tarefas ainda não concluídas
         for (b in s.timeBlocks.filter { it.date < todayDate }.sortedBy { it.date }) {
             val linkedTask = tasksById[b.taskId]
-            if (linkedTask != null && !linkedTask.completed && !linkedTask.archived) {
+            if (linkedTask != null && !linkedTask.completed && !linkedTask.archived && (linkedTask.pathId.isBlank() || linkedTask.pathId in activePathIds)) {
                 seenTaskIds += linkedTask.id
                 val mins = blockDurationMinutes(b).coerceAtLeast(20)
+                val opts = buildOptions(mins, linkedTask.id, b.id)
+                val hasTimeOptions = opts.any { it.action in setOf(ReplanActionKind.TRANSFER, ReplanActionKind.SPLIT, ReplanActionKind.POSTPONE) }
+                val reasonSuffix = if (!hasTimeOptions) " (sem janela livre disponível; mantenha em Pendências ou configure disponibilidade)" else ""
                 items += ReplanItem(
                     id = "replan-blk-${b.id}",
                     title = b.title,
@@ -1342,14 +1568,14 @@ object OdinPlanningEngine {
                     areaId = b.areaId.ifBlank { linkedTask.areaId },
                     originalDate = b.date,
                     minutes = mins,
-                    reason = "Bloco agendado em ${b.date} ainda não concluído.",
-                    options = buildOptions(mins)
+                    reason = "Bloco agendado em ${b.date} ainda não concluído.$reasonSuffix",
+                    options = opts
                 )
             }
         }
 
         // Tarefas agendadas ou vencidas antes de hoje sem bloco já capturado
-        for (t in s.pathTasks.filter { !it.completed && !it.archived && it.id !in seenTaskIds }) {
+        for (t in s.pathTasks.filter { !it.completed && !it.archived && it.id !in seenTaskIds && (it.pathId.isBlank() || it.pathId in activePathIds) }) {
             val missedDate = when {
                 t.scheduledDate.isNotBlank() && t.scheduledDate < todayDate -> t.scheduledDate
                 t.deadline.isNotBlank() && t.deadline < todayDate -> t.deadline
@@ -1357,6 +1583,10 @@ object OdinPlanningEngine {
             }
             if (missedDate.isNotBlank()) {
                 val mins = (if (t.estimateMinutes > 0) t.estimateMinutes else 30).coerceIn(20, 120)
+                val opts = buildOptions(mins, t.id, "")
+                val hasTimeOptions = opts.any { it.action in setOf(ReplanActionKind.TRANSFER, ReplanActionKind.SPLIT, ReplanActionKind.POSTPONE) }
+                val baseReason = if (t.deadline.isNotBlank() && t.deadline < todayDate) "Prazo ultrapassado (${t.deadline})." else "Agendada para $missedDate sem conclusão."
+                val reasonSuffix = if (!hasTimeOptions) " Sem janela livre disponível no momento." else ""
                 items += ReplanItem(
                     id = "replan-task-${t.id}",
                     title = t.title,
@@ -1366,8 +1596,8 @@ object OdinPlanningEngine {
                     areaId = t.areaId,
                     originalDate = missedDate,
                     minutes = mins,
-                    reason = if (t.deadline.isNotBlank() && t.deadline < todayDate) "Prazo ultrapassado (${t.deadline})." else "Agendada para $missedDate sem conclusão.",
-                    options = buildOptions(mins)
+                    reason = "$baseReason$reasonSuffix",
+                    options = opts
                 )
             }
         }
@@ -1418,7 +1648,7 @@ object OdinPlanningEngine {
         val out = mutableListOf<String>()
         var d = effectiveStart
         var guard = 0
-        while (!d.isAfter(effectiveEnd) && guard < 400) {
+        while (!d.isAfter(effectiveEnd) && guard < 3660) {
             guard++
             val ds = d.toString()
             if (ds !in excluded) {

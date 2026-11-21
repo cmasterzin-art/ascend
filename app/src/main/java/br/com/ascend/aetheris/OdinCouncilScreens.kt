@@ -63,7 +63,8 @@ fun OdinCouncilScreen(
             strategyId = previewStrategyId,
             config = config,
             includeHabits = includeHabits,
-            includeMimirReviews = includeMimir
+            includeMimirReviews = includeMimir,
+            clock = PlanningClock.fromClock()
         )
     }
 
@@ -76,7 +77,8 @@ fun OdinCouncilScreen(
             strategyId = compareStrategyId,
             config = config,
             includeHabits = includeHabits,
-            includeMimirReviews = includeMimir
+            includeMimirReviews = includeMimir,
+            clock = PlanningClock.fromClock()
         )
     }
 
@@ -84,7 +86,7 @@ fun OdinCouncilScreen(
         OdinPlanningEngine.simulateCapacity(s, CapacityPeriodKind.NEXT_7_DAYS, todayDate)
     }
     val replanItems = remember(s, todayDate) {
-        OdinPlanningEngine.generateReplanProposal(s, todayDate)
+        OdinPlanningEngine.generateReplanProposal(s, todayDate, PlanningClock.fromClock())
     }
 
     val tabs = listOf("Salão", "Proposta", "Capacidade", "Replanejar", "Eisenhower", "Horários")
