@@ -363,9 +363,9 @@ fun agendaDay(s: GameState, date: String): AgendaDaySummary {
     val tasks = s.pathTasks.filter {
         (isTaskActivePending(s, it) || it.completed && !it.archived) && (it.scheduledDate == date || it.deadline == date)
     }.sortedWith(compareBy<PathTask> { it.completed }.thenBy { it.scheduledTime.ifBlank { "99:99" } }.thenByDescending { it.priority }.thenBy { it.position })
-    val blocks = s.timeBlocks.filter { it.date == date }.sortedBy { LocalTime.parse(it.startTime) }
+    val blocks = OdinPlanningEngine.effectiveBlocksForDate(s, date).sortedBy { LocalTime.parse(it.startTime) }
     val overlaps = timeBlockOverlaps(blocks)
-    val events = s.agendaEvents.filter { !it.archived && it.date == date }
+    val events = OdinPlanningEngine.effectiveEventsForDate(s, date)
         .sortedWith(compareBy<AgendaEvent> { it.completed }.thenBy { if (it.startTime.isBlank()) LocalTime.MAX else LocalTime.parse(it.startTime) })
     val deadlines = s.paths.filter { !isPathInactiveForPending(it.state) && it.deadline == date }
     return AgendaDaySummary(date, habits, tasks, blocks, overlaps, events, deadlines)
@@ -389,8 +389,8 @@ fun monthMarker(s: GameState, date: String): MonthDayMarker {
     val habits = s.due(date)
     val done = habits.count { s.record(it.id, date)?.complete == true }
     val tasks = s.pathTasks.count { isTaskActivePending(s, it) && !it.completed && (it.scheduledDate == date || it.deadline == date) }
-    val blocks = s.timeBlocks.count { it.date == date }
-    val events = s.agendaEvents.count { !it.archived && it.date == date }
+    val blocks = OdinPlanningEngine.effectiveBlocksForDate(s, date).size
+    val events = OdinPlanningEngine.effectiveEventsForDate(s, date).size
     val hasDeadline = s.paths.any { !isPathInactiveForPending(it.state) && it.deadline == date }
     return MonthDayMarker(date, habits.size, done, tasks, blocks, events, hasDeadline, date in s.restDates)
 }

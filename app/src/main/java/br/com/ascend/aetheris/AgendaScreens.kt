@@ -566,7 +566,8 @@ fun PlannerScreen(
     }
 
     recurrenceBlock?.let { b ->
-        val existing = s.recurrenceRules.find { it.entityType == "block" && (it.templateId == b.id || it.id == b.recurrenceId) }
+        val baseTemplateId = b.id.substringBefore("@rec:")
+        val existing = s.recurrenceRules.find { it.entityType == "block" && (it.templateId == baseTemplateId || it.templateId == b.id || it.id == b.recurrenceId) }
         var patternIdx by remember(b) { mutableIntStateOf(listOf("daily", "weekly", "weekdays", "monthly").indexOf(existing?.pattern ?: "weekly").coerceAtLeast(0)) }
         var daysText by remember(b) { mutableStateOf(existing?.daysOfWeek?.ifBlank { "1,3,5" } ?: "1,3,5") }
         var endDateText by remember(b) { mutableStateOf(existing?.endDate ?: "") }
@@ -578,9 +579,9 @@ fun PlannerScreen(
             confirmButton = {
                 SagaButton("Salvar série", {
                     val rule = RecurrenceRule(
-                        id = existing?.id ?: "rec-${b.id}",
+                        id = existing?.id ?: "rec-$baseTemplateId",
                         entityType = "block",
-                        templateId = b.id,
+                        templateId = existing?.templateId ?: baseTemplateId,
                         pattern = patterns[patternIdx],
                         daysOfWeek = if (patterns[patternIdx] == "weekdays") daysText.trim() else "",
                         startDate = b.date,
