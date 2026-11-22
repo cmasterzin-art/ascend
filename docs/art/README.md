@@ -182,3 +182,16 @@ Seis gerações pictóricas originais realizadas via `generate_image` (orçament
 | `nordic_planning_marks_atlas.webp` | `768×384` | 60,656 | `4565b50b8ffe2bc2c076cefa448e4053608c6e0a346b09c1a8921b6efa4a86fa` | 8 marcadores nórdicos de planejamento (4×2) |
 | `nordic_strategy_frames_atlas.webp` | `1024×512` | 45,336 | `a10be7e1ca7d778c5fd0bd0e0499cb308b0503f228857be23b64adce9343bcee` | 8 molduras, cantoneiras, divisores e placa rúnica (4×2) |
 | `odin_council_seals_refined_atlas.webp` | `768×512` | 101,498 | `0d836aaea6763df86409d24cfb3dfd1898f832ab119f13892fc3d0047a4add3e` | 6 selos refinados das estratégias de Odin (3×2) |
+
+## 1.7.5.9 — A Reforma de Aetheris (NORTHBORN · Design System 4.0)
+
+Três novos recursos pictóricos originais gerados via `generate_image` e otimizados em WebP (2 pranchas conceituais fora do APK + 1 atlas de materiais 4×2 em `app/src/main/res/drawable-nodpi/`, somando **47.402 bytes / 46,3 KB** adicionados ao APK):
+
+| Arquivo WebP (1.7.5.9) | Dimensões | Bytes | SHA-256 | Finalidade |
+|---|---|---:|---|---|
+| `concepts/northborn-master-board-1759.webp` | `1280×720` | 88,858 | `d8c4d9d6169477cdda75d29065cbc1d25c39e22e222f75ee15e8ff9fdd4d1b7f` | Prancha mestra NORTHBORN (paleta, materiais, botões arquitetônicos, divisores geométricos, iconografia — fora do APK) |
+| `concepts/northborn-screen-direction.webp` | `1280×720` | 142,802 | `528a869272d82c52f24f84ede70f1be4fa09b0676b8177d0d7b320eaaf10402f` | Prancha de direção compositiva de telas (Jornada, Mesa Estratégica, Biblioteca, Arsenal, Forja do Tempo, Atlas — fora do APK) |
+| `northborn_materials_atlas.webp` | `1024×512` | 47,402 | `364cd42891099937cd3bc3c14b7fe6682b80cdbc8ea03d777b671096c77826ff` | Atlas 4×2 de 8 materiais escandinavos foscos (freixo nórdico, carvalho defumado, ferro enegrecido, bronze envelhecido, prata oxidada, couro selaria, velino arquivístico, ardósia vulcânica) |
+
+**Limitação registrada (Seção 30):** após a geração destes 3 arquivos, o serviço `generate_image` (`gemini-3.1-flash-image`) retornou esgotamento de cota (`Quota exceeded`, janela de recarga ~69h), impedindo a geração das 10 folhas pictóricas adicionais planejadas (`northborn_buttons_atlas` até `northborn_interface_details_atlas`). Em vez de fingir vetores como imagens geradas ou reciclar placas ruidosas, o Design System 4.0 combina o novo `northborn_materials_atlas.webp` com geometria arquitetônica pura em Jetpack Compose, iconografia vetorial de traço uniforme inspirada diretamente em `northborn-master-board-1759.webp`, divisores geométricos nórdicos e uso seletivo dos retratos, mapas e selos já existentes no projeto.
+
