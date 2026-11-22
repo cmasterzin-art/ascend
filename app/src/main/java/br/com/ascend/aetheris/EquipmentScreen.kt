@@ -246,15 +246,16 @@ fun Equipment(
             if (!store) {
                 val minimal = LocalAppearance.current.minimal
                 val spec = activeSpecialization(s)
-                val dark = LocalAppearance.current.dark
+                val nb = LocalNorthborn.current
+                val dark = nb.dark
                 val heraldry = remember(s.heraldry, s.player?.created) { resolvedHeraldry(s) }
                 // Arsenal dos Nove Reinos — câmara central com Retrato Vivo, brasão e 7 nichos nórdicos
                 Box(
                     Modifier
                         .fillMaxWidth()
-                        .clip(CutCornerShape(8.dp))
-                        .border(1.dp, OldBronze.copy(alpha = 0.52f), CutCornerShape(8.dp))
-                        .background(Surface)
+                        .clip(NorthbornShape.lg)
+                        .border(1.dp, nb.accentBronze.copy(alpha = 0.45f), NorthbornShape.lg)
+                        .background(nb.surfaceBase)
                 ) {
                     if (!minimal) {
                         AtlasCellCropped(
@@ -263,7 +264,7 @@ fun Equipment(
                             columns = 2,
                             rows = 2,
                             modifier = Modifier.matchParentSize(),
-                            alpha = if (dark) 0.24f else 0.14f
+                            alpha = if (dark) 0.20f else 0.10f
                         )
                     }
                     Column(
@@ -272,11 +273,11 @@ fun Equipment(
                             .background(
                                 Brush.verticalGradient(
                                     if (dark) listOf(
-                                        Color(0xFF0E1217).copy(alpha = 0.72f),
-                                        Color(0xFF0E1217).copy(alpha = 0.88f)
+                                        nb.surfaceBase.copy(alpha = 0.78f),
+                                        nb.surfaceBase.copy(alpha = 0.92f)
                                     ) else listOf(
-                                        Surface.copy(alpha = 0.86f),
-                                        Surface.copy(alpha = 0.94f)
+                                        nb.surfaceBase.copy(alpha = 0.88f),
+                                        nb.surfaceBase.copy(alpha = 0.96f)
                                     )
                                 )
                             )

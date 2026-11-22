@@ -66,18 +66,19 @@ private fun MimirLibraryBanner(
     onStartReview: () -> Unit
 ) {
     val minimal = LocalAppearance.current.minimal
-    val shape = CutCornerShape(topStart = 8.dp, topEnd = 2.dp, bottomEnd = 8.dp, bottomStart = 2.dp)
+    val nb = LocalNorthborn.current
+    val shape = NorthbornShape.lg
     if (minimal) {
-        AetherSurface(SurfaceKind.Heroic) {
-            Eyebrow("A Biblioteca de Mímir", Gold)
-            Text("Conhecimento e Memória", style = MaterialTheme.typography.headlineSmall)
+        NorthbornSurface(role = NorthbornSurfaceRole.Document, material = NorthbornMaterial.ArchivalVellum) {
+            Eyebrow("A Biblioteca de Mímir", nb.accentBronze)
+            Text("Conhecimento e Memória", style = MaterialTheme.typography.headlineSmall, color = nb.inkPrimary)
             Text(
                 "$notebooksCount ${if (notebooksCount == 1) "caderno" else "cadernos"} · $pagesCount ${if (pagesCount == 1) "página" else "páginas"} · $dueCount ${if (dueCount == 1) "revisão pendente" else "revisões pendentes"}",
-                color = Muted,
+                color = nb.inkSecondary,
                 fontSize = 12.sp
             )
             if (dueCount > 0) {
-                SagaButton("Revisar Runas ($dueCount)", onStartReview, Modifier.fillMaxWidth())
+                NorthbornButton("Revisar Runas ($dueCount)", onStartReview, role = NorthbornButtonRole.Ceremonial, modifier = Modifier.fillMaxWidth())
             }
         }
         return
@@ -85,9 +86,9 @@ private fun MimirLibraryBanner(
     Box(
         Modifier
             .fillMaxWidth()
-            .heightIn(min = 138.dp)
+            .heightIn(min = 142.dp)
             .clip(shape)
-            .border(1.dp, OldBronze.copy(alpha = 0.52f), shape)
+            .border(1.dp, nb.accentBronze.copy(alpha = 0.42f), shape)
     ) {
         Image(
             painterResource(R.drawable.mimir_library),
@@ -101,23 +102,23 @@ private fun MimirLibraryBanner(
                 .matchParentSize()
                 .background(
                     Brush.verticalGradient(
-                        0f to Color(0xCC0D1013),
-                        0.45f to Color(0x99101419),
-                        1f to Color(0xEE0C0F12)
+                        0f to Color(0xBD0D1013),
+                        0.48f to Color(0x9E101318),
+                        1f to Color(0xEB0C0F12)
                     )
                 )
         )
         Column(
             Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
+                .padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Eyebrow("A Biblioteca de Mímir", Gold)
+            Eyebrow("A Biblioteca de Mímir", Color(0xFFD8BE8F))
             Text(
                 "Acervo Pessoal de Sabedoria",
                 style = MaterialTheme.typography.headlineSmall,
-                color = Color(0xFFECE6D9)
+                color = Color(0xFFEFEAE0)
             )
             Text(
                 "$notebooksCount ${if (notebooksCount == 1) "caderno" else "cadernos"} · $pagesCount ${if (pagesCount == 1) "página" else "páginas"} · $dueCount ${if (dueCount == 1) "revisão pendente" else "revisões pendentes"}",
@@ -125,8 +126,8 @@ private fun MimirLibraryBanner(
                 fontSize = 12.sp
             )
             if (dueCount > 0) {
-                Spacer(Modifier.height(2.dp))
-                SagaButton("Iniciar Runas da Memória ($dueCount)", onStartReview, Modifier.fillMaxWidth())
+                Spacer(Modifier.height(4.dp))
+                NorthbornButton("Iniciar Runas da Memória ($dueCount)", onStartReview, role = NorthbornButtonRole.Ceremonial, modifier = Modifier.fillMaxWidth())
             }
         }
     }
@@ -407,13 +408,17 @@ fun MimirLibraryScreen(
                         val nbCards = s.flashcards.count { it.notebookId == nb.id && !it.archived }
                         val nbDue = dueCards.count { it.notebookId == nb.id }
                         val linkedPath = s.paths.find { it.id == nb.pathId }
-                        AetherSurface(SurfaceKind.Operational, Modifier.testTag("notebook:${nb.id}")) {
+                        NorthbornSurface(
+                            role = NorthbornSurfaceRole.Document,
+                            material = NorthbornMaterial.ArchivalVellum,
+                            modifier = Modifier.testTag("notebook:${nb.id}")
+                        ) {
                             Row(
                                 Modifier.fillMaxWidth().clickable { onOpenNotebook(nb.id) },
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                MimirCodexArt(nb.cover, Modifier.size(62.dp), accent = if (nb.archived) Muted else Gold)
+                                MimirCodexArt(nb.cover, Modifier.size(60.dp), accent = if (nb.archived) Muted else Gold)
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                                     Eyebrow(
                                         "${nb.category}${if (nb.archived) " · Arquivado" else ""}",
@@ -433,6 +438,7 @@ fun MimirLibraryScreen(
                                     }
                                 }
                             }
+                            NorthbornDivider(NorthbornDividerStyle.Hairline)
                             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 TextButton({ onOpenNotebook(nb.id) }) { Text("Abrir", fontSize = 12.sp) }
                                 TextButton({ notebookEditorId = nb.id }) { Text("Editar", fontSize = 12.sp) }
@@ -1408,24 +1414,30 @@ fun FlashcardReviewScreen(
 
         val cardNotebook = s.notebooks.find { it.id == currentCard.notebookId }
         val cardPage = s.knowledgePages.find { it.id == currentCard.pageId }
-        AetherSurface(SurfaceKind.Operational, Modifier.testTag("flashcard_stage")) {
+        val nbFc = LocalNorthborn.current
+        NorthbornSurface(
+            role = NorthbornSurfaceRole.Document,
+            material = NorthbornMaterial.ArchivalVellum,
+            accent = if (isRetryPhase) nbFc.accentFjord else nbFc.accentBronze,
+            modifier = Modifier.testTag("flashcard_stage")
+        ) {
             Eyebrow(
                 if (isRetryPhase) "Reforço da sessão · não duplica histórico"
                 else listOfNotNull(cardNotebook?.name, cardPage?.title).joinToString(" · ").ifBlank { "Runa da Memória" },
-                if (isRetryPhase) Blue else Gold
+                if (isRetryPhase) nbFc.accentFjord else nbFc.accentBronze
             )
-            Text(currentCard.question, style = MaterialTheme.typography.headlineSmall)
+            Text(currentCard.question, style = MaterialTheme.typography.headlineSmall, color = nbFc.inkPrimary)
             if (currentCard.tags.isNotBlank()) {
-                Text(currentCard.tags, color = Muted, fontSize = 11.sp)
+                Text(currentCard.tags, color = nbFc.inkMuted, fontSize = 11.sp)
             }
-            Hairline()
+            NorthbornDivider(NorthbornDividerStyle.DiamondKnot)
             if (!revealed) {
-                Text("Recupere a resposta em memória antes de revelar.", color = Muted, fontSize = 12.sp)
-                Action("Revelar resposta", { revealed = true }, Modifier.fillMaxWidth().testTag("reveal_answer"))
+                Text("Recupere a resposta em memória antes de revelar.", color = nbFc.inkSecondary, fontSize = 12.5.sp)
+                NorthbornButton("Revelar resposta", { revealed = true }, role = NorthbornButtonRole.Ceremonial, modifier = Modifier.fillMaxWidth().testTag("reveal_answer"))
             } else {
-                Eyebrow("Resposta", Green)
-                Text(currentCard.answer, color = Ink, fontSize = 15.sp, lineHeight = 23.sp)
-                Hairline()
+                Eyebrow("Resposta", nbFc.accentPatina)
+                Text(currentCard.answer, color = nbFc.inkPrimary, fontSize = 15.5.sp, lineHeight = 24.sp)
+                NorthbornDivider(NorthbornDividerStyle.Hairline)
                 if (isRetryPhase) {
                     Text(
                         "Prática imediata sem alterar o agendamento já salvo para amanhã:",

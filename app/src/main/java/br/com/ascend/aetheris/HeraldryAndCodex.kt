@@ -567,6 +567,7 @@ fun RunicCodexScreen(
         HistoricalFutharkRune.byStableId(selectedRuneName)?.let { codexEntryFor(it) }
     }
 
+    val nbC = LocalNorthborn.current
     Page {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             TextButton(onBack) { Text("Voltar") }
@@ -574,14 +575,14 @@ fun RunicCodexScreen(
         }
         Title("Codex Rúnico · Elder Futhark", "24 runas históricas vetoriais · enciclopédia offline.")
 
-        Panel(accent = Blue) {
-            Eyebrow("Contexto Histórico · Elder vs. Younger Futhark", Blue)
-            Text(CODEX_HISTORICAL_DISCLAIMER, color = Muted, fontSize = 12.sp, lineHeight = 17.sp)
+        NorthbornSurface(role = NorthbornSurfaceRole.Informative, accent = nbC.accentFjord) {
+            Eyebrow("Contexto Histórico · Elder vs. Younger Futhark", nbC.accentFjord)
+            Text(CODEX_HISTORICAL_DISCLAIMER, color = nbC.inkSecondary, fontSize = 12.sp, lineHeight = 18.sp)
         }
 
-        // Material preview selector (6 clean surfaces from runic_codex_surfaces_atlas.webp)
-        Panel {
-            Eyebrow("Superfície de Estudo (${surface.name})", Gold)
+        // Material preview selector aberto (sem caixa redundante)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Eyebrow("Superfície de Estudo (${surface.name})", nbC.accentBronze)
             Row(
                 Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -591,8 +592,9 @@ fun RunicCodexScreen(
                     Column(
                         Modifier
                             .width(86.dp)
-                            .clip(CutCornerShape(5.dp))
-                            .border(if (active) 1.4.dp else 0.8.dp, if (active) Gold else ColdIron.copy(alpha = 0.45f), CutCornerShape(5.dp))
+                            .clip(NorthbornShape.sm)
+                            .background(nbC.surfaceBase)
+                            .border(if (active) 1.5.dp else 1.dp, if (active) nbC.accentBronze else nbC.hairline, NorthbornShape.sm)
                             .clickable { surfaceIndex = idx },
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -600,11 +602,12 @@ fun RunicCodexScreen(
                             AtlasCellCropped(R.drawable.runic_codex_surfaces_atlas, sDef.atlasCell, 3, 2, Modifier.matchParentSize())
                             FutharkRuneGlyph(HistoricalFutharkRune.Ansuz, sDef.inkColor, size = 20.dp)
                         }
-                        Text(sDef.name, color = if (active) Gold else Ink, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(4.dp))
+                        Text(sDef.name, color = if (active) nbC.accentBronze else nbC.inkPrimary, fontSize = 10.sp, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.padding(4.dp))
                     }
                 }
             }
         }
+        NorthbornDivider(NorthbornDividerStyle.Hairline)
 
         // Detailed view of selected rune (inline manuscript card)
         if (selectedEntry != null) {

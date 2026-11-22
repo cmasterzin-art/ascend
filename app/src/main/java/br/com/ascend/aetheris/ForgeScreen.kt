@@ -45,15 +45,16 @@ fun ForgeScreen(
     val previewRecipe = forgeRecipeById(previewRecipeId) ?: forgeRecipes.first()
     val craftedCount = s.assets.count { it.id in forgeItemIds }
 
-    val dark = LocalAppearance.current.dark
+    val nb = LocalNorthborn.current
+    val dark = nb.dark
     Page {
         // Cabeçalho pictórico da Oficina de Darian
         Column(
             Modifier
                 .fillMaxWidth()
-                .clip(CutCornerShape(8.dp))
-                .border(1.dp, if (isMaster) Gold.copy(alpha = 0.78f) else OldBronze.copy(alpha = 0.55f), CutCornerShape(8.dp))
-                .background(Surface)
+                .clip(NorthbornShape.lg)
+                .border(1.dp, if (isMaster) nb.accentBronze.copy(alpha = 0.78f) else nb.hairlineStrong, NorthbornShape.lg)
+                .background(nb.surfaceBase)
         ) {
             if (!minimal) {
                 Box(
@@ -89,16 +90,16 @@ fun ForgeScreen(
                     ) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                FutharkRuneGlyph(HistoricalFutharkRune.Fehu, Gold, size = 14.dp)
-                                Eyebrow("A Forja de Darian · Etapa $stage/2", Gold)
+                                FutharkRuneGlyph(HistoricalFutharkRune.Fehu, Color(0xFFD8BE8F), size = 14.dp)
+                                Eyebrow("A Forja de Darian · Etapa $stage/2", Color(0xFFD8BE8F))
                             }
                             Text(
                                 "Oficina de Fabricação Cosmética",
                                 style = MaterialTheme.typography.headlineSmall,
-                                color = WornIvory
+                                color = Color(0xFFEFEAE0)
                             )
                         }
-                        Text("◈ ${s.coins}", color = Gold, fontFamily = SagaFont, fontSize = 20.sp, softWrap = false)
+                        Text("◈ ${s.coins}", color = Color(0xFFD8BE8F), fontFamily = SagaFont, fontSize = 20.sp, softWrap = false)
                     }
                 }
             }
@@ -116,16 +117,16 @@ fun ForgeScreen(
                     ) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                FutharkRuneGlyph(HistoricalFutharkRune.Fehu, Gold, size = 14.dp)
-                                Eyebrow("A Forja de Darian · Etapa $stage/2", Gold)
+                                FutharkRuneGlyph(HistoricalFutharkRune.Fehu, nb.accentBronze, size = 14.dp)
+                                Eyebrow("A Forja de Darian · Etapa $stage/2", nb.accentBronze)
                             }
                             Text(
                                 "Oficina de Fabricação Cosmética",
                                 style = MaterialTheme.typography.headlineSmall,
-                                color = Ink
+                                color = nb.inkPrimary
                             )
                         }
-                        Text("◈ ${s.coins}", color = Gold, fontFamily = SagaFont, fontSize = 20.sp, softWrap = false)
+                        Text("◈ ${s.coins}", color = nb.accentBronze, fontFamily = SagaFont, fontSize = 20.sp, softWrap = false)
                     }
                 }
 
@@ -133,9 +134,9 @@ fun ForgeScreen(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .clip(CutCornerShape(6.dp))
-                        .background(if (dark) Night.copy(alpha = 0.48f) else Night.copy(alpha = 0.06f))
-                        .border(1.dp, if (isMaster) Gold.copy(alpha = 0.68f) else ColdIron.copy(alpha = 0.4f), CutCornerShape(6.dp))
+                        .clip(NorthbornShape.md)
+                        .background(nb.surfaceElevated)
+                        .border(1.dp, if (isMaster) nb.accentBronze.copy(alpha = 0.65f) else nb.hairline, NorthbornShape.md)
                         .padding(10.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                     verticalAlignment = Alignment.CenterVertically

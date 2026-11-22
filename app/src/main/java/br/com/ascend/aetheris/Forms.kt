@@ -59,10 +59,11 @@ import androidx.compose.ui.semantics.*
         FormField(xp,{xp=it},"XP ao atingir a meta",number=true)
         Text("A recompensa é sua escolha. Sugestões: 15, 30 ou 50 XP.",color=Muted,fontSize=12.sp)
         Text("Atributo associado",color=Muted);ChipRow(attributes,attr,{attr=it})
+        val nbEd = LocalNorthborn.current
         Eyebrow("Dias programados")
         Column(verticalArrangement=Arrangement.spacedBy(4.dp)){
             (1..7).toList().chunked(4).forEach{row->Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp)){
-                row.forEach{day->val sel=day in days;FilterChip(sel,{days=if(sel)days-day else days+day},label={Text(listOf("Seg","Ter","Qua","Qui","Sex","Sáb","Dom")[day-1],color=if(sel)Gold else Muted)},modifier=Modifier.weight(1f).heightIn(min=48.dp).semantics{contentDescription=listOf("Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo")[day-1]},shape=androidx.compose.foundation.shape.CutCornerShape(4.dp),colors=FilterChipDefaults.filterChipColors(containerColor=Surface.copy(alpha=.6f),selectedContainerColor=Gold.copy(alpha=.18f),labelColor=Muted,selectedLabelColor=Gold),border=FilterChipDefaults.filterChipBorder(enabled=true,selected=sel,borderColor=ColdIron.copy(alpha=.32f),selectedBorderColor=Gold.copy(alpha=.78f)))};repeat(4-row.size){Spacer(Modifier.weight(1f))}
+                row.forEach{day->val sel=day in days;FilterChip(sel,{days=if(sel)days-day else days+day},label={Text(listOf("Seg","Ter","Qua","Qui","Sex","Sáb","Dom")[day-1],color=if(sel)nbEd.accentBronze else nbEd.inkSecondary)},modifier=Modifier.weight(1f).heightIn(min=48.dp).semantics{contentDescription=listOf("Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado","Domingo")[day-1]},shape=NorthbornShape.sm,colors=FilterChipDefaults.filterChipColors(containerColor=nbEd.surfaceBase,selectedContainerColor=nbEd.accentBronze.copy(alpha=if(nbEd.dark).20f else .15f),labelColor=nbEd.inkSecondary,selectedLabelColor=nbEd.accentBronze),border=FilterChipDefaults.filterChipBorder(enabled=true,selected=sel,borderColor=nbEd.hairline,selectedBorderColor=nbEd.accentBronze.copy(alpha=.8f)))};repeat(4-row.size){Spacer(Modifier.weight(1f))}
             }}
         }
         Text("Dias sem seleção são descanso. Não quebram sua sequência.",color=Muted,fontSize=12.sp)
@@ -79,7 +80,7 @@ import androidx.compose.ui.semantics.*
             FormField(time,{time=it},"Horário · HH:mm");Text("Opcional quando não há lembrete. Deixe vazio para atividades sem horário.",color=Muted,fontSize=12.sp);Toggle("Lembrete local opcional",reminder,{reminder=it})
             FormField(coins,{coins=it},"Fragmentos de Aether",number=true);FormField(points,{points=it},"Pontos de ${attributes[attr]}",number=true)
         }
-        Panel(accent=Blue){Text("Alterar recompensas afeta apenas novos registros. O histórico preserva os valores originais. Use a correção de registro no histórico quando necessário.",color=Muted,fontSize=13.sp)}
+        NorthbornSurface(role=NorthbornSurfaceRole.Informative,accent=nbEd.accentFjord){Text("Alterar recompensas afeta apenas novos registros. O histórico preserva os valores originais. Use a correção de registro no histórico quando necessário.",color=nbEd.inkSecondary,fontSize=13.sp)}
     }
     if(discard)DiscardEdits(onDismiss,{discard=false})
 }
@@ -117,21 +118,63 @@ import androidx.compose.ui.semantics.*
     AetherDialog(onDismissRequest=onKeep,title="Descartar alterações?",confirmButton={SagaButton("Descartar",onDiscard,destructive=true)},dismissButton={TextButton(onKeep){Text("Continuar editando")}}){Text("As mudanças deste formulário ainda não foram salvas.")}
 }
 @Composable fun Onboarding(onRestore:(()->Unit)?=null,onCreate:(Player,List<Habit>)->Unit){
+    val nb = LocalNorthborn.current
     var step by remember{mutableIntStateOf(0)};var name by remember{mutableStateOf("")};var cls by remember{mutableIntStateOf(1)};var color by remember{mutableIntStateOf(1)};var face by remember{mutableIntStateOf(0)};var outfit by remember{mutableIntStateOf(0)};var frame by remember{mutableIntStateOf(0)};var title by remember{mutableIntStateOf(0)};var goals by remember{mutableStateOf(setOf("Aprender"))};var starters by remember{mutableStateOf(setOf(0))}
     val titles=listOf("O Desperto","Viajante da Névoa","Portador da Brasa")
     val p=Player(name=name,heroClass=cls,color=color,face=face,outfit=outfit,frame=frame,title=titles[title],goals=goals.joinToString(", "))
     Page{
-        Spacer(Modifier.height(20.dp));Eyebrow("Crônicas da Ascensão");Text("ASCEND",style=MaterialTheme.typography.headlineLarge,letterSpacing=6.sp,color=Gold)
-        Meter((step+1)/3f,Gold)
-        when(step){
-            0->{Landscape(GameState(),large=true);Title("Aetheris espera por você.");Text("A Estagnação apagou as luzes da vila. Mas uma brasa permaneceu. Cada ação realizada na sua vida pode devolver um pouco de luz a este mundo.",color=Muted);Panel{Eyebrow("O Cronista");Text("“Não procure uma espada. Procure algo que você consiga fazer hoje.”",fontFamily=androidx.compose.ui.text.font.FontFamily.Serif,fontSize=20.sp)};Action("Acender a primeira chama",{step=1},Modifier.fillMaxWidth())}
-            1->{Title("Quem atravessa a névoa?");Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){Avatar(p,size=144.dp)};FormField(name,{name=it.take(40)},"Nome do aventureiro");ChipRow(classes,cls,{cls=it});ClassEmblem(cls);Text(classDescriptions[cls],color=Muted);Text("Todas as classes podem desenvolver qualquer hábito.",color=Muted,fontSize=12.sp);Eyebrow("Seu retrato");ChipRow(listOf("Pele clara","Pele escura","Pele média"),face,{face=it});ChipRow(listOf("Ouro","Azul","Violeta","Verde","Coral"),color,{color=it});ChipRow(listOf("Túnica","Veste de viagem","Traje cerimonial"),outfit,{outfit=it});ChipRow(listOf("Moldura simples","Moldura solar","Moldura estrelada"),frame,{frame=it});ChipRow(titles,title,{title=it});Action("Continuar",{step=2},Modifier.fillMaxWidth(),name.isNotBlank())}
-            2->{Title("Sua vida, sua jornada.","Selecione propósitos e os primeiros hábitos. Tudo poderá ser editado depois.");listOf("Aprender","Cuidar do corpo","Organizar a rotina","Encontrar equilíbrio","Criar projetos").forEach{g->Toggle(g,g in goals,{goals=if(it)goals+g else goals-g})};Eyebrow("Primeiras brasas");listOf("Estudar Direito · 60 minutos · 60 XP","Ler · 20 páginas · 25 XP","Mover o corpo · 30 minutos · 70 XP").forEachIndexed{i,label->Toggle(label,i in starters,{starters=if(it)starters+i else starters-i})};Text("Nenhum registro fictício será criado. Sua história começa com suas ações.",color=Muted,fontSize=12.sp);Action("Entrar em Aetheris",{
-                val hs=listOf(Habit(name="Estudar Direito",type=2,target=60,unit="minutos",xp=60,points=5,coins=5,proportional=true),Habit(name="Ler",type=1,target=20,unit="páginas",xp=25,points=3,category="Leitura",proportional=true,icon=4),Habit(name="Mover o corpo",type=2,target=30,unit="minutos",xp=70,attribute=1,color=3,category="Movimento",icon=3))
-                onCreate(p,hs.filterIndexed{i,_->i in starters}.mapIndexed{i,h->h.copy(position=i)})
-            },Modifier.fillMaxWidth(),ceremonial=true)}
+        Spacer(Modifier.height(12.dp))
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Eyebrow("Crônicas da Ascensão", nb.accentBronze)
+                Text("ASCEND", style = MaterialTheme.typography.headlineLarge, letterSpacing = 5.sp, color = nb.inkPrimary)
+            }
+            Text("Passo ${step + 1} de 3", color = nb.inkMuted, fontSize = 12.sp)
         }
-        if(step==0&&onRestore!=null)SagaButton("Já tenho uma jornada · Restaurar backup",onRestore,Modifier.fillMaxWidth(),secondary=true)
+        Meter((step+1)/3f, nb.accentBronze, slim = true)
+        NorthbornDivider(NorthbornDividerStyle.DiamondKnot)
+        when(step){
+            0->{
+                Landscape(GameState(),large=true)
+                Title("Aetheris espera por você.")
+                Text("A Estagnação apagou as luzes da vila. Mas uma brasa permaneceu. Cada ação realizada na sua vida pode devolver um pouco de luz a este mundo.", color = nb.inkSecondary, lineHeight = 22.sp)
+                NorthbornSurface(role = NorthbornSurfaceRole.Document, material = NorthbornMaterial.ArchivalVellum) {
+                    Eyebrow("O Cronista", nb.accentBronze)
+                    Text("“Não procure uma espada. Procure algo que você consiga fazer hoje.”", fontFamily = androidx.compose.ui.text.font.FontFamily.Serif, fontSize = 19.sp, lineHeight = 27.sp, color = nb.inkPrimary)
+                }
+                NorthbornButton("Acender a primeira chama", {step=1}, role = NorthbornButtonRole.Ceremonial, modifier = Modifier.fillMaxWidth())
+            }
+            1->{
+                Title("Quem atravessa a névoa?")
+                Box(Modifier.fillMaxWidth(),contentAlignment=Alignment.Center){Avatar(p,size=144.dp)}
+                FormField(name,{name=it.take(40)},"Nome do aventureiro")
+                ChipRow(classes,cls,{cls=it})
+                ClassEmblem(cls)
+                Text(classDescriptions[cls],color=nb.inkSecondary)
+                Text("Todas as classes podem desenvolver qualquer hábito.",color=nb.inkMuted,fontSize=12.sp)
+                NorthbornDivider(NorthbornDividerStyle.Hairline)
+                Eyebrow("Seu retrato", nb.accentBronze)
+                ChipRow(listOf("Pele clara","Pele escura","Pele média"),face,{face=it})
+                ChipRow(listOf("Ouro","Azul","Violeta","Verde","Coral"),color,{color=it})
+                ChipRow(listOf("Túnica","Veste de viagem","Traje cerimonial"),outfit,{outfit=it})
+                ChipRow(listOf("Moldura simples","Moldura solar","Moldura estrelada"),frame,{frame=it})
+                ChipRow(titles,title,{title=it})
+                NorthbornButton("Continuar",{step=2}, role = NorthbornButtonRole.Ceremonial, modifier = Modifier.fillMaxWidth(), enabled = name.isNotBlank())
+            }
+            2->{
+                Title("Sua vida, sua jornada.","Selecione propósitos e os primeiros hábitos. Tudo poderá ser editado depois.")
+                listOf("Aprender","Cuidar do corpo","Organizar a rotina","Encontrar equilíbrio","Criar projetos").forEach{g->Toggle(g,g in goals,{goals=if(it)goals+g else goals-g})}
+                NorthbornDivider(NorthbornDividerStyle.Hairline)
+                Eyebrow("Primeiras brasas", nb.accentBronze)
+                listOf("Estudar Direito · 60 minutos · 60 XP","Ler · 20 páginas · 25 XP","Mover o corpo · 30 minutos · 70 XP").forEachIndexed{i,label->Toggle(label,i in starters,{starters=if(it)starters+i else starters-i})}
+                Text("Nenhum registro fictício será criado. Sua história começa com suas ações.",color=nb.inkMuted,fontSize=12.sp)
+                NorthbornButton("Entrar em Aetheris",{
+                    val hs=listOf(Habit(name="Estudar Direito",type=2,target=60,unit="minutos",xp=60,points=5,coins=5,proportional=true),Habit(name="Ler",type=1,target=20,unit="páginas",xp=25,points=3,category="Leitura",proportional=true,icon=4),Habit(name="Mover o corpo",type=2,target=30,unit="minutos",xp=70,attribute=1,color=3,category="Movimento",icon=3))
+                    onCreate(p,hs.filterIndexed{i,_->i in starters}.mapIndexed{i,h->h.copy(position=i)})
+                }, role = NorthbornButtonRole.Ceremonial, modifier = Modifier.fillMaxWidth())
+            }
+        }
+        if(step==0&&onRestore!=null)NorthbornButton("Já tenho uma jornada · Restaurar backup",onRestore,role=NorthbornButtonRole.Secondary,modifier=Modifier.fillMaxWidth())
         if(step>0)TextButton({step--}){Text("Voltar")}
     }
 }

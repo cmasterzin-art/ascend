@@ -10,6 +10,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.platform.testTag
@@ -32,23 +33,25 @@ import androidx.compose.ui.unit.*
                 Text("$rev de ${regions.size} ${if(rev==1)"região revelada" else "regiões reveladas"}",color=Blue,fontSize=12.sp)
                 AetherisMap(s,region,{region=it})
                 // 6-state visual legend
+                val nbW = LocalNorthborn.current
                 FlowRow(
                     Modifier.fillMaxWidth().testTag("atlas_legend"),
-                    horizontalArrangement=Arrangement.spacedBy(8.dp),
+                    horizontalArrangement=Arrangement.spacedBy(6.dp),
                     verticalArrangement=Arrangement.spacedBy(6.dp)
                 ){
                     RegionAtlasState.entries.forEach{st->
                         val col=regionStateColor(st)
                         Row(
                             Modifier
-                                .background(col.copy(alpha=.10f),CutCornerShape(3.dp))
-                                .border(.7.dp,col.copy(alpha=.45f),CutCornerShape(3.dp))
+                                .clip(NorthbornShape.xs)
+                                .background(col.copy(alpha=if(nbW.dark).10f else .12f))
+                                .border(.8.dp,col.copy(alpha=.42f),NorthbornShape.xs)
                                 .padding(horizontal=7.dp,vertical=3.dp),
                             verticalAlignment=Alignment.CenterVertically,
                             horizontalArrangement=Arrangement.spacedBy(4.dp)
                         ){
                             Text(st.symbol,color=col,fontSize=10.sp)
-                            Text(st.label,color=Ink,fontSize=11.sp)
+                            Text(st.label,color=nbW.inkPrimary,fontSize=11.sp)
                         }
                     }
                 }
@@ -57,27 +60,27 @@ import androidx.compose.ui.unit.*
                 val stColor=regionStateColor(st)
                 val explReg=explorableRegion(region)
                 val isOpen=s.level>=regionLevels[region]
-                Panel(accent=stColor){
+                NorthbornSurface(role=NorthbornSurfaceRole.Strategic,material=NorthbornMaterial.VolcanicSlate,accent=stColor){
                     Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){
                         if(explReg!=null) RealmOrnament(explReg.ornamentCell,size=38.dp)
                         else RealmOrnament(if(region==0)5 else 4,size=34.dp)
                         Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(2.dp)){
                             Eyebrow(if(isOpen) st.label else "Na névoa · nível ${regionLevels[region]}",stColor)
-                            Text(regions[region],style=MaterialTheme.typography.headlineSmall)
+                            Text(regions[region],style=MaterialTheme.typography.headlineSmall,color=nbW.inkPrimary)
                         }
                     }
-                    Text(regionDescriptions[region],color=Muted,fontSize=14.sp,lineHeight=22.sp)
+                    Text(regionDescriptions[region],color=nbW.inkSecondary,fontSize=14.sp,lineHeight=22.sp)
                     if(explReg!=null && explReg.distinctionNote.isNotBlank()){
-                        Text(explReg.distinctionNote,color=Blue,fontSize=12.sp,lineHeight=18.sp)
+                        Text(explReg.distinctionNote,color=nbW.accentFjord,fontSize=12.sp,lineHeight=18.sp)
                     }
                     when{
                         region==0->{
                             val stage=s.assets.filter{it.kind=="building"}.sumOf{it.stage}
-                            Meter(stage/10f,Green,slim=true)
-                            Text("$stage de 10 etapas recuperadas na Vila do Despertar",color=Green,fontSize=12.sp)
+                            Meter(stage/10f,nbW.accentPatina,slim=true)
+                            Text("$stage de 10 etapas recuperadas na Vila do Despertar",color=nbW.accentPatina,fontSize=12.sp)
                             Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
-                                Action("Explorar região",{onRegion(region)},Modifier.weight(1f),enabled=isOpen)
-                                SagaButton("Visitar a vila",{tab=1},Modifier.weight(1f),secondary=true)
+                                NorthbornButton("Explorar região",{onRegion(region)},role=NorthbornButtonRole.Primary,modifier=Modifier.weight(1f),enabled=isOpen)
+                                NorthbornButton("Visitar a vila",{tab=1},role=NorthbornButtonRole.Secondary,modifier=Modifier.weight(1f))
                             }
                         }
                         explReg!=null->{
@@ -88,16 +91,16 @@ import androidx.compose.ui.unit.*
                             Text(
                                 if(isOpen) "Exploração · $prog% · $marks de $total marcos · ${explReg.expeditions.size} locais"
                                 else "Nível ${explReg.unlockLevel} necessário · ${explReg.expeditions.size} locais exploráveis",
-                                color=if(isOpen) Blue else Muted,
+                                color=if(isOpen) nbW.accentFjord else nbW.inkMuted,
                                 fontSize=12.sp
                             )
-                            Meter(if(isOpen) prog/100f else (s.level.toFloat()/explReg.unlockLevel).coerceAtMost(1f),if(prog>=100) Green else Blue,slim=true)
+                            Meter(if(isOpen) prog/100f else (s.level.toFloat()/explReg.unlockLevel).coerceAtMost(1f),if(prog>=100) nbW.accentPatina else nbW.accentFjord,slim=true)
                             if(!isOpen){
-                                Text("${if(rem==1)"Falta 1 nível" else "Faltam $rem níveis"} para revelar esta região.",color=Muted,fontSize=12.sp)
+                                Text("${if(rem==1)"Falta 1 nível" else "Faltam $rem níveis"} para revelar esta região.",color=nbW.inkMuted,fontSize=12.sp)
                             }else if(explReg.npc!=null){
-                                Text("Guia local: ${explReg.npc.name}, ${explReg.npc.role}.",color=Gold,fontSize=12.sp)
+                                Text("Guia local: ${explReg.npc.name}, ${explReg.npc.role}.",color=nbW.accentBronze,fontSize=12.sp)
                             }
-                            Action("Explorar região",{onRegion(region)},Modifier.fillMaxWidth(),enabled=isOpen)
+                            NorthbornButton("Explorar região",{onRegion(region)},role=NorthbornButtonRole.Primary,modifier=Modifier.fillMaxWidth(),enabled=isOpen)
                         }
                         else->{
                             val progress=(s.level.toFloat()/regionLevels[region]).coerceAtMost(1f)
@@ -107,36 +110,37 @@ import androidx.compose.ui.unit.*
                             Text(
                                 if(isOpen) "Região revelada no Atlas. Ainda não possui expedições próprias nesta versão."
                                 else "${if(rem==1)"Falta 1 nível" else "Faltam $rem níveis"} para revelar esta região.",
-                                color=Muted,
+                                color=nbW.inkMuted,
                                 fontSize=12.sp
                             )
-                            Action("Explorar região",{onRegion(region)},Modifier.fillMaxWidth(),enabled=isOpen)
+                            NorthbornButton("Explorar região",{onRegion(region)},role=NorthbornButtonRole.Primary,modifier=Modifier.fillMaxWidth(),enabled=isOpen)
                         }
                     }
                 }
-                // Compact Exploration Journal
+                // Compact Exploration Journal em seção editorial aberta
                 val journal=explorationJournal(s)
-                AetherSurface(SurfaceKind.Ceremonial){
+                Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(10.dp)){
+                    NorthbornDivider(NorthbornDividerStyle.DiamondKnot)
                     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
-                        Eyebrow("Diário de Exploração",Gold)
-                        Text("${journal.totalConfirmedMarks}/${journal.totalAvailableMarks} marcos",color=Blue,fontSize=12.sp)
+                        Eyebrow("Diário de Exploração",nbW.accentBronze)
+                        Text("${journal.totalConfirmedMarks}/${journal.totalAvailableMarks} marcos",color=nbW.accentFjord,fontSize=12.sp)
                     }
                     if(journal.activeExpeditions.isEmpty()){
                         Text(
                             journal.nextAvailable?.let{"Próxima expedição disponível: ${it.name} (${regions[it.regionIndex]})."}
                                 ?: if(journal.totalConfirmedMarks>=journal.totalAvailableMarks) "Todas as expedições exploráveis foram registradas no Salão das Memórias."
                                 else "Alcance o nível 3 para abrir a Floresta da Persistência, nível 5 para a Biblioteca das Eras e nível 8 para as Montanhas da Disciplina.",
-                            color=Muted,fontSize=13.sp,lineHeight=20.sp
+                            color=nbW.inkSecondary,fontSize=13.sp,lineHeight=20.sp
                         )
                     }else{
                         journal.activeExpeditions.take(3).forEach{(exp,phase,q)->
                             val pr=questProgress(q,s).coerceAtMost(q.target.toLong())
                             Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(4.dp)){
                                 Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){
-                                    Text("${exp.name} · ${exp.phases[phase].name}",fontSize=13.sp,color=Ink,modifier=Modifier.weight(1f))
-                                    Text("$pr/${q.target}",fontSize=12.sp,color=Gold)
+                                    Text("${exp.name} · ${exp.phases[phase].name}",fontSize=13.sp,color=nbW.inkPrimary,modifier=Modifier.weight(1f))
+                                    Text("$pr/${q.target}",fontSize=12.sp,color=nbW.accentBronze)
                                 }
-                                Meter(pr.toFloat()/q.target.coerceAtLeast(1),Gold,slim=true)
+                                Meter(pr.toFloat()/q.target.coerceAtLeast(1),nbW.accentBronze,slim=true)
                             }
                         }
                     }
