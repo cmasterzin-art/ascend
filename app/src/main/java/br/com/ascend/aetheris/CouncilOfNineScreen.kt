@@ -50,10 +50,11 @@ fun CouncilOfNineScreen(
         }
     }
 
+    val nb = LocalNorthborn.current
     LazyColumn(
-        Modifier.fillMaxSize().testTag("council_nine_list"),
-        contentPadding = PaddingValues(18.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        Modifier.fillMaxSize().background(nb.canvas).testTag("council_nine_list"),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
             Title("Conselho dos Nove", "Áreas da vida opcionais e objetivos pessoais trimestrais e anuais com progresso verificável.")
@@ -64,51 +65,51 @@ fun CouncilOfNineScreen(
 
         if (tab == 0) {
             item {
-                CouncilMaterialSurface(CouncilMaterial.NordicWood) {
-                    NordicSectionHeader(
-                        eyebrow = "As nove casas do Conselho",
-                        subtitle = "Todas as áreas são opcionais: hábitos, caminhos, cadernos e compromissos sem área continuam funcionando normalmente.",
-                        rune = HistoricalFutharkRune.Othala,
-                        accent = Gold
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    NorthbornEditorialHeader(
+                        title = "As nove casas do Conselho",
+                        kicker = "Domínios",
+                        subtitle = "Todas as áreas são opcionais: hábitos, caminhos, cadernos e compromissos sem área continuam funcionando normalmente."
                     )
                     BoxWithConstraints(Modifier.fillMaxWidth()) {
                         if (maxWidth < 310.dp) {
                             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 if (s.lifeAreas.isEmpty()) {
-                                    SagaButton(
+                                    NorthbornButton(
                                         "Ativar as 9 áreas padrão",
                                         { vm.run { vm.repo.seedDefaultLifeAreas() } },
-                                        Modifier.fillMaxWidth(),
-                                        style = VikingButtonStyle.CerimonialViking
+                                        role = NorthbornButtonRole.Ceremonial,
+                                        modifier = Modifier.fillMaxWidth()
                                     )
                                 }
-                                SagaButton(
+                                NorthbornButton(
                                     "+ Nova área",
                                     { editingArea = LifeArea(name = "", sealIndex = s.lifeAreas.size % 9, position = s.lifeAreas.size) },
-                                    Modifier.fillMaxWidth(),
-                                    style = if (s.lifeAreas.isEmpty()) VikingButtonStyle.FerroRunico else VikingButtonStyle.BronzeForjado
+                                    role = if (s.lifeAreas.isEmpty()) NorthbornButtonRole.Secondary else NorthbornButtonRole.Primary,
+                                    modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         } else {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 if (s.lifeAreas.isEmpty()) {
-                                    SagaButton(
+                                    NorthbornButton(
                                         "Ativar as 9 áreas padrão",
                                         { vm.run { vm.repo.seedDefaultLifeAreas() } },
-                                        Modifier.weight(1f),
-                                        style = VikingButtonStyle.CerimonialViking
+                                        role = NorthbornButtonRole.Ceremonial,
+                                        modifier = Modifier.weight(1f)
                                     )
                                 }
-                                SagaButton(
+                                NorthbornButton(
                                     "+ Nova área",
                                     { editingArea = LifeArea(name = "", sealIndex = s.lifeAreas.size % 9, position = s.lifeAreas.size) },
-                                    Modifier.weight(1f),
-                                    style = if (s.lifeAreas.isEmpty()) VikingButtonStyle.FerroRunico else VikingButtonStyle.BronzeForjado
+                                    role = if (s.lifeAreas.isEmpty()) NorthbornButtonRole.Secondary else NorthbornButtonRole.Primary,
+                                    modifier = Modifier.weight(1f)
                                 )
                             }
                         }
                     }
                     Toggle("Exibir áreas arquivadas", showArchived, { showArchived = it })
+                    NorthbornDivider(NorthbornDividerStyle.Hairline)
                 }
             }
             items(areas, key = { it.id }) { area ->
@@ -118,100 +119,104 @@ fun CouncilOfNineScreen(
                 val linkedHabits = s.habits.count { !it.deleted && !it.archived && it.areaId == area.id }
                 val linkedPaths = s.paths.count { it.state !in 3..5 && it.areaId == area.id }
                 val linkedGoals = s.strategicGoals.count { !it.archived && it.areaId == area.id }
+                val houseAccent = if (area.archived) nb.inkMuted else when (area.sealIndex % 3) {
+                    0 -> nb.accentBronze
+                    1 -> nb.accentFjord
+                    else -> nb.accentPatina
+                }
 
-                CouncilMaterialSurface(
-                    material = if (area.archived) CouncilMaterial.DarkIron else CouncilMaterial.ProjectLeather,
-                    accent = if (area.archived) Muted else Gold
+                NorthbornSurface(
+                    role = if (area.archived) NorthbornSurfaceRole.Informative else NorthbornSurfaceRole.Operational,
+                    material = if (area.archived) NorthbornMaterial.VolcanicSlate else NorthbornMaterial.SaddleLeather,
+                    accent = houseAccent
                 ) {
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        LifeAreaSeal(area.sealIndex, Modifier.size(52.dp))
+                        LifeAreaSeal(area.sealIndex, Modifier.size(50.dp))
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text(area.name + if (area.archived) " (arquivada)" else "", color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
-                            if (area.description.isNotBlank()) Text(area.description, color = Muted, fontSize = 12.sp)
+                            Text(area.name + if (area.archived) " (arquivada)" else "", color = nb.inkPrimary, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                            if (area.description.isNotBlank()) Text(area.description, color = nb.inkSecondary, fontSize = 12.sp)
                             Text(
                                 "Semana: $weekMins / ${area.weeklyTargetMinutes} min · $linkedPaths caminhos · $linkedHabits hábitos · $linkedGoals metas",
-                                color = Blue,
-                                fontSize = 11.sp
+                                color = nb.accentFjord,
+                                fontSize = 11.5.sp
                             )
                         }
                     }
                     if (area.weeklyTargetMinutes > 0) {
-                        Meter((weekMins.toFloat() / area.weeklyTargetMinutes.toFloat()).coerceIn(0f, 1f), Gold)
+                        Meter((weekMins.toFloat() / area.weeklyTargetMinutes.toFloat()).coerceIn(0f, 1f), houseAccent, slim = true)
                     }
                     @OptIn(ExperimentalLayoutApi::class)
                     FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                        NordicCompactAction("Editar", { editingArea = area }, accent = Gold)
-                        NordicCompactAction("↑", { vm.run { vm.repo.reorderLifeArea(area.id, -1) } }, accent = Muted)
-                        NordicCompactAction("↓", { vm.run { vm.repo.reorderLifeArea(area.id, 1) } }, accent = Muted)
+                        NordicCompactAction("Editar", { editingArea = area }, accent = nb.accentBronze)
+                        NordicCompactAction("↑", { vm.run { vm.repo.reorderLifeArea(area.id, -1) } }, accent = nb.inkMuted)
+                        NordicCompactAction("↓", { vm.run { vm.repo.reorderLifeArea(area.id, 1) } }, accent = nb.inkMuted)
                         NordicCompactAction(
                             if (area.archived) "Reativar" else "Arquivar",
                             { vm.run { vm.repo.archiveLifeArea(area.id, !area.archived) } },
-                            accent = if (area.archived) Green else Muted
+                            accent = if (area.archived) nb.accentPatina else nb.inkMuted
                         )
                     }
                 }
             }
         } else {
             item {
-                CouncilMaterialSurface(CouncilMaterial.AgedVellum) {
-                    NordicSectionHeader(
-                        eyebrow = "Objetivos pessoais",
-                        subtitle = "Medidos apenas pelo avanço real dos Caminhos e Hábitos vinculados — zero economia paralela no RPG.",
-                        rune = HistoricalFutharkRune.Sowilo,
-                        accent = Gold
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    NorthbornEditorialHeader(
+                        title = "Objetivos pessoais",
+                        kicker = "Horizonte",
+                        subtitle = "Medidos apenas pelo avanço real dos Caminhos e Hábitos vinculados — zero economia paralela no RPG."
                     )
                     ChipRow(listOf("Todos", "Trimestrais", "Anuais"), horizonFilter, { horizonFilter = it })
-                    SagaButton(
+                    NorthbornButton(
                         "+ Novo objetivo pessoal",
                         {
                             val yr = LocalDate.parse(todayDate).year
                             editingGoal = StrategicGoal(title = "", horizon = "quarterly", periodLabel = "$yr · T${((LocalDate.parse(todayDate).monthValue - 1) / 3) + 1}")
                         },
-                        Modifier.fillMaxWidth(),
-                        style = VikingButtonStyle.CerimonialViking
+                        role = NorthbornButtonRole.Ceremonial,
+                        modifier = Modifier.fillMaxWidth()
                     )
+                    NorthbornDivider(NorthbornDividerStyle.Hairline)
                 }
             }
             if (goals.isEmpty()) {
                 item {
-                    CouncilMaterialSurface(CouncilMaterial.DarkIron) {
-                        Text("Nenhum objetivo pessoal cadastrado ainda. Crie objetivos trimestrais ou anuais e vincule seus Caminhos e Hábitos.", color = Muted, fontSize = 13.sp)
-                    }
+                    Empty("Nenhum objetivo pessoal cadastrado ainda. Crie objetivos trimestrais ou anuais e vincule seus Caminhos e Hábitos.")
                 }
             } else {
                 items(goals, key = { it.id }) { goal ->
                     val (pct, detail) = remember(goal, s, todayDate) { strategicGoalProgress(goal, s, todayDate) }
                     val area = s.lifeAreas.find { it.id == goal.areaId }
-                    CouncilMaterialSurface(CouncilMaterial.AgedVellum, accent = if (pct >= 100) Green else Gold) {
+                    NorthbornSurface(
+                        role = NorthbornSurfaceRole.Document,
+                        material = NorthbornMaterial.ArchivalVellum,
+                        accent = if (pct >= 100) nb.accentPatina else nb.accentBronze
+                    ) {
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                             if (area != null) {
                                 LifeAreaSeal(area.sealIndex, Modifier.size(42.dp))
                             } else {
-                                NordicPlanningMark(PlanningMark.Milestone, Modifier.size(30.dp), tintFallback = Gold)
+                                NordicPlanningMark(PlanningMark.Milestone, Modifier.size(28.dp), tintFallback = nb.accentBronze)
                             }
                             Column(Modifier.weight(1f)) {
-                                Text(goal.title, color = Ink, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+                                Text(goal.title, color = nb.inkPrimary, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                                 Text(
                                     "${if (goal.horizon == "annual") "Anual" else "Trimestral"}" +
                                         "${if (goal.periodLabel.isNotBlank()) " · ${goal.periodLabel}" else ""}" +
                                         "${if (area != null) " · ${area.name}" else ""}",
-                                    color = Gold,
-                                    fontSize = 11.sp
+                                    color = nb.accentBronze,
+                                    fontSize = 11.5.sp
                                 )
                             }
-                            Text("$pct%", color = if (pct >= 100) Green else Gold, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                            Text("$pct%", color = if (pct >= 100) nb.accentPatina else nb.accentBronze, fontWeight = FontWeight.Bold, fontSize = 16.sp)
                         }
-                        if (goal.description.isNotBlank()) Text(goal.description, color = Muted, fontSize = 12.sp)
-                        Meter((pct / 100f).coerceIn(0f, 1f), if (pct >= 100) Green else Gold)
-                        Text(detail, color = Muted, fontSize = 12.sp)
-                        NordicStrategyDivider(
-                            style = StrategyFrameAsset.VellumDivider,
-                            rune = if (pct >= 100) HistoricalFutharkRune.Fehu else HistoricalFutharkRune.Sowilo,
-                            accent = if (pct >= 100) Green else Gold
-                        )
+                        if (goal.description.isNotBlank()) Text(goal.description, color = nb.inkSecondary, fontSize = 12.sp)
+                        Meter((pct / 100f).coerceIn(0f, 1f), if (pct >= 100) nb.accentPatina else nb.accentBronze, slim = true)
+                        Text(detail, color = nb.inkSecondary, fontSize = 12.sp)
+                        NorthbornDivider(NorthbornDividerStyle.Hairline)
                         @OptIn(ExperimentalLayoutApi::class)
                         FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            NordicCompactAction("Editar", { editingGoal = goal }, accent = Gold)
+                            NordicCompactAction("Editar", { editingGoal = goal }, accent = nb.accentBronze)
                             NordicCompactAction(
                                 if (goal.archived) "Reativar" else "Arquivar",
                                 { vm.run { vm.repo.archiveStrategicGoal(goal.id, !goal.archived) } },

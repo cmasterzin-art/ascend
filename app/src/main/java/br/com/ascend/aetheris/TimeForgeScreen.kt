@@ -130,17 +130,18 @@ fun TimeForgeScreen(
     }
 
     val minimal = LocalAppearance.current.minimal
+    val nb = LocalNorthborn.current
 
     LazyColumn(
-        Modifier.fillMaxSize().testTag("time_forge_list"),
-        contentPadding = PaddingValues(18.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        Modifier.fillMaxSize().background(nb.canvas).testTag("time_forge_list"),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
         item {
             Title("Forja do Tempo", "Cinco modos de foco, Pomodoro real sem contar pausas, blocos vinculados e modo imersivo.")
         }
 
-        // Painel ativo de cronômetro (instrumentos pictóricos DS 3.2.1: trabalho bronze vs descanso prata vs pausa)
+        // Painel ativo de cronômetro (instrumentos pictóricos DS 4.0: trabalho bronze vs descanso fiorde vs pausa)
         item {
             val isPaused = focus != null && focus.startedAt == 0L
             val isBreak = focus?.isBreakPhase == true
@@ -151,9 +152,9 @@ fun TimeForgeScreen(
                 else -> CouncilMaterial.HammeredBronze
             }
             val panelAccent = when {
-                isBreak -> Blue
-                isPaused -> ColdIron
-                else -> Gold
+                isBreak -> nb.accentFjord
+                isPaused -> nb.inkMuted
+                else -> nb.accentBronze
             }
             CouncilMaterialSurface(panelMaterial, accent = panelAccent) {
                 if (focus != null) {
@@ -419,47 +420,52 @@ fun TimeForgeScreen(
             }
         }
 
-        // 3 Sons Ambientes Offline Procedurais
+        // 3 Sons Ambientes Offline Procedurais — seção editorial aberta (sem empilhar cartões)
         item {
-            CouncilMaterialSurface(CouncilMaterial.NordicWood) {
-                NordicSectionHeader(
-                    eyebrow = "Ambiente sonoro offline (síntese local)",
-                    subtitle = "Sem arquivos externos ou streaming. Desligue ou ajuste o volume livremente.",
-                    rune = HistoricalFutharkRune.Laguz,
-                    accent = Gold
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                NorthbornDivider(NorthbornDividerStyle.DiamondKnot)
+                NorthbornEditorialHeader(
+                    title = "Ambiente sonoro offline",
+                    kicker = "Síntese local",
+                    subtitle = "Sem arquivos externos ou streaming. Desligue ou ajuste o volume livremente."
                 )
                 ChipRow(
                     ambientScenes.map { it.name },
                     ambientScenes.indexOfFirst { it.id == ambientSceneId }.coerceAtLeast(0),
                     { vm.setAmbientScene(ambientScenes[it].id) }
                 )
-                Text("${activeScene.subtitle} · Volume ${(ambientVolume * 100).toInt()}%", color = Muted, fontSize = 12.sp)
+                Text("${activeScene.subtitle} · Volume ${(ambientVolume * 100).toInt()}%", color = nb.inkSecondary, fontSize = 12.sp)
                 Slider(
                     value = ambientVolume,
                     onValueChange = { vm.setAmbientVolume(it) },
                     enabled = ambientSceneId != "off",
-                    colors = SliderDefaults.colors(thumbColor = Gold, activeTrackColor = Gold, inactiveTrackColor = ColdIron.copy(alpha = 0.35f))
+                    colors = SliderDefaults.colors(
+                        thumbColor = nb.accentBronze,
+                        activeTrackColor = nb.accentBronze,
+                        inactiveTrackColor = nb.hairline
+                    )
                 )
             }
         }
 
-        // Notificações locais opcionais
+        // Notificações locais opcionais — seção editorial aberta
         item {
-            CouncilMaterialSurface(CouncilMaterial.DarkIron) {
-                NordicSectionHeader(
-                    eyebrow = "Notificações locais da Forja e Agenda",
-                    rune = HistoricalFutharkRune.Ansuz,
-                    accent = Blue
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                NorthbornDivider(NorthbornDividerStyle.Hairline)
+                NorthbornEditorialHeader(
+                    title = "Notificações locais da Forja e Agenda",
+                    kicker = "Alertas"
                 )
                 Toggle("Avisar ao concluir bloco de foco", notifyFocusEnd, { vm.setting("notify_focus_end", it) })
                 Toggle("Avisar ao concluir pausa", notifyBreakEnd, { vm.setting("notify_break_end", it) })
                 Toggle("Lembrar próximo bloco planejado", notifyNextBlock, { vm.setting("notify_next_block", it) })
                 Toggle("Lembrar compromisso próximo", notifyUpcomingEvent, { vm.setting("notify_upcoming_event", it) })
-                SagaButton(
+                Spacer(Modifier.height(4.dp))
+                NorthbornButton(
                     "Ver histórico completo de foco",
                     onOpenHistory,
-                    Modifier.fillMaxWidth(),
-                    style = VikingButtonStyle.FerroRunico
+                    role = NorthbornButtonRole.Secondary,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }
@@ -487,7 +493,7 @@ private fun ImmersiveNordicFocusView(
     val remaining = (totalSecs - secs).coerceAtLeast(0L)
     val isBreak = focus?.isBreakPhase == true
     val isPaused = focus != null && focus.startedAt == 0L
-    val phaseAccent = if (isBreak) Blue else if (isPaused) ColdIron else Gold
+    val phaseAccent = if (isBreak) Color(0xFF84A4C4) else if (isPaused) Color(0xFF9EA6B2) else Color(0xFFBC9B6A)
     val phaseRune = when {
         isPaused -> HistoricalFutharkRune.Isa
         isBreak -> HistoricalFutharkRune.Wunjo
@@ -497,7 +503,7 @@ private fun ImmersiveNordicFocusView(
     Box(
         Modifier
             .fillMaxSize()
-            .background(Color(0xFF0A0D12))
+            .background(Color(0xFF0C0E11))
             .testTag("immersive_focus_view")
     ) {
         if (!minimal) {
@@ -505,11 +511,11 @@ private fun ImmersiveNordicFocusView(
                 col = scene.atlasCol,
                 row = scene.atlasRow,
                 modifier = Modifier.matchParentSize(),
-                alpha = if (reducedMotion) 0.34f else 0.48f
+                alpha = if (reducedMotion) 0.28f else 0.42f
             )
             Box(
                 Modifier.matchParentSize().background(
-                    Brush.verticalGradient(listOf(Color(0xAA090C11), Color(0xCC090C11), Color(0xF0090C11)))
+                    Brush.verticalGradient(listOf(Color(0xB80B0D10), Color(0xD60B0D10), Color(0xF50B0D10)))
                 )
             )
         }
@@ -518,9 +524,9 @@ private fun ImmersiveNordicFocusView(
             Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 18.dp, vertical = 18.dp),
+                .padding(horizontal = 20.dp, vertical = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
             Row(
                 Modifier.fillMaxWidth(),
@@ -530,27 +536,27 @@ private fun ImmersiveNordicFocusView(
                 Row(
                     Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    FutharkRuneGlyph(phaseRune, phaseAccent, size = 15.dp)
+                    FutharkRuneGlyph(phaseRune, phaseAccent, size = 14.dp)
                     Text(
-                        "FORJA DO TEMPO · IMERSIVO",
+                        "Forja do Tempo · Imersivo",
                         color = phaseAccent,
-                        fontSize = 11.sp,
-                        letterSpacing = 1.2.sp,
-                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 12.sp,
+                        letterSpacing = 0.8.sp,
+                        fontWeight = FontWeight.Medium,
                         maxLines = 1
                     )
                 }
                 NordicCompactAction(
                     text = "Sair",
                     onClick = onExitImmersive,
-                    accent = Color(0xFFE7C582),
+                    accent = Color(0xFFDCC399),
                     rune = HistoricalFutharkRune.Othala
                 )
             }
 
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(6.dp))
 
             Box(Modifier.size(216.dp), contentAlignment = Alignment.Center) {
                 if (!minimal) {
@@ -558,15 +564,15 @@ private fun ImmersiveNordicFocusView(
                         col = if (isBreak) 1 else 0,
                         row = 0,
                         modifier = Modifier.matchParentSize(),
-                        alpha = if (isPaused) 0.62f else 1f
+                        alpha = if (isPaused) 0.56f else 0.92f
                     )
                 }
                 Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(
                         if (focus == null) "25:00" else "%02d:%02d".format(remaining / 60, remaining % 60),
                         style = MaterialTheme.typography.displaySmall,
-                        color = if (isBreak) Blue else if (isPaused) Color(0xFFA8B3C2) else Color(0xFFF3ECE1),
-                        fontWeight = FontWeight.Bold
+                        color = if (isBreak) Color(0xFF9AC0E0) else if (isPaused) Color(0xFFA8B3C2) else Color(0xFFF2ECE2),
+                        fontWeight = FontWeight.SemiBold
                     )
                     Text(
                         when {
@@ -575,7 +581,7 @@ private fun ImmersiveNordicFocusView(
                             isBreak -> "Pausa regenerativa"
                             else -> "Ciclo ${focus.currentCycle}/${focus.totalCycles}"
                         },
-                        color = if (isBreak) Blue else Color(0xFFD2C7B4),
+                        color = if (isBreak) Color(0xFF84A4C4) else Color(0xFFB8B0A2),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
                     )
@@ -592,8 +598,8 @@ private fun ImmersiveNordicFocusView(
                             TimeForgeRefinedPiece(
                                 col = if (doneCycle) 1 else 2,
                                 row = if (doneCycle) 1 else 0,
-                                modifier = Modifier.size(if (currentCycle) 26.dp else 20.dp),
-                                alpha = if (doneCycle || currentCycle) 1f else 0.4f
+                                modifier = Modifier.size(if (currentCycle) 24.dp else 19.dp),
+                                alpha = if (doneCycle || currentCycle) 0.95f else 0.35f
                             )
                         } else {
                             Text(if (doneCycle) "◆" else if (currentCycle) "◈" else "◇", color = phaseAccent, fontSize = 13.sp)
@@ -604,15 +610,11 @@ private fun ImmersiveNordicFocusView(
 
             Text(
                 focus?.targetLabel?.ifBlank { "Concentração profunda" } ?: "Nenhuma sessão ativa no momento",
-                color = Color(0xFFF3ECE1),
+                color = Color(0xFFEFEAE0),
                 style = MaterialTheme.typography.titleMedium
             )
 
-            NordicStrategyDivider(
-                style = if (isBreak) StrategyFrameAsset.BorreDivider else StrategyFrameAsset.UrnesDivider,
-                rune = phaseRune,
-                accent = phaseAccent
-            )
+            NorthbornDivider(NorthbornDividerStyle.DiamondKnot, color = phaseAccent)
 
             if (focus != null) {
                 BoxWithConstraints(Modifier.fillMaxWidth()) {
@@ -668,12 +670,19 @@ private fun ImmersiveNordicFocusView(
                 }
             }
 
-            CouncilMaterialSurface(CouncilMaterial.DarkIron, accent = phaseAccent) {
-                NordicSectionHeader(
-                    eyebrow = "Atmosfera sonora · ${scene.name}",
-                    rune = HistoricalFutharkRune.Laguz,
-                    accent = phaseAccent
-                )
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(NorthbornShape.md)
+                    .background(Color(0xB814171B))
+                    .border(1.dp, phaseAccent.copy(alpha = 0.28f), NorthbornShape.md)
+                    .padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FutharkRuneGlyph(HistoricalFutharkRune.Laguz, phaseAccent, size = 14.dp)
+                    Text("Atmosfera sonora · ${scene.name}", color = Color(0xFFE6DFD2), fontSize = 12.5.sp, fontWeight = FontWeight.Medium)
+                }
                 ChipRow(
                     ambientScenes.map { it.name },
                     ambientScenes.indexOfFirst { it.id == scene.id }.coerceAtLeast(0),
@@ -683,7 +692,11 @@ private fun ImmersiveNordicFocusView(
                     value = ambientVolume,
                     onValueChange = onVolume,
                     enabled = scene.id != "off",
-                    colors = SliderDefaults.colors(thumbColor = Gold, activeTrackColor = Gold)
+                    colors = SliderDefaults.colors(
+                        thumbColor = phaseAccent,
+                        activeTrackColor = phaseAccent,
+                        inactiveTrackColor = Color(0xFF2B3038)
+                    )
                 )
             }
         }

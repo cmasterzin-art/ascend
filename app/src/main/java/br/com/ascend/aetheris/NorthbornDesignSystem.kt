@@ -61,7 +61,9 @@ data class NorthbornPalette(
     val hairlineStrong: Color,
     val onAccent: Color,
     val dark: Boolean
-)
+) {
+    val inkMuted: Color get() = inkTertiary
+}
 
 val NorthbornDarkPalette = NorthbornPalette(
     canvas = Color(0xFF121417),          // Deep Fjord Charcoal
@@ -119,6 +121,7 @@ object NorthbornSpace {
 }
 
 object NorthbornShape {
+    val xs = CutCornerShape(3.dp)
     val sm = CutCornerShape(4.dp)
     val md = CutCornerShape(6.dp)
     val lg = CutCornerShape(8.dp)

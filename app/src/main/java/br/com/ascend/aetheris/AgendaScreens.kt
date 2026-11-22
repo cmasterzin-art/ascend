@@ -53,13 +53,14 @@ fun PlannerScreen(
     val blockFocus = remember(s.focusSessions, s.timeBlocks) { timeBlockFocus(s) }
     val due = daySummary.habits
     val done = due.count { s.record(it.id, selected)?.complete == true }
-    val dayShape = CutCornerShape(topStart = 6.dp, topEnd = 2.dp, bottomEnd = 6.dp, bottomStart = 2.dp)
+    val nb = LocalNorthborn.current
+    val dayShape = NorthbornShape.sm
     val inboxCount = s.inboxItems.count { !it.archived }
     val pendingCount = s.pathTasks.count { isTaskActivePending(s, it) && !it.completed }
 
     LazyColumn(
-        Modifier.fillMaxSize().testTag("planner_list"),
-        contentPadding = PaddingValues(20.dp),
+        Modifier.fillMaxSize().background(nb.canvas).testTag("planner_list"),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
@@ -68,47 +69,63 @@ fun PlannerScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 AetherisTabs(listOf("Dia", "Semana", "Mês"), mode, { mode = it })
-                ShortcutStrip(
+                // Faixa única de atalhos rápidos (substituindo 2 ShortcutStrips empilhadas)
+                Row(
+                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     listOf(
-                        Triple("Entrada ($inboxCount)", Glyph.Chronicles, onInbox),
-                        Triple("Pendências ($pendingCount)", Glyph.Claims, onPending)
-                    )
-                )
-                ShortcutStrip(
-                    listOf(
-                        Triple("Mesa de Odin", Glyph.World, onOpenOdin),
-                        Triple("Replanejar", Glyph.Planner, onOpenReplan)
-                    )
-                )
+                        Triple("Mesa de Odin", NorthbornGlyph.Odin, onOpenOdin),
+                        Triple("Replanejar", NorthbornGlyph.Agenda, onOpenReplan),
+                        Triple("Entrada ($inboxCount)", NorthbornGlyph.Missions, onInbox),
+                        Triple("Pendências ($pendingCount)", NorthbornGlyph.Check, onPending)
+                    ).forEach { (lbl, glyph, act) ->
+                        Row(
+                            Modifier
+                                .heightIn(min = 36.dp)
+                                .clip(NorthbornShape.pill)
+                                .background(nb.surfaceBase)
+                                .border(1.dp, nb.hairline, NorthbornShape.pill)
+                                .clickable(onClick = act)
+                                .padding(horizontal = 11.dp, vertical = 6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(5.dp)
+                        ) {
+                            NorthbornIcon(glyph, nb.accentBronze, size = 13.dp)
+                            Text(lbl, color = nb.inkPrimary, fontSize = 12.sp, maxLines = 1)
+                        }
+                    }
+                }
                 BoxWithConstraints(Modifier.fillMaxWidth()) {
                     if (maxWidth < 330.dp) {
                         Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            SagaButton(
+                            NorthbornButton(
                                 "+ Bloco de tempo",
                                 { blockEditor = TimeBlock(title = "", date = selected) },
-                                Modifier.fillMaxWidth(),
-                                style = VikingButtonStyle.BronzeForjado
+                                role = NorthbornButtonRole.Primary,
+                                modifier = Modifier.fillMaxWidth()
                             )
-                            SagaButton(
+                            NorthbornButton(
                                 "+ Compromisso",
                                 { eventEditor = AgendaEvent(title = "", date = selected) },
-                                Modifier.fillMaxWidth(),
-                                style = VikingButtonStyle.FerroRunico
+                                role = NorthbornButtonRole.Secondary,
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     } else {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            SagaButton(
+                            NorthbornButton(
                                 "+ Bloco de tempo",
                                 { blockEditor = TimeBlock(title = "", date = selected) },
-                                Modifier.weight(1f),
-                                style = VikingButtonStyle.BronzeForjado
+                                role = NorthbornButtonRole.Primary,
+                                modifier = Modifier.weight(1f)
                             )
-                            SagaButton(
+                            NorthbornButton(
                                 "+ Compromisso",
                                 { eventEditor = AgendaEvent(title = "", date = selected) },
-                                Modifier.weight(1f),
-                                style = VikingButtonStyle.FerroRunico
+                                role = NorthbornButtonRole.Secondary,
+                                modifier = Modifier.weight(1f)
                             )
                         }
                     }
@@ -121,26 +138,26 @@ fun PlannerScreen(
                 item {
                     val selDate = LocalDate.parse(selected)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SagaButton(
+                        NorthbornButton(
                             "‹",
                             {
                                 val prev = selDate.minusDays(1).toString()
                                 selected = prev
                                 week = weekOf(prev)
                             },
-                            Modifier.weight(1f).semantics { contentDescription = "Dia anterior" },
-                            style = VikingButtonStyle.CompactoRunico
+                            role = NorthbornButtonRole.Contextual,
+                            modifier = Modifier.weight(1f).semantics { contentDescription = "Dia anterior" }
                         )
-                        SagaButton("Hoje", { selected = current; week = weekOf(current) }, Modifier.weight(1f), style = VikingButtonStyle.FerroRunico)
-                        SagaButton(
+                        NorthbornButton("Hoje", { selected = current; week = weekOf(current) }, role = NorthbornButtonRole.Secondary, modifier = Modifier.weight(1f))
+                        NorthbornButton(
                             "›",
                             {
                                 val next = selDate.plusDays(1).toString()
                                 selected = next
                                 week = weekOf(next)
                             },
-                            Modifier.weight(1f).semantics { contentDescription = "Próximo dia" },
-                            style = VikingButtonStyle.CompactoRunico
+                            role = NorthbornButtonRole.Contextual,
+                            modifier = Modifier.weight(1f).semantics { contentDescription = "Próximo dia" }
                         )
                     }
                 }
@@ -148,18 +165,18 @@ fun PlannerScreen(
             1 -> {
                 item {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SagaButton(
+                        NorthbornButton(
                             "‹",
                             { week = start.minusWeeks(1).toString(); selected = week },
-                            Modifier.weight(1f).semantics { contentDescription = "Semana anterior" },
-                            style = VikingButtonStyle.CompactoRunico
+                            role = NorthbornButtonRole.Contextual,
+                            modifier = Modifier.weight(1f).semantics { contentDescription = "Semana anterior" }
                         )
-                        SagaButton("Hoje", { week = weekOf(current); selected = current }, Modifier.weight(1f), style = VikingButtonStyle.FerroRunico)
-                        SagaButton(
+                        NorthbornButton("Hoje", { week = weekOf(current); selected = current }, role = NorthbornButtonRole.Secondary, modifier = Modifier.weight(1f))
+                        NorthbornButton(
                             "›",
                             { week = start.plusWeeks(1).toString(); selected = week },
-                            Modifier.weight(1f).semantics { contentDescription = "Próxima semana" },
-                            style = VikingButtonStyle.CompactoRunico
+                            role = NorthbornButtonRole.Contextual,
+                            modifier = Modifier.weight(1f).semantics { contentDescription = "Próxima semana" }
                         )
                     }
                 }
@@ -179,9 +196,10 @@ fun PlannerScreen(
                             val summaryForDay = agendaDay(s, date)
                             val extraCount = summaryForDay.tasks.size + summaryForDay.blocks.size + summaryForDay.events.size
                             Column(
-                                Modifier.width(72.dp).heightIn(min = 88.dp)
-                                    .background(if (active) Blue.copy(alpha = .18f) else if (isToday) Gold.copy(alpha = .1f) else Surface, dayShape)
-                                    .border(1.dp, if (active) Blue else if (isToday) Gold.copy(alpha = .55f) else ColdIron.copy(alpha = .25f), dayShape)
+                                Modifier.width(72.dp).heightIn(min = 86.dp)
+                                    .clip(dayShape)
+                                    .background(if (active) nb.accentFjord.copy(alpha = if (nb.dark) .20f else .15f) else if (isToday) nb.accentBronze.copy(alpha = .12f) else nb.surfaceBase)
+                                    .border(if (active) 1.5.dp else 1.dp, if (active) nb.accentFjord else if (isToday) nb.accentBronze.copy(alpha = .6f) else nb.hairline, dayShape)
                                     .clickable { selected = date }
                                     .padding(8.dp)
                                     .semantics(mergeDescendants = true) {
@@ -191,15 +209,15 @@ fun PlannerScreen(
                                 horizontalAlignment = Alignment.CenterHorizontally,
                                 verticalArrangement = Arrangement.spacedBy(3.dp)
                             ) {
-                                Text(listOf("SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM")[d.dayOfWeek.value - 1], fontSize = 10.sp, letterSpacing = .5.sp, color = if (active) Blue else if (isToday) Gold else Muted)
-                                Text(d.dayOfMonth.toString(), fontFamily = SagaFont, fontSize = 22.sp, color = if (active) Blue else Ink)
+                                Text(listOf("SEG", "TER", "QUA", "QUI", "SEX", "SÁB", "DOM")[d.dayOfWeek.value - 1], fontSize = 10.sp, letterSpacing = .5.sp, color = if (active) nb.accentFjord else if (isToday) nb.accentBronze else nb.inkMuted)
+                                Text(d.dayOfMonth.toString(), fontFamily = SagaFont, fontSize = 21.sp, color = if (active) nb.accentFjord else nb.inkPrimary)
                                 Text(
                                     if (date in s.restDates) "Descanso" else "${summaryForDay.habits.count { s.record(it.id, date)?.complete == true }}/${summaryForDay.habits.size}",
                                     fontSize = 10.sp,
-                                    color = if (active) Blue else Muted
+                                    color = if (active) nb.accentFjord else nb.inkSecondary
                                 )
                                 if (extraCount > 0) {
-                                    Text("+$extraCount", fontSize = 9.sp, color = Gold)
+                                    Text("+$extraCount", fontSize = 9.sp, color = nb.accentBronze, fontWeight = FontWeight.Medium)
                                 }
                             }
                         }
@@ -212,27 +230,28 @@ fun PlannerScreen(
                     val monthStart = parsed.withDayOfMonth(1)
                     val offset = monthStart.dayOfWeek.value - 1
                     val len = monthStart.lengthOfMonth()
-                    val cellShape = CutCornerShape(4.dp)
+                    val cellShape = NorthbornShape.xs
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                             IconButton({
                                 val prev = parsed.minusMonths(1).toString()
                                 selected = prev
                                 week = weekOf(prev)
-                            }) { Icon(Icons.Default.ChevronLeft, "Mês anterior") }
+                            }) { Icon(Icons.Default.ChevronLeft, "Mês anterior", tint = nb.inkPrimary) }
                             Text(
                                 monthStart.format(DateTimeFormatter.ofPattern("MMMM yyyy", Locale.forLanguageTag("pt-BR"))).replaceFirstChar { it.uppercase() },
                                 fontFamily = SagaFont,
-                                fontSize = 20.sp
+                                fontSize = 20.sp,
+                                color = nb.inkPrimary
                             )
                             IconButton({
                                 val next = parsed.plusMonths(1).toString()
                                 selected = next
                                 week = weekOf(next)
-                            }) { Icon(Icons.Default.ChevronRight, "Próximo mês") }
+                            }) { Icon(Icons.Default.ChevronRight, "Próximo mês", tint = nb.inkPrimary) }
                         }
                         Row(Modifier.fillMaxWidth()) {
-                            weekdays.forEach { Text(it, Modifier.weight(1f), color = Muted, fontSize = 11.sp) }
+                            weekdays.forEach { Text(it, Modifier.weight(1f), color = nb.inkMuted, fontSize = 11.sp) }
                         }
                         for (row in 0 until (offset + len + 6) / 7) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
@@ -245,19 +264,20 @@ fun PlannerScreen(
                                         Modifier.weight(1f).aspectRatio(1f).clip(cellShape)
                                             .background(
                                                 when {
-                                                    isSel -> Blue.copy(alpha = .22f)
-                                                    marker != null && marker.habitsDone > 0 -> Green.copy(alpha = .14f)
-                                                    marker != null && marker.hasActivity -> Gold.copy(alpha = .09f)
-                                                    else -> Surface
+                                                    isSel -> nb.accentFjord.copy(alpha = if (nb.dark) .22f else .18f)
+                                                    marker != null && marker.habitsDone > 0 -> nb.accentPatina.copy(alpha = if (nb.dark) .16f else .14f)
+                                                    marker != null && marker.hasActivity -> nb.accentBronze.copy(alpha = .11f)
+                                                    d.isNotBlank() -> nb.surfaceBase
+                                                    else -> Color.Transparent
                                                 }
                                             )
                                             .border(
-                                                1.dp,
+                                                if (isSel) 1.5.dp else 1.dp,
                                                 when {
-                                                    isSel -> Blue
+                                                    isSel -> nb.accentFjord
                                                     marker?.hasDeadline == true -> Violet.copy(alpha = .65f)
-                                                    marker?.rest == true -> Green.copy(alpha = .45f)
-                                                    d.isNotBlank() -> ColdIron.copy(alpha = .2f)
+                                                    marker?.rest == true -> nb.accentPatina.copy(alpha = .5f)
+                                                    d.isNotBlank() -> nb.hairline
                                                     else -> Color.Transparent
                                                 },
                                                 cellShape
@@ -267,14 +287,14 @@ fun PlannerScreen(
                                     ) {
                                         if (d.isNotBlank() && marker != null) {
                                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                                Text(n.toString(), color = if (isSel) Blue else Ink, fontSize = 12.sp)
+                                                Text(n.toString(), color = if (isSel) nb.accentFjord else nb.inkPrimary, fontSize = 12.sp, fontWeight = if (isSel) FontWeight.SemiBold else FontWeight.Normal)
                                                 val dots = buildString {
                                                     if (marker.rest) append("☽")
                                                     if (marker.habitsPlanned > 0) append("·")
                                                     if (marker.tasksCount + marker.blocksCount + marker.eventsCount > 0) append("◆")
                                                 }
                                                 if (dots.isNotEmpty()) {
-                                                    Text(dots, fontSize = 8.sp, lineHeight = 9.sp, color = if (marker.hasDeadline) Violet else Gold)
+                                                    Text(dots, fontSize = 8.sp, lineHeight = 9.sp, color = if (marker.hasDeadline) Violet else nb.accentBronze)
                                                 }
                                             }
                                         }
@@ -282,7 +302,7 @@ fun PlannerScreen(
                                 }
                             }
                         }
-                        Text("Legenda: · hábitos · ◆ tarefas/blocos/compromissos · borda violeta = prazo · ☽ descanso", color = Muted, fontSize = 11.sp)
+                        Text("Legenda: · hábitos · ◆ tarefas/blocos/compromissos · borda violeta = prazo · ☽ descanso", color = nb.inkMuted, fontSize = 11.sp)
                     }
                 }
             }
@@ -300,14 +320,14 @@ fun PlannerScreen(
                     if (due.isEmpty()) "—" else "${done * 100 / due.size}%",
                     "cumprimento"
                 )
-                Meter(if (due.isEmpty()) 0f else done.toFloat() / due.size, Blue, slim = true)
+                Meter(if (due.isEmpty()) 0f else done.toFloat() / due.size, nb.accentFjord, slim = true)
                 if (selected >= current) {
                     Toggle("Descanso global neste dia", selected in s.restDates) { v -> vm.run { vm.repo.rest(selected, v) } }
                 }
                 if (selected in s.restDates) {
-                    Text("O descanso tem prioridade sobre inclusões pontuais. As exceções ficam guardadas.", color = Muted, fontSize = 13.sp)
+                    Text("O descanso tem prioridade sobre inclusões pontuais. As exceções ficam guardadas.", color = nb.inkSecondary, fontSize = 13.sp)
                 }
-                NordicStrategyDivider(StrategyFrameAsset.BorreDivider, rune = HistoricalFutharkRune.Dagaz, accent = Gold)
+                NorthbornDivider(NorthbornDividerStyle.DiamondKnot)
             }
         }
 

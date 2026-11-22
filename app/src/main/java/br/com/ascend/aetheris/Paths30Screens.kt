@@ -39,14 +39,13 @@ fun Path30AdvancedSection(
     val tabs = listOf("Gantt", "Kanban", "Crítico & Deps", "Marcos")
 
     Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth().testTag("path_30_panel")) {
-        CouncilMaterialSurface(CouncilMaterial.ProjectLeather) {
-            NordicSectionHeader(
-                eyebrow = "Caminhos 3.0 · Planejamento de Projeto",
-                subtitle = "Gantt interativo em trilhos metálicos, Kanban unificado, caminho crítico e marcos sobre as mesmas tarefas.",
-                mark = PlanningMark.Milestone
-            )
-            AetherisTabs(tabs, mode, { mode = it })
-        }
+        NorthbornDivider(NorthbornDividerStyle.DiamondKnot)
+        NorthbornEditorialHeader(
+            title = "Caminhos 3.0 · Planejamento de Projeto",
+            kicker = "Cronograma & Fluxo",
+            subtitle = "Gantt interativo em trilhos metálicos, Kanban unificado, caminho crítico e marcos sobre as mesmas tarefas."
+        )
+        AetherisTabs(tabs, mode, { mode = it })
 
         when (mode) {
             0 -> PathGanttPanel(path = path, s = s)
@@ -97,9 +96,9 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
     val dayWidth = if (weeklyScale) 26.dp else 48.dp
     val todayOffsetDays = ChronoUnit.DAYS.between(baseDate, LocalDate.parse(todayDate)).toInt()
     val scroll = rememberScrollState()
-    val dark = LocalAppearance.current.dark
+    val nb = LocalNorthborn.current
 
-    CouncilMaterialSurface(CouncilMaterial.DarkIron) {
+    NorthbornSurface(role = NorthbornSurfaceRole.Strategic, material = NorthbornMaterial.VolcanicSlate) {
         NordicSectionHeader(
             eyebrow = "Cronograma Gantt (${tasks.size} tarefas)",
             subtitle = "Toque em qualquer trilho para consultar detalhes, folga e pré-requisitos.",
@@ -108,7 +107,7 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
         ChipRow(listOf("Escala diária", "Escala semanal"), if (weeklyScale) 1 else 0, { weeklyScale = it == 1 })
 
         if (tasks.isEmpty()) {
-            Text("Adicione tarefas neste Caminho para visualizar a linha do tempo Gantt.", color = Muted, fontSize = 13.sp)
+            Text("Adicione tarefas neste Caminho para visualizar a linha do tempo Gantt.", color = nb.inkMuted, fontSize = 13.sp)
         } else {
             val timelineWidth = dayWidth * totalDays
             val rowHeight = 56.dp
@@ -119,14 +118,14 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
                     .testTag("gantt_chart_canvas"),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Cabeçalho de datas em placa metálica
+                // Cabeçalho de datas arquitetônico
                 Row(
                     Modifier
                         .width(timelineWidth)
-                        .clip(CutCornerShape(4.dp))
-                        .background(if (dark) Color(0xFF1A1F28) else Color(0xFFE0D9CC))
-                        .border(1.dp, ColdIron.copy(alpha = 0.35f), CutCornerShape(4.dp))
-                        .padding(vertical = 4.dp),
+                        .clip(NorthbornShape.xs)
+                        .background(nb.surfaceElevated)
+                        .border(1.dp, nb.hairline, NorthbornShape.xs)
+                        .padding(vertical = 5.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     val step = if (weeklyScale) 7 else 1
@@ -140,7 +139,7 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
                         ) {
                             Text(
                                 if (weeklyScale) "S${(i / 7) + 1} (${d.dayOfMonth}/${d.monthValue})" else "${d.dayOfMonth}/${d.monthValue}",
-                                color = if (isToday) Gold else Muted,
+                                color = if (isToday) nb.accentBronze else nb.inkMuted,
                                 fontSize = 10.sp,
                                 fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
                                 maxLines = 1
@@ -246,8 +245,9 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
                                     Modifier
                                         .width(timelineWidth)
                                         .height(26.dp)
-                                        .clip(CutCornerShape(3.dp))
-                                        .background(if (dark) Color(0xFF101318) else Color(0xFFE1DDD4))
+                                        .clip(NorthbornShape.xs)
+                                        .background(nb.canvas)
+                                        .border(0.5.dp, nb.hairline, NorthbornShape.xs)
                                 ) {
                                     val barWidthDp = (dayWidth * spanDays).coerceAtLeast(48.dp)
                                     val innerLabel = when {
@@ -264,15 +264,15 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
                                             .width(barWidthDp)
                                             .fillMaxHeight()
                                             .clip(shape)
-                                            .background(barColor.copy(alpha = if (isSelected) 0.38f else 0.26f))
-                                            .border(if (isSelected || node.isCritical) 1.5.dp else 1.dp, barColor.copy(alpha = 0.90f), shape)
+                                            .background(barColor.copy(alpha = if (isSelected) 0.36f else 0.24f))
+                                            .border(if (isSelected || node.isCritical) 1.5.dp else 1.dp, barColor.copy(alpha = 0.88f), shape)
                                             .padding(horizontal = 6.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = if (barWidthDp >= 78.dp) Arrangement.Start else Arrangement.Center
                                     ) {
                                         Text(
                                             text = innerLabel,
-                                            color = Ink,
+                                            color = nb.inkPrimary,
                                             fontSize = 10.sp,
                                             fontWeight = FontWeight.SemiBold,
                                             maxLines = 1
@@ -285,40 +285,40 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
                 }
             }
 
-            NordicStrategyDivider(StrategyFrameAsset.BorreDivider)
+            NorthbornDivider(NorthbornDividerStyle.Hairline)
 
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.horizontalScroll(rememberScrollState())) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    NordicPlanningMark(PlanningMark.CriticalTask, Modifier.size(14.dp), tintFallback = Gold)
-                    Text("Crítica", color = Gold, fontSize = 11.sp)
+                    NordicPlanningMark(PlanningMark.CriticalTask, Modifier.size(14.dp), tintFallback = nb.accentBronze)
+                    Text("Crítica", color = nb.accentBronze, fontSize = 11.sp)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    NordicPlanningMark(PlanningMark.Dependency, Modifier.size(14.dp), tintFallback = Blue)
-                    Text("Regular / Dep.", color = Blue, fontSize = 11.sp)
+                    NordicPlanningMark(PlanningMark.Dependency, Modifier.size(14.dp), tintFallback = nb.accentFjord)
+                    Text("Regular / Dep.", color = nb.accentFjord, fontSize = 11.sp)
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    NordicPlanningMark(PlanningMark.PlanCompleted, Modifier.size(14.dp), tintFallback = Green)
-                    Text("Concluída", color = Green, fontSize = 11.sp)
+                    NordicPlanningMark(PlanningMark.PlanCompleted, Modifier.size(14.dp), tintFallback = nb.accentPatina)
+                    Text("Concluída", color = nb.accentPatina, fontSize = 11.sp)
                 }
-                Text("| Hoje", color = Gold, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                Text("| Hoje", color = nb.accentBronze, fontSize = 11.sp, fontWeight = FontWeight.Bold)
             }
 
             inspectedNode?.let { node ->
                 val prereqTitles = s.taskDependencies
                     .filter { !it.overridden && it.taskId == node.task.id }
                     .mapNotNull { tasksById[it.dependsOnTaskId]?.title }
-                CouncilMaterialSurface(CouncilMaterial.AgedVellum, accent = Gold) {
+                NorthbornSurface(role = NorthbornSurfaceRole.Document, accent = nb.accentBronze) {
                     NordicSectionHeader("Tarefa inspecionada no Gantt", mark = if (node.isCritical) PlanningMark.CriticalTask else PlanningMark.Deadline)
-                    Text(node.task.title, color = Ink, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                    Text(node.task.title, color = nb.inkPrimary, fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
                     Text(
                         "Estimativa: ${if (node.estimatedMissing) "sem estimativa (ref. ${node.durationMinutes} min)" else "${node.durationMinutes} min"} · " +
                             "Folga: ${node.slackMinutes} min · ${if (node.isCritical) "No caminho crítico" else "Com folga"}",
-                        color = Muted,
+                        color = nb.inkSecondary,
                         fontSize = 12.sp
                     )
-                    Text("Janela projetada: ${displayDate(node.earliestDate)} → ${displayDate(node.finishDate)}", color = Blue, fontSize = 12.sp)
+                    Text("Janela projetada: ${displayDate(node.earliestDate)} → ${displayDate(node.finishDate)}", color = nb.accentFjord, fontSize = 12.sp)
                     if (prereqTitles.isNotEmpty()) {
-                        Text("Pré-requisitos: ${prereqTitles.joinToString(", ")}", color = Gold, fontSize = 12.sp)
+                        Text("Pré-requisitos: ${prereqTitles.joinToString(", ")}", color = nb.accentBronze, fontSize = 12.sp)
                     }
                 }
             }
@@ -328,6 +328,7 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
 
 @Composable
 fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
+    val nb = LocalNorthborn.current
     val todayDate = currentDay()
     val tasks = remember(s.pathTasks, path.id) { s.pathTasks.filter { it.pathId == path.id && !it.archived } }
     val tasksById = remember(s.pathTasks) { s.pathTasks.associateBy { it.id } }
@@ -338,7 +339,6 @@ fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
         val key: String,
         val title: String,
         val list: List<PathTask>,
-        val material: CouncilMaterial,
         val accent: Color,
         val mark: PlanningMark,
         val rune: HistoricalFutharkRune
@@ -352,8 +352,7 @@ fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
                 val st = OdinPlanningEngine.taskWorkflowState(it, tasksById, s.taskDependencies, todayDate)
                 st == TaskWorkflowState.AVAILABLE || st == TaskWorkflowState.OVERDUE
             },
-            material = CouncilMaterial.NordicWood,
-            accent = Gold,
+            accent = nb.accentBronze,
             mark = PlanningMark.Deadline,
             rune = HistoricalFutharkRune.Raido
         ),
@@ -363,8 +362,7 @@ fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
             list = tasks.filter {
                 OdinPlanningEngine.taskWorkflowState(it, tasksById, s.taskDependencies, todayDate) == TaskWorkflowState.IN_PROGRESS
             },
-            material = CouncilMaterial.ProjectLeather,
-            accent = Blue,
+            accent = nb.accentFjord,
             mark = PlanningMark.CriticalTask,
             rune = HistoricalFutharkRune.Kenaz
         ),
@@ -374,8 +372,7 @@ fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
             list = tasks.filter {
                 OdinPlanningEngine.taskWorkflowState(it, tasksById, s.taskDependencies, todayDate) == TaskWorkflowState.BLOCKED
             },
-            material = CouncilMaterial.DarkIron,
-            accent = MaterialTheme.colorScheme.error,
+            accent = nb.accentEmber,
             mark = PlanningMark.Dependency,
             rune = HistoricalFutharkRune.Isa
         ),
@@ -383,60 +380,56 @@ fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
             key = "done",
             title = "Concluídas",
             list = tasks.filter { it.completed },
-            material = CouncilMaterial.AgedVellum,
-            accent = Green,
+            accent = nb.accentPatina,
             mark = PlanningMark.PlanCompleted,
             rune = HistoricalFutharkRune.Jera
         )
     )
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.testTag("kanban_board")) {
-        cols.forEach { col ->
-            CouncilMaterialSurface(col.material, accent = col.accent) {
+    // Colunas Kanban arquitetônicas abertas (sem caixa-em-caixa)
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp), modifier = Modifier.testTag("kanban_board")) {
+        cols.forEachIndexed { cIdx, col ->
+            if (cIdx > 0) NorthbornDivider(NorthbornDividerStyle.Hairline)
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    NordicPlanningMark(col.mark, Modifier.size(22.dp), tintFallback = col.accent)
+                    Box(Modifier.width(3.dp).height(18.dp).background(col.accent))
+                    NordicPlanningMark(col.mark, Modifier.size(18.dp), tintFallback = col.accent)
                     Eyebrow("${col.title} (${col.list.size})", col.accent)
                     Spacer(Modifier.weight(1f))
-                    FutharkRuneGlyph(col.rune, col.accent.copy(alpha = 0.78f), size = 15.dp)
+                    FutharkRuneGlyph(col.rune, col.accent.copy(alpha = 0.72f), size = 14.dp)
                 }
                 if (col.list.isEmpty()) {
-                    Text("Sem tarefas nesta coluna.", color = Muted, fontSize = 12.sp)
+                    Text("Sem tarefas nesta coluna.", color = nb.inkMuted, fontSize = 12.sp)
                 } else {
                     col.list.forEach { t ->
                         val blockers = OdinPlanningEngine.blockingPrerequisites(t.id, tasksById, s.taskDependencies)
-                        val shape = CutCornerShape(6.dp)
                         val priorityLabel = priorityLabels[t.priority.coerceIn(priorityLabels.indices)]
-                        Column(
-                            Modifier
-                                .fillMaxWidth()
-                                .clip(shape)
-                                .background(Surface.copy(alpha = 0.76f))
-                                .border(1.dp, col.accent.copy(alpha = 0.42f), shape)
-                                .padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        NorthbornSurface(
+                            role = NorthbornSurfaceRole.Operational,
+                            accent = col.accent
                         ) {
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
                                 Text(
                                     t.title,
-                                    color = Ink,
+                                    color = nb.inkPrimary,
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 14.sp,
                                     modifier = Modifier.weight(1f)
                                 )
-                                StatusSeal(priorityLabel, if (t.priority >= 2) Gold else Muted)
+                                StatusSeal(priorityLabel, if (t.priority >= 2) nb.accentBronze else nb.inkMuted)
                             }
                             val meta = buildString {
                                 if (t.estimateMinutes > 0) append("${t.estimateMinutes} min") else append("sem estimativa")
                                 if (t.deadline.isNotBlank()) append(" · prazo ${displayDate(t.deadline)}")
                             }
-                            Text(meta, color = Muted, fontSize = 11.sp)
+                            Text(meta, color = nb.inkSecondary, fontSize = 11.5.sp)
                             if (blockers.isNotEmpty()) {
                                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    NordicPlanningMark(PlanningMark.Dependency, Modifier.size(15.dp), tintFallback = MaterialTheme.colorScheme.error)
+                                    NordicPlanningMark(PlanningMark.Dependency, Modifier.size(14.dp), tintFallback = nb.accentEmber)
                                     Text(
                                         "Aguarda: ${blockers.joinToString { it.title }}",
-                                        color = MaterialTheme.colorScheme.error,
-                                        fontSize = 11.sp,
+                                        color = nb.accentEmber,
+                                        fontSize = 11.5.sp,
                                         fontWeight = FontWeight.Medium
                                     )
                                 }
@@ -447,7 +440,7 @@ fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
                                     NordicCompactAction(
                                         text = "→ A fazer",
                                         onClick = { vm.run { vm.repo.setTaskKanbanColumn(t.id, "todo") } },
-                                        accent = Gold
+                                        accent = nb.accentBronze
                                     )
                                 }
                                 if (col.key != "doing") {
@@ -461,7 +454,7 @@ fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
                                                 vm.run { vm.repo.setTaskKanbanColumn(t.id, "doing") }
                                             }
                                         },
-                                        accent = Blue,
+                                        accent = nb.accentFjord,
                                         rune = if (blockers.isNotEmpty()) HistoricalFutharkRune.Thurisaz else HistoricalFutharkRune.Kenaz
                                     )
                                 }
@@ -469,7 +462,7 @@ fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
                                     NordicCompactAction(
                                         text = "→ Concluir",
                                         onClick = { vm.run { vm.repo.setTaskKanbanColumn(t.id, "done") } },
-                                        accent = Green,
+                                        accent = nb.accentPatina,
                                         rune = HistoricalFutharkRune.Fehu
                                     )
                                 }

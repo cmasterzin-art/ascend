@@ -122,16 +122,17 @@ fun PathsScreen(
     val openTasksCount = s.pathTasks.count { isTaskActivePending(s, it) && !it.completed }
     val totalFocusMinutes = s.paths.sumOf { pathFocusMinutes(s, it.id) }
 
+    val nb = LocalNorthborn.current
     LazyColumn(
-        Modifier.fillMaxSize().testTag("paths_list"),
-        contentPadding = PaddingValues(20.dp),
+        Modifier.fillMaxSize().background(nb.canvas).testTag("paths_list"),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
             Title("Caminhos", "Projetos pessoais com etapas, tarefas, Gantt, Kanban, caminho crítico e marcos.")
         }
         item {
-            AetherSurface(SurfaceKind.Heroic) {
+            NorthbornSurface(role = NorthbornSurfaceRole.Informative, accent = nb.accentBronze) {
                 MetricPair(
                     activeCount.toString(),
                     if (activeCount == 1) "caminho ativo" else "caminhos ativos",
@@ -140,15 +141,15 @@ fun PathsScreen(
                 )
                 Text(
                     "${s.paths.count { it.state == 3 }} concluídos · $totalFocusMinutes min de foco real registrado",
-                    color = Muted,
+                    color = nb.inkSecondary,
                     fontSize = 12.sp
                 )
             }
         }
         item {
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Action("+ Novo caminho", onNewPath, Modifier.weight(1f))
-                SagaButton("Modelos (6)", { showTemplates = true }, Modifier.weight(1f), secondary = true)
+                NorthbornButton("+ Novo caminho", onNewPath, role = NorthbornButtonRole.Primary, modifier = Modifier.weight(1f))
+                NorthbornButton("Modelos (6)", { showTemplates = true }, role = NorthbornButtonRole.Secondary, modifier = Modifier.weight(1f))
             }
         }
         item {
