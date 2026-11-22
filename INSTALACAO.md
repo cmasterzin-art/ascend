@@ -1,13 +1,13 @@
-# Instalar ASCEND 1.7.5.1 no Android
+# Instalar ASCEND 1.7.5.9 no Android
 
 Android 8.0 (API 26) ou superior. O uso não exige internet, conta ou pagamento.
 
-## Atualizar os APKs 1.1 a 1.7.5 fornecidos neste repositório
+## Atualizar os APKs 1.1 a 1.7.5.1 fornecidos neste repositório
 
 1. Em Herói → Configurações, exporte um backup de segurança.
-2. [Baixe ASCEND-1.7.5.1.apk](downloads/ASCEND-1.7.5.1.apk?raw=true) e abra o arquivo.
-3. Confirme a atualização **sem desinstalar**. O pacote (`br.com.ascend.aetheris`) e o certificado oficial (`e1f003ef...`) são os mesmos; o `versionCode` passou para `28`.
-4. Abra o app e confira seu personagem. A `1.7.5.1` preserva **Room v11** e **backup v13** (compatível com `v1`–`v13`), mantendo integralmente todos os dados anteriores (hábitos, foco, Caminhos, Agenda, Biblioteca de Mímir, especializações, exploração regional, Forja de Darian, Heráldica Rúnica, coleções, inventário e memórias).
+2. [Baixe ASCEND-1.7.5.9.apk](downloads/ASCEND-1.7.5.9.apk?raw=true) e abra o arquivo.
+3. Confirme a atualização **sem desinstalar**. O pacote (`br.com.ascend.aetheris`) e o certificado oficial (`e1f003ef...`) são os mesmos; o `versionCode` passou para `29`.
+4. Abra o app e confira seu personagem. A `1.7.5.9` preserva **Room v11** e **backup v13** (compatível com `v1`–`v13`), mantendo integralmente todos os dados anteriores (hábitos, foco, Caminhos, Agenda, Biblioteca de Mímir, especializações, exploração regional, Forja de Darian, Heráldica Rúnica, coleções, inventário e memórias).
 
 Se o Android indicar conflito de assinatura, sua instalação foi compilada com outra chave. Não desinstale antes de exportar os dados; consulte `ASSINATURA.md`.
 
@@ -18,11 +18,11 @@ Se o Android indicar conflito de assinatura, sua instalação foi compilada com 
 1. Na **versão 1.0 ainda instalada**, abra **Herói → Configurações → Exportar backup**.
 2. Salve o JSON em Downloads ou outra pasta fora do aplicativo. Confirme que o arquivo foi criado e guarde uma cópia.
 3. Desinstale a 1.0. Essa ação apaga o banco do aplicativo; o backup salvo no passo anterior será usado na restauração.
-4. [Baixe ASCEND-1.7.5.1.apk](downloads/ASCEND-1.7.5.1.apk?raw=true), abra pelo gerenciador de arquivos e instale.
-5. Na tela de boas-vindas, toque em **Já tenho uma jornada · Restaurar backup**, escolha o JSON e confirme. A `1.7.5.1` aceita backups `v1` a `v13`. Se já criou outro personagem, use **Herói → Configurações → Importar backup**; os dados atuais serão substituídos pelos do arquivo.
+4. [Baixe ASCEND-1.7.5.9.apk](downloads/ASCEND-1.7.5.9.apk?raw=true), abra pelo gerenciador de arquivos e instale.
+5. Na tela de boas-vindas, toque em **Já tenho uma jornada · Restaurar backup**, escolha o JSON e confirme. A `1.7.5.9` aceita backups `v1` a `v13`. Se já criou outro personagem, use **Herói → Configurações → Importar backup**; os dados atuais serão substituídos pelos do arquivo.
 6. Confira nome, hábitos e XP antes de apagar qualquer cópia de segurança.
 
-Se você tem a chave original, pode compilar a `1.7.5.1` com ela e instalar diretamente por cima da 1.0, sem desinstalar. A migração do banco preserva os dados. Veja `ASSINATURA.md`.
+Se você tem a chave original, pode compilar a `1.7.5.9` com ela e instalar diretamente por cima da 1.0, sem desinstalar. A migração do banco preserva os dados. Veja `ASSINATURA.md`.
 
 ## Primeira instalação
 
@@ -31,10 +31,11 @@ Se você tem a chave original, pode compilar a `1.7.5.1` com ela e instalar dire
 3. Instale e abra ASCEND; escolha personagem, classe e hábitos iniciais.
 4. Na Jornada, acesse **Mesa de Odin** (configure suas janelas semanais, compare as 6 estratégias, simule capacidade e aplique planos), **Caminhos** (Gantt, Kanban, caminho crítico, dependências, marcos e 6 modelos), **Planejador** (Agenda 3.0 com fixação e recorrência), **Forja Tempo** (5 modos de foco, Pomodoro, modo imersivo e 3 sons ambientes offline) e **Conselho 9** (9 áreas opcionais e objetivos pessoais).
 
-O APK é uma compilação pessoal de depuração assinada com a chave preservada, distribuída fora da Play Store. O checksum está em `downloads/ASCEND-1.7.5.1.apk.sha256`.
+O APK é uma compilação pessoal de depuração assinada com a chave preservada, distribuída fora da Play Store. O checksum está em `downloads/ASCEND-1.7.5.9.apk.sha256`.
 
-## Novidades da 1.7.5.1, 1.7.5, 1.7.3.1, 1.7.3, 1.7.2, 1.7.1, 1.7.0 e 1.6
+## Novidades da 1.7.5.9, 1.7.5.1, 1.7.5, 1.7.3.1, 1.7.3, 1.7.2, 1.7.1, 1.7.0 e 1.6
 
+- **A Reforma de Aetheris (`1.7.5.9` · NORTHBORN 4.0):** reformulação visual global em Jetpack Compose com paleta Escuro mineral e Claro documental em linho arquivístico, 5 papéis de superfície sem cabeçalhos automáticos repetidos, Botões 4.0 sem adesivos rasterizados, 15 ícones escandinavos de traço uniforme, barra inferior e cabeçalhos reconstruídos, desenclausuramento da Jornada/Mesa de Odin/Agenda/Kanban/Forja do Tempo e identidade manuscrita dedicada na Biblioteca de Mímir e Flashcards SM-2 — preservando 100% das regras de negócio e dados da `1.7.5.1`. [NORTHBORN DS 4.0](docs/NORTHBORN-DESIGN-SYSTEM-4.0.md) · [UI Reforge 1.7.5.9](docs/UI-REFORGE-1.7.5.9.md) · [Visual 1.7.5.9](docs/VISUAL-1.7.5.9.md).
 - **O Conselho Restaurado (`1.7.5.1`):** reconciliação automática da Forja do Tempo em segundo plano, projeção real de recorrências (`@rec:`) na Agenda/Capacidade/Mesa de Odin, validação centralizada de horários sem fallback `09:00`, gating estrito de dependências no agendamento, desfazer condicional preservando edições manuais de `PathTask`, e **Design System 3.2.1** (6 famílias metálicas de botões, 8 marcadores de planejamento, selos refinados, instrumentos de trabalho/descanso/ciclo na Forja do Tempo, Gantt sem truncamento e Kanban em 4 colunas táteis). [Estabilidade 1.7.5.1](docs/ESTABILIDADE-1.7.5.1.md) · [Design System 3.2.1](docs/DESIGN-SYSTEM-3.2.1.md) · [Visual 1.7.5.1](docs/VISUAL-1.7.5.1.md).
 - **A Mesa de Odin (`1.7.5`):** **Mesa de Odin** (planejamento adaptativo determinístico offline com 6 estratégias, Simulador de Capacidade em 5 períodos, propostas explicáveis com aplicação transacional e desfazer inteligente, replanejamento sem punição e Matriz de Eisenhower), **Caminhos 3.0** (dependências sem ciclos, Caminho Crítico CPM, Gantt interativo, Kanban 4 colunas acessível, marcos e 6 modelos), **Agenda 3.0** (fixação e recorrência sem mutação histórica), **Forja do Tempo** (5 modos, Pomodoro sem contar pausas, relógio monotônico, Modo Imersivo e 3 sons ambientes offline), **Conselho dos Nove** (9 áreas opcionais e objetivos trimestrais/anuais) e **Design System 3.2**. [Mesa de Odin](docs/MESA-DE-ODIN.md) · [Visual 1.7.5](docs/VISUAL-1.7.5.md).
 - **O Legado das Runas (`1.7.3.1`):** **Heráldica Rúnica** (8 símbolos, 4 formatos, 4 metais, 5 cores, 5 ornamentos, 3 estandartes e inscrição de até 6 runas), **Codex Rúnico completo** com 24 caracteres vetoriais do *Elder Futhark* e separação rigorosa entre história e ficção, **Forja de Darian expandida** para 12 receitas + **3 estágios de aprimoramento** (*Forjado → Gravado → Consagrado*) + **3 Coleções Lendárias** independentes das 3 Configurações de Equipamento, **Arsenal 2.1** (4 abas, busca, filtros combináveis e ordenação), **Retrato Vivo 1.1** e correções estruturais da `1.7.3` (equipamento idempotente, versionamento de foco em expedições, aplicação parcial segura de configurações e preservação de rascunho no Estúdio). [Heráldica](docs/HERALDICA-RUNICA.md) · [Codex Rúnico](docs/CODEX-RUNICO.md) · [Coleções Lendárias](docs/COLECOES-LENDARIAS.md) · [Aprimoramentos da Forja](docs/APRIMORAMENTOS-DA-FORJA.md) · [Visual 1.7.3.1](docs/VISUAL-1.7.3.1.md).

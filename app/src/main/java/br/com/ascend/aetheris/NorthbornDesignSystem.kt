@@ -574,10 +574,10 @@ fun NorthbornTopBar(
         Row(
             Modifier
                 .fillMaxWidth()
-                .heightIn(min = 54.dp)
-                .padding(horizontal = 8.dp, vertical = 4.dp),
+                .heightIn(min = 56.dp)
+                .padding(start = 8.dp, end = 16.dp, top = 6.dp, bottom = 6.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             IconButton(
                 onClick = onBack,

@@ -36,9 +36,12 @@ class GrimoireUiTest{
         compose.onNodeWithText("Nome do hábito").performScrollTo().performTextReplacement("Meu estudo de Direito")
         compose.onNodeWithText("XP ao atingir a meta").performScrollTo().performTextReplacement("73")
         compose.onNodeWithText("Meta em minutos").performScrollTo().performTextReplacement("15")
-        compose.onNodeWithContentDescription("Domingo").performScrollTo().performClick();shot("grimoire-personalizar")
+        val isSunday = java.time.LocalDate.now().dayOfWeek == java.time.DayOfWeek.SUNDAY
+        val offDayLabel = if (isSunday) "Sábado" else "Domingo"
+        val expectedDays = if (isSunday) "1,2,3,4,5,7" else "1,2,3,4,5,6"
+        compose.onNodeWithContentDescription(offDayLabel).performScrollTo().performClick();shot("grimoire-personalizar")
         compose.onNodeWithText("Salvar").performClick();wait{app.repository.state.value!!.habits.size==1}
-        assertEquals("1,2,3,4,5,6",app.repository.state.value!!.habits.single().days)
+        assertEquals(expectedDays,app.repository.state.value!!.habits.single().days)
         compose.onNodeWithText("Jornada").performClick();compose.onNodeWithText("Os Tomos da Justiça").assertExists()
         compose.onNodeWithContentDescription("Registrar progresso").performScrollTo().performClick();compose.onNodeWithText("Atingir meta").performScrollTo().performClick();compose.onNodeWithText("Salvar").performClick();wait{app.repository.state.value!!.xp==73L}
         compose.onNodeWithText("Meu estudo de Direito").performScrollTo().performClick();compose.onNodeWithText("Editar",useUnmergedTree=true).performClick()

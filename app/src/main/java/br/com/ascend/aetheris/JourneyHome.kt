@@ -71,7 +71,7 @@ import java.util.Locale
     CompactHero(s,onPortrait)
     Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){
      Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(2.dp)){
-      Eyebrow("ASCEND · Minha Jornada", nb.accentBronze)
+      Eyebrow("ASCEND  /  Minha Jornada", nb.accentBronze)
       Text(displayDate(day),color=nb.inkSecondary,fontSize=12.5.sp)
      }
      ClassEmblem(s.player!!.heroClass,Modifier.size(26.dp))

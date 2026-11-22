@@ -1,3 +1,10 @@
+# 1.7.5.9 — A Reforma de Aetheris
+
+Reformulação visual global com **NORTHBORN Design System 4.0** sobre `feat/ascend-1.7.5.1`, preservando 100% da estabilidade técnica, Room v11, Backup v13, os 227 testes anteriores e a economia do RPG:
+- **Fundação NORTHBORN 4.0 (`NorthbornDesignSystem.kt`, `Design.kt`, `DesignSystem2.kt`, `NorthComponents.kt`, `AetherisNavigation.kt`, `NordicCouncilDesign.kt`):** paleta Escuro mineral / Claro documental em linho / Minimalista, 5 papéis de superfície sem tags automáticas repetidas, Botões 4.0 em 7 níveis sem adesivos rasterizados, `NorthbornDivider`, `NorthbornTopBar`, 15 ícones escandinavos `NorthbornIcon` e `northborn_materials_atlas.webp` (`47,4 KB` no APK).
+- **Reforge Global por Domínio:** Jornada desenclausurada, Hábitos e Perfil sem caixa-em-caixa, Mesa de Odin/Agenda 3.0/Gantt/Kanban/Forja do Tempo/Conselho dos Nove reestruturados, Biblioteca de Mímir e Flashcards SM-2 em identidade documental, Arsenal/Forja/Atlas/Codex/Configurações/Onboarding unificados e tema claro documental legível em toda a aplicação.
+- **Validação:** **228 testes aprovados**, **30 capturas reais inspecionadas** (`NorthbornUiReforgeTest`), `lintDebug` com **0 erros**, `versionCode 29`, assinatura oficial `e1f003ef...`. [Auditoria Visual](docs/AUDITORIA-VISUAL-1.7.5.9.md) · [NORTHBORN DS 4.0](docs/NORTHBORN-DESIGN-SYSTEM-4.0.md) · [UI Reforge](docs/UI-REFORGE-1.7.5.9.md) · [Visual 1.7.5.9](docs/VISUAL-1.7.5.9.md) · [Diário 1.7.5.9](docs/DESENVOLVIMENTO-1.7.5.9.md).
+
 # 1.7.5.1 — O Conselho Restaurado
 
 Consolidação técnica (Etapa I) e refinamento visual nórdico DS 3.2.1 (Etapa II) sobre `feat/ascend-1.7.5`, preservando Room v11, Backup v13, os 218 testes anteriores e a economia do RPG:
