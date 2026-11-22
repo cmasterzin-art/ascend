@@ -8,148 +8,368 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.*
-import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.semantics.*
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
-import androidx.compose.ui.semantics.*
-import kotlin.math.*
 
-data class Appearance(val dark:Boolean=true,val reducedMotion:Boolean=false,val minimal:Boolean=false)
-val LocalNarrativeNames=staticCompositionLocalOf { false }
-val LocalAppearance=staticCompositionLocalOf { Appearance() }
-val Night:Color @Composable get()=MaterialTheme.colorScheme.background
-val Surface:Color @Composable get()=MaterialTheme.colorScheme.surface
-val CardColor:Color @Composable get()=MaterialTheme.colorScheme.surfaceVariant
-val Gold:Color @Composable get()=MaterialTheme.colorScheme.primary
-val Blue:Color @Composable get()=MaterialTheme.colorScheme.secondary
-val Violet:Color @Composable get()=MaterialTheme.colorScheme.tertiary
-val Green:Color @Composable get()=if(LocalAppearance.current.dark)Color(0xFFA8B69A) else Color(0xFF236848)
-val Ink:Color @Composable get()=MaterialTheme.colorScheme.onSurface
-val Muted:Color @Composable get()=MaterialTheme.colorScheme.onSurfaceVariant
-@Composable fun habitColor(index:Int):Color=if(LocalAppearance.current.dark)listOf(Color(0xFFB9965A),Color(0xFF8BA2C7),Color(0xFFB4A1C7),Color(0xFFA8B69A),Color(0xFFD09385))[index] else listOf(Color(0xFF866023),Color(0xFF385FA6),Color(0xFF7551AD),Color(0xFF236848),Color(0xFFA44936))[index]
-@Composable fun AscendTheme(mode:String="dark",reducedMotion:Boolean=false,minimal:Boolean=false,content:@Composable ()->Unit){
-    val dark=when(mode){"light"->false;"system"->isSystemInDarkTheme();else->true}
-    val scheme=if(dark)darkColorScheme(primary=Color(0xFFC4A36A),onPrimary=Color(0xFF17140E),secondary=Color(0xFF9EB4D3),tertiary=Color(0xFFB4A1C7),background=Color(0xFF0D0F0E),surface=Color(0xFF1A1C1A),surfaceVariant=Color(0xFF292C28),onBackground=Color(0xFFE7DECB),onSurface=Color(0xFFE7DECB),onSurfaceVariant=Color(0xFFAEB5BF),outline=Color(0xFF68717D),error=Color(0xFFD6978D))
-        else lightColorScheme(primary=Color(0xFF73501F),onPrimary=Color.White,secondary=Color(0xFF375575),tertiary=Color(0xFF655173),background=Color(0xFFE5E1D8),surface=Color(0xFFF1EDE3),surfaceVariant=Color(0xFFD8D3C7),onBackground=Color(0xFF20252D),onSurface=Color(0xFF20252D),onSurfaceVariant=Color(0xFF515B66),outline=Color(0xFF7C817F))
-    CompositionLocalProvider(LocalAppearance provides Appearance(dark,reducedMotion,minimal)) {
-        MaterialTheme(colorScheme=scheme,shapes=Shapes(extraSmall=CutCornerShape(3.dp),small=CutCornerShape(5.dp),medium=CutCornerShape(8.dp),large=CutCornerShape(12.dp),extraLarge=CutCornerShape(14.dp)),typography=Typography(
-            headlineLarge=TextStyle(fontFamily=SagaFont,fontSize=32.sp,lineHeight=40.sp,fontWeight=FontWeight.Medium),
-            headlineMedium=TextStyle(fontFamily=SagaFont,fontSize=24.sp,lineHeight=32.sp,fontWeight=FontWeight.Medium),
-            titleLarge=TextStyle(fontFamily=SagaFont,fontSize=20.sp,lineHeight=27.sp,fontWeight=FontWeight.Medium),
-            titleMedium=TextStyle(fontSize=16.sp,lineHeight=22.sp,fontWeight=FontWeight.Medium),
-            bodyLarge=TextStyle(fontSize=16.sp,lineHeight=25.sp),bodyMedium=TextStyle(fontSize=14.sp,lineHeight=22.sp)),content=content)
+data class Appearance(val dark: Boolean = true, val reducedMotion: Boolean = false, val minimal: Boolean = false)
+val LocalNarrativeNames = staticCompositionLocalOf { false }
+val LocalAppearance = staticCompositionLocalOf { Appearance() }
+
+val Night: Color @Composable get() = LocalNorthborn.current.canvas
+val Surface: Color @Composable get() = LocalNorthborn.current.surfaceBase
+val CardColor: Color @Composable get() = LocalNorthborn.current.surfaceElevated
+val Gold: Color @Composable get() = LocalNorthborn.current.accentBronze
+val Blue: Color @Composable get() = LocalNorthborn.current.accentFjord
+val Violet: Color @Composable get() = MaterialTheme.colorScheme.tertiary
+val Green: Color @Composable get() = LocalNorthborn.current.accentPatina
+val Ink: Color @Composable get() = LocalNorthborn.current.inkPrimary
+val Muted: Color @Composable get() = LocalNorthborn.current.inkSecondary
+
+@Composable
+fun habitColor(index: Int): Color = if (LocalAppearance.current.dark) {
+    listOf(Color(0xFFBC9B6A), Color(0xFF84A4C4), Color(0xFFB39EC4), Color(0xFF83A88E), Color(0xFFCC8578))[index.coerceIn(0, 4)]
+} else {
+    listOf(Color(0xFF856232), Color(0xFF2E587A), Color(0xFF6B4E8A), Color(0xFF296648), Color(0xFF9C4236))[index.coerceIn(0, 4)]
+}
+
+@Composable
+fun AscendTheme(mode: String = "dark", reducedMotion: Boolean = false, minimal: Boolean = false, content: @Composable () -> Unit) {
+    val dark = when (mode) {
+        "light" -> false
+        "system" -> isSystemInDarkTheme()
+        else -> true
+    }
+    val nb = if (dark) NorthbornDarkPalette else NorthbornLightPalette
+    val scheme = if (dark) {
+        darkColorScheme(
+            primary = nb.accentBronze,
+            onPrimary = nb.onAccent,
+            secondary = nb.accentFjord,
+            tertiary = Color(0xFFB39EC4),
+            background = nb.canvas,
+            surface = nb.surfaceBase,
+            surfaceVariant = nb.surfaceElevated,
+            onBackground = nb.inkPrimary,
+            onSurface = nb.inkPrimary,
+            onSurfaceVariant = nb.inkSecondary,
+            outline = nb.hairlineStrong,
+            error = nb.accentEmber
+        )
+    } else {
+        lightColorScheme(
+            primary = nb.accentBronze,
+            onPrimary = nb.onAccent,
+            secondary = nb.accentFjord,
+            tertiary = Color(0xFF6B4E8A),
+            background = nb.canvas,
+            surface = nb.surfaceBase,
+            surfaceVariant = nb.surfaceElevated,
+            onBackground = nb.inkPrimary,
+            onSurface = nb.inkPrimary,
+            onSurfaceVariant = nb.inkSecondary,
+            outline = nb.hairlineStrong,
+            error = nb.accentEmber
+        )
+    }
+    CompositionLocalProvider(
+        LocalAppearance provides Appearance(dark, reducedMotion, minimal),
+        LocalNorthborn provides nb
+    ) {
+        MaterialTheme(
+            colorScheme = scheme,
+            shapes = Shapes(
+                extraSmall = CutCornerShape(3.dp),
+                small = NorthbornShape.sm,
+                medium = NorthbornShape.md,
+                large = NorthbornShape.lg,
+                extraLarge = CutCornerShape(10.dp)
+            ),
+            typography = Typography(
+                // Família Cerimonial / Display
+                displaySmall = TextStyle(fontFamily = SagaFont, fontSize = 34.sp, lineHeight = 40.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.4.sp),
+                headlineLarge = TextStyle(fontFamily = SagaFont, fontSize = 30.sp, lineHeight = 38.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.3.sp),
+                headlineMedium = TextStyle(fontFamily = SagaFont, fontSize = 24.sp, lineHeight = 31.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.2.sp),
+                headlineSmall = TextStyle(fontFamily = SagaFont, fontSize = 20.sp, lineHeight = 27.sp, fontWeight = FontWeight.Medium, letterSpacing = 0.15.sp),
+                // Família Editorial
+                titleLarge = TextStyle(fontFamily = SagaFont, fontSize = 19.sp, lineHeight = 25.sp, fontWeight = FontWeight.Medium),
+                titleMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 15.5.sp, lineHeight = 22.sp, fontWeight = FontWeight.SemiBold),
+                titleSmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.SemiBold),
+                // Família Operacional (alta legibilidade)
+                bodyLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 15.sp, lineHeight = 23.sp, fontWeight = FontWeight.Normal),
+                bodyMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 21.sp, fontWeight = FontWeight.Normal),
+                bodySmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 12.5.sp, lineHeight = 18.sp, fontWeight = FontWeight.Normal),
+                labelLarge = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 14.sp, lineHeight = 20.sp, fontWeight = FontWeight.Medium),
+                labelMedium = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 12.sp, lineHeight = 16.sp, fontWeight = FontWeight.Medium),
+                labelSmall = TextStyle(fontFamily = FontFamily.SansSerif, fontSize = 11.sp, lineHeight = 15.sp, fontWeight = FontWeight.Medium)
+            ),
+            content = content
+        )
     }
 }
-val SagaFont=FontFamily(Font(R.font.saga,FontWeight.Medium))
-@Composable fun Eyebrow(text:String,color:Color=Gold){Text(text.uppercase(),color=color,fontSize=11.sp,lineHeight=17.sp,letterSpacing=1.3.sp,fontWeight=FontWeight.SemiBold)}
-@Composable fun Title(text:String,sub:String="") {Column(Modifier.padding(top=8.dp,bottom=8.dp),verticalArrangement=Arrangement.spacedBy(7.dp)){Row(horizontalArrangement=Arrangement.spacedBy(10.dp),verticalAlignment=Alignment.CenterVertically){Box(Modifier.width(3.dp).height(24.dp).background(Gold));Text(text,style=MaterialTheme.typography.headlineMedium)};if(sub.isNotEmpty())Text(sub,color=Muted,fontSize=13.sp,lineHeight=21.sp)}}
-@Composable fun Panel(modifier:Modifier=Modifier,accent:Color=Gold,content:@Composable ColumnScope.()->Unit){
- AetherSurface(modifier=modifier){Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){Box(Modifier.width(22.dp).height(2.dp).background(accent.copy(alpha=.6f)));Spacer(Modifier.weight(1f))};content()}
+
+val SagaFont = FontFamily(Font(R.font.saga, FontWeight.Medium))
+
+@Composable
+fun Eyebrow(text: String, color: Color = LocalNorthborn.current.accentBronze) {
+    Text(
+        text = text.uppercase(),
+        color = color,
+        fontSize = 10.5.sp,
+        lineHeight = 15.sp,
+        letterSpacing = 1.2.sp,
+        fontWeight = FontWeight.SemiBold
+    )
 }
-@Composable fun Page(content:@Composable ColumnScope.()->Unit){
-    val dark=LocalAppearance.current.dark
-    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(if(dark)Color(0xFF151E29) else Color(0xFFDEDCCE),Night,Night)))){
-        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal=20.dp).padding(top=14.dp,bottom=24.dp),verticalArrangement=Arrangement.spacedBy(16.dp),content=content)
+
+@Composable
+fun Title(text: String, sub: String = "") {
+    val nb = LocalNorthborn.current
+    Column(
+        Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        Text(text, style = MaterialTheme.typography.headlineMedium, color = nb.inkPrimary)
+        if (sub.isNotEmpty()) {
+            Text(sub, color = nb.inkSecondary, fontSize = 13.5.sp, lineHeight = 20.sp)
+        }
+        Box(Modifier.padding(top = 2.dp).width(32.dp).height(1.5.dp).background(nb.accentBronze.copy(alpha = 0.65f)))
     }
 }
-@Composable fun Meter(value:Float,color:Color=Blue,modifier:Modifier=Modifier,trackColor:Color=CardColor,slim:Boolean=false){
-    val fraction by animateFloatAsState(value.coerceIn(0f,1f),tween(if(LocalAppearance.current.reducedMotion)0 else AetherTokens.scene),label="progresso")
-    val dark=LocalAppearance.current.dark;val onParchment=LocalContentColor.current==Sepia
-    val track=if(onParchment)Sepia.copy(alpha=.24f) else trackColor
-    // 1.6.9.15: a hairline of forged metal with subtle quarter ticks and high contrast on both dark stone and light parchment.
-    if(slim){Canvas(modifier.fillMaxWidth().height(7.dp).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)}){
-        val w=size.width;val cy=size.height/2;val d=1.dp.toPx()
-        drawLine(if(onParchment)Sepia.copy(alpha=.28f) else Color.Black.copy(alpha=if(dark).72f else .22f),Offset(0f,cy),Offset(w,cy),3.2f*d,cap=StrokeCap.Round)
-        drawLine(track.copy(alpha=if(onParchment).55f else .9f),Offset(0f,cy),Offset(w,cy),1.2f*d,cap=StrokeCap.Round)
-        listOf(.25f,.5f,.75f).forEach{stop->val x=w*stop;drawLine((if(onParchment)Sepia else ColdIron).copy(alpha=.38f),Offset(x,cy-2*d),Offset(x,cy+2*d),d)}
-        if(fraction>0f){val fw=w*fraction
-            drawLine(Brush.horizontalGradient(listOf(color.copy(alpha=.35f),color),endX=fw),Offset(0f,cy),Offset(fw,cy),2.4f*d,cap=StrokeCap.Round)
-            drawCircle(Brush.radialGradient(listOf(color.copy(alpha=.55f),Color.Transparent),center=Offset(fw,cy),radius=7*d),7*d,Offset(fw,cy))
-            drawCircle(color,1.8f*d,Offset(fw,cy))}
-    };return}
-    val ctrlImg=if(LocalAppearance.current.minimal||onParchment)null else ImageBitmap.imageResource(R.drawable.viking_controls_atlas)
-    // 1.7.2 DS 3.0: recessed basalt groove (cell 0) filled with hammered bronze-tinted metal (cell 1) and crisp leading sheen.
-    Canvas(modifier.fillMaxWidth().height(12.dp).semantics{progressBarRangeInfo=ProgressBarRangeInfo(value.coerceIn(0f,1f),0f..1f)}){
-        val w=size.width;val h=size.height;val d=1.dp.toPx();val tip=h*.55f
-        val groove=Path().apply{moveTo(tip,0f);lineTo(w-tip,0f);lineTo(w,h/2);lineTo(w-tip,h);lineTo(tip,h);lineTo(0f,h/2);close()}
-        val grooveTop=if(onParchment)Sepia.copy(alpha=.32f) else Color.Black.copy(alpha=if(dark).82f else .35f)
-        val grooveBot=if(onParchment)Sepia.copy(alpha=.16f) else Color.Black.copy(alpha=if(dark).42f else .18f)
-        drawPath(groove,Brush.verticalGradient(listOf(grooveTop,track.copy(alpha=.85f),grooveBot)))
-        if(ctrlImg!=null){
-            clipPath(groove){
-                drawAtlasCellNineSlice(ctrlImg,index=0,columns=2,rows=4,capXRatio=.08f,capYRatio=.25f,alpha=if(dark).34f else .16f)
+
+@Composable
+fun Panel(modifier: Modifier = Modifier, accent: Color = LocalNorthborn.current.hairlineStrong, content: @Composable ColumnScope.() -> Unit) {
+    NorthbornSurface(
+        role = NorthbornSurfaceRole.Operational,
+        modifier = modifier,
+        accent = accent,
+        content = content
+    )
+}
+
+@Composable
+fun Page(content: @Composable ColumnScope.() -> Unit) {
+    val nb = LocalNorthborn.current
+    Box(Modifier.fillMaxSize().background(nb.canvas)) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = NorthbornSpace.page)
+                .padding(top = NorthbornSpace.md, bottom = NorthbornSpace.xl),
+            verticalArrangement = Arrangement.spacedBy(NorthbornSpace.lg),
+            content = content
+        )
+    }
+}
+
+@Composable
+fun Meter(value: Float, color: Color = Blue, modifier: Modifier = Modifier, trackColor: Color = LocalNorthborn.current.hairline, slim: Boolean = false) {
+    val fraction by animateFloatAsState(
+        value.coerceIn(0f, 1f),
+        tween(if (LocalAppearance.current.reducedMotion) 0 else AetherTokens.scene),
+        label = "progresso"
+    )
+    val nb = LocalNorthborn.current
+    val onParchment = LocalContentColor.current == Sepia
+    val track = if (onParchment) Sepia.copy(alpha = 0.22f) else trackColor
+    val barHeight = if (slim) 5.dp else 7.dp
+
+    Canvas(
+        modifier
+            .fillMaxWidth()
+            .height(barHeight)
+            .semantics { progressBarRangeInfo = ProgressBarRangeInfo(value.coerceIn(0f, 1f), 0f..1f) }
+    ) {
+        val w = size.width
+        val h = size.height
+        val cy = h * 0.5f
+        val d = 1.dp.toPx()
+        // Trilho mineral limpo sem bitmap ruidoso
+        drawRoundRect(
+            color = track.copy(alpha = if (nb.dark) 0.9f else 0.85f),
+            topLeft = Offset(0f, 0f),
+            size = Size(w, h),
+            cornerRadius = CornerRadius(h * 0.4f)
+        )
+        if (fraction > 0f) {
+            val fw = (w * fraction).coerceAtLeast(h)
+            drawRoundRect(
+                color = color,
+                topLeft = Offset(0f, 0f),
+                size = Size(fw, h),
+                cornerRadius = CornerRadius(h * 0.4f)
+            )
+            // Filete de luz superior sutil
+            drawLine(
+                Color.White.copy(alpha = if (nb.dark) 0.22f else 0.30f),
+                Offset(d, d),
+                Offset((fw - d).coerceAtLeast(d), d),
+                0.8f * d
+            )
+        }
+        if (!slim) {
+            listOf(0.25f, 0.5f, 0.75f).forEach { stop ->
+                val x = w * stop
+                drawLine(nb.canvas.copy(alpha = 0.45f), Offset(x, 0f), Offset(x, h), d)
             }
         }
-        if(fraction>0f){val fw=(w*fraction).coerceAtLeast(tip*2)
-            clipPath(groove){
-                drawRect(Brush.horizontalGradient(listOf(color.copy(alpha=.52f),color.copy(alpha=.92f),color),endX=fw),size=Size(fw,h))
-                if(ctrlImg!=null){
-                    val cw=ctrlImg.width/2;val ch=ctrlImg.height/4
-                    clipRect(right=fw){
-                        drawImage(ctrlImg,IntOffset(cw,0),IntSize(cw,ch),IntOffset(0,0),IntSize(w.toInt().coerceAtLeast(1),h.toInt().coerceAtLeast(1)),alpha=if(dark).14f else .08f)
+    }
+}
+
+@Composable
+fun Stat(value: String, label: String, color: Color = Gold) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(value, color = color, fontSize = 24.sp, lineHeight = 28.sp, fontFamily = SagaFont)
+        Text(label, color = Muted, fontSize = 11.sp, letterSpacing = 0.4.sp)
+    }
+}
+
+@Composable
+fun Action(
+    text: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    completed: Boolean = false,
+    ceremonial: Boolean = false,
+    secondary: Boolean = false,
+    selected: Boolean = false,
+    style: VikingButtonStyle? = null,
+    leadingRune: HistoricalFutharkRune? = null
+) {
+    SagaButton(
+        text = text,
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        completed = completed,
+        ceremonial = ceremonial,
+        secondary = secondary,
+        selected = selected,
+        style = style,
+        leadingRune = leadingRune
+    )
+}
+
+@Composable
+fun Empty(text: String) {
+    val nb = LocalNorthborn.current
+    NorthbornSurface(role = NorthbornSurfaceRole.Informative, accent = nb.accentSilver) {
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            NorthbornIcon(NorthbornGlyph.Journey, nb.inkTertiary, size = 22.dp)
+            Text(text, color = nb.inkSecondary, fontSize = 14.sp, lineHeight = 21.sp, modifier = Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+fun ChipRow(values: List<String>, selected: Int, onSelect: (Int) -> Unit, scrollable: Boolean = true) {
+    val nb = LocalNorthborn.current
+    Row(
+        if (scrollable) Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()) else Modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        values.forEachIndexed { i, v ->
+            val isSel = selected == i
+            val shape = NorthbornShape.pill
+            val bg = when {
+                isSel && nb.dark -> nb.accentBronze.copy(alpha = 0.18f)
+                isSel -> nb.accentBronze.copy(alpha = 0.14f)
+                nb.dark -> nb.surfaceBase
+                else -> nb.surfaceBase
+            }
+            val border = if (isSel) nb.accentBronze else nb.hairlineStrong.copy(alpha = 0.72f)
+            val fg = if (isSel) (if (nb.dark) nb.accentPaleGold else nb.accentBronze) else nb.inkSecondary
+            Box(
+                Modifier
+                    .heightIn(min = 38.dp)
+                    .clip(shape)
+                    .background(bg)
+                    .border(if (isSel) 1.2.dp else 1.dp, border, shape)
+                    .semantics(mergeDescendants = true) {
+                        this.selected = isSel
+                        role = Role.Tab
                     }
-                }
-                drawRect(Brush.verticalGradient(listOf(Color.White.copy(alpha=.24f),Color.Transparent,Color.Black.copy(alpha=.32f))),size=Size(fw,h))
-                if(fraction<1f)drawRect(Brush.horizontalGradient(listOf(Color.Transparent,Color.White.copy(alpha=.50f)),startX=fw-7*d,endX=fw),topLeft=Offset(fw-7*d,0f),size=Size(7*d,h))
-            }
-        }
-        listOf(.25f,.5f,.75f).forEach{stop->val x=w*stop;drawLine((if(onParchment)Sepia else Color.Black).copy(alpha=.55f),Offset(x,h*.18f),Offset(x,h*.82f),d)}
-        drawLine(grooveTop,Offset(tip,d*.5f),Offset(w-tip,d*.5f),d)
-        drawLine(Color.White.copy(alpha=if(dark).12f else .55f),Offset(tip,h-d*.5f),Offset(w-tip,h-d*.5f),d)
-        drawPath(groove,color.copy(alpha=if(onParchment).45f else .38f),style=Stroke(d))
-    }
-}
-@Composable fun Stat(value:String,label:String,color:Color=Gold){Column{Text(value,color=color,fontSize=24.sp,fontFamily=SagaFont);Text(label,color=Muted,fontSize=10.sp,letterSpacing=.6.sp)}}
-@Composable fun Action(text:String,onClick:()->Unit,modifier:Modifier=Modifier,enabled:Boolean=true,completed:Boolean=false,ceremonial:Boolean=false,secondary:Boolean=false,selected:Boolean=false,style:VikingButtonStyle?=null,leadingRune:HistoricalFutharkRune?=null){SagaButton(text,onClick,modifier,enabled=enabled,completed=completed,ceremonial=ceremonial,secondary=secondary,selected=selected,style=style,leadingRune=leadingRune)}
-@Composable fun Empty(text:String){Row(Modifier.fillMaxWidth().materialSurface(accent=ColdIron).padding(18.dp),horizontalArrangement=Arrangement.spacedBy(14.dp),verticalAlignment=Alignment.CenterVertically){RuneSeal(0,Muted,Modifier.size(34.dp));Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(4.dp)){Box(Modifier.width(24.dp).height(1.dp).background(Gold.copy(alpha=.45f)));Text(text,color=Muted,fontSize=14.sp,lineHeight=23.sp)}}}
-@Composable fun ChipRow(values:List<String>,selected:Int,onSelect:(Int)->Unit,scrollable:Boolean=true){
-    val dark=LocalAppearance.current.dark;val gold=Gold;val night=Night
-    Row(if(scrollable)Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()) else Modifier,horizontalArrangement=Arrangement.spacedBy(6.dp),verticalAlignment=Alignment.CenterVertically){
-        values.forEachIndexed{i,v->val isSel=selected==i;val shape=CutCornerShape(topStart=5.dp,topEnd=2.dp,bottomEnd=5.dp,bottomStart=2.dp)
-            Box(Modifier.heightIn(min=36.dp).clip(shape).background(Brush.verticalGradient(if(isSel)listOf(gold.copy(alpha=if(dark).22f else .20f),if(dark)Color(0xFF1A1612) else gold.copy(alpha=.08f)) else listOf(Surface.copy(alpha=.78f),Surface.copy(alpha=.48f)))).atlasCellNineSlice(R.drawable.viking_controls_atlas,index=if(isSel)3 else 2,columns=2,rows=4,capXRatio=.18f,capYRatio=.28f,alpha=if(dark)(if(isSel).42f else .38f) else if(isSel).20f else .12f).border(if(isSel)1.2.dp else 1.dp,if(isSel)gold.copy(alpha=.84f) else ColdIron.copy(alpha=.30f),shape).drawWithCache{onDrawBehind{
-                val d=1.dp.toPx()
-                if(isSel&&dark)drawRect(night.copy(alpha=.42f))
-                drawLine(Color.White.copy(alpha=if(isSel).18f else .06f),Offset(5*d,d),Offset(size.width-5*d,d),d)
-                if(isSel)drawLine(gold,Offset(size.width*.20f,size.height-1.5f*d),Offset(size.width*.80f,size.height-1.5f*d),1.5f*d)
-            }}.semantics(mergeDescendants=true){this.selected=isSel;role=Role.Tab}.clickable{onSelect(i)}.padding(horizontal=12.dp,vertical=7.dp),contentAlignment=Alignment.Center){
-                Text(v,color=if(isSel)(if(dark)Color(0xFFF3E7CE) else gold) else Muted,fontSize=12.sp,letterSpacing=.2.sp,fontWeight=if(isSel)FontWeight.SemiBold else FontWeight.Normal)
+                    .clickable { onSelect(i) }
+                    .padding(horizontal = 13.dp, vertical = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = v,
+                    color = fg,
+                    fontSize = 12.5.sp,
+                    fontWeight = if (isSel) FontWeight.SemiBold else FontWeight.Normal,
+                    maxLines = 1
+                )
             }
         }
     }
 }
-@Composable fun FormField(value:String,onChange:(String)->Unit,label:String,number:Boolean=false,multi:Boolean=false,modifier:Modifier=Modifier){
-    val dark=LocalAppearance.current.dark;val gold=Gold;val iron=ColdIron;val shape=CutCornerShape(topStart=6.dp,topEnd=2.dp,bottomEnd=6.dp,bottomStart=2.dp)
-    val ctrlImg=if(LocalAppearance.current.minimal)null else ImageBitmap.imageResource(R.drawable.viking_controls_atlas)
-    Box(modifier.fillMaxWidth().drawWithCache{onDrawBehind{
-        val d=1.dp.toPx();val w=size.width;val h=size.height;val topInset=7*d
-        if(ctrlImg!=null&&h>topInset+8*d)withTransform({translate(0f,topInset);scale(1f,(h-topInset)/h,Offset.Zero)}){drawAtlasCellNineSlice(ctrlImg,index=5,columns=2,rows=4,capXRatio=.16f,capYRatio=.28f,alpha=if(dark).62f else .16f)}
-        drawLine(gold.copy(alpha=.44f),Offset(8*d,h-d),Offset(w-8*d,h-d),1.4f*d)
-        drawLine(iron.copy(alpha=.35f),Offset(2*d,10*d),Offset(2*d,18*d),d)
-        drawLine(iron.copy(alpha=.35f),Offset(w-2*d,h-10*d),Offset(w-2*d,h-3*d),d)
-    }}){
-        OutlinedTextField(value,onChange,Modifier.fillMaxWidth(),label={Text(label,letterSpacing=.3.sp)},textStyle=MaterialTheme.typography.bodyLarge,singleLine=!multi,minLines=if(multi)3 else 1,keyboardOptions=androidx.compose.foundation.text.KeyboardOptions(keyboardType=if(number)androidx.compose.ui.text.input.KeyboardType.Number else androidx.compose.ui.text.input.KeyboardType.Text),shape=shape,colors=OutlinedTextFieldDefaults.colors(focusedBorderColor=gold.copy(alpha=.84f),unfocusedBorderColor=iron.copy(alpha=.44f),focusedLabelColor=gold,unfocusedLabelColor=Muted,focusedContainerColor=if(dark)Color(0xFF141719).copy(alpha=.78f) else Color(0xFFEAE4D7).copy(alpha=.88f),unfocusedContainerColor=if(dark)Color(0xFF111416).copy(alpha=.78f) else Color(0xFFE3DDD0).copy(alpha=.88f),cursorColor=gold))
-    }
+
+@Composable
+fun FormField(value: String, onChange: (String) -> Unit, label: String, number: Boolean = false, multi: Boolean = false, modifier: Modifier = Modifier) {
+    val nb = LocalNorthborn.current
+    OutlinedTextField(
+        value = value,
+        onValueChange = onChange,
+        modifier = modifier.fillMaxWidth(),
+        label = { Text(label, fontSize = 13.sp) },
+        textStyle = MaterialTheme.typography.bodyLarge.copy(color = nb.inkPrimary),
+        singleLine = !multi,
+        minLines = if (multi) 3 else 1,
+        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+            keyboardType = if (number) androidx.compose.ui.text.input.KeyboardType.Number else androidx.compose.ui.text.input.KeyboardType.Text
+        ),
+        shape = NorthbornShape.md,
+        colors = OutlinedTextFieldDefaults.colors(
+            focusedBorderColor = nb.accentBronze,
+            unfocusedBorderColor = nb.hairlineStrong,
+            focusedLabelColor = nb.accentBronze,
+            unfocusedLabelColor = nb.inkSecondary,
+            focusedContainerColor = if (nb.dark) nb.surfaceElevated else nb.surfaceBase,
+            unfocusedContainerColor = if (nb.dark) nb.surfaceBase else nb.surfaceBase.copy(alpha = 0.85f),
+            cursorColor = nb.accentBronze,
+            focusedTextColor = nb.inkPrimary,
+            unfocusedTextColor = nb.inkPrimary
+        )
+    )
 }
-@Composable fun Toggle(label:String,checked:Boolean,onChange:(Boolean)->Unit){
-    val dark=LocalAppearance.current.dark
-    Row(Modifier.fillMaxWidth().padding(vertical=2.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){
-        Text(label,Modifier.weight(1f).padding(end=12.dp),fontSize=14.sp,color=Ink)
-        Box(Modifier.atlasCellNineSlice(R.drawable.viking_controls_atlas,index=4,columns=2,rows=4,capXRatio=.26f,capYRatio=.32f,alpha=if(dark).70f else .22f).padding(horizontal=5.dp,vertical=2.dp),contentAlignment=Alignment.Center){
-            Switch(checked,onChange,modifier=Modifier.semantics{contentDescription=label},colors=SwitchDefaults.colors(
-                checkedThumbColor=if(dark)Color(0xFFF0E4CC) else Color.White,
-                checkedTrackColor=Gold.copy(alpha=if(dark).68f else .84f),
-                checkedBorderColor=Gold,
-                uncheckedThumbColor=Muted,
-                uncheckedTrackColor=if(dark)Color(0xFF14181B).copy(alpha=.75f) else Color(0xFFD5CFC2),
-                uncheckedBorderColor=ColdIron.copy(alpha=.48f)
-            ))
-        }
+
+@Composable
+fun Toggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    val nb = LocalNorthborn.current
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .heightIn(min = NorthbornSpace.touchMin)
+            .padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(label, Modifier.weight(1f).padding(end = 12.dp), fontSize = 14.sp, lineHeight = 20.sp, color = nb.inkPrimary)
+        Switch(
+            checked = checked,
+            onCheckedChange = onChange,
+            modifier = Modifier.semantics { contentDescription = label },
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = if (nb.dark) nb.inkPrimary else nb.surfaceBase,
+                checkedTrackColor = nb.accentBronze,
+                checkedBorderColor = nb.accentBronze,
+                uncheckedThumbColor = nb.inkSecondary,
+                uncheckedTrackColor = nb.surfaceElevated,
+                uncheckedBorderColor = nb.hairlineStrong
+            )
+        )
     }
 }

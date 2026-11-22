@@ -143,43 +143,30 @@ fun StrategyFrameGlyph(
 }
 
 /**
- * Divisor horizontal escandinavo (Urnes bronze, Borre prata ou Velino) com runa histórica opcional ao centro.
+ * Divisor horizontal escandinavo NORTHBORN 4.0: vetores geométricos limpos (sem estiramento raster).
  */
 @Composable
 fun NordicStrategyDivider(
     style: StrategyFrameAsset = StrategyFrameAsset.UrnesDivider,
     rune: HistoricalFutharkRune? = null,
-    accent: Color = Gold,
+    accent: Color = LocalNorthborn.current.accentBronze,
     modifier: Modifier = Modifier
 ) {
-    val minimal = LocalAppearance.current.minimal
-    if (minimal) {
-        SagaDivider(modifier)
-        return
+    val nbStyle = when (style) {
+        StrategyFrameAsset.BorreDivider -> NorthbornDividerStyle.DoubleKnot
+        StrategyFrameAsset.VellumDivider -> NorthbornDividerStyle.Hairline
+        else -> NorthbornDividerStyle.DiamondKnot
     }
-    Row(
-        modifier.fillMaxWidth().height(20.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        StrategyFrameGlyph(
-            asset = style,
-            modifier = Modifier.weight(1f).height(14.dp),
-            alpha = 0.82f
-        )
-        if (rune != null) {
-            FutharkRuneGlyph(rune = rune, color = accent, size = 15.dp)
-            StrategyFrameGlyph(
-                asset = style,
-                modifier = Modifier.weight(1f).height(14.dp),
-                alpha = 0.82f
-            )
-        }
-    }
+    NorthbornDivider(
+        style = nbStyle,
+        modifier = modifier,
+        color = accent.copy(alpha = 0.65f),
+        rune = rune
+    )
 }
 
 /**
- * Cabeçalho de seção com hierarquia nórdica: marcador pictórico ou runa histórica contextual + título + subtítulo.
+ * Cabeçalho editorial de seção NORTHBORN 4.0: hierarquia limpa sem sobrecarga de maiúsculas ou ícones ruidosos.
  */
 @Composable
 fun NordicSectionHeader(
@@ -187,67 +174,67 @@ fun NordicSectionHeader(
     subtitle: String = "",
     rune: HistoricalFutharkRune? = null,
     mark: PlanningMark? = null,
-    accent: Color = Gold,
+    accent: Color = LocalNorthborn.current.accentBronze,
     modifier: Modifier = Modifier
 ) {
+    val nb = LocalNorthborn.current
     Row(
         modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         when {
-            mark != null -> NordicPlanningMark(mark = mark, modifier = Modifier.size(24.dp), tintFallback = accent)
-            rune != null -> FutharkRuneGlyph(rune = rune, color = accent, size = 20.dp)
+            mark != null -> NordicPlanningMark(mark = mark, modifier = Modifier.size(22.dp), tintFallback = accent)
+            rune != null -> FutharkRuneGlyph(rune = rune, color = accent.copy(alpha = 0.88f), size = 16.dp)
         }
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Eyebrow(eyebrow, accent)
             if (subtitle.isNotBlank()) {
-                Text(subtitle, color = Muted, fontSize = 12.sp, lineHeight = 16.sp)
+                Text(subtitle, color = nb.inkSecondary, fontSize = 12.5.sp, lineHeight = 18.sp)
             }
         }
     }
 }
 
 /**
- * Botão compacto tátil com identidade nórdica para ações em cartões (Kanban, Agenda, Conselho dos Nove).
- * Substitui TextButtons soltos mantendo altura mínima acessível e contraste claro.
+ * Ação compacta contextual NORTHBORN 4.0 para cartões e linhas (Kanban, Agenda, Conselho dos Nove).
  */
 @Composable
 fun NordicCompactAction(
     text: String,
     onClick: () -> Unit,
-    accent: Color = Gold,
+    accent: Color = LocalNorthborn.current.accentBronze,
     rune: HistoricalFutharkRune? = null,
     enabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    val dark = LocalAppearance.current.dark
-    val shape = CutCornerShape(5.dp)
+    val nb = LocalNorthborn.current
+    val shape = NorthbornShape.pill
     val bg = when {
-        !enabled -> if (dark) Color(0xFF171A1F) else Color(0xFFE0DDD5)
-        dark -> Color(0xFF1A1F26)
-        else -> Color(0xFFEDE7DC)
+        !enabled -> if (nb.dark) Color(0xFF171A1F) else Color(0xFFE7E2D8)
+        nb.dark -> nb.surfaceElevated
+        else -> nb.surfaceBase
     }
-    val fg = if (!enabled) Muted.copy(alpha = 0.6f) else accent
+    val fg = if (!enabled) nb.inkTertiary else accent
     Row(
         modifier
             .heightIn(min = 38.dp)
             .clip(shape)
             .background(bg)
-            .border(1.dp, accent.copy(alpha = if (enabled) 0.52f else 0.22f), shape)
+            .border(1.dp, if (enabled) accent.copy(alpha = if (nb.dark) 0.42f else 0.48f) else nb.hairline, shape)
             .clickable(enabled = enabled, onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 7.dp),
+            .padding(horizontal = 11.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(5.dp)
+        horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         if (rune != null) {
-            FutharkRuneGlyph(rune = rune, color = fg, size = 13.dp)
+            FutharkRuneGlyph(rune = rune, color = fg, size = 12.dp)
         }
         Text(
             text = text,
             color = fg,
             fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
+            fontWeight = FontWeight.Medium,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -255,89 +242,40 @@ fun NordicCompactAction(
 }
 
 /**
- * Superfície estrutural DS 3.2.1 com materialidade pictórica diferenciada (madeira, velino, couro,
- * bronze martelado, prata oxidada e ferro escuro), cantoneiras metálicas sutis e contraste AA/AAA.
+ * Superfície estratégica NORTHBORN 4.0: delega para NorthbornSurface usando os 8 materiais
+ * escandinavos foscos de northborn_materials_atlas.webp sem cantoneiras repetidas em todo cartão.
  */
 @Composable
 fun CouncilMaterialSurface(
     material: CouncilMaterial = CouncilMaterial.NordicWood,
     modifier: Modifier = Modifier,
-    accent: Color = Gold,
+    accent: Color = LocalNorthborn.current.accentBronze,
     contentPadding: PaddingValues = PaddingValues(16.dp),
-    ornamentCorners: Boolean = true,
+    ornamentCorners: Boolean = false,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val dark = LocalAppearance.current.dark
-    val minimal = LocalAppearance.current.minimal
-    val shape = CutCornerShape(topStart = 10.dp, topEnd = 3.dp, bottomEnd = 10.dp, bottomStart = 3.dp)
-    val baseFill = when (material) {
-        CouncilMaterial.AgedVellum -> if (dark) Color(0xFF1E1B15) else Color(0xFFF4EDDF)
-        CouncilMaterial.NordicWood -> if (dark) Color(0xFF181411) else Color(0xFFECE5D8)
-        CouncilMaterial.ProjectLeather -> if (dark) Color(0xFF1C1614) else Color(0xFFEDE3DA)
-        CouncilMaterial.HammeredBronze -> if (dark) Color(0xFF1F1912) else Color(0xFFF0E6D5)
-        CouncilMaterial.OxidizedSilver -> if (dark) Color(0xFF13181E) else Color(0xFFE7ECF1)
-        CouncilMaterial.DarkIron -> if (dark) Color(0xFF12151A) else Color(0xFFE5E8EC)
+    val nbMat = when (material) {
+        CouncilMaterial.NordicWood -> NorthbornMaterial.SmokedOak
+        CouncilMaterial.AgedVellum -> NorthbornMaterial.ArchivalVellum
+        CouncilMaterial.ProjectLeather -> NorthbornMaterial.SaddleLeather
+        CouncilMaterial.HammeredBronze -> NorthbornMaterial.AgedBronze
+        CouncilMaterial.OxidizedSilver -> NorthbornMaterial.OxidizedSilver
+        CouncilMaterial.DarkIron -> NorthbornMaterial.ForgedIron
     }
-    val borderColor = accent.copy(alpha = if (dark) 0.48f else 0.54f)
-    val matBmp = if (!minimal) ImageBitmap.imageResource(R.drawable.nordic_council_materials_atlas) else null
-    val frameBmp = if (!minimal && ornamentCorners) ImageBitmap.imageResource(R.drawable.nordic_strategy_frames_atlas) else null
-    val cornerCol = when (material) {
-        CouncilMaterial.HammeredBronze, CouncilMaterial.NordicWood, CouncilMaterial.AgedVellum -> StrategyFrameAsset.BronzeCorner.col
-        else -> StrategyFrameAsset.IronCorner.col
+    val nbRole = when (material) {
+        CouncilMaterial.AgedVellum -> NorthbornSurfaceRole.Document
+        CouncilMaterial.HammeredBronze -> NorthbornSurfaceRole.Ceremonial
+        CouncilMaterial.DarkIron -> NorthbornSurfaceRole.Operational
+        else -> NorthbornSurfaceRole.Strategic
     }
-
-    Box(
-        modifier
-            .fillMaxWidth()
-            .clip(shape)
-            .background(baseFill)
-            .drawBehind {
-                if (matBmp != null) {
-                    val cw = matBmp.width / 3
-                    val ch = matBmp.height / 2
-                    drawImage(
-                        image = matBmp,
-                        srcOffset = IntOffset(material.col * cw, material.row * ch),
-                        srcSize = IntSize(cw, ch),
-                        dstOffset = IntOffset.Zero,
-                        dstSize = IntSize(size.width.toInt().coerceAtLeast(1), size.height.toInt().coerceAtLeast(1)),
-                        alpha = if (dark) 0.28f else 0.18f
-                    )
-                    // Véu uniforme garante contraste AA/AAA para todo texto funcional
-                    drawRect(baseFill.copy(alpha = if (dark) 0.64f else 0.72f))
-                }
-                // Linha superior de relevo metálico sutil
-                val d = 1.dp.toPx()
-                drawLine(
-                    color = accent.copy(alpha = if (dark) 0.24f else 0.30f),
-                    start = Offset(14 * d, d),
-                    end = Offset(size.width - 14 * d, d),
-                    strokeWidth = 1.2f * d
-                )
-                // Cantoneira metálica discreta no topo-esquerdo sem invadir área de texto
-                if (frameBmp != null && size.width > 120 * d && size.height > 64 * d) {
-                    val fw = frameBmp.width / 4
-                    val fh = frameBmp.height / 2
-                    val cornerPx = (22 * d).toInt().coerceAtLeast(8)
-                    drawImage(
-                        image = frameBmp,
-                        srcOffset = IntOffset(cornerCol * fw, 0),
-                        srcSize = IntSize(fw, fh),
-                        dstOffset = IntOffset((3 * d).toInt(), (3 * d).toInt()),
-                        dstSize = IntSize(cornerPx, cornerPx),
-                        alpha = if (dark) 0.55f else 0.42f,
-                        filterQuality = FilterQuality.Medium
-                    )
-                }
-            }
-            .border(1.dp, borderColor, shape)
-    ) {
-        Column(
-            Modifier.fillMaxWidth().padding(contentPadding),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            content = content
-        )
-    }
+    NorthbornSurface(
+        role = nbRole,
+        modifier = modifier,
+        material = nbMat,
+        accent = accent,
+        contentPadding = contentPadding,
+        content = content
+    )
 }
 
 @Composable
@@ -348,30 +286,30 @@ fun OdinHallHeroBanner(
     activeStrategy: OdinStrategyDef? = null,
     modifier: Modifier = Modifier
 ) {
-    val dark = LocalAppearance.current.dark
+    val nb = LocalNorthborn.current
     val minimal = LocalAppearance.current.minimal
-    val shape = CutCornerShape(topStart = 12.dp, topEnd = 4.dp, bottomEnd = 12.dp, bottomStart = 4.dp)
+    val shape = NorthbornShape.lg
     Box(
         modifier
             .fillMaxWidth()
-            .heightIn(min = 158.dp)
+            .heightIn(min = 152.dp)
             .clip(shape)
-            .background(if (dark) Color(0xFF11151B) else Color(0xFF1A1F27))
-            .border(1.2.dp, Gold.copy(alpha = 0.62f), shape)
+            .background(if (nb.dark) Color(0xFF15181E) else Color(0xFF202328))
+            .border(1.dp, nb.accentBronze.copy(alpha = 0.52f), shape)
     ) {
         if (!minimal) {
             Image(
                 bitmap = ImageBitmap.imageResource(R.drawable.odin_council_hall),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.matchParentSize().alpha(0.76f)
+                modifier = Modifier.matchParentSize().alpha(0.68f)
             )
             Box(
                 Modifier.matchParentSize().background(
                     Brush.verticalGradient(
                         listOf(
-                            Color(0x550B0E13),
-                            Color(0xD40C1016)
+                            Color(0x66101318),
+                            Color(0xDC111419)
                         )
                     )
                 )
@@ -379,58 +317,49 @@ fun OdinHallHeroBanner(
         }
         Column(
             Modifier.fillMaxWidth().padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+            verticalArrangement = Arrangement.spacedBy(7.dp)
         ) {
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    FutharkRuneGlyph(HistoricalFutharkRune.Ansuz, Gold, size = 15.dp)
-                    Text(
-                        "SALÃO DO CONSELHO · MESA DE ODIN",
-                        color = Gold,
-                        fontSize = 11.sp,
-                        letterSpacing = 1.3.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 2
-                    )
-                }
-                if (!minimal) {
-                    StrategyFrameGlyph(StrategyFrameAsset.BronzeCorner, Modifier.size(20.dp), alpha = 0.72f)
-                }
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+                NorthbornIcon(NorthbornGlyph.Odin, Color(0xFFD8BE8F), size = 15.dp)
+                Text(
+                    "SALÃO DO CONSELHO",
+                    color = Color(0xFFD8BE8F),
+                    fontSize = 10.5.sp,
+                    letterSpacing = 1.4.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1
+                )
             }
             Text(
                 title,
-                style = MaterialTheme.typography.headlineSmall,
-                color = Color(0xFFF5EFE3)
+                style = MaterialTheme.typography.headlineMedium,
+                color = Color(0xFFF3EEE4)
             )
             Text(
                 subtitle,
-                color = Color(0xFFD5DAE2),
+                color = Color(0xFFC8CFD8),
                 fontSize = 13.sp,
-                lineHeight = 18.sp
+                lineHeight = 19.sp
             )
             Spacer(Modifier.height(2.dp))
             Row(
                 Modifier
                     .fillMaxWidth()
-                    .clip(CutCornerShape(5.dp))
-                    .background(Color(0x8812161E))
-                    .border(1.dp, Gold.copy(alpha = 0.35f), CutCornerShape(5.dp))
-                    .padding(horizontal = 10.dp, vertical = 6.dp),
+                    .clip(NorthbornShape.sm)
+                    .background(Color(0x9912151B))
+                    .border(1.dp, Color(0x44D8BE8F), NorthbornShape.sm)
+                    .padding(horizontal = 10.dp, vertical = 7.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 if (activeStrategy != null && !minimal) {
-                    OdinStrategyMedal(activeStrategy, Modifier.size(28.dp))
+                    OdinStrategyMedal(activeStrategy, Modifier.size(26.dp))
                 } else {
-                    FutharkRuneGlyph(HistoricalFutharkRune.Tiwaz, Gold, size = 16.dp)
+                    NorthbornIcon(NorthbornGlyph.Odin, Color(0xFFD8BE8F), size = 16.dp)
                 }
                 Text(
                     "Estratégia ativa: $activeStrategyName",
-                    color = Color(0xFFEAD097),
+                    color = Color(0xFFEAD5AA),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -443,7 +372,7 @@ fun OdinHallHeroBanner(
  * Selo metálico refinado das 6 Estratégias de Odin (odin_council_seals_refined_atlas.webp, 3×2).
  */
 @Composable
-fun OdinStrategyMedal(strategy: OdinStrategyDef, modifier: Modifier = Modifier.size(52.dp)) {
+fun OdinStrategyMedal(strategy: OdinStrategyDef, modifier: Modifier = Modifier.size(48.dp)) {
     val minimal = LocalAppearance.current.minimal
     if (minimal) {
         val rune = when (strategy.id) {
@@ -455,7 +384,7 @@ fun OdinStrategyMedal(strategy: OdinStrategyDef, modifier: Modifier = Modifier.s
             else -> HistoricalFutharkRune.Kenaz
         }
         Box(modifier, contentAlignment = Alignment.Center) {
-            FutharkRuneGlyph(rune, Gold, size = 24.dp)
+            FutharkRuneGlyph(rune, Gold, size = 22.dp)
         }
     } else {
         CouncilAtlasCell(
@@ -470,7 +399,7 @@ fun OdinStrategyMedal(strategy: OdinStrategyDef, modifier: Modifier = Modifier.s
 }
 
 @Composable
-fun LifeAreaSeal(sealIndex: Int, modifier: Modifier = Modifier.size(46.dp)) {
+fun LifeAreaSeal(sealIndex: Int, modifier: Modifier = Modifier.size(44.dp)) {
     val idx = sealIndex.coerceIn(0, 8)
     CouncilAtlasCell(
         resId = R.drawable.nine_council_seals_atlas,
@@ -483,9 +412,7 @@ fun LifeAreaSeal(sealIndex: Int, modifier: Modifier = Modifier.size(46.dp)) {
 }
 
 /**
- * 6 instrumentos metálicos refinados da Forja do Tempo (time_forge_refinement_atlas.webp, 3×2):
- * (0,0) Aro de trabalho bronze · (1,0) Aro de descanso prata oxidada · (2,0) Medalhão de ciclo
- * (0,1) Selo de pausa · (1,1) Selo de conclusão · (2,1) Instrumento cerimonial temporal
+ * 6 instrumentos metálicos refinados da Forja do Tempo (time_forge_refinement_atlas.webp, 3×2).
  */
 @Composable
 fun TimeForgeRefinedPiece(col: Int, row: Int, modifier: Modifier = Modifier.size(168.dp), alpha: Float = 1f) {
@@ -500,7 +427,6 @@ fun TimeForgeRefinedPiece(col: Int, row: Int, modifier: Modifier = Modifier.size
     )
 }
 
-/** Mantido para compatibilidade com chamadas existentes, redirecionando para os novos aros da 1.7.5.1. */
 @Composable
 fun TimeForgeInstrument(col: Int, row: Int, modifier: Modifier = Modifier.size(168.dp), alpha: Float = 1f) {
     val mappedCol = if (row == 1) 1 else col.coerceIn(0, 2)
@@ -508,7 +434,7 @@ fun TimeForgeInstrument(col: Int, row: Int, modifier: Modifier = Modifier.size(1
 }
 
 @Composable
-fun ImmersiveFocusScene(col: Int, row: Int, modifier: Modifier = Modifier, alpha: Float = 0.65f) {
+fun ImmersiveFocusScene(col: Int, row: Int, modifier: Modifier = Modifier, alpha: Float = 0.55f) {
     CouncilAtlasCell(
         resId = R.drawable.nordic_focus_scenes_atlas,
         cols = 2,
@@ -521,7 +447,7 @@ fun ImmersiveFocusScene(col: Int, row: Int, modifier: Modifier = Modifier, alpha
 }
 
 @Composable
-fun RunicCalendarGlyph(col: Int, row: Int, modifier: Modifier = Modifier.size(24.dp)) {
+fun RunicCalendarGlyph(col: Int, row: Int, modifier: Modifier = Modifier.size(22.dp)) {
     CouncilAtlasCell(
         resId = R.drawable.runic_calendar_atlas,
         cols = 3,
@@ -533,7 +459,7 @@ fun RunicCalendarGlyph(col: Int, row: Int, modifier: Modifier = Modifier.size(24
 }
 
 @Composable
-fun StrategyControlGlyph(col: Int, row: Int, modifier: Modifier = Modifier.size(22.dp)) {
+fun StrategyControlGlyph(col: Int, row: Int, modifier: Modifier = Modifier.size(20.dp)) {
     CouncilAtlasCell(
         resId = R.drawable.nordic_strategy_controls_atlas,
         cols = 4,
@@ -545,7 +471,7 @@ fun StrategyControlGlyph(col: Int, row: Int, modifier: Modifier = Modifier.size(
 }
 
 @Composable
-fun OdinCouncilOrnament(col: Int, row: Int, modifier: Modifier = Modifier.size(24.dp), alpha: Float = 1f) {
+fun OdinCouncilOrnament(col: Int, row: Int, modifier: Modifier = Modifier.size(22.dp), alpha: Float = 1f) {
     CouncilAtlasCell(
         resId = R.drawable.odin_council_ornaments_atlas,
         cols = 4,
@@ -559,47 +485,51 @@ fun OdinCouncilOrnament(col: Int, row: Int, modifier: Modifier = Modifier.size(2
 
 @Composable
 fun CouncilDivider(modifier: Modifier = Modifier) {
-    NordicStrategyDivider(style = StrategyFrameAsset.UrnesDivider, modifier = modifier)
+    NorthbornDivider(NorthbornDividerStyle.DiamondKnot, modifier = modifier)
 }
 
+/**
+ * Célula informativa de métrica NORTHBORN 4.0: leve, sem caixa pesada, com filete de acento à esquerda.
+ */
 @Composable
 fun CouncilKpiTile(
     label: String,
     value: String,
     detail: String = "",
-    accent: Color = Gold,
+    accent: Color = LocalNorthborn.current.accentBronze,
     modifier: Modifier = Modifier,
     rune: HistoricalFutharkRune? = null
 ) {
-    val dark = LocalAppearance.current.dark
-    val shape = CutCornerShape(topStart = 7.dp, topEnd = 2.dp, bottomEnd = 7.dp, bottomStart = 2.dp)
+    val nb = LocalNorthborn.current
+    val shape = NorthbornShape.sm
     Column(
         modifier
             .clip(shape)
-            .background(if (dark) Color(0xFF151921) else Color(0xFFEEE8DC))
-            .border(1.dp, accent.copy(alpha = if (dark) 0.42f else 0.50f), shape)
+            .background(nb.surfaceBase)
+            .border(1.dp, nb.hairline, shape)
             .drawBehind {
                 val d = 1.dp.toPx()
-                drawLine(accent.copy(alpha = 0.72f), Offset(0f, 0f), Offset(size.width, 0f), 2.2f * d)
+                drawRect(accent.copy(alpha = 0.78f), Offset(0f, 8 * d), androidx.compose.ui.geometry.Size(2.5f * d, (size.height - 16 * d).coerceAtLeast(0f)))
             }
-            .padding(horizontal = 12.dp, vertical = 10.dp),
+            .padding(start = 13.dp, end = 11.dp, top = 10.dp, bottom = 10.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             Text(
                 label.uppercase(),
-                color = Muted,
+                color = nb.inkSecondary,
                 fontSize = 10.sp,
-                letterSpacing = 0.8.sp,
+                letterSpacing = 0.9.sp,
+                fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
             if (rune != null) {
-                FutharkRuneGlyph(rune = rune, color = accent.copy(alpha = 0.8f), size = 14.dp)
+                FutharkRuneGlyph(rune = rune, color = accent.copy(alpha = 0.72f), size = 12.dp)
             }
         }
-        Text(value, color = accent, fontSize = 20.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        if (detail.isNotBlank()) Text(detail, color = Muted, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
+        Text(value, color = accent, fontSize = 21.sp, fontFamily = SagaFont, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        if (detail.isNotBlank()) Text(detail, color = nb.inkSecondary, fontSize = 11.5.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
     }
 }

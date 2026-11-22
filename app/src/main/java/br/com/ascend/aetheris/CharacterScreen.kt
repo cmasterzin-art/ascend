@@ -22,19 +22,73 @@ import java.time.*
     val hero=requireNotNull(s.player)
     val tabStates=rememberSaveableStateHolder()
     var tab by rememberSaveable{mutableIntStateOf(0)};var playerEdit by remember{mutableStateOf(false)}
-    Column(Modifier.fillMaxSize()){
+    val nb = LocalNorthborn.current
+    Column(Modifier.fillMaxSize().background(nb.canvas)){
         Column(Modifier.padding(horizontal=20.dp).padding(top=14.dp)){
-        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Column(Modifier.weight(1f)){Title("Seu aventureiro")};IconButton(onSettings,Modifier.semantics{contentDescription="Configurações"}){CarvedGlyph(Glyph.Settings,Gold)}}
+        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+            Column(Modifier.weight(1f)){Title("Seu aventureiro")}
+            IconButton(onSettings,Modifier.size(48.dp).semantics{contentDescription="Configurações"}){
+                NorthbornIcon(NorthbornGlyph.Settings, nb.inkPrimary, size = 22.dp)
+            }
+        }
         AetherisTabs(listOf("Perfil","Atributos","Inventário","Loja","Conquistas","Estatísticas","Habilidades"),tab,{tab=it})
         }
         val reduce=LocalAppearance.current.reducedMotion
         Crossfade(targetState=tab,modifier=Modifier.weight(1f),animationSpec=tween(if(reduce)0 else AetherTokens.scene),label="abas do herói"){visible->tabStates.SaveableStateProvider(visible){Page{
         when(visible){
-            0->{HeroStage(s,onPortrait);HeroEvolution(s);Hairline();ArchetypeAscensionPanel(s,vm,onMimir,onMimirReview,onPaths,{tab=6});Hairline();AttributeInscriptions(s);Hairline();Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){SagaButton("Ampliar retrato",onPortrait,Modifier.weight(1f),secondary=true);SagaButton("Salão das Memórias",onMemories,Modifier.weight(1f),secondary=true)};Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){SagaButton("Heráldica Rúnica",onHeraldry,Modifier.weight(1f),style=VikingButtonStyle.BronzeForjado,leadingRune=HistoricalFutharkRune.Othala);SagaButton("Codex Rúnico",onCodex,Modifier.weight(1f),style=VikingButtonStyle.FerroRunico,leadingRune=HistoricalFutharkRune.Ansuz)};AetherSurface{SectionHeader("Sua identidade");ReadingBlock(classDescriptions[hero.heroClass]);if(hero.goals.isNotBlank())ReadingBlock(hero.goals,"Seus propósitos");Action("Personalizar personagem",{playerEdit=true},Modifier.fillMaxWidth())};EquippedNiches(s);s.assets.find{it.kind=="companion"&&it.equipped}?.let{a->Panel(accent=Violet){val item=shopItems.find{it.id==a.id};Eyebrow("Companheiro",Violet);Text(item?.name?:"Companheiro",style=MaterialTheme.typography.titleLarge);Text(when(a.id){"lyra"->"Lyra se acomoda ao lado do seu caderno. Parece aprovar a página de hoje.";"corvus"->"Corvus observa o horizonte. Há sempre outra trilha entre as árvores.";else->"Ignis protege uma pequena brasa sob as asas. Por enquanto, isso basta."},color=Muted)}};Action("Abrir diário do aventureiro",onJournal,Modifier.fillMaxWidth());Panel{Eyebrow("Títulos conquistados");val baseTitles=listOf(1 to "O Desperto",5 to "Aprendiz Errante",10 to "Aventureiro",15 to "Guardião do Conhecimento",20 to "Mestre da Vontade",30 to "Herói de Aetheris",50 to "Lenda Ascendente");(baseTitles+specializationTitles(s).map{1 to it}+completedCollectionTitles(s).map{1 to it}).filter{it.first<=s.level}.distinctBy{it.second}.forEach{(_,title)->TextButton({vm.run{vm.repo.player(hero.copy(title=title))}}){Text(if(hero.title==title)"✦ $title" else title)}}}}
-            1->{attributes.forEachIndexed{i,a->val pts=s.points(i);if(i>0)Hairline();Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(10.dp)){Eyebrow("Atributo · nível ${1+pts/50}",habitColor(i));Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){AttributeEmblem(i,Modifier.size(38.dp));Text(a,style=MaterialTheme.typography.titleLarge)};Meter((pts%50)/50f,habitColor(i));Text("${pts%50}/50 pontos neste nível · $pts acumulados",color=Muted,fontSize=12.sp);s.ledger.filter{it.attribute==i && it.points!=0L}.sortedByDescending{it.date}.take(8).forEach{Text("${displayDate(it.date)} · ${it.label.removePrefix("Hábito · ")} · +${it.points}",color=Muted,fontSize=11.sp)}}}}
+            0->{
+                HeroStage(s,onPortrait)
+                HeroEvolution(s)
+                NorthbornDivider(NorthbornDividerStyle.DiamondKnot)
+                ArchetypeAscensionPanel(s,vm,onMimir,onMimirReview,onPaths,{tab=6})
+                NorthbornDivider(NorthbornDividerStyle.Hairline)
+                AttributeInscriptions(s)
+                NorthbornDivider(NorthbornDividerStyle.Hairline)
+                Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
+                    NorthbornButton("Ampliar retrato",onPortrait,role=NorthbornButtonRole.Secondary,modifier=Modifier.weight(1f))
+                    NorthbornButton("Salão das Memórias",onMemories,role=NorthbornButtonRole.Secondary,modifier=Modifier.weight(1f))
+                }
+                Row(horizontalArrangement=Arrangement.spacedBy(8.dp)){
+                    NorthbornButton("Heráldica Rúnica",onHeraldry,role=NorthbornButtonRole.Primary,modifier=Modifier.weight(1f),leadingRune=HistoricalFutharkRune.Othala)
+                    NorthbornButton("Codex Rúnico",onCodex,role=NorthbornButtonRole.Secondary,modifier=Modifier.weight(1f),leadingRune=HistoricalFutharkRune.Ansuz)
+                }
+                NorthbornDivider(NorthbornDividerStyle.Hairline)
+                Column(verticalArrangement=Arrangement.spacedBy(10.dp)){
+                    NorthbornEditorialHeader("Sua identidade", kicker = classes[hero.heroClass])
+                    ReadingBlock(classDescriptions[hero.heroClass])
+                    if(hero.goals.isNotBlank())ReadingBlock(hero.goals,"Seus propósitos")
+                    NorthbornButton("Personalizar personagem",{playerEdit=true},role=NorthbornButtonRole.Secondary,modifier=Modifier.fillMaxWidth())
+                }
+                EquippedNiches(s)
+                s.assets.find{it.kind=="companion"&&it.equipped}?.let{a->
+                    NorthbornSurface(role=NorthbornSurfaceRole.Document,accent=Violet){
+                        val item=shopItems.find{it.id==a.id}
+                        Eyebrow("Companheiro",Violet)
+                        Text(item?.name?:"Companheiro",style=MaterialTheme.typography.titleLarge)
+                        Text(when(a.id){"lyra"->"Lyra se acomoda ao lado do seu caderno. Parece aprovar a página de hoje.";"corvus"->"Corvus observa o horizonte. Há sempre outra trilha entre as árvores.";else->"Ignis protege uma pequena brasa sob as asas. Por enquanto, isso basta."},color=nb.inkSecondary)
+                    }
+                }
+                NorthbornButton("Abrir diário do aventureiro",onJournal,role=NorthbornButtonRole.Primary,modifier=Modifier.fillMaxWidth(),leadingIcon=NorthbornGlyph.Library)
+                NorthbornDivider(NorthbornDividerStyle.Hairline)
+                Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
+                    Eyebrow("Títulos conquistados", nb.accentBronze)
+                    val baseTitles=listOf(1 to "O Desperto",5 to "Aprendiz Errante",10 to "Aventureiro",15 to "Guardião do Conhecimento",20 to "Mestre da Vontade",30 to "Herói de Aetheris",50 to "Lenda Ascendente")
+                    @OptIn(ExperimentalLayoutApi::class)
+                    FlowRow(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.spacedBy(8.dp), verticalArrangement=Arrangement.spacedBy(8.dp)){
+                        (baseTitles+specializationTitles(s).map{1 to it}+completedCollectionTitles(s).map{1 to it}).filter{it.first<=s.level}.distinctBy{it.second}.forEach{(_,title)->
+                            NordicCompactAction(
+                                text = if(hero.title==title)"✦ $title" else title,
+                                onClick = { vm.run { vm.repo.player(hero.copy(title=title)) } },
+                                accent = if(hero.title==title) nb.accentBronze else nb.inkSecondary
+                            )
+                        }
+                    }
+                }
+            }
+            1->{attributes.forEachIndexed{i,a->val pts=s.points(i);if(i>0)NorthbornDivider(NorthbornDividerStyle.Hairline);Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(10.dp)){Eyebrow("Atributo · nível ${1+pts/50}",habitColor(i));Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){AttributeEmblem(i,Modifier.size(36.dp));Text(a,style=MaterialTheme.typography.titleLarge)};Meter((pts%50)/50f,habitColor(i));Text("${pts%50}/50 pontos neste nível · $pts acumulados",color=nb.inkSecondary,fontSize=12.sp);s.ledger.filter{it.attribute==i && it.points!=0L}.sortedByDescending{it.date}.take(8).forEach{Text("${displayDate(it.date)} · ${it.label.removePrefix("Hábito · ")} · +${it.points}",color=nb.inkTertiary,fontSize=11.5.sp)}}}}
             2->Equipment(s,vm,onOpenForge=onForge,onOpenHeraldry=onHeraldry)
             3->Equipment(s,vm,store=true)
-            4->{achievementDefs.forEach{a->val unlocked=s.achievements.find{it.id==a.id};val value=achievementProgress(a,s);val color=when(a.rarity){"Lendária"->Gold;"Épica"->Violet;"Rara"->Blue;else->Muted};Panel(accent=color){Eyebrow("${a.rarity} · ${if(unlocked!=null)"Conquistada" else "Em busca"}",color);Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){CeremonialSeal(SealKind.Reward,unlocked!=null,Modifier.size(42.dp));Text("${a.icon} ${a.name}",Modifier.weight(1f),style=MaterialTheme.typography.titleLarge)};Text(a.description,color=Muted,fontSize=13.sp);Meter(value.toFloat()/a.target,color);Text(unlocked?.let{if(a.coins>0L)"Registrada em ${displayDate(it.date)} · ◈ ${a.coins}" else "Registrada em ${displayDate(it.date)} · Marco de Sabedoria"}?:"${value.coerceAtMost(a.target)}/${a.target}",color=color,fontSize=12.sp)}}}
+            4->{achievementDefs.forEach{a->val unlocked=s.achievements.find{it.id==a.id};val value=achievementProgress(a,s);val color=when(a.rarity){"Lendária"->nb.accentBronze;"Épica"->Violet;"Rara"->nb.accentFjord;else->nb.inkSecondary};NorthbornSurface(role=if(unlocked!=null)NorthbornSurfaceRole.Ceremonial else NorthbornSurfaceRole.Operational,accent=color){Eyebrow("${a.rarity} · ${if(unlocked!=null)"Conquistada" else "Em busca"}",color);Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){CeremonialSeal(SealKind.Reward,unlocked!=null,Modifier.size(40.dp));Text("${a.icon} ${a.name}",Modifier.weight(1f),style=MaterialTheme.typography.titleLarge)};Text(a.description,color=nb.inkSecondary,fontSize=13.sp);Meter(value.toFloat()/a.target,color,slim=true);Text(unlocked?.let{if(a.coins>0L)"Registrada em ${displayDate(it.date)} · ◈ ${a.coins}" else "Registrada em ${displayDate(it.date)} · Marco de Sabedoria"}?:"${value.coerceAtMost(a.target)}/${a.target}",color=color,fontSize=12.sp)}}}
             5->Statistics(s)
             6->SkillTree(s,vm)
         }
@@ -50,78 +104,76 @@ import java.time.*
     onPaths: () -> Unit,
     onOpenSkills: () -> Unit
 ) {
+    val nb = LocalNorthborn.current
     val hero = requireNotNull(s.player)
     val options = remember(hero.heroClass) { specializationsForClass(hero.heroClass) }
     val active = activeSpecialization(s)
     val classSkills = remember(hero.heroClass) { skillDefs.filter { it.heroClass == hero.heroClass } }
     val ownedClassSkills = classSkills.count { sk -> s.assets.any { it.id == "skill:${sk.id}" } }
 
-    AetherSurface(SurfaceKind.Operational) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Eyebrow("Ascensão do Arquétipo · ${classes[hero.heroClass]}", Gold)
-                Text(
-                    active?.let { "${it.name} · ${it.titleGrant}" } ?: "Escolha sua especialização",
-                    style = MaterialTheme.typography.titleLarge
-                )
+    // Seção aberta sem caixa externa — elimina caixa-dentro-de-caixa
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        NorthbornEditorialHeader(
+            title = active?.let { "${it.name} · ${it.titleGrant}" } ?: "Escolha sua especialização",
+            kicker = "Ascensão do Arquétipo · ${classes[hero.heroClass]}",
+            subtitle = if (s.level < 3) "Alcance o nível 3 para escolher uma das duas especializações de ${classes[hero.heroClass]}."
+            else "Especializações moldam sua identidade e emblema sem alterar XP ou moedas.",
+            action = {
+                NordicCompactAction("Habilidades ($ownedClassSkills/${classSkills.size})", onOpenSkills, accent = nb.accentBronze)
             }
-            TextButton(onOpenSkills) { Text("Habilidades ($ownedClassSkills/${classSkills.size})", fontSize = 12.sp) }
-        }
-        Text(
-            if (s.level < 3) "Alcance o nível 3 para escolher uma das duas especializações de ${classes[hero.heroClass]}. Trocar especialização nunca apaga habilidades já obtidas."
-            else "Especializações moldam sua identidade, emblema e atalhos temáticos sem alterar XP ou moedas.",
-            color = Muted,
-            fontSize = 12.sp
         )
         options.forEach { spec ->
             val selected = active?.id == spec.id
             val unlocked = canSelectSpecialization(s, spec)
-            val accent = if (selected) Gold else Blue
-            Panel(accent = accent) {
+            val accent = if (selected) nb.accentBronze else nb.accentFjord
+            NorthbornSurface(
+                role = if (selected) NorthbornSurfaceRole.Ceremonial else NorthbornSurfaceRole.Operational,
+                accent = accent
+            ) {
                 Row(
                     Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    ArchetypeSealArt(spec.atlasIndex, Modifier.size(54.dp), dimmed = !unlocked && !selected)
+                    ArchetypeSealArt(spec.atlasIndex, Modifier.size(50.dp), dimmed = !unlocked && !selected)
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Eyebrow(
                             if (selected) "Especialização ativa" else if (unlocked) "Disponível · Nível ${spec.unlockLevel}+" else "Bloqueada · Nível ${spec.unlockLevel}",
-                            if (selected) Gold else if (unlocked) Blue else Muted
+                            if (selected) nb.accentBronze else if (unlocked) nb.accentFjord else nb.inkTertiary
                         )
-                        Text(spec.name, style = MaterialTheme.typography.titleMedium)
-                        Text("“${spec.motto}”", fontFamily = FontFamily.Serif, color = Muted, fontSize = 12.sp)
+                        Text(spec.name, style = MaterialTheme.typography.titleMedium, color = nb.inkPrimary)
+                        Text("“${spec.motto}”", fontFamily = FontFamily.Serif, color = nb.inkSecondary, fontSize = 12.5.sp)
                     }
                 }
-                Text(spec.description, color = Muted, fontSize = 12.sp)
-                Text(spec.effectSummary, color = accent, fontSize = 11.sp)
+                Text(spec.description, color = nb.inkSecondary, fontSize = 12.5.sp, lineHeight = 18.sp)
+                Text(spec.effectSummary, color = accent, fontSize = 11.5.sp)
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Action(
-                        if (selected) "Especialização ativa" else "Escolher ${spec.name}",
-                        { vm.run { vm.repo.selectSpecialization(spec.id) } },
-                        Modifier.weight(1f),
-                        enabled = unlocked && !selected
+                    NorthbornButton(
+                        text = if (selected) "Especialização ativa" else "Escolher ${spec.name}",
+                        onClick = { vm.run { vm.repo.selectSpecialization(spec.id) } },
+                        role = if (selected) NorthbornButtonRole.Confirm else NorthbornButtonRole.Primary,
+                        modifier = Modifier.weight(1f),
+                        enabled = unlocked && !selected,
+                        completed = selected
                     )
                     if (selected) {
-                        SagaButton("Remover", { vm.run { vm.repo.selectSpecialization("") } }, secondary = true)
+                        NorthbornButton("Remover", { vm.run { vm.repo.selectSpecialization("") } }, role = NorthbornButtonRole.Secondary)
                     }
                 }
             }
         }
-        // Thematic convenience shortcuts without altering economy
         val showMimirShortcut = active?.id in setOf("erudito", "arquimago_runico") || s.assets.any { it.id in setOf("skill:mage_mimir", "skill:mage_runes") }
         val showPathsShortcut = active?.id == "cartografo" || s.assets.any { it.id == "skill:expl_compass" }
         if (showMimirShortcut || showPathsShortcut) {
-            Hairline()
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (showMimirShortcut) {
-                    SagaButton("Biblioteca de Mímir", onMimir, Modifier.weight(1f), secondary = true)
+                    NorthbornButton("Biblioteca de Mímir", onMimir, role = NorthbornButtonRole.Secondary, modifier = Modifier.weight(1f))
                     if (active?.id == "arquimago_runico" || s.assets.any { it.id == "skill:mage_runes" }) {
-                        SagaButton("Runas da Memória", onMimirReview, Modifier.weight(1f), secondary = true)
+                        NorthbornButton("Runas da Memória", onMimirReview, role = NorthbornButtonRole.Secondary, modifier = Modifier.weight(1f))
                     }
                 }
                 if (showPathsShortcut) {
-                    SagaButton("Meus Caminhos", onPaths, Modifier.weight(1f), secondary = true)
+                    NorthbornButton("Meus Caminhos", onPaths, role = NorthbornButtonRole.Secondary, modifier = Modifier.weight(1f))
                 }
             }
         }

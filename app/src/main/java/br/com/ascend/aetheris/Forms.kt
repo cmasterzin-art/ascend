@@ -14,10 +14,28 @@ import androidx.compose.ui.unit.*
 import androidx.compose.ui.window.*
 import androidx.compose.ui.semantics.*
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable fun FullForm(title:String,onDismiss:()->Unit,onSave:()->Unit,saveLabel:String="Salvar",content:@Composable ColumnScope.()->Unit){
+    val nb = LocalNorthborn.current
     Dialog(onDismiss,properties=DialogProperties(usePlatformDefaultWidth=false,decorFitsSystemWindows=false)){
-        Scaffold(topBar={Column{TopAppBar(title={Text(title,fontFamily=SagaFont)},navigationIcon={IconButton(onDismiss){Icon(Icons.AutoMirrored.Filled.ArrowBack,"Voltar")}},actions={SagaButton(saveLabel,onSave)});Box(Modifier.fillMaxWidth().height(1.dp).background(Gold.copy(alpha=.28f)))}}){padding->Box(Modifier.padding(padding).imePadding()){Page(content)}}
+        Scaffold(
+            containerColor = nb.canvas,
+            topBar = {
+                Box(Modifier.statusBarsPadding()) {
+                    NorthbornTopBar(
+                        title = title,
+                        onBack = onDismiss,
+                        trailing = {
+                            NorthbornButton(
+                                text = saveLabel,
+                                onClick = onSave,
+                                role = NorthbornButtonRole.Primary,
+                                modifier = Modifier.padding(end = 6.dp)
+                            )
+                        }
+                    )
+                }
+            }
+        ){padding->Box(Modifier.padding(padding).imePadding()){Page(content)}}
     }
 }
 @Composable fun HabitEditor(h:Habit,onDismiss:()->Unit,onSave:(Habit)->Unit){

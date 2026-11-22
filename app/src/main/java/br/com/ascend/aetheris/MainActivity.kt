@@ -20,6 +20,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.*
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 import androidx.lifecycle.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -80,10 +81,13 @@ class MainActivity:ComponentActivity(){var widgetHabit by mutableStateOf<String?
         when{
             s==null->Box(Modifier.fillMaxSize(),contentAlignment=Alignment.Center){Column(horizontalAlignment=Alignment.CenterHorizontally,verticalArrangement=Arrangement.spacedBy(16.dp)){Eyebrow("ASCEND");CircularProgressIndicator(color=Gold);Text("Abrindo as crônicas…",color=Muted)}}
             s!!.player==null->Box(Modifier.safeDrawingPadding()){Onboarding(onRestore={if(!readingBackup)welcomeRestore.launch(arrayOf("application/json","text/plain","application/octet-stream"))}){p,hs->vm.run{vm.repo.create(p,hs)}}}
-            else->{val state=s!!;Scaffold(snackbarHost={SnackbarHost(snack){data->Snackbar(data,modifier=Modifier.padding(12.dp).border(1.dp,OldBronze,androidx.compose.foundation.shape.CutCornerShape(6.dp)),shape=androidx.compose.foundation.shape.CutCornerShape(6.dp),containerColor=Surface,contentColor=Ink,dismissActionContentColor=Gold)}},bottomBar={AetherisNavigation(if(route=="memories"&&nav.previousBackStackEntry?.destination?.route=="world")"world" else route){r->nav.navigate(r){popUpTo("journey"){saveState=true};launchSingleTop=true;restoreState=true}}}){padding->
+            else->{val state=s!!;val nb=LocalNorthborn.current;Scaffold(containerColor=nb.canvas,snackbarHost={SnackbarHost(snack){data->Snackbar(data,modifier=Modifier.padding(12.dp).border(1.dp,nb.hairlineStrong,NorthbornShape.md),shape=NorthbornShape.md,containerColor=nb.surfaceElevated,contentColor=nb.inkPrimary,dismissActionContentColor=nb.accentBronze)}},bottomBar={AetherisNavigation(if(route=="memories"&&nav.previousBackStackEntry?.destination?.route=="world")"world" else route){r->nav.navigate(r){popUpTo("journey"){saveState=true};launchSingleTop=true;restoreState=true}}}){padding->
                 Column(Modifier.padding(padding)){
-                    if(route=="settings"||route=="journal"||route=="grimoire"||route=="weekly"||route=="memories"||route=="portrait"||route=="forge"||route=="heraldry"||route=="codex_runico"||route=="planner"||route=="analysis"||route=="focus_history"||route=="paths"||route=="inbox"||route=="pending"||route=="mimir"||route.startsWith("mimir_")||route.startsWith("path/")||route.startsWith("region/")||route.startsWith("location/")||route.startsWith("expedition/")||route.startsWith("odin")||route.startsWith("time_forge")||route.startsWith("council_nine"))Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically){IconButton({nav.popBackStack()}){Icon(Icons.AutoMirrored.Filled.ArrowBack,"Voltar")};Text(if(route=="settings")"Configurações" else if(route.startsWith("odin"))"Mesa de Odin" else if(route.startsWith("time_forge"))"Forja do Tempo" else if(route.startsWith("council_nine"))"Conselho dos Nove" else if(route=="forge")"A Forja de Darian" else if(route=="heraldry")"Heráldica Rúnica" else if(route=="codex_runico")"Codex Rúnico" else if(route=="grimoire"||route in listOf("planner","analysis","focus_history"))"Hábitos" else if(route=="paths"||route in listOf("inbox","pending"))"Jornada" else if(route.startsWith("path/"))"Caminhos" else if(route=="mimir")"Crônicas · Biblioteca de Mímir" else if(route.startsWith("mimir_notebook/"))"Biblioteca de Mímir" else if(route.startsWith("mimir_page/"))"Caderno" else if(route.startsWith("mimir_review"))"Runas da Memória" else if(route=="weekly")"Crônicas" else if(route=="memories"&&nav.previousBackStackEntry?.destination?.route=="world")"Crônicas" else if(route=="memories"||route=="portrait")"Herói" else if(route.startsWith("region/"))"Atlas" else if(route.startsWith("location/"))"Região" else if(route.startsWith("expedition/"))"Local" else "Diário",color=Muted,fontSize=14.sp)}
-                    NavHost(nav,startDestination="journey",enterTransition={fadeIn(tween(if(appearance.reducedMotion)0 else 200))},exitTransition={fadeOut(tween(if(appearance.reducedMotion)0 else 150))}){
+                    if(route=="settings"||route=="journal"||route=="grimoire"||route=="weekly"||route=="memories"||route=="portrait"||route=="forge"||route=="heraldry"||route=="codex_runico"||route=="planner"||route=="analysis"||route=="focus_history"||route=="paths"||route=="inbox"||route=="pending"||route=="mimir"||route.startsWith("mimir_")||route.startsWith("path/")||route.startsWith("region/")||route.startsWith("location/")||route.startsWith("expedition/")||route.startsWith("odin")||route.startsWith("time_forge")||route.startsWith("council_nine")){
+                        val topTitle = if(route=="settings")"Configurações" else if(route.startsWith("odin"))"Mesa de Odin" else if(route.startsWith("time_forge"))"Forja do Tempo" else if(route.startsWith("council_nine"))"Conselho dos Nove" else if(route=="forge")"A Forja de Darian" else if(route=="heraldry")"Heráldica Rúnica" else if(route=="codex_runico")"Codex Rúnico" else if(route=="grimoire"||route in listOf("planner","analysis","focus_history"))"Hábitos" else if(route=="paths"||route in listOf("inbox","pending"))"Jornada" else if(route.startsWith("path/"))"Caminhos" else if(route=="mimir")"Crônicas · Biblioteca de Mímir" else if(route.startsWith("mimir_notebook/"))"Biblioteca de Mímir" else if(route.startsWith("mimir_page/"))"Caderno" else if(route.startsWith("mimir_review"))"Runas da Memória" else if(route=="weekly")"Crônicas" else if(route=="memories"&&nav.previousBackStackEntry?.destination?.route=="world")"Crônicas" else if(route=="memories"||route=="portrait")"Herói" else if(route.startsWith("region/"))"Atlas" else if(route.startsWith("location/"))"Região" else if(route.startsWith("expedition/"))"Local" else "Diário"
+                        NorthbornTopBar(title = topTitle, onBack = { nav.popBackStack() })
+                    }
+                    NavHost(nav,startDestination="journey",enterTransition={fadeIn(tween(if(appearance.reducedMotion)0 else 180))},exitTransition={fadeOut(tween(if(appearance.reducedMotion)0 else 140))}){
                         composable("journey"){Journey(state,{h,r->progress=h to r},{habitEditor=it},{focus=it},addHabit,{nav.navigate("journal")},vm,relaxed,{nav.navigate("planner")},{nav.navigate("analysis")},{nav.navigate("focus_history")},{nav.navigate("portrait")},{nav.navigate("missions")},{nav.navigate("region/${regionLevels.indexOfLast{it<=state.level}.coerceAtLeast(0)}")},{nav.navigate("paths")},{nav.navigate("inbox")},{nav.navigate("pending")},{nav.navigate("path/$it")},{nav.navigate("mimir_review")},{nav.navigate("odin")},{nav.navigate("time_forge")},{nav.navigate("council_nine")})}
                         composable("odin"){OdinCouncilScreen(state,vm,0,{nav.navigate("planner")},{nav.navigate("paths")},{nav.navigate("council_nine")},{nav.navigate("time_forge")},{nav.navigate("mimir_review")})}
                         composable("odin/{tab}"){back->OdinCouncilScreen(state,vm,back.arguments?.getString("tab")?.toIntOrNull()?:0,{nav.navigate("planner")},{nav.navigate("paths")},{nav.navigate("council_nine")},{nav.navigate("time_forge")},{nav.navigate("mimir_review")})}
@@ -133,7 +137,7 @@ class MainActivity:ComponentActivity(){var widgetHabit by mutableStateOf<String?
             SectionHeader("Um intervalo para se concentrar","O tempo alimenta o registro único deste hábito; não há XP extra por sessão.")
             FormField(minutes,{minutes=it},"Duração em minutos",true)
             Text("De 1 a 1440 minutos. Pausas não contam como tempo efetivo. Você pode sair da tela e retomar pela Jornada.",color=Muted,fontSize=13.sp,lineHeight=22.sp)
-            TextButton({focus=null}){Text("Cancelar")}
+            NorthbornButton("Cancelar",{focus=null},role=NorthbornButtonRole.Tertiary)
         }
     }
     pathFocus?.let{(pid,tid,lbl)->
@@ -142,7 +146,7 @@ class MainActivity:ComponentActivity(){var widgetHabit by mutableStateOf<String?
             SectionHeader("Foco em projeto ou tarefa","O tempo é contabilizado no caminho e no histórico de foco, sem conceder XP ou moedas adicionais.")
             FormField(minutes,{minutes=it},"Duração em minutos",true)
             Text("De 1 a 1440 minutos. Pausas não contam como tempo efetivo.",color=Muted,fontSize=13.sp,lineHeight=22.sp)
-            TextButton({pathFocus=null}){Text("Cancelar")}
+            NorthbornButton("Cancelar",{pathFocus=null},role=NorthbornButtonRole.Tertiary)
         }
     }
     welcomeBackup?.let{backup->AetherDialog(onDismissRequest={welcomeBackup=null},title="Retomar sua jornada?",confirmButton={SagaButton("Restaurar",{vm.run{vm.repo.importState(backup);welcomeBackup=null}})},dismissButton={TextButton({welcomeBackup=null}){Text("Cancelar")}}){Text("${backup.player?.name} · nível ${backup.level}\n${backup.habits.size} hábitos · ${backup.xp} XP\n\nSeus dados serão restaurados neste aparelho.")}}
@@ -151,20 +155,107 @@ class MainActivity:ComponentActivity(){var widgetHabit by mutableStateOf<String?
     levelup?.let{event->LevelUp(event,{levelup=null})}
 }
 @Composable fun LevelUp(event:GameEvent,onClose:()->Unit){
-    val shape=androidx.compose.foundation.shape.CutCornerShape(topStart=10.dp,topEnd=3.dp,bottomEnd=10.dp,bottomStart=3.dp)
-    AlertDialog(onDismissRequest=onClose,modifier=Modifier.border(1.dp,Gold.copy(alpha=.65f),shape),shape=shape,containerColor=if(LocalAppearance.current.dark)androidx.compose.ui.graphics.Color(0xFF211A15) else Surface,title={Column(verticalArrangement=Arrangement.spacedBy(8.dp)){Eyebrow("O juramento foi cumprido");Row(verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){CeremonialSeal(SealKind.Reward,true,Modifier.size(54.dp));Text(if(event.level>0)"Nível ${event.level}" else "Marcas na saga",style=MaterialTheme.typography.headlineMedium,color=Gold)};SagaDivider(color=Gold)}},text={Column(Modifier.verticalScroll(rememberScrollState()),verticalArrangement=Arrangement.spacedBy(14.dp)){Text(event.message,color=Muted);event.highlights.forEach{Text("✦ $it",color=Ink)};SagaDivider();Text(rewardSummary(event).ifBlank{"Transformação registrada em Aetheris."},color=Blue)}},confirmButton={Action("Continuar a jornada",onClose,ceremonial=true)})
+    val nb=LocalNorthborn.current
+    AetherDialog(
+        onDismissRequest = onClose,
+        title = if(event.level>0)"Nível ${event.level}" else "Marcas na saga",
+        kind = SurfaceKind.Ceremonial,
+        seal = SealKind.Reward,
+        confirmButton = { NorthbornButton("Continuar a jornada", onClose, role = NorthbornButtonRole.Ceremonial) }
+    ){
+        Eyebrow("O juramento foi cumprido", nb.accentBronze)
+        Text(event.message, color = nb.inkSecondary)
+        event.highlights.forEach { Text("✦ $it", color = nb.inkPrimary) }
+        NorthbornDivider(NorthbornDividerStyle.Hairline)
+        Text(rewardSummary(event).ifBlank { "Transformação registrada em Aetheris." }, color = nb.accentFjord)
+    }
 }
 @Composable fun SettingsScreen(s:GameState,vm:GameViewModel,relaxed:Boolean){
     val context=LocalContext.current;var pending by remember{mutableStateOf<GameState?>(null)};var busy by remember{mutableStateOf(false)}
     val export=rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")){uri->if(uri!=null)vm.run{busy=true;try{withContext(Dispatchers.IO){context.contentResolver.openOutputStream(uri)?.bufferedWriter(Charsets.UTF_8)?.use{it.write(Backup.encode(s))}?:error("Não foi possível abrir o arquivo.")};vm.repo.events.emit(GameEvent("Backup exportado"))}finally{busy=false}}}
     val importBackup=rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()){uri->if(uri!=null)vm.run{busy=true;try{pending=readLocalBackup(context,uri)}finally{busy=false}}}
     val appearance=LocalAppearance.current
-    Page{Title("Configurações","Seu progresso fica com você.");
-        Panel{Eyebrow("Aparência e acessibilidade");Text("Tema visual",color=Muted);val theme by vm.appearance.collectAsStateWithLifecycle();ChipRow(listOf("Escuro","Claro","Sistema"),listOf("dark","light","system").indexOf(theme).coerceAtLeast(0),{vm.theme(listOf("dark","light","system")[it])});Toggle("Reduzir animações",appearance.reducedMotion,{vm.setting("reducedMotion",it)});Toggle("Modo minimalista",appearance.minimal,{vm.setting("minimal",it)});Toggle("Exibir nomes narrativos",LocalNarrativeNames.current,{vm.setting("narrative_names",it)});Text("O modo minimalista simplifica a Jornada e mantém seus hábitos e recompensas.",color=Muted,fontSize=12.sp)};
-        Panel{Eyebrow("Ritmo de jornada");Toggle("Modo livre de cobrança de frequência",relaxed,{vm.setting("relaxed",it)});Text(if(relaxed)"A jornada oferece hábitos ativos todos os dias, sem cobrança por atraso. A programação original é preservada no calendário." else "Dias não programados são descanso. Nenhuma ausência remove XP, níveis ou conquistas.",color=Muted,fontSize=13.sp);Text("Os widgets seguem os dias programados, mesmo no modo livre. Para descanso temporário, pause o hábito no Livro de hábitos. Edite seus dias para reorganizar a semana.",color=Muted,fontSize=12.sp)};Panel(accent=Blue){Eyebrow("Backup local versionado",Blue);Text("Exporte todas as crônicas, hábitos, caminhos, agenda, Biblioteca de Mímir, flashcards, especializações, heráldica rúnica, conjuntos de equipamento, A Forja, Mesa de Odin, Conselho dos Nove, recompensas e páginas do diário. A importação valida o arquivo antes de substituir os dados.",color=Muted,fontSize=13.sp);Action("Exportar backup",{export.launch("ASCEND-backup-${today()}.json")},enabled=!busy);SagaButton("Importar backup",{importBackup.launch(arrayOf("application/json","text/plain","application/octet-stream"))},enabled=!busy,secondary=true);if(busy)CircularProgressIndicator(color=Gold);Text("Guarde seu backup em um local privado. O arquivo inclui o diário e suas anotações, e não é criptografado. As preferências de interface e permissões do Android são configuradas neste aparelho.",color=Muted,fontSize=12.sp)}
-        Panel{Eyebrow("Vozes e efeitos");val effects by vm.soundEnabled.collectAsStateWithLifecycle();val volume by vm.soundVolume.collectAsStateWithLifecycle();Toggle("Efeitos sonoros",effects,{vm.setting("sound_enabled",it)});Text("Volume dos efeitos · ${(volume*100).toInt()}%",color=Muted);Slider(volume,{vm.volume(it)},enabled=effects,colors=SliderDefaults.colors(thumbColor=Gold,activeTrackColor=Gold,inactiveTrackColor=ColdIron.copy(alpha=.35f)));Text("Sons locais breves, sem música contínua. Respeitam o modo silencioso e o volume de mídia do Android. Vibração não é utilizada.",color=Muted,fontSize=12.sp)}
-        if(s.debt>0)Panel{Text("Compensação pendente: ${s.debt} fragmentos",color=Gold);Text("Registros corrigidos tinham recompensas já gastas. Novos ganhos compensarão essa diferença automaticamente.",color=Muted,fontSize=13.sp)}
-        Panel{Eyebrow("ASCEND · versão 1.7.5");Text("A Mesa de Odin · Strategic Planning & Nordic Intelligence\nAetheris existe nos seus próximos passos.",fontFamily=androidx.compose.ui.text.font.FontFamily.Serif,fontSize=18.sp);Text("Aplicativo offline. Sem conta, anúncios, compras reais ou coleta remota de dados.",color=Muted,fontSize=12.sp)}
+    val nb=LocalNorthborn.current
+    Page{
+        Title("Configurações","Seu progresso fica com você, localmente.")
+
+        // Seção editorial aberta: Aparência e acessibilidade (sem caixa redundante)
+        Column(verticalArrangement=Arrangement.spacedBy(10.dp)){
+            NorthbornEditorialHeader("Aparência e acessibilidade", kicker = "Identidade visual")
+            Text("Tema visual", color = nb.inkSecondary, fontSize = 13.sp)
+            val theme by vm.appearance.collectAsStateWithLifecycle()
+            ChipRow(listOf("Escuro","Claro","Sistema"), listOf("dark","light","system").indexOf(theme).coerceAtLeast(0), { vm.theme(listOf("dark","light","system")[it]) })
+            Toggle("Reduzir animações", appearance.reducedMotion, { vm.setting("reducedMotion", it) })
+            Toggle("Modo minimalista", appearance.minimal, { vm.setting("minimal", it) })
+            Toggle("Exibir nomes narrativos", LocalNarrativeNames.current, { vm.setting("narrative_names", it) })
+            Text("O modo minimalista simplifica texturas e mantém intactos todos os hábitos, projetos e recompensas.", color = nb.inkSecondary, fontSize = 12.sp, lineHeight = 18.sp)
+        }
+
+        NorthbornDivider(NorthbornDividerStyle.Hairline)
+
+        // Seção editorial aberta: Ritmo de jornada
+        Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
+            NorthbornEditorialHeader("Ritmo de jornada", kicker = "Constância")
+            Toggle("Modo livre de cobrança de frequência", relaxed, { vm.setting("relaxed", it) })
+            Text(
+                if(relaxed)"A jornada oferece hábitos ativos todos os dias, sem cobrança por atraso. A programação original é preservada no calendário."
+                else "Dias não programados são descanso. Nenhuma ausência remove XP, níveis ou conquistas.",
+                color = nb.inkSecondary, fontSize = 13.sp, lineHeight = 19.sp
+            )
+            Text("Os widgets seguem os dias programados, mesmo no modo livre. Para descanso temporário, pause o hábito no Livro de hábitos.", color = nb.inkTertiary, fontSize = 12.sp, lineHeight = 18.sp)
+        }
+
+        NorthbornDivider(NorthbornDividerStyle.DiamondKnot)
+
+        // Superfície documental destacada para Backup local (única área crítica enquadrada)
+        NorthbornSurface(role = NorthbornSurfaceRole.Document, accent = nb.accentFjord){
+            NorthbornEditorialHeader("Backup local versionado", kicker = "Preservação · v13", accent = nb.accentFjord)
+            Text("Exporte todas as crônicas, hábitos, caminhos, agenda, Biblioteca de Mímir, flashcards, especializações, heráldica rúnica, conjuntos de equipamento, A Forja, Mesa de Odin, Conselho dos Nove, recompensas e páginas do diário. A importação valida o arquivo antes de substituir os dados.", color = nb.inkSecondary, fontSize = 13.sp, lineHeight = 19.sp)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)){
+                NorthbornButton("Exportar backup", { export.launch("ASCEND-backup-${today()}.json") }, role = NorthbornButtonRole.Primary, modifier = Modifier.weight(1f), enabled = !busy)
+                NorthbornButton("Importar backup", { importBackup.launch(arrayOf("application/json","text/plain","application/octet-stream")) }, role = NorthbornButtonRole.Secondary, modifier = Modifier.weight(1f), enabled = !busy)
+            }
+            if(busy) CircularProgressIndicator(color = nb.accentBronze)
+            Text("Guarde seu backup em um local privado. O arquivo inclui o diário e suas anotações, e não é criptografado.", color = nb.inkTertiary, fontSize = 12.sp, lineHeight = 17.sp)
+        }
+
+        NorthbornDivider(NorthbornDividerStyle.Hairline)
+
+        // Seção editorial aberta: Vozes e efeitos
+        Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
+            NorthbornEditorialHeader("Vozes e efeitos", kicker = "Áudio local")
+            val effects by vm.soundEnabled.collectAsStateWithLifecycle()
+            val volume by vm.soundVolume.collectAsStateWithLifecycle()
+            Toggle("Efeitos sonoros", effects, { vm.setting("sound_enabled", it) })
+            Text("Volume dos efeitos · ${(volume*100).toInt()}%", color = nb.inkSecondary, fontSize = 13.sp)
+            Slider(
+                volume,
+                { vm.volume(it) },
+                enabled = effects,
+                colors = SliderDefaults.colors(
+                    thumbColor = nb.accentBronze,
+                    activeTrackColor = nb.accentBronze,
+                    inactiveTrackColor = nb.hairlineStrong
+                )
+            )
+            Text("Sons locais breves, sem música contínua. Respeitam o modo silencioso e o volume de mídia do Android.", color = nb.inkTertiary, fontSize = 12.sp)
+        }
+
+        if(s.debt>0){
+            NorthbornSurface(role = NorthbornSurfaceRole.Informative, accent = nb.accentBronze){
+                Text("Compensação pendente: ${s.debt} fragmentos", color = nb.accentBronze, fontWeight = FontWeight.SemiBold)
+                Text("Registros corrigidos tinham recompensas já gastas. Novos ganhos compensarão essa diferença automaticamente.", color = nb.inkSecondary, fontSize = 13.sp)
+            }
+        }
+
+        NorthbornDivider(NorthbornDividerStyle.DoubleKnot)
+
+        // Colofão editorial da versão
+        Column(Modifier.fillMaxWidth().padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)){
+            Eyebrow("ASCEND · versão 1.7.5.9", nb.accentBronze)
+            Text("A Reforma de Aetheris · NORTHBORN 4.0", fontFamily = SagaFont, fontSize = 18.sp, color = nb.inkPrimary)
+            Text("Aetheris existe nos seus próximos passos. Aplicativo 100% offline, sem conta, anúncios ou coleta remota de dados.", color = nb.inkSecondary, fontSize = 12.5.sp, lineHeight = 18.sp)
+        }
     }
     pending?.let{backup->AetherDialog(onDismissRequest={pending=null},title="Restaurar as crônicas?",confirmButton={SagaButton("Restaurar",{vm.run{vm.repo.importState(backup);pending=null}})},dismissButton={TextButton({pending=null}){Text("Cancelar")}}){Text("Personagem: ${backup.player?.name}\n${backup.habits.size} hábitos · ${backup.paths.size} caminhos · ${backup.notebooks.size} cadernos · ${backup.flashcards.size} flashcards\n\nOs dados atuais deste aparelho serão substituídos. Exporte um backup antes se desejar preservá-los.")}}
 }
