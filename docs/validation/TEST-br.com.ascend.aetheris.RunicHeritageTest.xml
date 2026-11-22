@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.RunicHeritageTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-21T09:34:36" hostname="runnervm0hi8g" time="1.7">
+<testsuite name="br.com.ascend.aetheris.RunicHeritageTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-22T05:44:36" hostname="runnervm0hi8g" time="1.178">
   <properties/>
-  <testcase name="arsenalSearchCombinableFiltersAndSortingWorkDeterministically" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.346"/>
-  <testcase name="partialLoadoutPreviewAndApplyPreserveUnrelatedEquippedSlots" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.126"/>
-  <testcase name="idempotentEquipmentCommandsEnforceOwnershipSlotAndZeroEconomyImpact" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.248"/>
-  <testcase name="roomMigration9To10AndBackupV12RoundTripWithV11CompatAndAtomicRollback" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.415"/>
-  <testcase name="expeditionFocusRuleVersionPreservesLegacyPhasesAndEnforces300sOnNewPhases" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.117"/>
-  <testcase name="heraldryCatalogUnlocksValidationTransliterationAndPersistence" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.053"/>
-  <testcase name="elderFuthark24RunesPreserveOriginal12AndExplicitSealFallback" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.057"/>
-  <testcase name="forge12RecipesThreeStageUpgradesAndThreeLegendaryCollections" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.337"/>
+  <testcase name="arsenalSearchCombinableFiltersAndSortingWorkDeterministically" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.199"/>
+  <testcase name="partialLoadoutPreviewAndApplyPreserveUnrelatedEquippedSlots" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.089"/>
+  <testcase name="idempotentEquipmentCommandsEnforceOwnershipSlotAndZeroEconomyImpact" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.146"/>
+  <testcase name="roomMigration9To10AndBackupV12RoundTripWithV11CompatAndAtomicRollback" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.301"/>
+  <testcase name="expeditionFocusRuleVersionPreservesLegacyPhasesAndEnforces300sOnNewPhases" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.079"/>
+  <testcase name="heraldryCatalogUnlocksValidationTransliterationAndPersistence" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.035"/>
+  <testcase name="elderFuthark24RunesPreserveOriginal12AndExplicitSealFallback" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.035"/>
+  <testcase name="forge12RecipesThreeStageUpgradesAndThreeLegendaryCollections" classname="br.com.ascend.aetheris.RunicHeritageTest" time="0.291"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

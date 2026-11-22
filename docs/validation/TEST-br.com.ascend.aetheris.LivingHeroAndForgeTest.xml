@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.LivingHeroAndForgeTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-21T09:30:30" hostname="runnervm0hi8g" time="2.659">
+<testsuite name="br.com.ascend.aetheris.LivingHeroAndForgeTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-11-22T05:40:34" hostname="runnervm0hi8g" time="1.82">
   <properties/>
-  <testcase name="roomMigration8To9PreservesExistingDataAndCreatesEquipmentLoadoutsTable" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.348"/>
-  <testcase name="livingPortraitCoversAllItemsAndAll10SpecializationsWithoutMutatingState" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.073"/>
-  <testcase name="bug162ArchivingCompletedPathTasksPreservesExpeditionCreditWhileReopeningOrDeletingRemovesIt" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.43"/>
-  <testcase name="bug161FocusExpeditionEnforces5MinMinimumWhilePreservingLegacyClaims" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.564"/>
-  <testcase name="studioGuardAndThreeLoadoutsSaveRenameApplyMissingItemsAndClear" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.537"/>
-  <testcase name="darianForgeRecipesStagesEconomyExclusivityAndConcurrentIdempotency" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.47"/>
-  <testcase name="backupV11RoundTripBackwardCompatibleV10AndAtomicRollbackOnCorruptLoadout" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.234"/>
+  <testcase name="roomMigration8To9PreservesExistingDataAndCreatesEquipmentLoadoutsTable" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.497"/>
+  <testcase name="livingPortraitCoversAllItemsAndAll10SpecializationsWithoutMutatingState" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.072"/>
+  <testcase name="bug162ArchivingCompletedPathTasksPreservesExpeditionCreditWhileReopeningOrDeletingRemovesIt" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.273"/>
+  <testcase name="bug161FocusExpeditionEnforces5MinMinimumWhilePreservingLegacyClaims" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.481"/>
+  <testcase name="studioGuardAndThreeLoadoutsSaveRenameApplyMissingItemsAndClear" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.206"/>
+  <testcase name="darianForgeRecipesStagesEconomyExclusivityAndConcurrentIdempotency" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.182"/>
+  <testcase name="backupV11RoundTripBackwardCompatibleV10AndAtomicRollbackOnCorruptLoadout" classname="br.com.ascend.aetheris.LivingHeroAndForgeTest" time="0.109"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

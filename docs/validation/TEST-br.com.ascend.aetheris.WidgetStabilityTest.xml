@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.WidgetStabilityTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-21T09:36:20" hostname="runnervm0hi8g" time="1.66">
+<testsuite name="br.com.ascend.aetheris.WidgetStabilityTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-22T05:46:08" hostname="runnervm0hi8g" time="1.461">
   <properties/>
-  <testcase name="oldPendingIntentRefusesPaymentAndExplainsTheNewDay" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.202"/>
-  <testcase name="changedSchedulingAndInactiveHabitsCannotBeCompletedByAnOldAction" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.277"/>
-  <testcase name="hostRefreshesAfterScheduleChangesCorrectionAndBackupRestore" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.919"/>
-  <testcase name="emptyCompactHasNoMeaninglessProgressAndFitsItsMinimumWidth" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.108"/>
-  <testcase name="failedWidgetLoadKeepsARecoverableJourneyActionWithoutStaleButtons" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.154"/>
+  <testcase name="oldPendingIntentRefusesPaymentAndExplainsTheNewDay" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.12"/>
+  <testcase name="changedSchedulingAndInactiveHabitsCannotBeCompletedByAnOldAction" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.219"/>
+  <testcase name="hostRefreshesAfterScheduleChangesCorrectionAndBackupRestore" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.904"/>
+  <testcase name="emptyCompactHasNoMeaninglessProgressAndFitsItsMinimumWidth" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.096"/>
+  <testcase name="failedWidgetLoadKeepsARecoverableJourneyActionWithoutStaleButtons" classname="br.com.ascend.aetheris.WidgetStabilityTest" time="0.122"/>
   <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[Intent = Intent { act=br.com.ascend.WIDGET_COMPLETE cmp=br.com.ascend.aetheris/.HabitWidget (has extras) }; Matching wrappers: [Wrapper[receiver=[br.com.ascend.aetheris.HabitWidget@74b05987], context=[android.app.ContextImpl@6b8e5f4e], intentFilter=[android.content.IntentFilter@67c2d043]]]
+  <system-err><![CDATA[Intent = Intent { act=br.com.ascend.WIDGET_COMPLETE cmp=br.com.ascend.aetheris/.HabitWidget (has extras) }; Matching wrappers: [Wrapper[receiver=[br.com.ascend.aetheris.HabitWidget@543596f9], context=[android.app.ContextImpl@2df16bbb], intentFilter=[android.content.IntentFilter@25770ade]]]
 System.logW: A resource was acquired at attached stack trace but never released. See java.io.Closeable for information on avoiding resource leaks.
 java.lang.Throwable: Explicit termination method 'close' not called
 	at dalvik.system.CloseGuard.$$robo$$dalvik_system_CloseGuard$open(CloseGuard.java:221)
-	at jdk.internal.reflect.GeneratedMethodAccessor3.invoke(Unknown Source)
+	at jdk.internal.reflect.GeneratedMethodAccessor43.invoke(Unknown Source)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
 	at java.base/java.lang.reflect.Method.invoke(Method.java:569)
-	at org.robolectric.shadows.ShadowCloseGuard$CloseGuardReflector$$Reflector15.open(Unknown Source)
+	at org.robolectric.shadows.ShadowCloseGuard$CloseGuardReflector$$Reflector83.open(Unknown Source)
 	at org.robolectric.shadows.ShadowCloseGuard.open(ShadowCloseGuard.java:38)
 	at dalvik.system.CloseGuard.open(CloseGuard.java)
 	at android.database.sqlite.SQLiteDatabase.$$robo$$android_database_sqlite_SQLiteDatabase$openInner(SQLiteDatabase.java:881)
@@ -37,8 +37,8 @@ java.lang.Throwable: Explicit termination method 'close' not called
 	at androidx.room.RoomDatabase.assertNotSuspendingTransaction(RoomDatabase.kt:451)
 	at androidx.room.RoomDatabase.query(RoomDatabase.kt:480)
 	at androidx.room.util.DBUtil.query(DBUtil.kt:75)
-	at br.com.ascend.aetheris.GameDao_Impl$294.call(GameDao_Impl.java:6938)
-	at br.com.ascend.aetheris.GameDao_Impl$294.call(GameDao_Impl.java:6934)
+	at br.com.ascend.aetheris.GameDao_Impl$284.call(GameDao_Impl.java:6378)
+	at br.com.ascend.aetheris.GameDao_Impl$284.call(GameDao_Impl.java:6374)
 	at androidx.room.CoroutinesRoom$Companion$execute$4$job$1.invokeSuspend(CoroutinesRoom.kt:87)
 	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
 	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:101)
