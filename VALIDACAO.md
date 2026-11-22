@@ -1,3 +1,20 @@
+# ASCEND 1.7.5.9 — Validação
+
+22/11/2026. Base `feat/ascend-1.7.5.1` (`56f55e4`), reformulação visual global **NORTHBORN Design System 4.0** consolidada na branch `feat/ascend-1.7.5.9`. GitHub Actions execução `44990148340` (commits `f0fecca` / `0fd0516`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL** em `11m55s`.
+
+- **Testes:** **228 testes aprovados** (`227` preservados da `1.7.5.1` + `1` suíte de **30 capturas reais** em `NorthbornUiReforgeTest`, além do ajuste domingo-seguro em `GrimoireUiTest` preservando todas as asserções), zero falhas, erros ou ignorados (`{'tests': 228, 'failures': 0, 'errors': 0, 'skipped': 0}`).
+- **Android Lint:** **0 erros e 43 avisos** no CI (`docs/validation/LINT-1.7.5.9.txt`; `0 erros e 42 avisos` localmente), sem novas supressões.
+- **APK oficial assinado:** [downloads/ASCEND-1.7.5.9.apk](downloads/ASCEND-1.7.5.9.apk?raw=true) com **29.047.938 bytes** (`27,70 MB`), `versionName='1.7.5.9'`, `versionCode='29'`, `package: name='br.com.ascend.aetheris'`, `minSdkVersion='26'`, `targetSdkVersion='35'`, sem permissão `INTERNET` (`POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED`, `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`).
+- **Checksum SHA-256 do APK:** `cdb016f8c7ae18ee3075df8b5240772b838e7762d2658483f6110aa428519440` (`sha256sum -c ASCEND-1.7.5.9.apk.sha256` em `downloads/`: **OK**).
+- **Assinatura e alinhamento:** `Zipalign OK`; APK Signature Scheme v2 válida com o certificado oficial preservado `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`.
+- **Persistência e retrocompatibilidade:** **Room v11** e **backup v13** preservados integralmente (zero alteração de esquema ou migração destrutiva, compatibilidade `v1`–`v13`), preservando todas as correções técnicas da `1.7.5.1` e toda a economia do RPG.
+- **Acervo pictórico e capturas:** 3 novos recursos WebP originais gerados (`2` pranchas conceituais em `docs/art/concepts/northborn-master-board-1759.webp` e `northborn-screen-direction.webp` fora do APK + `1` atlas `4×2` de 8 materiais escandinavos em `app/src/main/res/drawable-nodpi/northborn_materials_atlas.webp` com `47.402 bytes` / `46,3 KB` no APK). Limite de cota de `generate_image` (`gemini-3.1-flash-image`) após 3 gerações documentado com transparência em `docs/art/README.md` e `docs/VISUAL-1.7.5.9.md`. **30 capturas reais** geradas e inspecionadas em `docs/screenshots/1.7.5.9/`, incluindo Jornada, Navegação Inferior, Registro/Lista de Hábitos, Perfil, Mesa de Odin, Propostas, Agenda Diária/Mensal, Caminhos, Gantt, Kanban, Forja do Tempo, Modo Imersivo, Conselho dos Nove, Biblioteca de Mímir, Flashcards SM-2, Arsenal, Forja de Darian, Atlas, Exploração, Codex Rúnico, Configurações, Onboarding, Tema Claro Documental, Tema Escuro Mineral, Modo Minimalista, `320 dp`, Fonte `130%` e Diálogos/Formulários.
+- **Limites declarados:** validação executada em Robolectric (Native Graphics, API 28) e GitHub Actions; instalação física por cima da `1.7.5.1` em aparelho Android real, renderização em GPU física (eliminando o recorte em `x > 380 px` do software canvas do Robolectric em telas sem `Scaffold` com rolagem horizontal), áudio em alto-falante físico, notificações reais, IME físico e TalkBack permanecem pendentes de teste em aparelho físico.
+
+[APK](downloads/ASCEND-1.7.5.9.apk?raw=true) · [Build](docs/validation/BUILD-1.7.5.9.txt) · [Lint](docs/validation/LINT-1.7.5.9.txt) · [Certificado e manifesto](docs/validation/APK-1.7.5.9.txt) · [Auditoria Visual](docs/AUDITORIA-VISUAL-1.7.5.9.md) · [NORTHBORN DS 4.0](docs/NORTHBORN-DESIGN-SYSTEM-4.0.md) · [UI Reforge](docs/UI-REFORGE-1.7.5.9.md) · [Visual 1.7.5.9 (30 capturas)](docs/VISUAL-1.7.5.9.md) · [Diário 1.7.5.9](docs/DESENVOLVIMENTO-1.7.5.9.md)
+
+---
+
 # ASCEND 1.7.5.1 — Validação
 
 21/11/2026. Base `feat/ascend-1.7.5` (`0b07076`), etapa técnica concluída em `1ee9e24` e refinamento visual DS 3.2.1 consolidado na branch `feat/ascend-1.7.5.1`. GitHub Actions execução `44889532479` (commits `ff73e2f` / `2c989ab`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL**.
