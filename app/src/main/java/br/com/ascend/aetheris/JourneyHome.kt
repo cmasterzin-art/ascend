@@ -2,6 +2,8 @@ package br.com.ascend.aetheris
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
 import androidx.compose.material.icons.Icons
@@ -12,6 +14,8 @@ import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.*
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.platform.testTag
@@ -75,22 +79,14 @@ import java.util.Locale
      }
     }
     item {
-     Column {
-      RebirthRule()
-      FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-       listOf(
-        Triple("Mesa de Odin", Engraving.Council, onOdin),
-        Triple("Forja do Tempo", Engraving.Forge, onTimeForge),
-        Triple("Planejador", Engraving.Calendar, onPlanner)
-       ).forEach { (label, glyph, action) ->
-        TextButton(action, Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 4.dp)) {
-         EngravedIcon(glyph, nb.accentBronze, size = 21.dp)
-         Spacer(Modifier.width(4.dp))
-         Text(label, color = nb.inkPrimary, style = MaterialTheme.typography.labelMedium)
-        }
-       }
+     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+      listOf(
+       Triple("Mesa de Odin", Engraving.Council, onOdin),
+       Triple("Forja do Tempo", Engraving.Forge, onTimeForge),
+       Triple("Planejador", Engraving.Calendar, onPlanner)
+      ).forEach { (label, glyph, action) ->
+       JourneyShortcut(label, glyph, action, Modifier.weight(1f))
       }
-      RebirthRule()
      }
     }
     item {
@@ -126,6 +122,7 @@ import java.util.Locale
    item{RumosDoDiaPanel(rumos,s,vm,expanded=rumosExpanded||hasRumos&&rumosExpanded,hasRumos=hasRumos,dueCardsCount=dueCardsCount,onToggle={rumosExpanded=!rumosExpanded},onPaths=onPaths,onOpenPath=onOpenPath,onPlanner=onPlanner,onInbox=onInbox,onPending=onPending,onMimirReview=onMimirReview)}
    item{
     Column(verticalArrangement=Arrangement.spacedBy(10.dp)){
+     val addPlate = forgedPlate(NorthbornButtonRole.Primary, true)
      NorthbornEditorialHeader(
       title = "Seus próximos passos",
 
@@ -136,10 +133,12 @@ import java.util.Locale
          .size(48.dp)
          .clip(NorthbornShape.md)
          .background(nb.accentBronze.copy(alpha = if (nb.dark) 0.20f else 0.14f))
-         .border(1.dp, nb.accentBronze.copy(alpha = 0.65f), NorthbornShape.md)
+         .forgedFinish(addPlate)
+         .then(if (addPlate == null) Modifier.border(1.dp, nb.accentBronze, NorthbornShape.md) else Modifier)
          .semantics { contentDescription = "Criar hábito" }
        ){
-        EngravedIcon(Engraving.Add, if (nb.dark) nb.accentPaleGold else nb.accentBronze, size = 24.dp)
+        val ink = if (addPlate != null) Color(0xFFF3E6CE) else nb.accentPaleGold
+        EngravedIcon(Engraving.Add, ink, size = 24.dp, raised = addPlate != null)
        }
       }
      )
@@ -170,6 +169,36 @@ import java.util.Locale
   }
  detail?.let{h->HabitDetails(h,s,{detail=null},{detail=null;onEdit(h)},{r->detail=null;onProgress(h,r)})}
 }
+@Composable
+private fun JourneyShortcut(label: String, glyph: Engraving, onClick: () -> Unit, modifier: Modifier) {
+ val nb = LocalNorthborn.current
+ val shape = NorthbornShape.button
+ val plate = forgedPlate(NorthbornButtonRole.Secondary, true)
+ val interaction = remember { MutableInteractionSource() }
+ val focused by interaction.collectIsFocusedAsState()
+ val press = craftPress(interaction)
+ Column(
+  modifier.heightIn(min = 72.dp).clip(shape).background(nb.surfaceElevated)
+   .forgedFinish(plate, press).then(
+    when {
+     focused -> Modifier.border(2.dp, nb.accentPaleGold, shape)
+     plate == null -> Modifier.border(1.dp, nb.hairlineStrong, shape)
+     else -> Modifier
+    }
+   )
+   .clickable(interactionSource = interaction, indication = LocalIndication.current, role = Role.Button, onClick = onClick)
+   .padding(horizontal = 7.dp, vertical = 8.dp),
+  horizontalAlignment = Alignment.CenterHorizontally,
+  verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically)
+ ) {
+  EngravedIcon(glyph, nb.accentPaleGold, size = 22.dp, raised = plate != null && nb.dark)
+  Text(
+   label, color = nb.inkPrimary, style = MaterialTheme.typography.labelMedium,
+   textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis
+  )
+ }
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Composable fun RumosDoDiaPanel(r:RumosDoDia,s:GameState,vm:GameViewModel,expanded:Boolean,hasRumos:Boolean,dueCardsCount:Int=0,onToggle:()->Unit,onPaths:()->Unit,onOpenPath:(String)->Unit,onPlanner:()->Unit,onInbox:()->Unit,onPending:()->Unit,onMimirReview:()->Unit={}){
  val nb=LocalNorthborn.current

@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -261,28 +262,27 @@ internal fun RebirthAction(
     enabled: Boolean = true
 ) {
     val nb = LocalNorthborn.current
-    val shape = CutCornerShape(8.dp)
-    val textured = primary && enabled && !LocalAppearance.current.minimal
-    val base = if (textured) Color(0xFF3C2821) else nb.surfaceElevated
-    val ink = if (textured) Ivory else nb.inkPrimary
-    val edge = if (primary && enabled) nb.accentBronze else nb.hairlineStrong
+    val shape = NorthbornShape.button
+    val plate = forgedPlate(if (primary) NorthbornButtonRole.Primary else NorthbornButtonRole.Secondary, enabled)
+    val base = if (primary && enabled) Color(0xFF47372A) else nb.surfaceElevated
+    val ink = if (primary && enabled) Ivory else nb.inkPrimary
     val interaction = remember { MutableInteractionSource() }
+    val focused by interaction.collectIsFocusedAsState()
     val press = craftPress(interaction)
     val reduced = LocalAppearance.current.reducedMotion
+    val edge = if (primary && enabled) nb.accentBronze else nb.hairlineStrong
     Box(
-        modifier.heightIn(min = 48.dp).clip(shape).background(base).border(1.dp, edge, shape),
+        modifier.heightIn(min = 48.dp).clip(shape).background(base)
+            .forgedFinish(plate, press)
+            .then(
+                when {
+                    focused -> Modifier.border(2.dp, nb.accentPaleGold, shape)
+                    plate == null -> Modifier.border(1.dp, edge, shape)
+                    else -> Modifier
+                }
+            ),
         propagateMinConstraints = true
     ) {
-        if (textured) {
-            Image(
-                painterResource(R.drawable.oath_wood), null, Modifier.matchParentSize(),
-                contentScale = ContentScale.FillBounds, alpha = .73f
-            )
-            Box(Modifier.matchParentSize().background(Brush.horizontalGradient(
-                listOf(Color(0xFF9A4D34).copy(alpha = .42f), Color.Transparent)
-            )))
-        }
-        Box(Modifier.matchParentSize().graphicsLayer { alpha = .19f * press.value }.background(Color.Black))
         Button(
             onClick, Modifier.heightIn(min = 48.dp), enabled = enabled, shape = shape,
             interactionSource = interaction,
@@ -290,7 +290,7 @@ internal fun RebirthAction(
                 containerColor = Color.Transparent, contentColor = ink,
                 disabledContainerColor = Color.Transparent, disabledContentColor = nb.inkMuted
             ),
-            contentPadding = PaddingValues(horizontal = 13.dp, vertical = 11.dp)
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 11.dp)
         ) {
             Row(
                 Modifier.graphicsLayer {
@@ -301,10 +301,10 @@ internal fun RebirthAction(
                 if (glyph != null) {
                     val iconInk = when {
                         !enabled -> nb.inkMuted
-                        textured -> Embers
+                        primary && enabled -> Embers
                         else -> nb.accentBronze
                     }
-                    EngravedIcon(glyph, iconInk, size = 19.dp, raised = textured)
+                    EngravedIcon(glyph, iconInk, size = 19.dp, raised = plate != null)
                     Spacer(Modifier.width(8.dp))
                 }
                 Text(label, fontWeight = FontWeight.SemiBold)

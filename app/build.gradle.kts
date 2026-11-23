@@ -11,7 +11,7 @@ android {
         applicationId = "br.com.ascend.aetheris"
         minSdk = 26
         targetSdk = 35
-        versionCode = 35
+        versionCode = 36
         versionName = "1.7.5.9.2"
     }
     // Keep signing material outside the repository. Use the original key for an in-place update.

@@ -5,6 +5,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
@@ -175,7 +176,7 @@ fun AetherisTabs(values: List<String>, selected: Int, onSelect: (Int) -> Unit) {
         val minH = NorthbornSpace.touchMin
         val fSize = if (compact) 11.5.sp else 13.5.sp
         Column(Modifier.fillMaxWidth()) {
-            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+            FlowRow(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.Start) {
                 values.forEachIndexed { index, label ->
                     val active = index == selected
                     val light by animateFloatAsState(
@@ -183,9 +184,12 @@ fun AetherisTabs(values: List<String>, selected: Int, onSelect: (Int) -> Unit) {
                         tween(if (motion) 0 else AetherTokens.quick),
                         label = "nb_subtab"
                     )
+                    val plate = forgedPlate(NorthbornButtonRole.Contextual, active)
                     Box(
                         Modifier
                             .heightIn(min = minH)
+                            .clip(NorthbornShape.pill)
+                            .forgedFinish(plate, opacity = .58f)
                             .selectable(active, onClick = { onSelect(index) }, role = Role.Tab)
                             .drawBehind {
                                 if (light > 0f) {

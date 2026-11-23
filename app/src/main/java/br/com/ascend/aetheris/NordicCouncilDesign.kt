@@ -1,6 +1,8 @@
 package br.com.ascend.aetheris
 
 import androidx.compose.foundation.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.*
@@ -13,6 +15,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.*
@@ -215,27 +218,41 @@ fun NordicCompactAction(
         nb.dark -> nb.surfaceElevated
         else -> nb.surfaceBase
     }
-    val fg = if (!enabled) nb.inkTertiary else accent
+    val fg = if (enabled) nb.inkPrimary else nb.inkTertiary
+    val plate = forgedPlate(NorthbornButtonRole.Contextual, enabled)
+    val interaction = remember { MutableInteractionSource() }
+    val focused by interaction.collectIsFocusedAsState()
+    val press = craftPress(interaction)
+    val edge = when {
+        focused -> nb.accentPaleGold
+        enabled -> accent.copy(alpha = .48f)
+        else -> nb.hairline
+    }
     Row(
         modifier
-            .heightIn(min = 38.dp)
+            .heightIn(min = NorthbornSpace.touchMin)
+            .widthIn(min = NorthbornSpace.touchMin)
             .clip(shape)
             .background(bg)
-            .border(1.dp, if (enabled) accent.copy(alpha = if (nb.dark) 0.42f else 0.48f) else nb.hairline, shape)
-            .clickable(enabled = enabled, onClick = onClick)
+            .forgedFinish(plate, press, opacity = .74f)
+            .border(if (focused) 2.dp else 1.dp, edge, shape)
+            .clickable(
+                interactionSource = interaction, indication = LocalIndication.current,
+                enabled = enabled, role = Role.Button, onClick = onClick
+            )
             .padding(horizontal = 11.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+        horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
     ) {
         if (rune != null) {
-            FutharkRuneGlyph(rune = rune, color = fg, size = 12.dp)
+            FutharkRuneGlyph(rune = rune, color = if (enabled) accent else fg, size = 12.dp)
         }
         Text(
             text = text,
             color = fg,
             fontSize = 12.sp,
             fontWeight = FontWeight.Medium,
-            maxLines = 1,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
     }

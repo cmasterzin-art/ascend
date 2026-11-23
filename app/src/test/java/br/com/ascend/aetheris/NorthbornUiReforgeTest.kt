@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -11,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.unit.Density
@@ -219,6 +221,48 @@ class NorthbornUiReforgeTest {
         }
         compose.waitForIdle()
         Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+    }
+
+    @Composable
+    private fun controlSpecimens(onCommit: () -> Unit) {
+        Column(
+            Modifier.fillMaxWidth().padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text("Controles de Aetheris", style = MaterialTheme.typography.headlineMedium)
+            NorthbornButton("Registrar progresso", onCommit, modifier = Modifier.fillMaxWidth())
+            NorthbornButton("Editar registro", {}, NorthbornButtonRole.Secondary, Modifier.fillMaxWidth())
+            NorthbornButton("Receber recompensa", {}, NorthbornButtonRole.Ceremonial, Modifier.fillMaxWidth())
+            NorthbornButton("Confirmar ritual", {}, NorthbornButtonRole.Confirm, Modifier.fillMaxWidth())
+            NorthbornButton("Remover registro", {}, NorthbornButtonRole.Destructive, Modifier.fillMaxWidth())
+            NorthbornButton("Registrando…", onCommit, loading = true, modifier = Modifier.fillMaxWidth())
+            NorthbornButton("Indisponível", onCommit, enabled = false, modifier = Modifier.fillMaxWidth())
+            NordicCompactAction("Editar prazo", {}, rune = HistoricalFutharkRune.Tiwaz)
+            ChipRow(listOf("Agenda", "Mês"), 0, {})
+        }
+    }
+
+    @Test
+    fun forgedControlsKeepTheirActionsAndStatesAcrossAppearanceModes() {
+        var commits = 0
+        renderScreen { controlSpecimens { commits++ } }
+        compose.onNodeWithText("Registrar progresso").performClick()
+        compose.onNodeWithText("Registrando…").assertIsNotEnabled()
+            .assert(SemanticsMatcher.expectValue(SemanticsProperties.StateDescription, "Em andamento"))
+        compose.onNodeWithText("Indisponível").assertIsNotEnabled()
+        compose.onNodeWithText("Agenda").assertIsSelected()
+        compose.onNodeWithText("Mês").assertIsNotSelected()
+        compose.runOnIdle { assertTrue(commits == 1) }
+        shot("57-forja-controles-escuro")
+
+        renderScreen(dark = false, fontScale = 1.3f, widthDp = 320) { controlSpecimens {} }
+        compose.onNodeWithText("Receber recompensa").assertIsDisplayed()
+        compose.onNodeWithText("Editar prazo").assertHeightIsAtLeast(48.dp)
+        shot("58-forja-controles-claro-320-130")
+
+        renderScreen(minimal = true, fontScale = 1.3f, widthDp = 320) { controlSpecimens {} }
+        compose.onNodeWithText("Registrar progresso").assertIsEnabled()
+        shot("59-forja-controles-minimalista")
     }
 
     @Test

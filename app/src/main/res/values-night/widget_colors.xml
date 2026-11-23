@@ -2,11 +2,9 @@
     <color name="widget_base">#0E1114</color>
     <color name="widget_text">#ECE4D2</color>
     <color name="widget_accent">#C4A36A</color>
-    <color name="widget_button">#181C21</color>
     <color name="widget_muted">#98A2AD</color>
     <color name="widget_track">#13171B</color>
     <color name="widget_glacier">#8CA7C4</color>
-    <color name="widget_primary">#1F1B15</color>
     <color name="widget_action_text">#F0E8D6</color>
     <color name="widget_stroke">#3B424A</color>
 </resources>

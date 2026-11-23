@@ -10,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.*
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -22,6 +21,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -34,7 +34,7 @@ import androidx.compose.ui.unit.*
  * - Escala modular de espaçamento (4 / 8 / 12 / 16 / 24 / 32 dp) e chanfros arquitetônicos simétricos.
  * - 8 materiais autênticos em northborn_materials_atlas.webp aplicados com parcimônia (baixa opacidade, zero ruído).
  * - 5 papéis de superfície (Operacional, Documental, Estratégica, Cerimonial, Informativa) sem caixas redundantes.
- * - Sistema de Botões 4.0 em 7 níveis hierárquicos, sem adesivos rasterizados sobre Material.
+ * - Sete papéis de botão, com placas de forja renderizadas e estados nativos.
  * - Divisores geométricos nórdicos e iconografia arquitetônica de traço uniforme.
  */
 
@@ -391,11 +391,6 @@ fun NorthbornDivider(
     }
 }
 
-/**
- * Botão arquitetônico NORTHBORN 4.0 em 7 níveis hierárquicos.
- * Substitui adesivos rasterizados por placas chanfradas limpas com grão mineral discreto,
- * relevo arquitetônico e contraste AA/AAA nos temas escuro, claro e minimalista.
- */
 @Composable
 fun NorthbornButton(
     text: String,
@@ -419,12 +414,13 @@ fun NorthbornButton(
     val isCeremonial = effectiveRole == NorthbornButtonRole.Ceremonial
     val isTertiary = effectiveRole == NorthbornButtonRole.Tertiary
     val isContextual = effectiveRole == NorthbornButtonRole.Contextual
+    val plate = forgedPlate(effectiveRole, enabled)
 
     val containerBg = when {
         !enabled -> if (nb.dark) Color(0xFF1A1D22) else Color(0xFFE5DFD4)
         effectiveRole == NorthbornButtonRole.Primary -> if (nb.dark) Color(0xFF5D4B34) else Color(0xFF6B4F2A)
         effectiveRole == NorthbornButtonRole.Ceremonial -> if (nb.dark) Color(0xFF1F1C17) else Color(0xFF28221B)
-        effectiveRole == NorthbornButtonRole.Confirm -> if (nb.dark) Color(0xFF263E31) else Color(0xFF2B6448)
+        effectiveRole == NorthbornButtonRole.Confirm -> if (nb.dark) Color(0xFF263E31) else Color(0xFF26523C)
         effectiveRole == NorthbornButtonRole.Destructive -> if (nb.dark) Color(0xFF4B2622) else Color(0xFF963D32)
         effectiveRole == NorthbornButtonRole.Secondary -> if (nb.dark) Color(0xFF232830) else Color(0xFFE6DFD2)
         effectiveRole == NorthbornButtonRole.Contextual -> if (nb.dark) Color(0xFF1B1F26) else Color(0xFFEEE8DC)
@@ -452,20 +448,6 @@ fun NorthbornButton(
         effectiveRole == NorthbornButtonRole.Contextual -> nb.hairlineStrong.copy(alpha = 0.85f)
         else -> nb.hairlineStrong.copy(alpha = 0.65f)
     }
-    val material = when (effectiveRole) {
-        NorthbornButtonRole.Primary, NorthbornButtonRole.Ceremonial -> NorthbornMaterial.AgedBronze
-        NorthbornButtonRole.Secondary -> NorthbornMaterial.ForgedIron
-        NorthbornButtonRole.Confirm -> NorthbornMaterial.VolcanicSlate
-        else -> null
-    }
-    val grainAlpha = when {
-        appearance.minimal || !enabled || isTertiary || isContextual -> 0f
-        isCeremonial -> 0.14f
-        effectiveRole == NorthbornButtonRole.Primary -> 0.11f
-        effectiveRole == NorthbornButtonRole.Secondary -> if (nb.dark) 0.08f else 0.04f
-        else -> 0.06f
-    }
-    val atlas = if (material != null && grainAlpha > 0f) ImageBitmap.imageResource(R.drawable.northborn_materials_atlas) else null
     val shape = if (isContextual) NorthbornShape.pill else NorthbornShape.button
     val minHeight = NorthbornSpace.touchMin
 
@@ -479,7 +461,7 @@ fun NorthbornButton(
                 isCeremonial -> 22.dp
                 isContextual -> 12.dp
                 isTertiary -> 12.dp
-                else -> 16.dp
+                else -> 17.dp
             },
             vertical = if (isContextual) 8.dp else 11.dp
         ),
@@ -487,48 +469,29 @@ fun NorthbornButton(
             containerColor = Color.Transparent,
             contentColor = contentFg,
             disabledContainerColor = Color.Transparent,
-            disabledContentColor = nb.inkTertiary
+            disabledContentColor = if (loading && enabled) contentFg else nb.inkTertiary
         ),
         modifier = modifier
             .heightIn(min = minHeight)
             .clip(shape)
             .background(containerBg)
-            .drawWithCache {
-                onDrawBehind {
-                    if (atlas != null && material != null) {
-                        drawNorthbornMaterialGrain(atlas, material, grainAlpha)
-                    }
-                    val d = 1.dp.toPx()
-                    val w = size.width
-                    val h = size.height
-                    if (!isTertiary && enabled) {
-                        // Sutil brilho arquitetônico superior e sombra inferior (chanfro real sem neon)
-                        drawLine(Color.White.copy(alpha = if (nb.dark) 0.13f else 0.22f), Offset(6 * d, d), Offset(w - 6 * d, d), d)
-                        drawLine(Color.Black.copy(alpha = if (nb.dark) 0.28f else 0.12f), Offset(6 * d, h - d), Offset(w - 6 * d, h - d), d)
-                    }
-                    if (isCeremonial && enabled && !appearance.minimal) {
-                        // Filete interno bronze + 2 pequenos losangos nas extremidades
-                        drawRect(nb.accentBronze.copy(alpha = 0.28f), topLeft = Offset(3.5f * d, 3.5f * d), size = Size(w - 7 * d, h - 7 * d), style = Stroke(0.8f * d))
-                        listOf(11f * d, w - 11f * d).forEach { rx ->
-                            val dm = Path().apply {
-                                moveTo(rx, h * 0.5f - 2.6f * d); lineTo(rx + 2.6f * d, h * 0.5f); lineTo(rx, h * 0.5f + 2.6f * d); lineTo(rx - 2.6f * d, h * 0.5f); close()
-                            }
-                            drawPath(dm, nb.accentPaleGold.copy(alpha = 0.78f))
-                        }
-                    }
-                    if (selected && enabled) {
-                        drawLine(nb.accentBronze, Offset(12 * d, h - 2 * d), Offset(w - 12 * d, h - 2 * d), 1.8f * d)
-                    }
-                    if (enabled && pressure.value > 0f) {
-                        drawRect(Color.Black.copy(alpha = .17f * pressure.value))
-                    }
-                }
+            .forgedFinish(plate, pressure)
+            .then(
+                if (plate == null || focused || selected) {
+                    Modifier.border(if (focused || selected) 2.dp else 1.dp, borderColor, shape)
+                } else Modifier
+            )
+            .semantics {
+                if (selected) this.selected = true
+                if (loading) stateDescription = "Em andamento"
             }
-            .border(if (focused || selected || isCeremonial) 1.25.dp else 1.dp, borderColor, shape)
-            .semantics { if (selected) this.selected = true }
     ) {
         if (loading) {
-            CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = contentFg)
+            if (appearance.reducedMotion) {
+                Text("…", color = contentFg, fontWeight = FontWeight.Bold)
+            } else {
+                CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = contentFg)
+            }
             Spacer(Modifier.width(8.dp))
         } else if (leadingIcon != null) {
             NorthbornIcon(leadingIcon, contentFg, Modifier.graphicsLayer {

@@ -3,6 +3,8 @@ package br.com.ascend.aetheris
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -286,19 +288,16 @@ fun Empty(text: String) {
 fun ChipRow(values: List<String>, selected: Int, onSelect: (Int) -> Unit, scrollable: Boolean = true) {
     val nb = LocalNorthborn.current
     Row(
-        if (scrollable) Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()) else Modifier,
+        (if (scrollable) Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()) else Modifier)
+            .selectableGroup(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         values.forEachIndexed { i, v ->
             val isSel = selected == i
             val shape = NorthbornShape.pill
-            val bg = when {
-                isSel && nb.dark -> nb.accentBronze.copy(alpha = 0.18f)
-                isSel -> nb.accentBronze.copy(alpha = 0.14f)
-                nb.dark -> nb.surfaceBase
-                else -> nb.surfaceBase
-            }
+            val plate = forgedPlate(NorthbornButtonRole.Contextual, isSel)
+            val bg = if (isSel) nb.accentBronze.copy(alpha = .16f) else nb.surfaceBase
             val border = if (isSel) nb.accentBronze else nb.hairlineStrong.copy(alpha = 0.72f)
             val fg = if (isSel) (if (nb.dark) nb.accentPaleGold else nb.accentBronze) else nb.inkSecondary
             Box(
@@ -306,12 +305,9 @@ fun ChipRow(values: List<String>, selected: Int, onSelect: (Int) -> Unit, scroll
                     .heightIn(min = NorthbornSpace.touchMin)
                     .clip(shape)
                     .background(bg)
+                    .forgedFinish(plate, opacity = .48f)
                     .border(if (isSel) 1.2.dp else 1.dp, border, shape)
-                    .semantics(mergeDescendants = true) {
-                        this.selected = isSel
-                        role = Role.Tab
-                    }
-                    .clickable { onSelect(i) }
+                    .selectable(isSel, role = Role.Tab, onClick = { onSelect(i) })
                     .padding(horizontal = 13.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
