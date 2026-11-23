@@ -69,11 +69,10 @@ fun PlannerScreen(
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 AetherisTabs(listOf("Dia", "Semana", "Mês"), mode, { mode = it })
-                // Faixa única de atalhos rápidos (substituindo 2 ShortcutStrips empilhadas)
-                Row(
-                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                FlowRow(
+                    Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalArrangement = Arrangement.spacedBy(5.dp)
                 ) {
                     listOf(
                         Triple("Mesa de Odin", NorthbornGlyph.Odin, onOpenOdin),
@@ -83,7 +82,7 @@ fun PlannerScreen(
                     ).forEach { (lbl, glyph, act) ->
                         Row(
                             Modifier
-                                .heightIn(min = 36.dp)
+                                .heightIn(min = NorthbornSpace.touchMin)
                                 .clip(NorthbornShape.pill)
                                 .background(nb.surfaceBase)
                                 .border(1.dp, nb.hairline, NorthbornShape.pill)

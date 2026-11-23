@@ -673,6 +673,7 @@ class NorthbornUiReforgeTest {
         }
         compose.onNodeWithText("Planejador Semanal").assertIsDisplayed()
         compose.onNodeWithText("Dia").performClick()
+        compose.onNodeWithText("Pendências (", substring = true).assertIsDisplayed()
         shot("50-planejador-claro-320")
         renderScreen { AnalysisScreen(s0) }
         shot("51-analises")
