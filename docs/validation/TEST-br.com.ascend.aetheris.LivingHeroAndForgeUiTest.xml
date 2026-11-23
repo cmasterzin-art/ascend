@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.LivingHeroAndForgeUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-22T05:40:37" hostname="runnervm0hi8g" time="55.13">
+<testsuite name="br.com.ascend.aetheris.LivingHeroAndForgeUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-23T22:03:22" hostname="runnervm0hi8g" time="54.573">
   <properties/>
-  <testcase name="captureJourneyHeroArsenalStudioAndLoadouts" classname="br.com.ascend.aetheris.LivingHeroAndForgeUiTest" time="26.136"/>
-  <testcase name="captureLivingPortraitBaseEquippedAndZoom" classname="br.com.ascend.aetheris.LivingHeroAndForgeUiTest" time="13.417"/>
-  <testcase name="captureVillageForgeMasterLightThemeAndNarrow320" classname="br.com.ascend.aetheris.LivingHeroAndForgeUiTest" time="15.576"/>
+  <testcase name="captureJourneyHeroArsenalStudioAndLoadouts" classname="br.com.ascend.aetheris.LivingHeroAndForgeUiTest" time="25.746"/>
+  <testcase name="captureLivingPortraitBaseEquippedAndZoom" classname="br.com.ascend.aetheris.LivingHeroAndForgeUiTest" time="13.231"/>
+  <testcase name="captureVillageForgeMasterLightThemeAndNarrow320" classname="br.com.ascend.aetheris.LivingHeroAndForgeUiTest" time="15.596"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

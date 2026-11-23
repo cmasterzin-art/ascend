@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.RpgTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-22T05:44:36" hostname="runnervm0hi8g" time="0.581">
+<testsuite name="br.com.ascend.aetheris.RpgTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-23T22:07:29" hostname="runnervm0hi8g" time="0.584">
   <properties/>
   <testcase name="oneItemPerSlotAndUndoCannotFarmSkillPoints" classname="br.com.ascend.aetheris.RpgTest" time="0.174"/>
-  <testcase name="versionTwoBackupPreservesProgressAndOldEquipment" classname="br.com.ascend.aetheris.RpgTest" time="0.11"/>
-  <testcase name="lockedSkillAndDirectPurchaseCannotBypassProgression" classname="br.com.ascend.aetheris.RpgTest" time="0.062"/>
-  <testcase name="restoredVillageChangesDialogueAndSurvivesReload" classname="br.com.ascend.aetheris.RpgTest" time="0.105"/>
-  <testcase name="skillCostsOnePointAndGrantsPersistentEquippableCosmetic" classname="br.com.ascend.aetheris.RpgTest" time="0.129"/>
+  <testcase name="versionTwoBackupPreservesProgressAndOldEquipment" classname="br.com.ascend.aetheris.RpgTest" time="0.178"/>
+  <testcase name="lockedSkillAndDirectPurchaseCannotBypassProgression" classname="br.com.ascend.aetheris.RpgTest" time="0.07"/>
+  <testcase name="restoredVillageChangesDialogueAndSurvivesReload" classname="br.com.ascend.aetheris.RpgTest" time="0.081"/>
+  <testcase name="skillCostsOnePointAndGrantsPersistentEquippableCosmetic" classname="br.com.ascend.aetheris.RpgTest" time="0.081"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>

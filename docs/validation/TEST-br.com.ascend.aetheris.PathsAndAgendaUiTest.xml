@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="br.com.ascend.aetheris.PathsAndAgendaUiTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-22T05:43:09" hostname="runnervm0hi8g" time="54.292">
+<testsuite name="br.com.ascend.aetheris.PathsAndAgendaUiTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-11-23T22:06:01" hostname="runnervm0hi8g" time="54.861">
   <properties/>
-  <testcase name="agendaModesInboxTriageAndPendingCenterWorkEndToEnd" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="12.937"/>
-  <testcase name="pathsStagesTasksSubtasksFocusAndMemoryHallFlowWorks" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="9.666"/>
-  <testcase name="pathFocusAt360DpShowsBothControls" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="7.295"/>
-  <testcase name="habitFocusControlsAreVisibleInitiallyAndSurviveActivityRecreation" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="8.952"/>
-  <testcase name="narrow320DpLightThemeLargeTextAndMinimalModeStayReadable" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="6.987"/>
-  <testcase name="taskFocusAt320DpWithLargeTextCanBeRegistered" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="8.455"/>
+  <testcase name="agendaModesInboxTriageAndPendingCenterWorkEndToEnd" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="13.055"/>
+  <testcase name="pathsStagesTasksSubtasksFocusAndMemoryHallFlowWorks" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="9.869"/>
+  <testcase name="pathFocusAt360DpShowsBothControls" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="7.345"/>
+  <testcase name="habitFocusControlsAreVisibleInitiallyAndSurviveActivityRecreation" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="9.066"/>
+  <testcase name="narrow320DpLightThemeLargeTextAndMinimalModeStayReadable" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="7.032"/>
+  <testcase name="taskFocusAt320DpWithLargeTextCanBeRegistered" classname="br.com.ascend.aetheris.PathsAndAgendaUiTest" time="8.494"/>
   <system-out><![CDATA[]]></system-out>
   <system-err><![CDATA[]]></system-err>
 </testsuite>
