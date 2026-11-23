@@ -10,6 +10,8 @@ import androidx.compose.ui.*
 import androidx.compose.ui.draw.*
 import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
@@ -19,24 +21,18 @@ import androidx.compose.ui.unit.*
 
 val mainRoutes = listOf("journey", "habits", "missions", "world", "character")
 val mainNames = listOf("Jornada", "Hábitos", "Missões", "Mundo", "Herói")
-private val mainNorthbornGlyphs = listOf(
-    NorthbornGlyph.Journey,
-    NorthbornGlyph.Habits,
-    NorthbornGlyph.Missions,
-    NorthbornGlyph.World,
-    NorthbornGlyph.Hero
+private val routeEngravings = listOf(
+    Engraving.Ship, Engraving.Tally, Engraving.Banner, Engraving.Compass, Engraving.Shield
 )
 
 /** Compatibilidade com chamadas existentes que usam NavigationSigil. */
 @Composable
 fun NavigationSigil(index: Int, color: Color, modifier: Modifier = Modifier) {
-    NorthbornIcon(mainNorthbornGlyphs[index.mod(5)], color, modifier, size = 24.dp)
+    EngravedIcon(routeEngravings[index.mod(routeEngravings.size)], color, modifier)
 }
 
 /**
- * Navegação Inferior NORTHBORN 4.0:
- * Assinatura arquitetônica em basalto/linho com filete superior preciso, 5 ícones escandinavos
- * de traço uniforme, indicador superior em bronze forjado e ergonomia confortável para uma mão.
+ * Five engraved destinations with a forged clasp for the selected one.
  */
 @Composable
 fun AetherisNavigation(route: String, onSelect: (String) -> Unit) {
@@ -56,10 +52,9 @@ fun AetherisNavigation(route: String, onSelect: (String) -> Unit) {
     }
     val nb = LocalNorthborn.current
     val motion = LocalAppearance.current.reducedMotion
-    val pilot = route == "journey" || route.startsWith("odin") || route.startsWith("mimir")
-    val carved = pilot && !LocalAppearance.current.minimal
-    val activeInk = if (carved && nb.dark) Color(0xFFE4B582) else nb.accentBronze
-    val barBg = if (carved && nb.dark) Color(0xFF1E1717) else if (nb.dark) Color(0xFF101215) else nb.surfaceBase
+    val carved = !LocalAppearance.current.minimal
+    val activeInk = if (nb.dark) nb.accentPaleGold else nb.accentBronze
+    val barBg = if (nb.dark) Color(0xFF121317) else nb.surfaceBase
 
     Column(
         Modifier
@@ -67,11 +62,7 @@ fun AetherisNavigation(route: String, onSelect: (String) -> Unit) {
             .background(barBg)
             .navigationBarsPadding()
     ) {
-        if (carved) {
-            RebirthBraid()
-        } else {
-            Box(Modifier.fillMaxWidth().height(1.dp).background(nb.hairlineStrong.copy(alpha = 0.72f)))
-        }
+        EngravedDivider(EngravedRail.Voyage)
         Row(
             Modifier
                 .fillMaxWidth()
@@ -86,7 +77,7 @@ fun AetherisNavigation(route: String, onSelect: (String) -> Unit) {
                     label = "nb_nav_tab"
                 )
                 val iconColor = if (active) activeInk else nb.inkSecondary
-                val labelColor = if (active) (if (pilot) nb.inkPrimary else if (nb.dark) nb.accentPaleGold else nb.accentBronze) else nb.inkSecondary
+                val labelColor = if (active) nb.inkPrimary else nb.inkSecondary
 
                 Box(
                     Modifier
@@ -100,29 +91,33 @@ fun AetherisNavigation(route: String, onSelect: (String) -> Unit) {
                                 val d = 1.dp.toPx()
                                 val barW = (size.width * 0.42f * progress).coerceAtLeast(18 * d)
                                 val x0 = (size.width - barW) * 0.5f
-                                if (pilot) drawRect(activeInk.copy(alpha = .10f * progress))
+                                drawRect(activeInk.copy(alpha = .08f * progress))
                                 drawRect(
                                     color = activeInk.copy(alpha = progress),
-                                    topLeft = Offset(x0, 0f),
-                                    size = Size(barW, 2.2f * d)
+                                    topLeft = Offset(x0, size.height - 2 * d),
+                                    size = Size(barW, 2 * d)
                                 )
                             }
                         },
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
-                        Modifier.fillMaxWidth().padding(top = 10.dp, bottom = 9.dp),
+                        Modifier.fillMaxWidth().padding(top = 5.dp, bottom = 7.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(5.dp)
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
-                        Box(Modifier.size(26.dp), contentAlignment = Alignment.Center) {
-                            if (active && carved) {
-                                RebirthBoss(Modifier.matchParentSize()) {
-                                    NorthbornIcon(mainNorthbornGlyphs[i], Color(0xFFE4B582), size = 16.dp, filled = true)
-                                }
-                            } else {
-                                NorthbornIcon(mainNorthbornGlyphs[i], iconColor, size = 22.dp, filled = active)
+                        Box(Modifier.size(49.dp, 34.dp), contentAlignment = Alignment.Center) {
+                            if (carved && progress > 0f) {
+                                Image(
+                                    painterResource(R.drawable.engraved_clasp), null,
+                                    Modifier.matchParentSize(), contentScale = ContentScale.Fit, alpha = progress
+                                )
                             }
+                            EngravedIcon(
+                                routeEngravings[i],
+                                if (active && carved) Color(0xFFF1C68D) else iconColor,
+                                size = 23.dp, raised = active && carved
+                            )
                         }
                         Text(
                             text = mainNames[i],

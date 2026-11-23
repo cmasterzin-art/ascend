@@ -149,7 +149,7 @@ fun CompactHero(s: GameState, day: String, onPortrait: () -> Unit) {
             maxWidth < 310.dp -> 75.dp
             else -> 93.dp
         }
-        RebirthScene(R.drawable.oath_shore, 248.dp) { ink ->
+        RebirthScene(R.drawable.engraved_fjord, 250.dp) { ink ->
             Column(
                 Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(11.dp)
@@ -199,7 +199,7 @@ fun DayLedger(done: Int, total: Int, rested: Boolean, relaxed: Boolean, dial: Dp
     val nb = LocalNorthborn.current
     val pending = (total - done).coerceAtLeast(0)
     Column {
-        RebirthBraid()
+        EngravedDivider(EngravedRail.Voyage)
         RebirthTimber {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 7.dp),

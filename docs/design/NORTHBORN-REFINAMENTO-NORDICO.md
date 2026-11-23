@@ -17,7 +17,7 @@ Segundo protótipo de Jornada, Mesa de Odin e Biblioteca de Mímir, sobre `d21d5
 
 As duas novas gerações são originais. Uma contém o fiorde. Outra reúne as duas cenas e os materiais, recortados em cinco WebPs. Os seis recursos somam 199.674 bytes. Os entrelaçados evocam a tradição escandinava de entalhe e a curva animal de Urnes. Os selos usam Raidho, Tiwaz e Ansuz do conjunto Elder Futhark já renderizado pelo aplicativo. A associação das runas a funções do app é ficcional. Os manuscritos de Mímir remetem à tradição islandesa medieval posterior. [Referências de cultura material consultadas](NORTHBORN-ART-DIRECTION.md)
 
-[Fiorde](../../app/src/main/res/drawable-nodpi/rebirth_fjord.webp) · [Salão do conselho](../../app/src/main/res/drawable-nodpi/rebirth_chart.webp) · [Manuscritos](../../app/src/main/res/drawable-nodpi/rebirth_folio.webp) · [Friso entalhado](../../app/src/main/res/drawable-nodpi/rebirth_carved_rail.webp) · [Velino](../../app/src/main/res/drawable-nodpi/rebirth_vellum.webp)
+[Fiorde](art/anteriores/rebirth_fjord.webp) · [Salão do conselho](art/anteriores/rebirth_chart.webp) · [Manuscritos](art/anteriores/rebirth_folio.webp) · [Friso entalhado](art/anteriores/rebirth_carved_rail.webp) · [Velino](art/anteriores/rebirth_vellum.webp)
 
 ## Validação visual
 

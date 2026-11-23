@@ -154,18 +154,28 @@ fun Panel(modifier: Modifier = Modifier, accent: Color = LocalNorthborn.current.
 
 @Composable
 fun Page(content: @Composable ColumnScope.() -> Unit) {
-    val nb = LocalNorthborn.current
-    Box(Modifier.fillMaxSize().background(nb.canvas)) {
-        Column(
-            Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = NorthbornSpace.page)
-                .padding(top = NorthbornSpace.md, bottom = NorthbornSpace.xl),
-            verticalArrangement = Arrangement.spacedBy(NorthbornSpace.lg),
-            content = content
-        )
+    Box(Modifier.fillMaxSize().background(LocalNorthborn.current.canvas)) {
+        PageColumn(content)
     }
+}
+
+@Composable
+internal fun EngravedPage(content: @Composable ColumnScope.() -> Unit) {
+    EngravedBackdrop {
+        PageColumn(content)
+    }
+}
+
+@Composable
+private fun PageColumn(content: @Composable ColumnScope.() -> Unit) {
+    Column(
+        Modifier.fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = NorthbornSpace.page)
+            .padding(top = NorthbornSpace.md, bottom = NorthbornSpace.xl),
+        verticalArrangement = Arrangement.spacedBy(NorthbornSpace.lg),
+        content = content
+    )
 }
 
 @Composable

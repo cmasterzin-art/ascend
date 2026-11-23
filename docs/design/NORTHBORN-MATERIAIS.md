@@ -17,7 +17,7 @@ Terceiro protótipo de Jornada, Mesa de Odin e Biblioteca de Mímir. Base `a2c99
 
 Duas gerações originais renderizaram a costa e os materiais. O app incorpora cinco recortes WebP. A construção naval e o entrelaçamento animal remetem à cultura material nórdica. O mostrador de progresso, a aplicação das runas e a ornamentação são interpretações ficcionais. O velino costurado remete a tradições manuscritas posteriores. [Referências históricas usadas no piloto](NORTHBORN-ART-DIRECTION.md)
 
-[Navio e costa](../../app/src/main/res/drawable-nodpi/oath_shore.webp) · [Escudo](../../app/src/main/res/drawable-nodpi/oath_shield.webp) · [Madeira](../../app/src/main/res/drawable-nodpi/oath_wood.webp) · [Lã](../../app/src/main/res/drawable-nodpi/oath_braid.webp) · [Velino](../../app/src/main/res/drawable-nodpi/oath_manuscript.webp)
+[Navio e costa](art/anteriores/oath_shore.webp) · [Escudo](../../app/src/main/res/drawable-nodpi/oath_shield.webp) · [Madeira](../../app/src/main/res/drawable-nodpi/oath_wood.webp) · [Lã](art/anteriores/oath_braid.webp) · [Velino](../../app/src/main/res/drawable-nodpi/oath_manuscript.webp)
 
 ## Capturas
 

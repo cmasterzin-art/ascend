@@ -93,70 +93,71 @@ fun OdinCouncilScreen(
 
     val tabs = listOf("Salão", "Proposta", "Capacidade", "Replanejar", "Eisenhower", "Horários")
 
-    val nb = LocalNorthborn.current
-    LazyColumn(
-        Modifier.fillMaxSize().background(nb.canvas).testTag("odin_council_list"),
-        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            if (tab == 0) RebirthMasthead(
-                "Mesa de Odin", "Estratégia ativa · ${activeStrategy.name}",
-                R.drawable.rebirth_chart, HistoricalFutharkRune.Tiwaz
-            )
-            RebirthIndex(tabs, tab) { tab = it }
-        }
+    EngravedBackdrop {
+        LazyColumn(
+            Modifier.fillMaxSize().testTag("odin_council_list"),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                if (tab == 0) RebirthMasthead(
+                    "Mesa de Odin", "Estratégia ativa · ${activeStrategy.name}",
+                    R.drawable.engraved_council, HistoricalFutharkRune.Tiwaz, EngravedRail.Council
+                )
+                RebirthIndex(tabs, tab) { tab = it }
+            }
 
-        when (tab) {
-            0 -> item {
-                OdinHallOverviewSection(
-                    s = s,
-                    vm = vm,
-                    todayDate = todayDate,
-                    config = config,
-                    activeStrategy = activeStrategy,
-                    weekCapacity = weekCapacity,
-                    replanItems = replanItems,
-                    onGoTab = { tab = it },
-                    onOpenAgenda = onOpenAgenda,
-                    onOpenPaths = onOpenPaths,
-                    onOpenCouncilNine = onOpenCouncilNine,
-                    onOpenTimeForge = onOpenTimeForge,
-                    onOpenMimir = onOpenMimir
-                )
-            }
-            1 -> item {
-                OdinProposalSection(
-                    s = s,
-                    vm = vm,
-                    proposal = proposal,
-                    compareProposal = compareProposal,
-                    proposalDays = proposalDays,
-                    onProposalDays = { proposalDays = it },
-                    previewStrategyId = previewStrategyId,
-                    onPreviewStrategy = { previewStrategyId = it },
-                    compareStrategyId = compareStrategyId,
-                    onCompareStrategy = { compareStrategyId = it },
-                    includeHabits = includeHabits,
-                    onIncludeHabits = { includeHabits = it },
-                    includeMimir = includeMimir,
-                    onIncludeMimir = { includeMimir = it },
-                    undoReport = undoReport,
-                    onUndoReport = { undoReport = it },
-                    onGoAvailability = { tab = 5 }
-                )
-            }
-            2 -> item {
-                CapacitySimulatorSection(s = s, todayDate = todayDate, onConfigureAvailability = { tab = 5 })
-            }
-            3 -> item {
-                AdaptiveReplanSection(s = s, vm = vm, items = replanItems)
-            }
-            4 -> item {
-                EisenhowerMatrixSection(s = s, vm = vm)
-            }
-            5 -> item {
-                AvailabilityAndConfigSection(s = s, vm = vm, config = config)
+            when (tab) {
+                0 -> item {
+                    OdinHallOverviewSection(
+                        s = s,
+                        vm = vm,
+                        todayDate = todayDate,
+                        config = config,
+                        activeStrategy = activeStrategy,
+                        weekCapacity = weekCapacity,
+                        replanItems = replanItems,
+                        onGoTab = { tab = it },
+                        onOpenAgenda = onOpenAgenda,
+                        onOpenPaths = onOpenPaths,
+                        onOpenCouncilNine = onOpenCouncilNine,
+                        onOpenTimeForge = onOpenTimeForge,
+                        onOpenMimir = onOpenMimir
+                    )
+                }
+                1 -> item {
+                    OdinProposalSection(
+                        s = s,
+                        vm = vm,
+                        proposal = proposal,
+                        compareProposal = compareProposal,
+                        proposalDays = proposalDays,
+                        onProposalDays = { proposalDays = it },
+                        previewStrategyId = previewStrategyId,
+                        onPreviewStrategy = { previewStrategyId = it },
+                        compareStrategyId = compareStrategyId,
+                        onCompareStrategy = { compareStrategyId = it },
+                        includeHabits = includeHabits,
+                        onIncludeHabits = { includeHabits = it },
+                        includeMimir = includeMimir,
+                        onIncludeMimir = { includeMimir = it },
+                        undoReport = undoReport,
+                        onUndoReport = { undoReport = it },
+                        onGoAvailability = { tab = 5 }
+                    )
+                }
+                2 -> item {
+                    CapacitySimulatorSection(s = s, todayDate = todayDate, onConfigureAvailability = { tab = 5 })
+                }
+                3 -> item {
+                    AdaptiveReplanSection(s = s, vm = vm, items = replanItems)
+                }
+                4 -> item {
+                    EisenhowerMatrixSection(s = s, vm = vm)
+                }
+                5 -> item {
+                    AvailabilityAndConfigSection(s = s, vm = vm, config = config)
+                }
             }
         }
     }
@@ -216,7 +217,7 @@ private fun OdinHallOverviewSection(
                             "${todayEvents.size} ${if (todayEvents.size == 1) "evento" else "eventos"}", color = nb.inkSecondary, fontSize = 13.sp)
                         Text("${replanItems.size} para replanejar · ${dueMimir.size} ${if (dueMimir.size == 1) "revisão" else "revisões"}", color = nb.inkSecondary, fontSize = 13.sp)
                     }
-                    RebirthAction("Gerar plano", { onGoTab(1) }, Modifier.fillMaxWidth(), glyph = NorthbornGlyph.Odin)
+                    RebirthAction("Gerar plano", { onGoTab(1) }, Modifier.fillMaxWidth(), glyph = Engraving.Council)
                 }
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {

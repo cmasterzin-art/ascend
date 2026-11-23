@@ -37,35 +37,9 @@ private val Embers = Color(0xFFE4B582)
 private val Ivory = Color(0xFFF7EADB)
 private val Ash = Color(0xFFD3C7B9)
 
-/** Original illustrated settings and materials for the three Northborn pilot screens. */
-@Composable
-internal fun RebirthFrieze(modifier: Modifier = Modifier) {
-    if (LocalAppearance.current.minimal) {
-        RebirthRule(modifier)
-    } else {
-        Image(
-            painterResource(R.drawable.rebirth_carved_rail), null,
-            modifier.fillMaxWidth().height(15.dp),
-            contentScale = ContentScale.Crop
-        )
-    }
-}
-
 @Composable
 internal fun RebirthRule(modifier: Modifier = Modifier) {
     HorizontalDivider(modifier, color = LocalNorthborn.current.hairlineStrong.copy(alpha = .72f))
-}
-
-@Composable
-internal fun RebirthBraid() {
-    if (LocalAppearance.current.minimal) {
-        RebirthRule()
-    } else {
-        Image(
-            painterResource(R.drawable.oath_braid), null,
-            Modifier.fillMaxWidth().height(10.dp), contentScale = ContentScale.FillBounds
-        )
-    }
 }
 
 @Composable
@@ -198,7 +172,9 @@ internal fun RebirthScene(
 }
 
 @Composable
-internal fun RebirthMasthead(title: String, subtitle: String, art: Int, rune: HistoricalFutharkRune) {
+internal fun RebirthMasthead(
+    title: String, subtitle: String, art: Int, rune: HistoricalFutharkRune, rail: EngravedRail
+) {
     Column {
         RebirthScene(art, 185.dp) { ink ->
             Column(
@@ -210,7 +186,7 @@ internal fun RebirthMasthead(title: String, subtitle: String, art: Int, rune: Hi
                 Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = ink.body)
             }
         }
-        RebirthFrieze()
+        EngravedDivider(rail)
     }
 }
 
@@ -220,7 +196,7 @@ internal fun RebirthAction(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     primary: Boolean = true,
-    glyph: NorthbornGlyph? = null,
+    glyph: Engraving? = null,
     enabled: Boolean = true
 ) {
     val nb = LocalNorthborn.current
@@ -251,7 +227,7 @@ internal fun RebirthAction(
             contentPadding = PaddingValues(horizontal = 13.dp, vertical = 11.dp)
         ) {
             if (glyph != null) {
-                NorthbornIcon(glyph, if (textured) Embers else edge, size = 19.dp)
+                EngravedIcon(glyph, if (textured) Embers else edge, size = 19.dp, raised = textured)
                 Spacer(Modifier.width(8.dp))
             }
             Text(label, fontWeight = FontWeight.SemiBold)

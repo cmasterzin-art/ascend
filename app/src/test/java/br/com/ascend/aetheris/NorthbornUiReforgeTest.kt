@@ -8,6 +8,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.*
@@ -582,13 +583,54 @@ class NorthbornUiReforgeTest {
         allDestinations.performClick()
         compose.onNodeWithText("Conselho 9").assertIsDisplayed()
 
+        renderScreen(dark = true, widthDp = 320, fontScale = 1.3f) {
+            var route by remember { mutableStateOf("mimir") }
+            Scaffold(bottomBar = { AetherisNavigation(route) { route = it } }) { pad ->
+                Box(Modifier.padding(pad)) { MimirLibraryScreen(s0, vm, {}, {}, {}, {}) }
+            }
+        }
+        compose.onNodeWithTag("nav:world").assertIsSelected()
+        shot("40-navegacao-320")
+        compose.onNodeWithTag("nav:missions").performClick().assertIsSelected()
+
+        renderScreen {
+            val symbols = listOf(
+                "Jornada" to Engraving.Ship, "Hábitos" to Engraving.Tally, "Missões" to Engraving.Banner,
+                "Mundo" to Engraving.Compass, "Herói" to Engraving.Shield, "Odin" to Engraving.Council,
+                "Forja" to Engraving.Forge, "Planejador" to Engraving.Calendar, "Mímir" to Engraving.Folio,
+                "Caminhos" to Engraving.Cairns, "Foco" to Engraving.Focus, "Análises" to Engraving.Analysis,
+                "Criar" to Engraving.Add
+            )
+            EngravedPage {
+                Text("Iconografia de Aetheris")
+                symbols.chunked(3).forEach { group ->
+                    Row(Modifier.fillMaxWidth()) {
+                        group.forEach { (label, engraving) ->
+                            Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally) {
+                                EngravedIcon(engraving, Gold, size = 32.dp, raised = true)
+                                Text(label)
+                            }
+                        }
+                        repeat(3 - group.size) { Spacer(Modifier.weight(1f)) }
+                    }
+                }
+                listOf("Lã tecida" to EngravedRail.Voyage, "Madeira entalhada" to EngravedRail.Council,
+                    "Metal estampado" to EngravedRail.Folio).forEach { (label, rail) ->
+                    Text(label)
+                    EngravedDivider(rail)
+                }
+            }
+        }
+        shot("41-icones-e-divisores")
+
         val expected = listOf(
             "01-jornada", "02-navegacao-inferior", "03-registro-habito", "04-lista-habitos", "05-perfil-heroi",
             "06-mesa-de-odin", "07-propostas-odin", "08-agenda-diaria", "09-agenda-mensal", "10-caminhos",
             "11-gantt", "12-kanban", "13-forja-do-tempo", "14-modo-imersivo", "15-conselho-dos-nove",
             "16-biblioteca-mimir", "17-flashcards", "18-arsenal", "19-forja-darian", "20-atlas",
             "21-exploracao", "22-codex-runico", "23-configuracoes", "24-onboarding", "25-tema-claro",
-            "26-tema-escuro", "27-modo-minimalista", "28-tela-320dp", "29-fonte-130", "30-dialogos-formularios"
+            "26-tema-escuro", "27-modo-minimalista", "28-tela-320dp", "29-fonte-130", "30-dialogos-formularios",
+            "40-navegacao-320", "41-icones-e-divisores"
         )
         expected.forEach { name ->
             val f = File("build/reports/screenshots/1.7.5.9.1/$name.png")

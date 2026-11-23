@@ -64,7 +64,7 @@ private fun MimirLibraryBanner(notebooksCount: Int, pagesCount: Int, dueCount: I
         "A Biblioteca de Mímir",
         "$notebooksCount ${if (notebooksCount == 1) "caderno" else "cadernos"} · " +
             "$pagesCount ${if (pagesCount == 1) "página" else "páginas"} · $dueCount para revisar",
-        R.drawable.rebirth_folio, HistoricalFutharkRune.Ansuz
+        R.drawable.engraved_archive, HistoricalFutharkRune.Ansuz, EngravedRail.Folio
     )
 }
 
@@ -285,11 +285,11 @@ fun MimirLibraryScreen(
     val sort = PageSort.entries[sortIndex.coerceIn(PageSort.entries.indices)]
     val allTags = remember(s.notebooks, s.knowledgePages) { activeKnowledgeTags(s) }
 
-    Page {
+    EngravedPage {
         MimirLibraryBanner(activeNotebooks.size, activePages.size, dueCards.size)
         if (dueCards.isNotEmpty()) {
             RebirthAction("Iniciar Runas da Memória (${dueCards.size})", { onStartReview("") }, Modifier.fillMaxWidth(),
-                glyph = NorthbornGlyph.Library)
+                glyph = Engraving.Folio)
         }
         val nb = LocalNorthborn.current
         TextField(
@@ -331,7 +331,7 @@ fun MimirLibraryScreen(
 
         when (tab) {
             0 -> {
-                RebirthAction("+ Novo caderno", { notebookEditorId = "__new__" }, primary = dueCards.isEmpty())
+                RebirthAction("+ Novo caderno", { notebookEditorId = "__new__" }, primary = dueCards.isEmpty(), glyph = Engraving.Add)
                 val visible = if (showArchived) s.notebooks else activeNotebooks
                 if (visible.isEmpty()) {
                     Empty("Sua Biblioteca de Mímir ainda está vazia. Crie um caderno para organizar estudos, leituras e anotações pessoais.")
@@ -1364,7 +1364,7 @@ fun FlashcardReviewScreen(
             NorthbornDivider(NorthbornDividerStyle.DiamondKnot)
             if (!revealed) {
                 Text("Recupere a resposta em memória antes de revelar.", color = nbFc.inkSecondary, fontSize = 12.5.sp)
-                RebirthAction("Revelar resposta", { revealed = true }, Modifier.fillMaxWidth().testTag("reveal_answer"))
+                RebirthAction("Revelar resposta", { revealed = true }, Modifier.fillMaxWidth().testTag("reveal_answer"), glyph = Engraving.Folio)
             } else {
                 Eyebrow("Resposta", nbFc.accentPatina)
                 Text(currentCard.answer, color = nbFc.inkPrimary, fontSize = 15.5.sp, lineHeight = 24.sp)
