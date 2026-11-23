@@ -1,3 +1,10 @@
+# 1.7.5.9.3 · Refinamento Nórdico — NORTHBORN 4.2 (37)
+
+- **Placas metálicas acetinadas (supersampling 3×) e 9-patches de widgets (`docs/art/tools/refine_northborn_craft.py`, `ForgedControls.kt`):** eliminação das tampas laterais volumosas que colidiam com rótulos curtos (`Salvar`, `+ Missão personalizada`) e da borda preta pesada no tema claro (`forge_plate_pewter.webp` em alabastro-linho quente), mantendo micro-losangos discretos e margem segura (`20–24 dp`).
+- **Navegação inferior e abas unificadas (`AetherisNavigation.kt`, `NorthbornRebirth.kt`):** filete de bronze com micro-losango central no topo da barra, fechos distintos para tema escuro (`engraved_clasp.webp`) e tema claro (`engraved_clasp_light.webp`), brilho radial suave e abas editoriais chanfradas sem caixas opacas desalinhadas.
+- **Limpeza de divisores e superfícies (`NorthbornEngravings.kt`, `NorthbornRebirth.kt`):** remoção de halos brancos de recorte nos divisores (`engraved_wool`, `engraved_oak`, `engraved_spine`), regradação da lã tecida para bronze-nogueira envelhecido, ferro vulcânico limpo sem rebites esticados (`surface_iron.webp`) e velino sem bordas serrilhadas (`surface_vellum.webp`).
+- **Refinamento por módulo (`JourneyHome.kt`, `OdinCouncilScreens.kt`, `MimirScreens.kt`, `RpgDesign.kt`, `CouncilOfNineScreen.kt`, `MainActivity.kt`):** barra de XP em canaletas rebaixadas bronze-ouro, alinhamento óptico do botão `+` e altura nivelada nos 3 atalhos da Jornada em `320 dp / 130%`, grade equilibrada `2 + 3` e realce de estratégia ativa na Mesa de Odin, lombada de couro reservada apenas aos fólios em Mímir, busca chanfrada, eliminação do banner duplo em Missões e capa atmosférica no Conselho dos Nove. [Comparativos `1.7.5.9.2 × 1.7.5.9.3`](docs/VISUAL-1.7.5.9.3.md)
+
 # 1.7.5.9.2 · Controles da Forja (36)
 
 - Placas originais em 3D para ações principais, secundárias, confirmações, remoções e resgates.

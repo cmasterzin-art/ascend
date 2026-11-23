@@ -1,3 +1,10 @@
+# 1.7.5.9.3 — Refinamento Nórdico (NORTHBORN 4.2)
+
+Refinamento estético integral sobre a base `feat/ascend-1.7.5.9.2` (`e147cfd`), preservando 100% das regras de negócio, Room v11, Backup v13, economia do RPG, pinturas existentes e todos os 229 testes automatizados:
+- **Metalurgia Acetinada e Recursos Refinados (`docs/art/tools/refine_northborn_craft.py`, `ForgedControls.kt`, `NorthbornDesignSystem.kt`):** placas `forge_plate_*.webp` e 9-patches de widgets renderizados em supersampling 3× (grão escovado fino, zero tampas volumosas colidindo com texto, `pewter` em alabastro quente sem contorno preto no tema claro), divisores de-fringed sem halo branco (`engraved_wool` em bronze-nogueira envelhecido), `surface_iron` limpo sem rebites esticados e `surface_vellum` sem margens serrilhadas.
+- **Navegação, Abas e Harmonia de Módulos (`AetherisNavigation.kt`, `NorthbornRebirth.kt`, `JourneyHome.kt`, `OdinCouncilScreens.kt`, `MimirScreens.kt`, `RpgDesign.kt`, `CouncilOfNineScreen.kt`):** fecho de navegação dedicado ao tema claro (`engraved_clasp_light.webp`) e ao tema escuro (`engraved_clasp.webp`), filete de bronze no topo da barra inferior, abas editoriais chanfradas unificadas, atalhos da Jornada com altura nivelada em `320 dp / 130%`, grade `2 + 3` equilibrada na Mesa de Odin, lombada de couro exclusiva nos fólios de Mímir, Missões sem banner duplicado e capa atmosférica no Conselho dos Nove.
+- **Validação:** **229 testes aprovados**, **61 capturas reais** (59 telas Compose + 2 widgets Android), `lintDebug` com **0 erros**, `versionCode 37`, assinatura oficial `e1f003ef...`. [Visual 1.7.5.9.3](docs/VISUAL-1.7.5.9.3.md)
+
 # 1.7.5.9 — A Reforma de Aetheris
 
 Reformulação visual global com **NORTHBORN Design System 4.0** sobre `feat/ascend-1.7.5.1`, preservando 100% da estabilidade técnica, Room v11, Backup v13, os 227 testes anteriores e a economia do RPG:

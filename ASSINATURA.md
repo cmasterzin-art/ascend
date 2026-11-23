@@ -1,6 +1,8 @@
 # Continuidade de assinatura
 
-O ASCEND 1.7.5.9.2 · Controles da Forja usa `br.com.ascend.aetheris` e código de versão 36. A assinatura corresponde ao APK anterior, de código 35. [Certificado do APK atual](docs/validation/APK-1.7.5.9.2-forja.txt)
+O ASCEND 1.7.5.9.3 · Refinamento Nórdico (NORTHBORN 4.2) usa `br.com.ascend.aetheris` e código de versão `37`, mantendo a assinatura oficial preservada (`e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`) da `1.7.5.9.2` (código `36`) e de todas as versões compatíveis desde a `1.1`. [Certificado do APK 1.7.5.9.3](docs/validation/APK-1.7.5.9.3.txt)
+
+O ASCEND 1.7.5.9.2 · Controles da Forja usa `br.com.ascend.aetheris` e código de versão 36. A assinatura corresponde ao APK anterior, de código 35. [Certificado do APK anterior](docs/validation/APK-1.7.5.9.2-forja.txt)
 
 ## Estado dos APKs 1.6.8 a 1.7.5.9 e preservação do certificado
 

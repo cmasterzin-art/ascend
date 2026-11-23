@@ -1,10 +1,10 @@
-# ASCEND — Crônicas da Ascensão · NORTHBORN 4.1
+# ASCEND — Crônicas da Ascensão · NORTHBORN 4.2
 
-O **ASCEND 1.7.5.9.2 · Controles da Forja** combina placas de madeira, bronze e ferro nos botões, atalhos, filtros e widgets. A Jornada reúne os três atalhos principais em uma faixa de placas gravadas. [Capturas e design dos controles](docs/design/NORTHBORN-FORJA.md)
+O **ASCEND 1.7.5.9.3 · Refinamento Nórdico** eleva o acabamento estético da base `1.7.5.9.2` com placas metálicas acetinadas em supersampling 3× (sem colisão de texto nem bordas pretas pesadas no tema claro), fechos dedicados para tema escuro e tema claro na navegação inferior, abas editoriais unificadas com filete geométrico em bronze, divisores limpos sem halo de recorte, câmara da Mesa de Odin em ferro vulcânico limpo com grade equilibrada, leitura de Mímir sem empilhamento de lombadas, Missões sem banner duplicado e capa atmosférica no Conselho dos Nove. [Relatório visual e comparativos `1.7.5.9.2 × 1.7.5.9.3`](docs/VISUAL-1.7.5.9.3.md)
 
-[**Baixar ASCEND 1.7.5.9.2 · código 36**](downloads/ASCEND-1.7.5.9.2-forja.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.2-forja.apk.sha256) · [Validação](VALIDACAO.md)
+[**Baixar ASCEND 1.7.5.9.3 · código 37**](downloads/ASCEND-1.7.5.9.3.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.3.apk.sha256) · [Validação](VALIDACAO.md)
 
-O acabamento NORTHBORN 4.1 do código 35 está disponível para comparação. [APK anterior](downloads/ASCEND-1.7.5.9.2.apk?raw=true) · [Galeria anterior](docs/design/NORTHBORN-FINALIZACAO.md) · [Direção artística](docs/design/NORTHBORN-ART-DIRECTION.md)
+Base anterior preservada: [ASCEND 1.7.5.9.2 · código 36](downloads/ASCEND-1.7.5.9.2-forja.apk?raw=true) ([design dos controles](docs/design/NORTHBORN-FORJA.md)) · [APK 1.7.5.9.2 código 35](downloads/ASCEND-1.7.5.9.2.apk?raw=true) ([galeria 4.1](docs/design/NORTHBORN-FINALIZACAO.md)) · [Direção artística](docs/design/NORTHBORN-ART-DIRECTION.md)
 
 [APK do piloto rústico](downloads/ASCEND-1.7.5.9.1-dev-rustico.apk?raw=true) · [APK de fundos e gravuras](downloads/ASCEND-1.7.5.9.1-dev-gravuras.apk?raw=true) · [APK de escudo, madeira e velino](downloads/ASCEND-1.7.5.9.1-dev-entalhe.apk?raw=true) · [APK da revisão nórdica](downloads/ASCEND-1.7.5.9.1-dev-nordico.apk?raw=true) · [APK do primeiro protótipo](downloads/ASCEND-1.7.5.9.1-dev.apk?raw=true)
 
@@ -12,19 +12,17 @@ O acabamento NORTHBORN 4.1 do código 35 está disponível para comparação. [A
 
 Sistema pessoal offline de planejamento estratégico, projetos avançados, agenda adaptativa, foco, base de conhecimento e RPG nórdico para Android 8.0 ou superior. **Tudo funciona localmente**, sem conta, internet, IA externa, anúncios, assinatura ou serviços pagos. O GitHub distribui o código e o instalador; o aplicativo não tem permissão INTERNET.
 
-A versão **1.7.5.9 — A Reforma de Aetheris** (*Total UI Reforge & Authentic Nordic Identity Update · NORTHBORN Design System 4.0*) reconstrói integralmente a linguagem visual do aplicativo sobre a base técnica estabilizada da `1.7.5.1`, preservando **100% das regras de negócio**, **Room v11**, **Backup v13**, todos os testes anteriores e a economia do RPG:
-- **NORTHBORN Design System 4.0 (`NorthbornDesignSystem.kt`, `Design.kt`, `DesignSystem2.kt`, `NorthComponents.kt`, `AetherisNavigation.kt`, `NordicCouncilDesign.kt`):** paleta mineral escura (`#121417`) e tema claro documental em linho arquivístico (`#F2EDE3` / `#FAF6EE`), 3 famílias tipográficas, escala `4/8/12/16/24/32 dp`, 5 papéis de superfície (`Operational`, `Document`, `Strategic`, `Ceremonial`, `Informative`) sem cabeçalhos automáticos repetitivos, Botões 4.0 em 7 níveis sem adesivos rasterizados, `NorthbornDivider` vetorial, `NorthbornTopBar`, 15 ícones escandinavos de traço uniforme (`NorthbornIcon`) e atlas de 8 materiais autênticos (`northborn_materials_atlas.webp`, `47,4 KB`).
-- **Reconstrução Estrutural por Módulo:** Jornada desenclausurada (3 paredes de atalhos consolidadas em 1 faixa de 3 módulos + pílulas leves), Hábitos e Perfil sem aninhamento caixa-em-caixa, Mesa de Odin com faixas abertas de comando/leitura, Agenda 3.0 com faixa única e calendários claro/escuro corrigidos, Gantt e Kanban em raias arquitetônicas limpas, Forja do Tempo serena, Conselho dos Nove com variação controlada, Biblioteca de Mímir e Flashcards SM-2 em identidade manuscrita (`Document`), Arsenal/Forja/Atlas/Codex/Configurações/Onboarding unificados.
+A versão **1.7.5.9.3 — Refinamento Nórdico (NORTHBORN 4.2)** preserva integralmente **100% das regras de negócio**, **Room v11**, **Backup v13**, todos os **229 testes aprovados** e a economia do RPG:
+- **Metalurgia Acetinada e Tema Claro Documental (`docs/art/tools/refine_northborn_craft.py`, `ForgedControls.kt`, `NorthbornDesignSystem.kt`):** placas `forge_plate_*.webp` e 9-patches de widgets redesenhados em supersampling 3× (grão escovado fino, bisel boreal luminoso, micro-losangos nas extremidades com margem segura `20–24 dp`, placa `pewter` em alabastro quente sem contorno preto no tema claro).
+- **Navegação, Abas e Coerência Entre Módulos (`AetherisNavigation.kt`, `NorthbornRebirth.kt`, `OdinCouncilScreens.kt`, `MimirScreens.kt`, `RpgDesign.kt`, `CouncilOfNineScreen.kt`, `JourneyHome.kt`):** topo da barra inferior em filete de bronze com micro-losango, fechos distintos escuro/claro (`engraved_clasp.webp` e `engraved_clasp_light.webp`), abas editoriais chanfradas unificadas, ferro vulcânico limpo e grade `2 + 3` na Mesa de Odin, leitura de Mímir com lombada costurada exclusiva nos fólios, Missões sem banner duplo e atalhos da Jornada nivelados em `320 dp / 130%`.
 
-A `1.7.5.9` tem **228 testes aprovados** (`227` preservados da `1.7.5.1` + suíte de **30 capturas reais** em `NorthbornUiReforgeTest`), Android Lint com **0 erros**, **Room v11** e **backup v13** retrocompatíveis com `v1`–`v13`.
-
-**Atualização dos APKs 1.1 a 1.7.5.1:** a `1.7.5.9` (`versionCode 29`) mantém `applicationId` (`br.com.ascend.aetheris`), certificado oficial SHA-256 (`e1f003ef...`) e Room v11; exporte um backup de segurança e instale por cima, **sem desinstalar**. A antiga 1.0 possui assinatura diferente; consulte [INSTALACAO.md](INSTALACAO.md).
+**Atualização dos APKs 1.1 a 1.7.5.9.2:** a `1.7.5.9.3` (`versionCode 37`) mantém `applicationId` (`br.com.ascend.aetheris`), certificado oficial SHA-256 (`e1f003ef...`) e Room v11; exporte um backup de segurança e instale por cima, **sem desinstalar**. A antiga 1.0 possui assinatura diferente; consulte [INSTALACAO.md](INSTALACAO.md).
 
 - [Instalação e atualização](INSTALACAO.md)
 - [Funcionalidades e limites reais](PROGRESSO.md)
 - [Assinatura e preservação de atualizações](ASSINATURA.md)
 - [Validação](VALIDACAO.md)
-- [Auditoria Visual 1.7.5.9](docs/AUDITORIA-VISUAL-1.7.5.9.md) · [NORTHBORN Design System 4.0](docs/NORTHBORN-DESIGN-SYSTEM-4.0.md) · [UI Reforge 1.7.5.9](docs/UI-REFORGE-1.7.5.9.md) · [Visual 1.7.5.9 (30 capturas)](docs/VISUAL-1.7.5.9.md) · [Diário 1.7.5.9](docs/DESENVOLVIMENTO-1.7.5.9.md)
+- [Visual 1.7.5.9.3 — NORTHBORN 4.2](docs/VISUAL-1.7.5.9.3.md) · [Controles 1.7.5.9.2](docs/design/NORTHBORN-FORJA.md) · [Auditoria Visual 1.7.5.9](docs/AUDITORIA-VISUAL-1.7.5.9.md) · [NORTHBORN DS 4.0](docs/NORTHBORN-DESIGN-SYSTEM-4.0.md)
 - [Auditoria 1.7.5.1](docs/AUDITORIA-1.7.5.1.md) · [Estabilidade 1.7.5.1](docs/ESTABILIDADE-1.7.5.1.md) · [Design System 3.2.1](docs/DESIGN-SYSTEM-3.2.1.md) · [Visual 1.7.5.1](docs/VISUAL-1.7.5.1.md)
 - [Mesa de Odin](docs/MESA-DE-ODIN.md) · [Caminhos 3.0](docs/CAMINHOS-3.0.md) · [Agenda 3.0](docs/AGENDA-3.0.md) · [Forja do Tempo](docs/FORJA-DO-TEMPO.md) · [Conselho dos Nove](docs/CONSELHO-DOS-NOVE.md) · [Design System 3.2](docs/DESIGN-SYSTEM-3.2.md) · [Visual 1.7.5](docs/VISUAL-1.7.5.md)
 - [Heráldica Rúnica](docs/HERALDICA-RUNICA.md) · [Codex Rúnico](docs/CODEX-RUNICO.md) · [Coleções Lendárias](docs/COLECOES-LENDARIAS.md) · [Aprimoramentos da Forja](docs/APRIMORAMENTOS-DA-FORJA.md) · [Visual 1.7.3.1](docs/VISUAL-1.7.3.1.md)
@@ -33,11 +31,11 @@ A `1.7.5.9` tem **228 testes aprovados** (`227` preservados da `1.7.5.1` + suít
 
 ## Visual
 
-| Jornada (Escuro Mineral) | Jornada (Tema Claro Documental) | Mesa de Odin (NORTHBORN 4.0) |
+| Jornada (Escuro Mineral) | Jornada (Tema Claro Documental) | Mesa de Odin (NORTHBORN 4.2) |
 |---|---|---|
-| <img src="docs/screenshots/1.7.5.9/01-jornada.png" width="240" alt="Jornada 1.7.5.9 Escuro"> | <img src="docs/screenshots/1.7.5.9/25-tema-claro.png" width="240" alt="Jornada 1.7.5.9 Claro"> | <img src="docs/screenshots/1.7.5.9/06-mesa-de-odin.png" width="240" alt="Mesa de Odin 1.7.5.9"> |
+| <img src="docs/screenshots/1.7.5.9.3/01-jornada.png" width="240" alt="Jornada 1.7.5.9.3 Escuro"> | <img src="docs/screenshots/1.7.5.9.3/25-tema-claro.png" width="240" alt="Jornada 1.7.5.9.3 Claro"> | <img src="docs/screenshots/1.7.5.9.3/06-mesa-de-odin.png" width="240" alt="Mesa de Odin 1.7.5.9.3"> |
 
-**[Relatório visual e 30 capturas reais 1.7.5.9](docs/VISUAL-1.7.5.9.md)** · [Visual 1.7.5.1](docs/VISUAL-1.7.5.1.md) · [Visual 1.7.5](docs/VISUAL-1.7.5.md) · [Visual 1.7.3.1](docs/VISUAL-1.7.3.1.md) · [Visual 1.7.3](docs/VISUAL-1.7.3.md) · [Visual 1.7.2](docs/VISUAL-1.7.2.md) · [Visual 1.7.1](docs/VISUAL-1.7.1.md) · [Visual 1.7.0](docs/VISUAL-1.7.0.md)
+**[Relatório visual e comparativos `1.7.5.9.2 × 1.7.5.9.3`](docs/VISUAL-1.7.5.9.3.md)** · [Controles 1.7.5.9.2](docs/design/NORTHBORN-FORJA.md) · [Visual 1.7.5.9](docs/VISUAL-1.7.5.9.md) · [Visual 1.7.5.1](docs/VISUAL-1.7.5.1.md) · [Visual 1.7.5](docs/VISUAL-1.7.5.md) · [Visual 1.7.3.1](docs/VISUAL-1.7.3.1.md) · [Visual 1.7.3](docs/VISUAL-1.7.3.md) · [Visual 1.7.2](docs/VISUAL-1.7.2.md) · [Visual 1.7.1](docs/VISUAL-1.7.1.md) · [Visual 1.7.0](docs/VISUAL-1.7.0.md)
 
 Capturas dos testes de interface com personagens de teste. Nenhuma conclusão, expedição, fabricação, heráldica, plano ou objetivo fictício é incluído no aplicativo.
 

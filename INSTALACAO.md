@@ -2,6 +2,10 @@
 
 Android 8.0 (API 26) ou superior. O uso não exige internet, conta ou pagamento.
 
+## Atualizar para 1.7.5.9.3 · Refinamento Nórdico (NORTHBORN 4.2)
+
+Abra o APK no Android e instale por cima da versão anterior, **sem desinstalar**. O `versionCode` subiu de `36` para `37`, preservando `br.com.ascend.aetheris`, o certificado oficial (`e1f003ef...`), **Room v11** e **backup v13**. [Baixar APK 1.7.5.9.3 (código 37)](downloads/ASCEND-1.7.5.9.3.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.3.apk.sha256)
+
 ## Atualizar para 1.7.5.9.2 · Controles da Forja
 
 Abra o APK no Android e instale por cima da versão anterior. O código interno subiu de 35 para 36 e o certificado é o mesmo. [Baixar APK do código 36](downloads/ASCEND-1.7.5.9.2-forja.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.2-forja.apk.sha256)
