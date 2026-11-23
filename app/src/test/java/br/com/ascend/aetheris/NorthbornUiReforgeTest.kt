@@ -34,7 +34,7 @@ import java.time.LocalDate
 /**
  * ASCEND 1.7.5.9 — A Reforma de Aetheris (NORTHBORN Design System 4.0)
  * Suíte UI Robolectric + Compose capturando todas as 30 telas obrigatórias
- * em build/reports/screenshots/1.7.5.9/ para inspeção visual e validação de regressão.
+ * em build/reports/screenshots/1.7.5.9.1/ para inspeção visual e validação de regressão.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = AscendApp::class, qualifiers = "w411dp-h891dp-mdpi")
@@ -90,7 +90,7 @@ class NorthbornUiReforgeTest {
                 android.graphics.Bitmap.Config.ARGB_8888
             )
             view.draw(android.graphics.Canvas(bitmap))
-            val file = File("build/reports/screenshots/1.7.5.9/$name.png")
+            val file = File("build/reports/screenshots/1.7.5.9.1/$name.png")
             file.parentFile!!.mkdirs()
             file.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
             bitmap.recycle()
@@ -436,7 +436,7 @@ class NorthbornUiReforgeTest {
         renderScreen {
             SettingsScreen(s = s0, vm = vm, relaxed = false)
         }
-        compose.onNodeWithText("ASCEND · versão 1.7.5.9", ignoreCase = true).assertExists()
+        compose.onNodeWithText("ASCEND · versão 1.7.5.9.1", ignoreCase = true).assertExists()
         shot("23-configuracoes")
 
         // 24. Onboarding
@@ -528,6 +528,54 @@ class NorthbornUiReforgeTest {
         }
         shot("30-dialogos-formularios")
 
+        // The 4.1 sample uses the same seeded content as the previous tour.
+        renderScreen(dark = true, widthDp = 320, fontScale = 1.3f) {
+            OdinCouncilScreen(s0, vm)
+        }
+        compose.onNodeWithText("Mesa de Odin").assertIsDisplayed()
+        compose.onNodeWithText("Gerar plano").performScrollTo().assertIsDisplayed().performClick()
+        compose.onNodeWithText("Estratégia da prévia").assertExists()
+        shot("31-odin-320-fonte-130-proposta")
+        renderScreen(dark = true, widthDp = 320, fontScale = 1.3f) {
+            OdinCouncilScreen(s0, vm)
+        }
+        shot("32-odin-320-fonte-130")
+        renderScreen(dark = false, widthDp = 360) {
+            MimirLibraryScreen(s0, vm, {}, {}, {}, {})
+        }
+        compose.onNodeWithText("A Biblioteca de Mímir").assertIsDisplayed()
+        shot("33-mimir-claro-360")
+        renderScreen(dark = true, minimal = true, widthDp = 320, fontScale = 1.3f) {
+            MimirLibraryScreen(s0, vm, {}, {}, {}, {})
+        }
+        compose.onNodeWithText("Cadernos").assertIsDisplayed()
+        shot("34-mimir-minimalista-320")
+        renderScreen(dark = false, widthDp = 360, fontScale = 1.3f) {
+            PageDetailScreen("pg-1", s0, vm, {}, {})
+        }
+        compose.onNodeWithText("Princípios NORTHBORN").assertIsDisplayed()
+        shot("35-mimir-leitura")
+        renderScreen(dark = true, widthDp = 360) {
+            FlashcardReviewScreen("", s0, vm, {})
+        }
+        compose.onNodeWithTag("reveal_answer").performScrollTo().performClick()
+        compose.onNodeWithText("Bom").assertExists()
+        shot("36-mimir-resposta")
+        renderScreen(dark = false, minimal = true, widthDp = 360) {
+            OdinCouncilScreen(s0, vm)
+        }
+        shot("37-odin-minimalista-claro-360")
+        renderScreen(dark = true, widthDp = 360) {
+            Scaffold(bottomBar = { AetherisNavigation("journey") {} }) { pad ->
+                Box(Modifier.padding(pad)) {
+                    Journey(s0, { _, _ -> }, {}, {}, {}, {}, vm, relaxed = false)
+                }
+            }
+        }
+        compose.onNodeWithContentDescription("Todos os destinos").performScrollTo().performClick()
+        compose.onNodeWithText("Conselho 9").assertIsDisplayed()
+        shot("38-jornada-diretorio-360")
+
         val expected = listOf(
             "01-jornada", "02-navegacao-inferior", "03-registro-habito", "04-lista-habitos", "05-perfil-heroi",
             "06-mesa-de-odin", "07-propostas-odin", "08-agenda-diaria", "09-agenda-mensal", "10-caminhos",
@@ -537,7 +585,7 @@ class NorthbornUiReforgeTest {
             "26-tema-escuro", "27-modo-minimalista", "28-tela-320dp", "29-fonte-130", "30-dialogos-formularios"
         )
         expected.forEach { name ->
-            val f = File("build/reports/screenshots/1.7.5.9/$name.png")
+            val f = File("build/reports/screenshots/1.7.5.9.1/$name.png")
             assertTrue("Captura esperada ausente ou vazia: ${f.path}", f.exists() && f.length() > 1000L)
         }
     }

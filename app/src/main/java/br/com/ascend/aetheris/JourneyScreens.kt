@@ -24,27 +24,19 @@ import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-@Composable fun HabitCard(h:Habit,r:HabitRecord?,onProgress:()->Unit,onDetail:()->Unit,onFocus:()->Unit){
+@Composable fun HabitCard(h:Habit,r:HabitRecord?,onProgress:()->Unit,onDetail:()->Unit,onFocus:()->Unit, editorial:Boolean = false){
  val nb=LocalNorthborn.current
  val target=r?.target?:h.target;val amount=r?.progress?:0;val complete=r?.complete==true;val inProgress=amount>0&&!complete;val color=habitColor(h.color)
  val rawUnit=r?.unit?:h.unit;val unitLabel=if(h.type==2&&(rawUnit.isBlank()||rawUnit=="vez"))"minutos" else rawUnit
  val stateColor=if(complete)nb.accentPatina else if(inProgress)color else nb.hairlineStrong
  val actShape=NorthbornShape.sm
- NorthbornSurface(
-  role = NorthbornSurfaceRole.Operational,
-  accent = stateColor,
-  modifier = Modifier.testTag("habit:${h.id}").drawWithContent{
-   drawContent()
-   val d=1.dp.toPx()
-   if(complete||inProgress)drawRect(stateColor.copy(alpha=if(complete).85f else .75f), androidx.compose.ui.geometry.Offset(0f, 8*d), androidx.compose.ui.geometry.Size(3*d, (size.height-16*d).coerceAtLeast(0f)))
-  }
- ){
+ val content: @Composable ColumnScope.() -> Unit = {
   Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(10.dp)){
    Box(Modifier.size(34.dp)){AttributeEmblem(h.attribute,Modifier.matchParentSize());Text(glyphs[h.icon],Modifier.align(Alignment.BottomEnd).background(nb.canvas.copy(alpha=.9f),CircleShape).padding(horizontal=2.dp),color=color,fontSize=9.sp,lineHeight=11.sp)}
    Text("${attributes[h.attribute]} · ${if(h.type==2)"Cronometrado" else difficultyNames[h.difficulty]}",Modifier.weight(1f),color=nb.inkSecondary,fontSize=12.sp)
    Text(if(complete)"◆ Concluído" else if(inProgress)"◈ Em curso" else "Pendente",color=if(complete)nb.accentPatina else if(inProgress)color else nb.inkTertiary,fontSize=11.5.sp,fontWeight=androidx.compose.ui.text.font.FontWeight.Medium)
   }
-  Column(Modifier.fillMaxWidth().clickable(onClickLabel="Ver detalhes de ${h.name}",onClick=onDetail),verticalArrangement=Arrangement.spacedBy(3.dp)){
+  Column(Modifier.fillMaxWidth().heightIn(min=48.dp).clickable(onClickLabel="Ver detalhes de ${h.name}",onClick=onDetail),verticalArrangement=Arrangement.spacedBy(3.dp)){
    Text(if(LocalNarrativeNames.current&&h.narrativeName.isNotBlank())h.narrativeName else h.name,style=MaterialTheme.typography.titleMedium,color=nb.inkPrimary)
    if(LocalNarrativeNames.current&&h.narrativeName.isNotBlank())Text(h.name,color=nb.inkSecondary,fontSize=12.sp)
   }
@@ -78,6 +70,16 @@ import java.util.Locale
    }
   }
  }
+ val tag = Modifier.testTag("habit:${h.id}")
+ if (editorial) {
+  Column(tag.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(7.dp)) {
+   RebirthRule()
+   Column(Modifier.fillMaxWidth().padding(vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(7.dp), content = content)
+  }
+ } else {
+  NorthbornSurface(role = NorthbornSurfaceRole.Operational, accent = stateColor, modifier = tag, content = content)
+ }
+
 }
 @Composable fun FocusCard(f:Focus,s:GameState,vm:GameViewModel){
     var now by remember{mutableLongStateOf(System.currentTimeMillis())};LaunchedEffect(f){while(f.startedAt>0){now=System.currentTimeMillis();delay(1000)}}

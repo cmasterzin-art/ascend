@@ -59,78 +59,13 @@ fun MimirCodexArt(cover: Int, modifier: Modifier = Modifier.size(60.dp), accent:
 }
 
 @Composable
-private fun MimirLibraryBanner(
-    notebooksCount: Int,
-    pagesCount: Int,
-    dueCount: Int,
-    onStartReview: () -> Unit
-) {
-    val minimal = LocalAppearance.current.minimal
-    val nb = LocalNorthborn.current
-    val shape = NorthbornShape.lg
-    if (minimal) {
-        NorthbornSurface(role = NorthbornSurfaceRole.Document, material = NorthbornMaterial.ArchivalVellum) {
-            Eyebrow("A Biblioteca de Mímir", nb.accentBronze)
-            Text("Conhecimento e Memória", style = MaterialTheme.typography.headlineSmall, color = nb.inkPrimary)
-            Text(
-                "$notebooksCount ${if (notebooksCount == 1) "caderno" else "cadernos"} · $pagesCount ${if (pagesCount == 1) "página" else "páginas"} · $dueCount ${if (dueCount == 1) "revisão pendente" else "revisões pendentes"}",
-                color = nb.inkSecondary,
-                fontSize = 12.sp
-            )
-            if (dueCount > 0) {
-                NorthbornButton("Revisar Runas ($dueCount)", onStartReview, role = NorthbornButtonRole.Ceremonial, modifier = Modifier.fillMaxWidth())
-            }
-        }
-        return
-    }
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .heightIn(min = 142.dp)
-            .clip(shape)
-            .border(1.dp, nb.accentBronze.copy(alpha = 0.42f), shape)
-    ) {
-        Image(
-            painterResource(R.drawable.mimir_library),
-            contentDescription = null,
-            modifier = Modifier.matchParentSize(),
-            contentScale = ContentScale.Crop,
-            alignment = Alignment.Center
-        )
-        Box(
-            Modifier
-                .matchParentSize()
-                .background(
-                    Brush.verticalGradient(
-                        0f to Color(0xBD0D1013),
-                        0.48f to Color(0x9E101318),
-                        1f to Color(0xEB0C0F12)
-                    )
-                )
-        )
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(18.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
-        ) {
-            Eyebrow("A Biblioteca de Mímir", Color(0xFFD8BE8F))
-            Text(
-                "Acervo Pessoal de Sabedoria",
-                style = MaterialTheme.typography.headlineSmall,
-                color = Color(0xFFEFEAE0)
-            )
-            Text(
-                "$notebooksCount ${if (notebooksCount == 1) "caderno" else "cadernos"} · $pagesCount ${if (pagesCount == 1) "página" else "páginas"} · $dueCount ${if (dueCount == 1) "revisão pendente" else "revisões pendentes"}",
-                color = Color(0xFFC5BEB0),
-                fontSize = 12.sp
-            )
-            if (dueCount > 0) {
-                Spacer(Modifier.height(4.dp))
-                NorthbornButton("Iniciar Runas da Memória ($dueCount)", onStartReview, role = NorthbornButtonRole.Ceremonial, modifier = Modifier.fillMaxWidth())
-            }
-        }
-    }
+private fun MimirLibraryBanner(notebooksCount: Int, pagesCount: Int, dueCount: Int) {
+    RebirthMasthead(
+        "A Biblioteca de Mímir",
+        "$notebooksCount ${if (notebooksCount == 1) "caderno" else "cadernos"} · " +
+            "$pagesCount ${if (pagesCount == 1) "página" else "páginas"} · $dueCount para revisar",
+        R.drawable.rebirth_folio
+    )
 }
 
 private fun parseInlineMarkdown(line: String, codeBg: Color, linkColor: Color): AnnotatedString {
@@ -351,23 +286,25 @@ fun MimirLibraryScreen(
     val allTags = remember(s.notebooks, s.knowledgePages) { activeKnowledgeTags(s) }
 
     Page {
-        MimirLibraryBanner(
-            notebooksCount = activeNotebooks.size,
-            pagesCount = activePages.size,
-            dueCount = dueCards.size,
-            onStartReview = { onStartReview("") }
-        )
-        if (onOpenCodex != null) {
-            SagaButton(
-                text = "Codex Rúnico · 24 runas do Elder Futhark",
-                onClick = onOpenCodex,
-                modifier = Modifier.fillMaxWidth().testTag("open_codex_from_mimir"),
-                style = VikingButtonStyle.BronzeForjado,
-                leadingRune = HistoricalFutharkRune.Ansuz
-            )
+        MimirLibraryBanner(activeNotebooks.size, activePages.size, dueCards.size)
+        if (dueCards.isNotEmpty()) {
+            RebirthAction("Iniciar Runas da Memória (${dueCards.size})", { onStartReview("") }, Modifier.fillMaxWidth())
         }
-        FormField(search, { search = it }, "Buscar páginas por título, texto ou tag", modifier = Modifier.testTag("mimir_search"))
-        AetherisTabs(listOf("Cadernos", "Recentes", "Favoritos", "Tags", "Revisões"), tab, { tab = it })
+        val nb = LocalNorthborn.current
+        TextField(
+            value = search,
+            onValueChange = { search = it },
+            modifier = Modifier.fillMaxWidth().testTag("mimir_search"),
+            label = { Text("Buscar páginas por título, texto ou tag") },
+            singleLine = true,
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = nb.surfaceDocument,
+                unfocusedContainerColor = nb.surfaceDocument,
+                focusedIndicatorColor = nb.accentPatina,
+                unfocusedIndicatorColor = nb.hairlineStrong
+            )
+        )
+        RebirthIndex(listOf("Cadernos", "Recentes", "Favoritos", "Tags", "Revisões"), tab) { tab = it }
 
         if (search.isNotBlank() && tab == 0) {
             val matches = remember(s.knowledgePages, archivedNbIds, search, sort, showArchived) {
@@ -393,12 +330,7 @@ fun MimirLibraryScreen(
 
         when (tab) {
             0 -> {
-                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Action("+ Novo caderno", { notebookEditorId = "__new__" }, Modifier.weight(1f))
-                    if (dueCards.isNotEmpty()) {
-                        SagaButton("Revisar (${dueCards.size})", { onStartReview("") }, Modifier.weight(1f), secondary = true)
-                    }
-                }
+                RebirthAction("+ Novo caderno", { notebookEditorId = "__new__" }, primary = dueCards.isEmpty())
                 val visible = if (showArchived) s.notebooks else activeNotebooks
                 if (visible.isEmpty()) {
                     Empty("Sua Biblioteca de Mímir ainda está vazia. Crie um caderno para organizar estudos, leituras e anotações pessoais.")
@@ -408,17 +340,14 @@ fun MimirLibraryScreen(
                         val nbCards = s.flashcards.count { it.notebookId == nb.id && !it.archived }
                         val nbDue = dueCards.count { it.notebookId == nb.id }
                         val linkedPath = s.paths.find { it.id == nb.pathId }
-                        NorthbornSurface(
-                            role = NorthbornSurfaceRole.Document,
-                            material = NorthbornMaterial.ArchivalVellum,
-                            modifier = Modifier.testTag("notebook:${nb.id}")
-                        ) {
+                        Column(Modifier.fillMaxWidth().testTag("notebook:${nb.id}")) {
+                            RebirthRule()
                             Row(
-                                Modifier.fillMaxWidth().clickable { onOpenNotebook(nb.id) },
+                                Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable { onOpenNotebook(nb.id) }.padding(vertical = 10.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                MimirCodexArt(nb.cover, Modifier.size(60.dp), accent = if (nb.archived) Muted else Gold)
+                                MimirCodexArt(nb.cover, Modifier.size(width = 30.dp, height = 60.dp), accent = if (nb.archived) Muted else Blue)
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                                     Eyebrow(
                                         "${nb.category}${if (nb.archived) " · Arquivado" else ""}",
@@ -438,7 +367,6 @@ fun MimirLibraryScreen(
                                     }
                                 }
                             }
-                            NorthbornDivider(NorthbornDividerStyle.Hairline)
                             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                                 TextButton({ onOpenNotebook(nb.id) }) { Text("Abrir", fontSize = 12.sp) }
                                 TextButton({ notebookEditorId = nb.id }) { Text("Editar", fontSize = 12.sp) }
@@ -601,6 +529,12 @@ fun MimirLibraryScreen(
                 }
             }
         }
+        if (onOpenCodex != null) {
+            TextButton(onOpenCodex, Modifier.heightIn(min = 48.dp).testTag("open_codex_from_mimir")) {
+                Text("Codex Rúnico · 24 runas do Elder Futhark")
+            }
+        }
+
     }
 
     notebookEditorId?.let { id ->
@@ -674,9 +608,10 @@ private fun KnowledgePageRow(
     onToggleFavorite: () -> Unit
 ) {
     val tags = remember(page.tags) { parseTags(page.tags) }
-    AetherSurface(SurfaceKind.Operational, Modifier.testTag("page:${page.id}")) {
+    Column(Modifier.fillMaxWidth().testTag("page:${page.id}")) {
+        RebirthRule()
         Row(
-            Modifier.fillMaxWidth().clickable(onClick = onOpen),
+            Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable(onClick = onOpen).padding(vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)
         ) {
@@ -704,7 +639,7 @@ private fun KnowledgePageRow(
                     }
                 }
             }
-            TextButton(onToggleFavorite, Modifier.semantics { contentDescription = if (page.favorite) "Remover favorito" else "Favoritar página" }) {
+            TextButton(onToggleFavorite, Modifier.sizeIn(minWidth = 48.dp, minHeight = 48.dp).semantics { contentDescription = if (page.favorite) "Remover favorito" else "Favoritar página" }) {
                 Text(if (page.favorite) "★" else "☆", color = if (page.favorite) Gold else Muted, fontSize = 18.sp)
             }
         }
@@ -1074,7 +1009,7 @@ fun PageDetailScreen(
                     }
                 }
             }
-            AetherSurface(SurfaceKind.Operational) {
+            RebirthReadingLeaf {
                 MarkdownPreview(page.content)
             }
             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -1415,12 +1350,7 @@ fun FlashcardReviewScreen(
         val cardNotebook = s.notebooks.find { it.id == currentCard.notebookId }
         val cardPage = s.knowledgePages.find { it.id == currentCard.pageId }
         val nbFc = LocalNorthborn.current
-        NorthbornSurface(
-            role = NorthbornSurfaceRole.Document,
-            material = NorthbornMaterial.ArchivalVellum,
-            accent = if (isRetryPhase) nbFc.accentFjord else nbFc.accentBronze,
-            modifier = Modifier.testTag("flashcard_stage")
-        ) {
+        RebirthReadingLeaf(Modifier.testTag("flashcard_stage")) {
             Eyebrow(
                 if (isRetryPhase) "Reforço da sessão · não duplica histórico"
                 else listOfNotNull(cardNotebook?.name, cardPage?.title).joinToString(" · ").ifBlank { "Runa da Memória" },
@@ -1433,7 +1363,7 @@ fun FlashcardReviewScreen(
             NorthbornDivider(NorthbornDividerStyle.DiamondKnot)
             if (!revealed) {
                 Text("Recupere a resposta em memória antes de revelar.", color = nbFc.inkSecondary, fontSize = 12.5.sp)
-                NorthbornButton("Revelar resposta", { revealed = true }, role = NorthbornButtonRole.Ceremonial, modifier = Modifier.fillMaxWidth().testTag("reveal_answer"))
+                RebirthAction("Revelar resposta", { revealed = true }, Modifier.fillMaxWidth().testTag("reveal_answer"))
             } else {
                 Eyebrow("Resposta", nbFc.accentPatina)
                 Text(currentCard.answer, color = nbFc.inkPrimary, fontSize = 15.5.sp, lineHeight = 24.sp)

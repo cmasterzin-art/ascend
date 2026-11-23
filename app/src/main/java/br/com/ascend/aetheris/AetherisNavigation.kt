@@ -56,6 +56,8 @@ fun AetherisNavigation(route: String, onSelect: (String) -> Unit) {
     }
     val nb = LocalNorthborn.current
     val motion = LocalAppearance.current.reducedMotion
+    val pilot = route == "journey" || route.startsWith("odin") || route.startsWith("mimir")
+    val activeInk = if (pilot) nb.accentPatina else nb.accentBronze
     val barBg = if (nb.dark) Color(0xFF101215) else nb.surfaceBase
 
     Column(
@@ -78,8 +80,8 @@ fun AetherisNavigation(route: String, onSelect: (String) -> Unit) {
                     tween(if (motion) 0 else AetherTokens.quick),
                     label = "nb_nav_tab"
                 )
-                val iconColor = if (active) nb.accentBronze else nb.inkSecondary
-                val labelColor = if (active) (if (nb.dark) nb.accentPaleGold else nb.accentBronze) else nb.inkSecondary
+                val iconColor = if (active) activeInk else nb.inkSecondary
+                val labelColor = if (active) (if (pilot) nb.inkPrimary else if (nb.dark) nb.accentPaleGold else nb.accentBronze) else nb.inkSecondary
 
                 Box(
                     Modifier
@@ -93,8 +95,9 @@ fun AetherisNavigation(route: String, onSelect: (String) -> Unit) {
                                 val d = 1.dp.toPx()
                                 val barW = (size.width * 0.42f * progress).coerceAtLeast(18 * d)
                                 val x0 = (size.width - barW) * 0.5f
+                                if (pilot) drawRect(activeInk.copy(alpha = .10f * progress))
                                 drawRect(
-                                    color = nb.accentBronze.copy(alpha = progress),
+                                    color = activeInk.copy(alpha = progress),
                                     topLeft = Offset(x0, 0f),
                                     size = Size(barW, 2.2f * d)
                                 )

@@ -252,7 +252,7 @@ class MainActivity:ComponentActivity(){var widgetHabit by mutableStateOf<String?
 
         // Colofão editorial da versão
         Column(Modifier.fillMaxWidth().padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)){
-            Eyebrow("ASCEND · versão 1.7.5.9", nb.accentBronze)
+            Eyebrow("ASCEND · versão 1.7.5.9.1", nb.accentBronze)
             Text("A Reforma de Aetheris · NORTHBORN 4.0", fontFamily = SagaFont, fontSize = 18.sp, color = nb.inkPrimary)
             Text("Aetheris existe nos seus próximos passos. Aplicativo 100% offline, sem conta, anúncios ou coleta remota de dados.", color = nb.inkSecondary, fontSize = 12.5.sp, lineHeight = 18.sp)
         }

@@ -1,6 +1,8 @@
 package br.com.ascend.aetheris
 
 import androidx.compose.foundation.*
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.*
 import androidx.compose.foundation.shape.CutCornerShape
@@ -98,15 +100,8 @@ fun OdinCouncilScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            OdinHallHeroBanner(
-                title = "Mesa de Odin",
-                subtitle = "Planejamento estratégico determinístico, 100% offline e orientado à sua disponibilidade real.",
-                activeStrategyName = "${activeStrategy.name} · ${activeStrategy.title}",
-                activeStrategy = activeStrategy
-            )
-        }
-        item {
-            AetherisTabs(tabs, tab, { tab = it })
+            if (tab == 0) RebirthMasthead("Mesa de Odin", "Estratégia ativa · ${activeStrategy.name}", R.drawable.rebirth_chart)
+            RebirthIndex(tabs, tab) { tab = it }
         }
 
         when (tab) {
@@ -196,75 +191,28 @@ private fun OdinHallOverviewSection(
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
-        // KPIs estratégicos em grade 2×2 limpa
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                CouncilKpiTile(
-                    label = "Capacidade 7d",
-                    value = if (weekCapacity.status == CapacityStatus.UNCONFIGURED) "—" else "${weekCapacity.utilizationPercent}%",
-                    detail = weekCapacity.status.label,
-                    accent = when (weekCapacity.status) {
-                        CapacityStatus.OVERLOADED -> nb.accentEmber
-                        CapacityStatus.TIGHT -> nb.accentBronze
-                        CapacityStatus.UNCONFIGURED -> nb.inkMuted
-                        else -> nb.accentPatina
-                    },
-                    modifier = Modifier.weight(1f),
-                    rune = HistoricalFutharkRune.Jera
-                )
-                CouncilKpiTile(
-                    label = "Hoje",
-                    value = "${todayBlocks.size + todayEvents.size}",
-                    detail = "${todayBlocks.size} blocos · ${todayEvents.size} eventos",
-                    accent = nb.accentFjord,
-                    modifier = Modifier.weight(1f),
-                    rune = HistoricalFutharkRune.Dagaz
-                )
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text("Capacidade 7d", color = nb.inkSecondary, style = MaterialTheme.typography.labelLarge)
+                    Text(
+                        if (weekCapacity.status == CapacityStatus.UNCONFIGURED) "—" else "${weekCapacity.utilizationPercent}%",
+                        color = nb.inkPrimary, style = MaterialTheme.typography.displaySmall
+                    )
+                    Text(weekCapacity.status.label, color = nb.inkSecondary, fontSize = 13.sp)
+                }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("Hoje", style = MaterialTheme.typography.titleMedium, color = nb.inkPrimary)
+                    Text("${todayBlocks.size} ${if (todayBlocks.size == 1) "bloco" else "blocos"} · " +
+                        "${todayEvents.size} ${if (todayEvents.size == 1) "evento" else "eventos"}", color = nb.inkSecondary, fontSize = 13.sp)
+                    Text("${replanItems.size} para replanejar · ${dueMimir.size} ${if (dueMimir.size == 1) "revisão" else "revisões"}", color = nb.inkSecondary, fontSize = 13.sp)
+                }
             }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                CouncilKpiTile(
-                    label = "Replanejar",
-                    value = "${replanItems.size}",
-                    detail = if (replanItems.isEmpty()) "Agenda em dia" else "itens aguardando decisão",
-                    accent = if (replanItems.isEmpty()) nb.accentPatina else nb.accentBronze,
-                    modifier = Modifier.weight(1f),
-                    rune = HistoricalFutharkRune.Raido
-                )
-                CouncilKpiTile(
-                    label = "Mímir",
-                    value = "${dueMimir.size}",
-                    detail = if (dueMimir.isEmpty()) "Sem revisões hoje" else "runas para revisar",
-                    accent = nb.accentBronze,
-                    modifier = Modifier.weight(1f),
-                    rune = HistoricalFutharkRune.Ansuz
-                )
-            }
-        }
-
-        // Centro de comando aberto (sem caixa redundante envolvendo botões)
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            NorthbornEditorialHeader("Centro de comando estratégico", kicker = "Decisão")
-            NorthbornButton(
-                text = "Gerar plano",
-                onClick = { onGoTab(1) },
-                role = NorthbornButtonRole.Ceremonial,
-                modifier = Modifier.fillMaxWidth(),
-                leadingIcon = NorthbornGlyph.Odin
-            )
+            Meter(weekCapacity.utilizationPercent.toFloat() / 100f, nb.accentPatina, slim = true)
+            RebirthAction("Gerar plano", { onGoTab(1) }, Modifier.fillMaxWidth(), glyph = NorthbornGlyph.Odin)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                NorthbornButton(
-                    text = "Forja do Tempo",
-                    onClick = onOpenTimeForge,
-                    role = NorthbornButtonRole.Primary,
-                    modifier = Modifier.weight(1f),
-                    leadingIcon = NorthbornGlyph.TimeForge
-                )
-                NorthbornButton(
-                    text = "Disponibilidade",
-                    onClick = { onGoTab(5) },
-                    role = NorthbornButtonRole.Secondary,
-                    modifier = Modifier.weight(1f)
-                )
+                RebirthAction("Forja do Tempo", onOpenTimeForge, Modifier.weight(1f), primary = false)
+                RebirthAction("Disponibilidade", { onGoTab(5) }, Modifier.weight(1f), primary = false)
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 NordicCompactAction("Conselho dos 9", onOpenCouncilNine, accent = nb.accentBronze)
@@ -288,39 +236,29 @@ private fun OdinHallOverviewSection(
             }
         }
 
-        // Estratégia ativa em superfície tátil dedicada (6 selos metálicos preservados)
-        NorthbornSurface(role = NorthbornSurfaceRole.Strategic, material = NorthbornMaterial.AgedBronze, accent = nb.accentBronze) {
+        Column {
+            RebirthRule()
             NordicSectionHeader(
                 eyebrow = "Estratégias de Odin (apenas pesos de planejamento)",
-                subtitle = "Alteram prioridades, margem entre blocos e carga alvo — nunca alteram XP, moedas ou classes.",
-                rune = HistoricalFutharkRune.Sowilo
+                subtitle = "Alteram prioridades, margem entre blocos e carga alvo."
             )
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                odinStrategies.chunked(2).forEach { pair ->
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        pair.forEach { st ->
-                            val selected = st.id == activeStrategy.id
-                            val shape = NorthbornShape.md
-                            Row(
-                                Modifier
-                                    .weight(1f)
-                                    .clip(shape)
-                                    .background(if (selected) nb.accentBronze.copy(alpha = if (nb.dark) 0.18f else 0.14f) else nb.surfaceBase)
-                                    .border(if (selected) 1.5.dp else 1.dp, if (selected) nb.accentBronze else nb.hairline, shape)
-                                    .clickable { vm.run { vm.repo.setOdinStrategy(st.id) } }
-                                    .padding(9.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                OdinStrategyMedal(st, Modifier.size(44.dp))
-                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    Text(st.name, color = if (selected) nb.accentBronze else nb.inkPrimary, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                    Text(st.title, color = nb.inkSecondary, fontSize = 11.sp, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                                }
-                            }
-                        }
+            odinStrategies.forEach { strategy ->
+                val selected = strategy.id == activeStrategy.id
+                Row(
+                    Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                        .selectable(selected, role = Role.RadioButton) { vm.run { vm.repo.setOdinStrategy(strategy.id) } }
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OdinStrategyMedal(strategy, Modifier.size(34.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(strategy.name, style = MaterialTheme.typography.titleMedium, color = nb.inkPrimary)
+                        Text(strategy.title, color = nb.inkSecondary, fontSize = 12.sp)
                     }
+                    if (selected) Text("Ativa", color = nb.accentPatina, fontSize = 12.sp)
                 }
+                RebirthRule()
             }
         }
 
@@ -471,7 +409,7 @@ private fun OdinProposalSection(
     val activeAppliedPlans = remember(s.appliedPlans) { s.appliedPlans.filter { !it.undone }.take(3) }
 
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-        CouncilMaterialSurface(CouncilMaterial.NordicWood) {
+        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             NordicSectionHeader("Simulação de plano · ${displayPeriod(proposal.dateFrom, proposal.dateTo)}", rune = HistoricalFutharkRune.Ansuz)
             ChipRow(
                 listOf("Hoje", "3 dias", "7 dias", "14 dias"),

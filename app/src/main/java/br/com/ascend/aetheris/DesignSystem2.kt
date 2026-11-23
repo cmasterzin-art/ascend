@@ -6,10 +6,8 @@ import androidx.compose.foundation.shape.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.*
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.layout.layout
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -142,101 +140,53 @@ fun SectionHeader(title: String, sub: String = "") {
  * sem caixa artificial, retrato integrado com luz fria discreta e identidade editorial limpa.
  */
 @Composable
-fun CompactHero(s: GameState, onPortrait: () -> Unit = {}) {
-    val p = requireNotNull(s.player)
-    val minimal = LocalAppearance.current.minimal
+fun CompactHero(s: GameState, day: String, onPortrait: () -> Unit) {
+    val player = requireNotNull(s.player)
     val nb = LocalNorthborn.current
-    val night = nb.canvas
-    val cold = if (nb.dark) Color(0xFFB8C7D9) else Color.White
-
-    BoxWithConstraints(
-        Modifier.fillMaxWidth().layout { m, c ->
-            val bleed = 20.dp.roundToPx()
-            val placeable = m.measure(c.copy(minWidth = c.maxWidth + 2 * bleed, maxWidth = c.maxWidth + 2 * bleed))
-            layout(c.maxWidth, placeable.height) { placeable.place(-bleed, 0) }
-        }
-    ) {
-        val narrow = maxWidth < 360.dp
-        val portrait = if (narrow) 56.dp else 72.dp
-        if (!minimal) {
+    val xp = Progression.current(s.xp)
+    val goal = Progression.requirement(s.level)
+    BoxWithConstraints(Modifier.fillMaxWidth().clip(CutCornerShape(topEnd = 16.dp))) {
+        val narrow = maxWidth < 310.dp
+        if (!LocalAppearance.current.minimal) {
             Image(
-                androidx.compose.ui.res.painterResource(R.drawable.nordic_fjord),
-                null,
+                androidx.compose.ui.res.painterResource(R.drawable.rebirth_fjord), null,
                 Modifier.matchParentSize(),
-                contentScale = androidx.compose.ui.layout.ContentScale.Crop,
-                alignment = Alignment.TopCenter,
-                alpha = if (nb.dark) 0.72f else 0.34f
+                alignment = Alignment.CenterEnd,
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop
             )
-            Box(
-                Modifier.matchParentSize().background(
-                    Brush.verticalGradient(
-                        0f to night.copy(alpha = 0.72f),
-                        0.24f to night.copy(alpha = 0.16f),
-                        0.58f to night.copy(alpha = 0.45f),
-                        0.86f to night.copy(alpha = 0.92f),
-                        1f to night
-                    )
-                )
-            )
-            Box(
-                Modifier.matchParentSize().background(
-                    Brush.horizontalGradient(
-                        0f to night.copy(alpha = 0.48f),
-                        0.20f to Color.Transparent,
-                        0.80f to Color.Transparent,
-                        1f to night.copy(alpha = 0.48f)
-                    )
-                )
-            )
+            Box(Modifier.matchParentSize().background(Brush.verticalGradient(
+                0f to nb.canvas.copy(alpha = .82f), .25f to nb.canvas.copy(alpha = .18f),
+                .62f to nb.canvas.copy(alpha = .70f), 1f to nb.canvas
+            )))
+            Box(Modifier.matchParentSize().background(Brush.horizontalGradient(
+                0f to nb.canvas.copy(alpha = .88f), .65f to nb.canvas.copy(alpha = .45f), 1f to Color.Transparent
+            )))
         }
-        Column(
-            Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(top = if (narrow) 64.dp else 74.dp, bottom = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(if (narrow) 12.dp else 16.dp)) {
-                Box(
-                    Modifier
-                        .drawBehind {
-                            if (!minimal) {
-                                val r = size.maxDimension * 0.85f
-                                drawCircle(Brush.radialGradient(listOf(cold.copy(alpha = 0.16f), Color.Transparent), center = Offset(size.width / 2, size.height * 0.4f), radius = r), r, Offset(size.width / 2, size.height * 0.4f))
-                            }
-                        }
-                        .clickable(onClickLabel = "Ampliar retrato", onClick = onPortrait)
-                ) {
-                    ForgePortrait(s, portrait)
-                }
+        Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.SpaceBetween) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        if (s.heraldry != null) {
-                            HeraldicCrest(s.heraldry, size = if (narrow) 20.dp else 24.dp)
-                        }
-                        Text(
-                            p.name,
-                            style = if (narrow) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineMedium,
-                            color = nb.inkPrimary,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Text(classes[p.heroClass], color = nb.accentFjord, fontSize = 12.5.sp, fontWeight = FontWeight.Medium)
-                        if (!narrow) {
-                            Text("·", color = nb.inkTertiary, fontSize = 12.sp)
-                            Text(p.title, color = nb.inkSecondary, fontSize = 12.5.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        }
-                    }
-                    if (narrow) Text(p.title, color = nb.inkSecondary, fontSize = 11.5.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Spacer(Modifier.height(2.dp))
-                    Meter(Progression.current(s.xp).toFloat() / Progression.requirement(s.level), nb.accentFjord, slim = true)
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("${Progression.current(s.xp)}/${Progression.requirement(s.level)} XP", color = nb.accentFjord, fontSize = if (narrow) 10.5.sp else 11.5.sp, maxLines = 1)
-                        Text("${s.coins} ${if (narrow) "frag." else "fragmentos"}", fontSize = if (narrow) 10.5.sp else 11.5.sp, color = nb.inkSecondary, maxLines = 1)
-                    }
+                    Eyebrow("ASCEND  /  Minha Jornada", nb.inkPrimary)
+                    Text(displayDate(day), color = nb.inkSecondary, fontSize = 12.sp)
                 }
-                Box(Modifier.semantics(mergeDescendants = true) { contentDescription = "Nível ${s.level}" }) {
-                    ForgeMedallion(s.level, Modifier.size(if (narrow) 40.dp else 48.dp))
+                ClassEmblem(player.heroClass, Modifier.size(26.dp))
+            }
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                    Text(player.name, style = MaterialTheme.typography.headlineMedium, color = nb.inkPrimary)
+                    Text("${classes[player.heroClass]} · Nível ${s.level}", color = nb.inkPrimary, fontSize = 13.sp)
+                    Text(player.title, color = nb.inkSecondary, fontSize = 12.sp)
+                    s.heraldry?.let { HeraldicCrest(it, size = 20.dp) }
                 }
+                Box(Modifier.clickable(onClickLabel = "Ampliar retrato", onClick = onPortrait)) {
+                    ForgePortrait(s, if (narrow) 51.dp else 62.dp)
+                }
+            }
+            Meter(xp.toFloat() / goal, nb.accentPatina, slim = true)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("$xp/$goal XP", Modifier.weight(1f), color = nb.inkPrimary, fontSize = 12.sp)
+                Text("${s.coins} fragmentos", color = nb.inkSecondary, fontSize = 12.sp)
             }
         }
     }

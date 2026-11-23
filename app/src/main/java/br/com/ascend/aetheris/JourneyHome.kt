@@ -64,83 +64,52 @@ import java.util.Locale
       Modifier.fillMaxSize().background(nb.canvas).testTag("journey_list").semantics{contentDescription="Central da Jornada"},
       state=listState,
       contentPadding=PaddingValues(horizontal=20.dp, vertical=16.dp),
-      verticalArrangement=Arrangement.spacedBy(18.dp)
+      verticalArrangement=Arrangement.spacedBy(11.dp)
   ){
    s.focus?.let { focus -> item(key="active-focus") { FocusCard(focus,s,vm) } }
-   item{Box(Modifier.fillMaxWidth()){
-    CompactHero(s,onPortrait)
-    Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){
-     Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(2.dp)){
-      Eyebrow("ASCEND  /  Minha Jornada", nb.accentBronze)
-      Text(displayDate(day),color=nb.inkSecondary,fontSize=12.5.sp)
+   item { CompactHero(s, day, onPortrait) }
+   item {
+    DayLedger(done, due.size, rested, relaxed, dialSize)
+   }
+   item {
+    ShortcutStrip(listOf(
+     Triple("Mesa de Odin", Glyph.World, onOdin),
+     Triple("Forja Tempo", Glyph.Focus, onTimeForge),
+     Triple("Planejador", Glyph.Planner, onPlanner)
+    ))
+   }
+   item {
+    val destinations = listOf(
+     Triple("Caminhos", NorthbornGlyph.Paths, onPaths),
+     Triple("Conselho 9", NorthbornGlyph.CouncilNine, onCouncilNine),
+     Triple("Entrada${if(inboxCount>0)" ($inboxCount)" else ""}", NorthbornGlyph.Missions, onInbox),
+     Triple("Pendências", NorthbornGlyph.Check, onPending),
+     Triple("Análises", NorthbornGlyph.Journey, onAnalysis),
+     Triple("Foco", NorthbornGlyph.TimeForge, onHistory)
+    )
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+     listOf(destinations.first(), destinations[4], destinations[5]).forEach { (label, _, action) ->
+      TextButton(action, Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 6.dp)) {
+       Text(label, color = nb.inkPrimary)
+      }
      }
-     ClassEmblem(s.player!!.heroClass,Modifier.size(26.dp))
-    }
-   }}
-   item{Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(14.dp)){
-    DayLedger(done,due.size,rested,relaxed,dialSize)
-    NorthbornDivider(NorthbornDividerStyle.Hairline)
-    // 3 acessos estratégicos principais em faixa arquitetônica única (substituindo 3 ShortcutStrips empilhadas)
-    Row(Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.spacedBy(8.dp)){
-     listOf(
-      Triple("Mesa de Odin", NorthbornGlyph.Odin, onOdin),
-      Triple("Forja Tempo", NorthbornGlyph.TimeForge, onTimeForge),
-      Triple("Planejador", NorthbornGlyph.Agenda, onPlanner)
-     ).forEach { (lbl, glyph, act) ->
-      Column(
-       Modifier
-        .weight(1f)
-        .heightIn(min=58.dp)
-        .clip(NorthbornShape.sm)
-        .background(nb.surfaceBase)
-        .border(1.dp, nb.hairline, NorthbornShape.sm)
-        .clickable(onClick=act)
-        .padding(horizontal=6.dp, vertical=9.dp),
-       horizontalAlignment=Alignment.CenterHorizontally,
-       verticalArrangement=Arrangement.spacedBy(5.dp)
-      ){
-       NorthbornIcon(glyph, nb.accentBronze, size=18.dp)
-       Text(lbl, color=nb.inkPrimary, fontSize=11.5.sp, fontWeight=FontWeight.Medium, maxLines=1, overflow=androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+     var showDestinations by remember { mutableStateOf(false) }
+     Box {
+      IconButton({ showDestinations = true }) { Icon(Icons.Default.MoreVert, "Todos os destinos") }
+      DropdownMenu(showDestinations, { showDestinations = false }) {
+       destinations.forEach { (label, _, action) ->
+        DropdownMenuItem({ Text(label) }, { showDestinations = false; action() })
+       }
       }
      }
     }
-    // Faixa secundária horizontal leve para os demais módulos (todos os rótulos preservados)
-    Row(
-     Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-     horizontalArrangement=Arrangement.spacedBy(8.dp),
-     verticalAlignment=Alignment.CenterVertically
-    ){
-     listOf(
-      Triple("Caminhos", NorthbornGlyph.Paths, onPaths),
-      Triple("Conselho 9", NorthbornGlyph.CouncilNine, onCouncilNine),
-      Triple("Entrada${if(inboxCount>0)" ($inboxCount)" else ""}", NorthbornGlyph.Missions, onInbox),
-      Triple("Pendências", NorthbornGlyph.Check, onPending),
-      Triple("Análises", NorthbornGlyph.Journey, onAnalysis),
-      Triple("Foco", NorthbornGlyph.TimeForge, onHistory)
-     ).forEach { (lbl, glyph, act) ->
-      Row(
-       Modifier
-        .heightIn(min=36.dp)
-        .clip(NorthbornShape.pill)
-        .background(nb.surfaceBase.copy(alpha=0.75f))
-        .border(1.dp, nb.hairline, NorthbornShape.pill)
-        .clickable(onClick=act)
-        .padding(horizontal=10.dp, vertical=6.dp),
-       verticalAlignment=Alignment.CenterVertically,
-       horizontalArrangement=Arrangement.spacedBy(5.dp)
-      ){
-       NorthbornIcon(glyph, nb.inkSecondary, size=13.dp)
-       Text(lbl, color=nb.inkPrimary, fontSize=12.sp, maxLines=1)
-      }
-     }
-    }
-   }}
+   }
   item{RumosDoDiaPanel(rumos,s,vm,expanded=rumosExpanded||hasRumos&&rumosExpanded,hasRumos=hasRumos,dueCardsCount=dueCardsCount,onToggle={rumosExpanded=!rumosExpanded},onPaths=onPaths,onOpenPath=onOpenPath,onPlanner=onPlanner,onInbox=onInbox,onPending=onPending,onMimirReview=onMimirReview)}
   item{
    Column(verticalArrangement=Arrangement.spacedBy(10.dp)){
     NorthbornEditorialHeader(
      title = "Seus próximos passos",
-     subtitle = "Conclua com um toque; toque no nome para detalhes.",
+
      action = {
       IconButton(
        onClick = onAdd,
@@ -160,7 +129,7 @@ import java.util.Locale
   }
   val visible=due.filter{!pendingOnly||s.record(it.id,day)?.complete!=true}.sortedBy{s.record(it.id,day)?.complete==true}
   if(visible.isEmpty())item{Empty(if(rested)"Este dia está reservado para descanso. Seus registros e recompensas anteriores continuam guardados." else if(due.isEmpty())"Nenhum hábito para hoje. Abra o Planejador ou crie seu primeiro passo." else "Tudo feito por hoje. Aetheris pode esperar pelo seu próximo passo.")}
-  items(visible.size,key={visible[it].id}){i->val h=visible[i];HabitCard(h,s.record(h.id,day),{if(h.type==0&&s.record(h.id,day)?.complete!=true)vm.run{vm.repo.progress(h,day,1)}else onProgress(h,s.record(h.id,day))},{detail=h},{onFocus(h)})}
+  items(visible.size,key={visible[it].id}){i->val h=visible[i];HabitCard(h,s.record(h.id,day),{if(h.type==0&&s.record(h.id,day)?.complete!=true)vm.run{vm.repo.progress(h,day,1)}else onProgress(h,s.record(h.id,day))},{detail=h},{onFocus(h)},editorial = true)}
   item{WeekStrip(s,day)}
   item{
    Column(verticalArrangement=Arrangement.spacedBy(12.dp)){
@@ -184,27 +153,24 @@ import java.util.Locale
 @OptIn(ExperimentalLayoutApi::class)
 @Composable fun RumosDoDiaPanel(r:RumosDoDia,s:GameState,vm:GameViewModel,expanded:Boolean,hasRumos:Boolean,dueCardsCount:Int=0,onToggle:()->Unit,onPaths:()->Unit,onOpenPath:(String)->Unit,onPlanner:()->Unit,onInbox:()->Unit,onPending:()->Unit,onMimirReview:()->Unit={}){
  val nb=LocalNorthborn.current
- NorthbornSurface(
-  role = NorthbornSurfaceRole.Informative,
-  accent = if(r.overdueCount>0) nb.accentEmber else nb.accentFjord,
-  modifier = Modifier.testTag("rumos_do_dia")
- ){
-  Row(Modifier.fillMaxWidth().clickable(onClick=onToggle),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.SpaceBetween){
-   Column(Modifier.weight(1f),verticalArrangement=Arrangement.spacedBy(3.dp)){
-    Eyebrow("Rumos do Dia", if(r.overdueCount>0) nb.accentEmber else nb.accentBronze)
-    Text(
-     if(!hasRumos)"Sem compromissos, blocos ou tarefas urgentes hoje."
-     else "${r.pendingTodayCount} pendentes hoje · ${r.overdueCount} atrasadas · ${r.plannedBlocksCount} blocos · ${r.inboxCount} entrada",
-     color=if(r.overdueCount>0) nb.accentBronze else nb.inkSecondary,
-     fontSize=12.5.sp
-    )
+ Column(Modifier.fillMaxWidth().testTag("rumos_do_dia")) {
+  RebirthRule()
+  Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+   Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+    Text("Rumos do Dia", style = MaterialTheme.typography.titleMedium, color = nb.inkPrimary)
+    val summary = when {
+     expanded && hasRumos -> "${r.pendingTodayCount} hoje · ${r.overdueCount} atrasadas · ${r.plannedBlocksCount} blocos · ${r.inboxCount} na entrada"
+     !hasRumos -> "Agenda livre"
+     r.overdueCount > 0 -> "${r.overdueCount} ${if (r.overdueCount == 1) "tarefa atrasada" else "tarefas atrasadas"}"
+     else -> "${r.plannedBlocksCount} blocos · ${r.pendingTodayCount} pendentes"
+    }
+    Text(summary, color = if (r.overdueCount > 0) nb.accentEmber else nb.inkSecondary, fontSize = 12.sp)
    }
-   TextButton(onToggle){Text(if(expanded)"Recolher" else "Abrir rumos",fontSize=12.sp,color=nb.accentBronze)}
+   TextButton(onToggle, Modifier.heightIn(min = 48.dp)) { Text(if (expanded) "Recolher" else "Abrir rumos") }
   }
-  if(dueCardsCount>0){
-   Row(Modifier.fillMaxWidth().clickable(onClick=onMimirReview).padding(top=2.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
-    Text("◈ Runas da Memória · $dueCardsCount ${if(dueCardsCount==1)"revisão pendente" else "revisões pendentes"}",color=nb.accentFjord,fontSize=12.5.sp,modifier=Modifier.weight(1f))
-    Text("Revisar",color=nb.accentBronze,fontSize=12.5.sp,fontWeight=FontWeight.Medium)
+  if (dueCardsCount > 0) {
+   TextButton(onMimirReview, Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(end = 8.dp)) {
+    Text("Runas da Memória · $dueCardsCount ${if (dueCardsCount == 1) "revisão" else "revisões"}", color = nb.accentFjord)
    }
   }
   if(expanded){
