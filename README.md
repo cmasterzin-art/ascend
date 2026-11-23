@@ -1,8 +1,10 @@
 # ASCEND — Crônicas da Ascensão · NORTHBORN 4.1
 
-O **ASCEND 1.7.5.9.2** aplica o NORTHBORN 4.1 à rotina, ao planejamento, à exploração, aos códices e ao personagem. As três telas do piloto forneceram os materiais, as gravuras e as microinterações compartilhadas. [Galeria e comparativos](docs/design/NORTHBORN-FINALIZACAO.md) · [Direção artística](docs/design/NORTHBORN-ART-DIRECTION.md)
+O **ASCEND 1.7.5.9.2 · Controles da Forja** combina placas de madeira, bronze e ferro nos botões, atalhos, filtros e widgets. A Jornada reúne os três atalhos principais em uma faixa de placas gravadas. [Capturas e design dos controles](docs/design/NORTHBORN-FORJA.md)
 
-[**Baixar ASCEND 1.7.5.9.2 para Android**](downloads/ASCEND-1.7.5.9.2.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.2.apk.sha256) · [Validação](VALIDACAO.md)
+[**Baixar ASCEND 1.7.5.9.2 · código 36**](downloads/ASCEND-1.7.5.9.2-forja.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.2-forja.apk.sha256) · [Validação](VALIDACAO.md)
+
+O acabamento NORTHBORN 4.1 do código 35 está disponível para comparação. [APK anterior](downloads/ASCEND-1.7.5.9.2.apk?raw=true) · [Galeria anterior](docs/design/NORTHBORN-FINALIZACAO.md) · [Direção artística](docs/design/NORTHBORN-ART-DIRECTION.md)
 
 [APK do piloto rústico](downloads/ASCEND-1.7.5.9.1-dev-rustico.apk?raw=true) · [APK de fundos e gravuras](downloads/ASCEND-1.7.5.9.1-dev-gravuras.apk?raw=true) · [APK de escudo, madeira e velino](downloads/ASCEND-1.7.5.9.1-dev-entalhe.apk?raw=true) · [APK da revisão nórdica](downloads/ASCEND-1.7.5.9.1-dev-nordico.apk?raw=true) · [APK do primeiro protótipo](downloads/ASCEND-1.7.5.9.1-dev.apk?raw=true)
 

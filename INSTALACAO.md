@@ -1,6 +1,10 @@
-# Instalar ASCEND 1.7.5.9 no Android
+# Instalar ASCEND no Android
 
 Android 8.0 (API 26) ou superior. O uso não exige internet, conta ou pagamento.
+
+## Atualizar para 1.7.5.9.2 · Controles da Forja
+
+Abra o APK no Android e instale por cima da versão anterior. O código interno subiu de 35 para 36 e o certificado é o mesmo. [Baixar APK do código 36](downloads/ASCEND-1.7.5.9.2-forja.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.2-forja.apk.sha256)
 
 ## Atualizar os APKs 1.1 a 1.7.5.1 fornecidos neste repositório
 

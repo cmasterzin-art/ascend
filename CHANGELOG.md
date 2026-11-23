@@ -1,3 +1,9 @@
+# 1.7.5.9.2 · Controles da Forja (36)
+
+- Placas originais em 3D para ações principais, secundárias, confirmações, remoções e resgates.
+- Atalhos da Jornada com gravuras e duas linhas de rótulo. Abas, filtros, diálogos e widgets adotam os materiais da mesma família.
+- Ações compactas com alvos de 48 dp, foco visível e feedback compatível com a redução de movimento. [Capturas e detalhes](docs/design/NORTHBORN-FORJA.md)
+
 # 1.7.5.9 — A Reforma de Aetheris
 
 Reformulação visual global com **NORTHBORN Design System 4.0** (*Total UI Reforge & Authentic Nordic Identity Update*) sobre a base estabilizada `feat/ascend-1.7.5.1`, preservando integralmente **100% das regras de negócio**, **Room v11**, **Backup v13**, os **227 testes anteriores** e a economia do RPG. [Auditoria Visual](docs/AUDITORIA-VISUAL-1.7.5.9.md) · [NORTHBORN DS 4.0](docs/NORTHBORN-DESIGN-SYSTEM-4.0.md) · [UI Reforge](docs/UI-REFORGE-1.7.5.9.md) · [Visual 1.7.5.9 (30 capturas)](docs/VISUAL-1.7.5.9.md) · [Diário 1.7.5.9](docs/DESENVOLVIMENTO-1.7.5.9.md).

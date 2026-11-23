@@ -1,3 +1,13 @@
+# ASCEND 1.7.5.9.2 · Controles da Forja
+
+23/11/2026. Código de versão 36 sobre o código 35 da mesma branch. Room v11 e backup v13 foram preservados.
+
+- `./gradlew testDebugUnitTest assembleDebug lintDebug --offline` concluiu com **229 testes aprovados, 0 erros de lint e 39 avisos**. Os três avisos adicionais são sobre a textura antiga de madeira fora de uso, a escala dos recursos 9-patch a partir de xhdpi e o nome de uma função auxiliar de captura. [Build](docs/validation/BUILD-1.7.5.9.2-forja.txt) · [Lint](docs/validation/LINT-1.7.5.9.2-forja.txt)
+- APK de **29.980.045 bytes**, alinhado e assinado com o certificado do código 35. A lista de permissões é idêntica e o APK continua sem `INTERNET`. [APK](downloads/ASCEND-1.7.5.9.2-forja.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.2-forja.apk.sha256) · [Certificado e manifesto](docs/validation/APK-1.7.5.9.2-forja.txt)
+- **15 capturas do app** em Robolectric, incluindo widgets, temas claro e escuro, modo minimalista, 320 dp e fonte a 130%. O teste adicional verifica o clique, a seleção, o bloqueio durante carregamento e o tamanho mínimo da ação compacta. A instalação em aparelho físico, TalkBack e launcher real ficam pendentes. [Comparações](docs/design/NORTHBORN-FORJA.md)
+
+---
+
 # ASCEND 1.7.5.9.2 · Acabamento completo NORTHBORN 4.1
 
 23/11/2026. Expansão do acabamento visual a partir do piloto `e971319`. Código de versão 35. Publicação na branch `feat/ascend-1.7.5.9.2`.

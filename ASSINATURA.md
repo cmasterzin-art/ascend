@@ -1,6 +1,6 @@
 # Continuidade de assinatura
 
-O ASCEND 1.7.5.9.2 usa `br.com.ascend.aetheris` e código de versão 35. A assinatura foi verificada contra a compilação anterior. [Certificado do APK atual](docs/validation/APK-1.7.5.9.2.txt)
+O ASCEND 1.7.5.9.2 · Controles da Forja usa `br.com.ascend.aetheris` e código de versão 36. A assinatura corresponde ao APK anterior, de código 35. [Certificado do APK atual](docs/validation/APK-1.7.5.9.2-forja.txt)
 
 ## Estado dos APKs 1.6.8 a 1.7.5.9 e preservação do certificado
 
