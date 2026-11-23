@@ -1,0 +1,151 @@
+/workspace/work/ascend/app/src/main/res/xml/widget_compact.xml:1: Warning: Attribute targetCellHeight is only used in API level 31 and higher (current min is 26) [UnusedAttribute]
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android" android:minWidth="180dp" android:minHeight="110dp" android:targetCellWidth="3" android:targetCellHeight="2" android:updatePeriodMillis="1800000" android:initialLayout="@layout/habit_widget" android:resizeMode="horizontal|vertical" android:widgetCategory="home_screen"/>
+                                                                                                                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/work/ascend/app/src/main/res/xml/widget_compact.xml:1: Warning: Attribute targetCellWidth is only used in API level 31 and higher (current min is 26) [UnusedAttribute]
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android" android:minWidth="180dp" android:minHeight="110dp" android:targetCellWidth="3" android:targetCellHeight="2" android:updatePeriodMillis="1800000" android:initialLayout="@layout/habit_widget" android:resizeMode="horizontal|vertical" android:widgetCategory="home_screen"/>
+                                                                                                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/work/ascend/app/src/main/res/xml/widget_expanded.xml:1: Warning: Attribute targetCellHeight is only used in API level 31 and higher (current min is 26) [UnusedAttribute]
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android" android:minWidth="250dp" android:minHeight="300dp" android:targetCellWidth="4" android:targetCellHeight="4" android:updatePeriodMillis="1800000" android:initialLayout="@layout/habit_widget" android:resizeMode="horizontal|vertical" android:widgetCategory="home_screen"/>
+                                                                                                                                                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/work/ascend/app/src/main/res/xml/widget_expanded.xml:1: Warning: Attribute targetCellWidth is only used in API level 31 and higher (current min is 26) [UnusedAttribute]
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android" android:minWidth="250dp" android:minHeight="300dp" android:targetCellWidth="4" android:targetCellHeight="4" android:updatePeriodMillis="1800000" android:initialLayout="@layout/habit_widget" android:resizeMode="horizontal|vertical" android:widgetCategory="home_screen"/>
+                                                                                                                                  ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "UnusedAttribute":
+   This check finds attributes set in XML files that were introduced in a
+   version newer than the oldest version targeted by your application (with
+   the minSdkVersion attribute).
+
+   This is not an error; the application will simply ignore the attribute.
+   However, if the attribute is important to the appearance or functionality
+   of your application, you should consider finding an alternative way to
+   achieve the same result with only available attributes, and then you can
+   optionally create a copy of the layout in a layout-vNN folder which will be
+   used on API NN or higher where you can take advantage of the newer
+   attribute.
+
+   Note: This check does not only apply to attributes. For example, some tags
+   can be unused too, such as the new <tag> element in layouts introduced in
+   API 21.
+
+/workspace/work/ascend/app/src/main/java/br/com/ascend/aetheris/CarvedArt.kt:101: Warning: Modifier parameter should be the first optional parameter [ModifierParameter from androidx.compose.ui]
+@Composable fun CeremonialSeal(kind:SealKind,lit:Boolean=true,modifier:Modifier=Modifier){
+                                                              ~~~~~~~~
+/workspace/work/ascend/app/src/main/java/br/com/ascend/aetheris/Design.kt:321: Warning: Modifier parameter should be the first optional parameter [ModifierParameter from androidx.compose.ui]
+fun FormField(value: String, onChange: (String) -> Unit, label: String, number: Boolean = false, multi: Boolean = false, modifier: Modifier = Modifier) {
+                                                                                                                         ~~~~~~~~
+/workspace/work/ascend/app/src/main/java/br/com/ascend/aetheris/DesignSystem2.kt:34: Warning: Modifier parameter should be the first optional parameter [ModifierParameter from androidx.compose.ui]
+fun AetherSurface(kind: SurfaceKind = SurfaceKind.Operational, modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+                                                               ~~~~~~~~
+/workspace/work/ascend/app/src/main/java/br/com/ascend/aetheris/MimirScreens.kt:28: Warning: Optional Modifier parameter should have a default value of Modifier [ModifierParameter from androidx.compose.ui]
+fun ArchetypeSealArt(index: Int, modifier: Modifier = Modifier.size(48.dp), dimmed: Boolean = false) {
+                                 ~~~~~~~~
+/workspace/work/ascend/app/src/main/java/br/com/ascend/aetheris/NordicCouncilDesign.kt:287: Warning: Modifier parameter should be the first optional parameter [ModifierParameter from androidx.compose.ui]
+    modifier: Modifier = Modifier
+    ~~~~~~~~
+/workspace/work/ascend/app/src/main/java/br/com/ascend/aetheris/NordicCouncilDesign.kt:375: Warning: Optional Modifier parameter should have a default value of Modifier [ModifierParameter from androidx.compose.ui]
+fun OdinStrategyMedal(strategy: OdinStrategyDef, modifier: Modifier = Modifier.size(48.dp)) {
+                                                 ~~~~~~~~
+/workspace/work/ascend/app/src/main/java/br/com/ascend/aetheris/NordicCouncilDesign.kt:402: Warning: Optional Modifier parameter should have a default value of Modifier [ModifierParameter from androidx.compose.ui]
+fun LifeAreaSeal(sealIndex: Int, modifier: Modifier = Modifier.size(44.dp)) {
+                                 ~~~~~~~~
+/workspace/work/ascend/app/src/main/java/br/com/ascend/aetheris/NordicCouncilDesign.kt:418: Warning: Optional Modifier parameter should have a default value of Modifier [ModifierParameter from androidx.compose.ui]
+fun TimeForgeRefinedPiece(col: Int, row: Int, modifier: Modifier = Modifier.size(168.dp), alpha: Float = 1f) {
+                                              ~~~~~~~~
+/workspace/work/ascend/app/src/main/java/br/com/ascend/aetheris/NordicCouncilDesign.kt:431: Warning: Optional Modifier parameter should have a default value of Modifier [ModifierParameter from androidx.compose.ui]
+fun TimeForgeInstrument(col: Int, row: Int, modifier: Modifier = Modifier.size(168.dp), alpha: Float = 1f) {
+                                            ~~~~~~~~
+/workspace/work/ascend/app/src/main/java/br/com/ascend/aetheris/NordicCouncilDesign.kt:450: Warning: Optional Modifier parameter should have a default value of Modifier [ModifierParameter from androidx.compose.ui]
+fun RunicCalendarGlyph(col: Int, row: Int, modifier: Modifier = Modifier.size(22.dp)) {
+                                           ~~~~~~~~
+/workspace/work/ascend/app/src/main/java/br/com/ascend/aetheris/NordicCouncilDesign.kt:462: Warning: Optional Modifier parameter should have a default value of Modifier [ModifierParameter from androidx.compose.ui]
+fun StrategyControlGlyph(col: Int, row: Int, modifier: Modifier = Modifier.size(20.dp)) {
+                                             ~~~~~~~~
+/workspace/work/ascend/app/src/main/java/br/com/ascend/aetheris/NordicCouncilDesign.kt:474: Warning: Optional Modifier parameter should have a default value of Modifier [ModifierParameter from androidx.compose.ui]
+fun OdinCouncilOrnament(col: Int, row: Int, modifier: Modifier = Modifier.size(22.dp), alpha: Float = 1f) {
+                                            ~~~~~~~~
+/workspace/work/ascend/app/src/main/java/br/com/ascend/aetheris/NorthbornDesignSystem.kt:407: Warning: Modifier parameter should be the first optional parameter [ModifierParameter from androidx.compose.ui]
+    modifier: Modifier = Modifier,
+    ~~~~~~~~
+
+   Explanation for issues of type "ModifierParameter":
+   The first (or only) Modifier parameter in a Composable function should
+   follow the following rules:
+   - Be named modifier
+   - Have a type of Modifier
+   - Either have no default value, or have a default value of Modifier
+   - If optional, be the first optional parameter in the parameter list
+
+   Vendor: Jetpack Compose
+   Identifier: androidx.compose.ui
+   Feedback: https://issuetracker.google.com/issues/new?component=612128
+
+/workspace/work/ascend/app/src/main/res/drawable-nodpi/mimir_library.webp: Warning: The resource R.drawable.mimir_library appears to be unused [UnusedResources]
+/workspace/work/ascend/app/src/main/res/drawable-nodpi/nordic_council_materials_atlas.webp: Warning: The resource R.drawable.nordic_council_materials_atlas appears to be unused [UnusedResources]
+/workspace/work/ascend/app/src/main/res/drawable-nodpi/odin_strategies_atlas.webp: Warning: The resource R.drawable.odin_strategies_atlas appears to be unused [UnusedResources]
+/workspace/work/ascend/app/src/main/res/drawable-nodpi/orn_divider_forged.webp: Warning: The resource R.drawable.orn_divider_forged appears to be unused [UnusedResources]
+/workspace/work/ascend/app/src/main/res/drawable-nodpi/orn_track_progress.webp: Warning: The resource R.drawable.orn_track_progress appears to be unused [UnusedResources]
+/workspace/work/ascend/app/src/main/res/drawable-nodpi/restored_council_buttons_atlas.webp: Warning: The resource R.drawable.restored_council_buttons_atlas appears to be unused [UnusedResources]
+/workspace/work/ascend/app/src/main/res/drawable-nodpi/time_forge_instruments_atlas.webp: Warning: The resource R.drawable.time_forge_instruments_atlas appears to be unused [UnusedResources]
+/workspace/work/ascend/app/src/main/res/drawable-nodpi/ui_control_surface.webp: Warning: The resource R.drawable.ui_control_surface appears to be unused [UnusedResources]
+/workspace/work/ascend/app/src/main/res/drawable-nodpi/ui_field_inscription.webp: Warning: The resource R.drawable.ui_field_inscription appears to be unused [UnusedResources]
+/workspace/work/ascend/app/src/main/res/drawable-nodpi/ui_tablet_selector.webp: Warning: The resource R.drawable.ui_tablet_selector appears to be unused [UnusedResources]
+/workspace/work/ascend/app/src/main/res/drawable-nodpi/viking_button_atlas.webp: Warning: The resource R.drawable.viking_button_atlas appears to be unused [UnusedResources]
+
+   Explanation for issues of type "UnusedResources":
+   Unused resources make applications larger and slow down builds.
+
+
+   The unused resource check can ignore tests. If you want to include
+   resources that are only referenced from tests, consider packaging them in a
+   test source set instead.
+
+   You can include test sources in the unused resource check by setting the
+   system property lint.unused-resources.include-tests =true, and to exclude
+   them (usually for performance reasons), use
+   lint.unused-resources.exclude-tests =true.
+   ,
+
+/workspace/work/ascend/app/src/main/res/layout/habit_widget.xml:4: Warning: Hardcoded string "ASCEND", should use @string resource [HardcodedText]
+  <TextView android:id="@+id/widget_header" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent" android:text="ASCEND" android:textColor="@color/widget_accent" android:fontFamily="serif" android:textStyle="bold" android:letterSpacing="0.06" android:textSize="15sp" android:gravity="center_vertical" android:maxLines="1" android:contentDescription="Abrir Jornada do ASCEND"/>
+                                                                                                                                      ~~~~~~~~~~~~~~~~~~~~~
+/workspace/work/ascend/app/src/main/res/layout/habit_widget.xml:4: Warning: Hardcoded string "Abrir Jornada do ASCEND", should use @string resource [HardcodedText]
+  <TextView android:id="@+id/widget_header" android:layout_width="0dp" android:layout_weight="1" android:layout_height="match_parent" android:text="ASCEND" android:textColor="@color/widget_accent" android:fontFamily="serif" android:textStyle="bold" android:letterSpacing="0.06" android:textSize="15sp" android:gravity="center_vertical" android:maxLines="1" android:contentDescription="Abrir Jornada do ASCEND"/>
+                                                                                                                                                                                                                                                                                                                                                                     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/work/ascend/app/src/main/res/layout/habit_widget.xml:5: Warning: Hardcoded string "Abrir Jornada", should use @string resource [HardcodedText]
+  <TextView android:id="@+id/widget_open" android:layout_width="64dp" android:layout_height="32dp" android:text="Jornada ›" android:textColor="@color/widget_text" android:textSize="11sp" android:fontFamily="sans-serif-medium" android:gravity="center" android:background="@drawable/widget_secondary" android:contentDescription="Abrir Jornada"/>
+                                                                                                                                                                                                                                                                                                           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/work/ascend/app/src/main/res/layout/habit_widget.xml:5: Warning: Hardcoded string "Jornada ›", should use @string resource [HardcodedText]
+  <TextView android:id="@+id/widget_open" android:layout_width="64dp" android:layout_height="32dp" android:text="Jornada ›" android:textColor="@color/widget_text" android:textSize="11sp" android:fontFamily="sans-serif-medium" android:gravity="center" android:background="@drawable/widget_secondary" android:contentDescription="Abrir Jornada"/>
+                                                                                                   ~~~~~~~~~~~~~~~~~~~~~~~~
+/workspace/work/ascend/app/src/main/res/layout/habit_widget.xml:8: Warning: Hardcoded string "0%", should use @string resource [HardcodedText]
+  <TextView android:id="@+id/widget_percent" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="0%" android:textSize="30sp" android:fontFamily="serif" android:textStyle="bold" android:textColor="@color/widget_text"/>
+                                                                                                                      ~~~~~~~~~~~~~~~~~
+/workspace/work/ascend/app/src/main/res/layout/habit_widget.xml:11: Warning: Hardcoded string "Abra sua jornada para começar.", should use @string resource [HardcodedText]
+ <TextView android:id="@+id/widget_summary" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="4dp" android:text="Abra sua jornada para começar." android:textColor="@color/widget_text" android:fontFamily="sans-serif-medium" android:textSize="12sp" android:maxLines="2"/>
+                                                                                                                                                    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "HardcodedText":
+   Hardcoding text attributes directly in layout files is bad for several
+   reasons:
+
+   * When creating configuration variations (for example for landscape or
+   portrait) you have to repeat the actual text (and keep it up to date when
+   making changes)
+
+   * The application cannot be translated to other languages by just adding
+   new translations for existing string resources.
+
+   There are quickfixes to automatically extract this hardcoded string into a
+   resource lookup.
+
+/workspace/work/ascend/app/src/main/res/layout/habit_widget.xml:9: Warning: When you define paddingStart you should probably also define paddingEnd for right-to-left symmetry [RtlSymmetry]
+  <TextView android:id="@+id/widget_period" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:paddingStart="12dp" android:lineSpacingExtra="2dp" android:textSize="11sp" android:textColor="@color/widget_muted"/>
+                                                                                                                                      ~~~~~~~~~~~~~~~~~~~~
+
+   Explanation for issues of type "RtlSymmetry":
+   If you specify padding or margin on the left side of a layout, you should
+   probably also specify padding on the right side (and vice versa) for
+   right-to-left layout symmetry.
+
+0 errors, 35 warnings

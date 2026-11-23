@@ -1,3 +1,13 @@
+# ASCEND 1.7.5.9.1 · Revisão nórdica
+
+23/11/2026. Segundo protótipo visual de Jornada, Mesa de Odin e Biblioteca de Mímir. `versionCode 31`, com o mesmo identificador e certificado da versão anterior.
+
+- `./gradlew testDebugUnitTest lintDebug assembleDebug --offline` concluído com **228 testes aprovados, 0 erros de lint e 35 avisos**. [Build](docs/validation/BUILD-1.7.5.9.1-nordico.txt) · [Lint](docs/validation/LINT-1.7.5.9.1-nordico.txt)
+- APK de desenvolvimento com alinhamento verificado. O manifesto tem as mesmas permissões do primeiro protótipo, sem `INTERNET`. Room v11 e backup v13 foram preservados. [APK](downloads/ASCEND-1.7.5.9.1-dev-nordico.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.1-dev-nordico.apk.sha256) · [Certificado e manifesto](docs/validation/APK-1.7.5.9.1-nordico.txt)
+- 13 capturas em Robolectric Native Graphics. Instalação em telefone e TalkBack seguem pendentes. [Antes e depois](docs/design/NORTHBORN-REFINAMENTO-NORDICO.md)
+
+---
+
 # ASCEND 1.7.5.9.1 — Validação do protótipo
 
 23/11/2026. Jornada, Mesa de Odin e Biblioteca de Mímir no protótipo NORTHBORN 4.1, sobre a 1.7.5.9 (`aeb3b70`).
