@@ -234,13 +234,13 @@ fun NordicCompactAction(
             .widthIn(min = NorthbornSpace.touchMin)
             .clip(shape)
             .background(bg)
-            .forgedFinish(plate, press, opacity = .74f)
+            .forgedFinish(plate, press, opacity = if (nb.dark) .72f else .88f)
             .border(if (focused) 2.dp else 1.dp, edge, shape)
             .clickable(
                 interactionSource = interaction, indication = LocalIndication.current,
                 enabled = enabled, role = Role.Button, onClick = onClick
             )
-            .padding(horizontal = 11.dp, vertical = 7.dp),
+            .padding(horizontal = 13.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterHorizontally)
     ) {

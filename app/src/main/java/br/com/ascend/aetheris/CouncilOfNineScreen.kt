@@ -57,7 +57,7 @@ fun CouncilOfNineScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            ChapterHeading("Conselho dos Nove", "Áreas da vida opcionais e objetivos pessoais trimestrais e anuais com progresso verificável.", NorthbornChapter.Strategy, Engraving.Council)
+            ChapterHeading("Conselho dos Nove", "Áreas da vida opcionais e objetivos pessoais trimestrais e anuais com progresso verificável.", NorthbornChapter.Strategy, Engraving.Council, cover = true)
         }
         item {
             AetherisTabs(listOf("Áreas da Vida (${areas.size})", "Objetivos (${goals.size})"), tab, { tab = it })

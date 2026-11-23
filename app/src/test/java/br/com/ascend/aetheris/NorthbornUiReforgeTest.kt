@@ -37,7 +37,7 @@ import java.time.LocalDate
 /**
  * ASCEND 1.7.5.9 — A Reforma de Aetheris (NORTHBORN Design System 4.0)
  * Suíte UI Robolectric + Compose capturando todas as 30 telas obrigatórias
- * em build/reports/screenshots/1.7.5.9.2/ para inspeção visual e validação de regressão.
+ * em build/reports/screenshots/1.7.5.9.3/ para inspeção visual e validação de regressão.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = AscendApp::class, qualifiers = "w411dp-h891dp-mdpi")
@@ -94,7 +94,7 @@ class NorthbornUiReforgeTest {
                 android.graphics.Bitmap.Config.ARGB_8888
             )
             view.draw(android.graphics.Canvas(bitmap))
-            val file = File("build/reports/screenshots/1.7.5.9.2/$name.png")
+            val file = File("build/reports/screenshots/1.7.5.9.3/$name.png")
             file.parentFile!!.mkdirs()
             file.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
             bitmap.recycle()
@@ -484,7 +484,7 @@ class NorthbornUiReforgeTest {
         renderScreen {
             SettingsScreen(s = s0, vm = vm, relaxed = false)
         }
-        compose.onNodeWithText("ASCEND · versão 1.7.5.9.2", ignoreCase = true).assertExists()
+        compose.onNodeWithText("ASCEND · versão 1.7.5.9.3", ignoreCase = true).assertExists()
         shot("23-configuracoes")
 
         // 24. Onboarding
@@ -688,8 +688,8 @@ class NorthbornUiReforgeTest {
         } finally {
             compose.mainClock.autoAdvance = true
         }
-        val firstMotionFrame = File("build/reports/screenshots/1.7.5.9.2/42-mimir-movimento-inicio.png")
-        val lastMotionFrame = File("build/reports/screenshots/1.7.5.9.2/44-mimir-movimento-fim.png")
+        val firstMotionFrame = File("build/reports/screenshots/1.7.5.9.3/42-mimir-movimento-inicio.png")
+        val lastMotionFrame = File("build/reports/screenshots/1.7.5.9.3/44-mimir-movimento-fim.png")
         assertTrue("A revelação deve produzir quadros distintos",
             !firstMotionFrame.readBytes().contentEquals(lastMotionFrame.readBytes()))
 
@@ -744,7 +744,7 @@ class NorthbornUiReforgeTest {
             "52-historico-de-foco", "53-grimorio", "54-caixa-de-entrada", "55-pendencias", "56-heraldica"
         )
         expected.forEach { name ->
-            val f = File("build/reports/screenshots/1.7.5.9.2/$name.png")
+            val f = File("build/reports/screenshots/1.7.5.9.3/$name.png")
             assertTrue("Captura esperada ausente ou vazia: ${f.path}", f.exists() && f.length() > 1000L)
         }
     }

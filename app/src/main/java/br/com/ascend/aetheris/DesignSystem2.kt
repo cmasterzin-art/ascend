@@ -198,13 +198,13 @@ fun CompactHero(s: GameState, day: String, onPortrait: () -> Unit) {
 fun DayLedger(done: Int, total: Int, rested: Boolean, relaxed: Boolean) {
     val nb = LocalNorthborn.current
     val pending = (total - done).coerceAtLeast(0)
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
         EngravedDivider(EngravedRail.Voyage)
         RusticSurface(RusticMaterial.Timber) {
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = 15.dp, vertical = 10.dp),
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Eyebrow(if (rested) "Dia de descanso" else "Jornada de hoje", if (rested) nb.accentPatina else nb.accentBronze)
@@ -220,7 +220,6 @@ fun DayLedger(done: Int, total: Int, rested: Boolean, relaxed: Boolean) {
                 DayStaves(done, total)
             }
         }
-        RebirthRule()
     }
 }
 

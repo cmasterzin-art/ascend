@@ -297,18 +297,18 @@ fun ChipRow(values: List<String>, selected: Int, onSelect: (Int) -> Unit, scroll
             val isSel = selected == i
             val shape = NorthbornShape.pill
             val plate = forgedPlate(NorthbornButtonRole.Contextual, isSel)
-            val bg = if (isSel) nb.accentBronze.copy(alpha = .16f) else nb.surfaceBase
-            val border = if (isSel) nb.accentBronze else nb.hairlineStrong.copy(alpha = 0.72f)
+            val bg = if (isSel) nb.accentBronze.copy(alpha = if (nb.dark) .18f else .14f) else nb.surfaceBase
+            val border = if (isSel) nb.accentBronze else nb.hairlineStrong.copy(alpha = 0.65f)
             val fg = if (isSel) (if (nb.dark) nb.accentPaleGold else nb.accentBronze) else nb.inkSecondary
             Box(
                 Modifier
                     .heightIn(min = NorthbornSpace.touchMin)
                     .clip(shape)
                     .background(bg)
-                    .forgedFinish(plate, opacity = .48f)
-                    .border(if (isSel) 1.2.dp else 1.dp, border, shape)
+                    .forgedFinish(plate, opacity = if (nb.dark) .44f else .52f)
+                    .border(if (isSel) 1.25.dp else 1.dp, border, shape)
                     .selectable(isSel, role = Role.Tab, onClick = { onSelect(i) })
-                    .padding(horizontal = 13.dp, vertical = 8.dp),
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(

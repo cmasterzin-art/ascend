@@ -63,44 +63,44 @@ data class NorthbornPalette(
 }
 
 val NorthbornDarkPalette = NorthbornPalette(
-    canvas = Color(0xFF121417),          // Deep Fjord Charcoal
-    surfaceBase = Color(0xFF181B1F),     // Matte Forged Iron
-    surfaceElevated = Color(0xFF20242A), // Brushed Slate
+    canvas = Color(0xFF111418),          // Deep Fjord Charcoal
+    surfaceBase = Color(0xFF181C21),     // Matte Forged Iron
+    surfaceElevated = Color(0xFF20252C), // Brushed Slate
     surfaceDocument = Color(0xFF1C1A16), // Aged Smoked Oak / Dark Vellum
-    surfaceTinted = Color(0xFF161A20),   // Fjord Night Slate
-    inkPrimary = Color(0xFFEFEAE0),      // Unbleached Ivory
-    inkSecondary = Color(0xFFA7B0BA),    // Weathered Pewter
-    inkTertiary = Color(0xFF7B838E),     // Ash Stone
-    accentBronze = Color(0xFFBC9B6A),    // Aged Burnished Bronze
-    accentPaleGold = Color(0xFFD8BE8F),  // Pale Nordic Gold (ceremonial)
-    accentSilver = Color(0xFFB7C2CE),    // Oxidized Silver
-    accentFjord = Color(0xFF84A4C4),     // Boreal Fjord Blue
-    accentPatina = Color(0xFF83A88E),    // Verdigris Patina Green
-    accentEmber = Color(0xFFCC7E72),     // Muted Forge Ember
-    hairline = Color(0xFF282D34),        // Quiet architectural seam
-    hairlineStrong = Color(0xFF3A414C),  // Crisp structural border
+    surfaceTinted = Color(0xFF161B22),   // Fjord Night Slate
+    inkPrimary = Color(0xFFF1ECE2),      // Unbleached Ivory
+    inkSecondary = Color(0xFFA9B2BC),    // Weathered Pewter
+    inkTertiary = Color(0xFF7D8692),     // Ash Stone
+    accentBronze = Color(0xFFC5A26E),    // Aged Burnished Bronze
+    accentPaleGold = Color(0xFFE3C896),  // Pale Nordic Gold (ceremonial)
+    accentSilver = Color(0xFFBAC5D1),    // Oxidized Silver
+    accentFjord = Color(0xFF86A7C7),     // Boreal Fjord Blue
+    accentPatina = Color(0xFF85AB91),    // Verdigris Patina Green
+    accentEmber = Color(0xFFCF8074),     // Muted Forge Ember
+    hairline = Color(0xFF262B33),        // Quiet architectural seam
+    hairlineStrong = Color(0xFF39414D),  // Crisp structural border
     onAccent = Color(0xFF14110D),
     dark = true
 )
 
 val NorthbornLightPalette = NorthbornPalette(
-    canvas = Color(0xFFF2EDE3),          // Warm Unbleached Linen
-    surfaceBase = Color(0xFFFAF6EE),     // Archival Ivory Paper
-    surfaceElevated = Color(0xFFEAE3D5), // Pale Carved Oak
-    surfaceDocument = Color(0xFFF6EFE0), // Manuscript Vellum
-    surfaceTinted = Color(0xFFE8ECEF),   // Cold Mineral Mist
-    inkPrimary = Color(0xFF1E2228),      // Iron-Gall Ink
-    inkSecondary = Color(0xFF515A65),    // Weathered Slate Ink
-    inkTertiary = Color(0xFF77808A),     // Muted Ash
-    accentBronze = Color(0xFF856232),    // Deep Burnished Bronze (AAA on linen)
-    accentPaleGold = Color(0xFF6B4D21),  // Dark Ceremonial Bronze
-    accentSilver = Color(0xFF525E6C),    // Forged Pewter
-    accentFjord = Color(0xFF2E587A),     // Deep Fjord Blue
-    accentPatina = Color(0xFF296648),    // Nordic Pine Patina
-    accentEmber = Color(0xFF9C4236),     // Iron-Oxide Red
-    hairline = Color(0xFFD9D1C2),        // Quiet archival rule
-    hairlineStrong = Color(0xFFB8AEA0),  // Crisp linen seam
-    onAccent = Color(0xFFFAF6EE),
+    canvas = Color(0xFFF3EEE4),          // Warm Unbleached Linen
+    surfaceBase = Color(0xFFFAF7F0),     // Archival Ivory Paper
+    surfaceElevated = Color(0xFFEBE4D7), // Pale Carved Oak
+    surfaceDocument = Color(0xFFF7F0E2), // Manuscript Vellum
+    surfaceTinted = Color(0xFFEAEFF2),   // Cold Mineral Mist
+    inkPrimary = Color(0xFF1D2127),      // Iron-Gall Ink
+    inkSecondary = Color(0xFF4F5863),    // Weathered Slate Ink
+    inkTertiary = Color(0xFF747D88),     // Muted Ash
+    accentBronze = Color(0xFF825D2B),    // Deep Burnished Bronze (AAA on linen)
+    accentPaleGold = Color(0xFF694B20),  // Dark Ceremonial Bronze
+    accentSilver = Color(0xFF505D6B),    // Forged Pewter
+    accentFjord = Color(0xFF2B5678),     // Deep Fjord Blue
+    accentPatina = Color(0xFF286446),    // Nordic Pine Patina
+    accentEmber = Color(0xFF9A4034),     // Iron-Oxide Red
+    hairline = Color(0xFFDAD2C3),        // Quiet archival rule
+    hairlineStrong = Color(0xFFB9AFA0),  // Crisp linen seam
+    onAccent = Color(0xFFFAF7F0),
     dark = false
 )
 
@@ -266,9 +266,9 @@ fun NorthbornSurface(
     }
     val borderColor = when (role) {
         NorthbornSurfaceRole.Informative -> nb.hairline
-        NorthbornSurfaceRole.Ceremonial -> resolvedAccent.copy(alpha = if (nb.dark) 0.44f else 0.50f)
-        NorthbornSurfaceRole.Document -> nb.hairlineStrong.copy(alpha = if (nb.dark) 0.65f else 0.85f)
-        else -> nb.hairlineStrong.copy(alpha = if (nb.dark) 0.52f else 0.72f)
+        NorthbornSurfaceRole.Ceremonial -> resolvedAccent.copy(alpha = if (nb.dark) 0.42f else 0.46f)
+        NorthbornSurfaceRole.Document -> nb.hairlineStrong.copy(alpha = if (nb.dark) 0.56f else 0.78f)
+        else -> nb.hairlineStrong.copy(alpha = if (nb.dark) 0.46f else 0.66f)
     }
     val atlas = if (!minimal && grainAlpha > 0f) ImageBitmap.imageResource(R.drawable.northborn_materials_atlas) else null
 
@@ -282,10 +282,19 @@ fun NorthbornSurface(
                     drawNorthbornMaterialGrain(atlas, resolvedMaterial, grainAlpha)
                 }
                 val d = 1.dp.toPx()
+                // Subtle architectural vertical depth on Strategic/Ceremonial surfaces
+                if (!minimal && (role == NorthbornSurfaceRole.Strategic || role == NorthbornSurfaceRole.Ceremonial)) {
+                    drawRect(
+                        Brush.verticalGradient(
+                            0f to (if (nb.dark) Color.White.copy(alpha = 0.03f) else Color.White.copy(alpha = 0.25f)),
+                            1f to (if (nb.dark) Color.Black.copy(alpha = 0.14f) else nb.surfaceElevated.copy(alpha = 0.18f))
+                        )
+                    )
+                }
                 // Filete sutil de luz arquitetônica no topo
                 if (role != NorthbornSurfaceRole.Informative) {
                     drawLine(
-                        color = if (nb.dark) Color.White.copy(alpha = 0.06f) else Color.White.copy(alpha = 0.55f),
+                        color = if (nb.dark) Color.White.copy(alpha = 0.075f) else Color.White.copy(alpha = 0.65f),
                         start = Offset(10 * d, d),
                         end = Offset(size.width - 10 * d, d),
                         strokeWidth = d
@@ -294,7 +303,7 @@ fun NorthbornSurface(
                 // Lombada discreta à esquerda em superfícies documentais e informativas
                 if (role == NorthbornSurfaceRole.Document || role == NorthbornSurfaceRole.Informative) {
                     drawRect(
-                        color = resolvedAccent.copy(alpha = if (role == NorthbornSurfaceRole.Document) 0.55f else 0.68f),
+                        color = resolvedAccent.copy(alpha = if (role == NorthbornSurfaceRole.Document) 0.52f else 0.64f),
                         topLeft = Offset(0f, 8 * d),
                         size = Size(2.5f * d, (size.height - 16 * d).coerceAtLeast(0f))
                     )
@@ -417,27 +426,27 @@ fun NorthbornButton(
     val plate = forgedPlate(effectiveRole, enabled)
 
     val containerBg = when {
-        !enabled -> if (nb.dark) Color(0xFF1A1D22) else Color(0xFFE5DFD4)
-        effectiveRole == NorthbornButtonRole.Primary -> if (nb.dark) Color(0xFF5D4B34) else Color(0xFF6B4F2A)
-        effectiveRole == NorthbornButtonRole.Ceremonial -> if (nb.dark) Color(0xFF1F1C17) else Color(0xFF28221B)
-        effectiveRole == NorthbornButtonRole.Confirm -> if (nb.dark) Color(0xFF263E31) else Color(0xFF26523C)
-        effectiveRole == NorthbornButtonRole.Destructive -> if (nb.dark) Color(0xFF4B2622) else Color(0xFF963D32)
-        effectiveRole == NorthbornButtonRole.Secondary -> if (nb.dark) Color(0xFF232830) else Color(0xFFE6DFD2)
-        effectiveRole == NorthbornButtonRole.Contextual -> if (nb.dark) Color(0xFF1B1F26) else Color(0xFFEEE8DC)
+        !enabled -> if (nb.dark) Color(0xFF191D23) else Color(0xFFE7E1D6)
+        effectiveRole == NorthbornButtonRole.Primary -> if (nb.dark) Color(0xFF453423) else Color(0xFF564028)
+        effectiveRole == NorthbornButtonRole.Ceremonial -> if (nb.dark) Color(0xFF1B1F27) else Color(0xFF21252D)
+        effectiveRole == NorthbornButtonRole.Confirm -> if (nb.dark) Color(0xFF203A2E) else Color(0xFF234D38)
+        effectiveRole == NorthbornButtonRole.Destructive -> if (nb.dark) Color(0xFF49231F) else Color(0xFF8C3930)
+        effectiveRole == NorthbornButtonRole.Secondary -> if (nb.dark) Color(0xFF222730) else Color(0xFFECE5D8)
+        effectiveRole == NorthbornButtonRole.Contextual -> if (nb.dark) Color(0xFF1B2028) else Color(0xFFF1EAE0)
         else -> Color.Transparent // Tertiary
     }
     val contentFg = when {
         !enabled -> nb.inkTertiary
-        effectiveRole == NorthbornButtonRole.Primary -> Color(0xFFF8F3E8)
-        effectiveRole == NorthbornButtonRole.Ceremonial -> Color(0xFFF3E6CE)
-        effectiveRole == NorthbornButtonRole.Confirm -> Color(0xFFEFF7F1)
-        effectiveRole == NorthbornButtonRole.Destructive -> Color(0xFFF9EAE8)
+        effectiveRole == NorthbornButtonRole.Primary -> Color(0xFFFAF5EA)
+        effectiveRole == NorthbornButtonRole.Ceremonial -> Color(0xFFF5E9D1)
+        effectiveRole == NorthbornButtonRole.Confirm -> Color(0xFFEFF8F2)
+        effectiveRole == NorthbornButtonRole.Destructive -> Color(0xFFFAECE9)
         effectiveRole == NorthbornButtonRole.Secondary -> nb.inkPrimary
         effectiveRole == NorthbornButtonRole.Contextual -> if (selected) nb.accentBronze else nb.inkPrimary
         else -> if (selected) nb.accentBronze else nb.inkSecondary
     }
     val borderColor = when {
-        !enabled -> nb.hairline
+        !enabled -> nb.hairlineStrong.copy(alpha = 0.65f)
         focused -> nb.accentPaleGold
         selected -> nb.accentBronze
         effectiveRole == NorthbornButtonRole.Ceremonial -> nb.accentBronze.copy(alpha = 0.82f)
@@ -458,10 +467,10 @@ fun NorthbornButton(
         shape = shape,
         contentPadding = PaddingValues(
             horizontal = when {
-                isCeremonial -> 22.dp
-                isContextual -> 12.dp
+                isCeremonial -> 24.dp
+                isContextual -> 14.dp
                 isTertiary -> 12.dp
-                else -> 17.dp
+                else -> 20.dp
             },
             vertical = if (isContextual) 8.dp else 11.dp
         ),
@@ -512,7 +521,7 @@ fun NorthbornButton(
             fontSize = if (isContextual) 12.sp else 14.sp,
             fontWeight = if (isCeremonial || effectiveRole == NorthbornButtonRole.Primary) FontWeight.SemiBold else FontWeight.Medium,
             fontFamily = if (isCeremonial) SagaFont else FontFamily.SansSerif,
-            letterSpacing = if (isCeremonial) 0.5.sp else 0.15.sp,
+            letterSpacing = if (isCeremonial) 0.55.sp else 0.15.sp,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
         )
@@ -583,7 +592,7 @@ fun NorthbornEditorialHeader(
     val kColor = accent ?: nb.accentBronze
     Row(
         modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.Bottom,
+        verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {

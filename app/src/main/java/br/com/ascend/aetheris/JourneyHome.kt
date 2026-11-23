@@ -79,13 +79,13 @@ import java.util.Locale
      }
     }
     item {
-     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+     Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
       listOf(
        Triple("Mesa de Odin", Engraving.Council, onOdin),
        Triple("Forja do Tempo", Engraving.Forge, onTimeForge),
        Triple("Planejador", Engraving.Calendar, onPlanner)
       ).forEach { (label, glyph, action) ->
-       JourneyShortcut(label, glyph, action, Modifier.weight(1f))
+       JourneyShortcut(label, glyph, action, Modifier.weight(1f).fillMaxHeight())
       }
      }
     }
@@ -177,9 +177,10 @@ private fun JourneyShortcut(label: String, glyph: Engraving, onClick: () -> Unit
  val interaction = remember { MutableInteractionSource() }
  val focused by interaction.collectIsFocusedAsState()
  val press = craftPress(interaction)
+ val glyphInk = if (nb.dark) nb.accentPaleGold else nb.accentBronze
  Column(
-  modifier.heightIn(min = 72.dp).clip(shape).background(nb.surfaceElevated)
-   .forgedFinish(plate, press).then(
+  modifier.heightIn(min = 74.dp).clip(shape).background(nb.surfaceElevated)
+   .forgedFinish(plate, press, opacity = if (nb.dark) .92f else .96f).then(
     when {
      focused -> Modifier.border(2.dp, nb.accentPaleGold, shape)
      plate == null -> Modifier.border(1.dp, nb.hairlineStrong, shape)
@@ -187,13 +188,14 @@ private fun JourneyShortcut(label: String, glyph: Engraving, onClick: () -> Unit
     }
    )
    .clickable(interactionSource = interaction, indication = LocalIndication.current, role = Role.Button, onClick = onClick)
-   .padding(horizontal = 7.dp, vertical = 8.dp),
+   .padding(horizontal = 8.dp, vertical = 10.dp),
   horizontalAlignment = Alignment.CenterHorizontally,
-  verticalArrangement = Arrangement.spacedBy(3.dp, Alignment.CenterVertically)
+  verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically)
  ) {
-  EngravedIcon(glyph, nb.accentPaleGold, size = 22.dp, raised = plate != null && nb.dark)
+  EngravedIcon(glyph, glyphInk, size = 21.dp, raised = plate != null && nb.dark)
   Text(
    label, color = nb.inkPrimary, style = MaterialTheme.typography.labelMedium,
+   fontWeight = FontWeight.Medium,
    textAlign = TextAlign.Center, maxLines = 2, overflow = TextOverflow.Ellipsis
   )
  }

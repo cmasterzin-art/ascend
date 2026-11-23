@@ -30,8 +30,31 @@ import kotlin.math.*
 val Parchment=Color(0xFFBDB196)
 val Sepia=Color(0xFF29251E)
 @Composable fun Manuscript(content:@Composable ColumnScope.()->Unit){RebirthReadingLeaf(parchment = true, content = content)}
-/** 1.6.9.10 · The codex binding: one slim leather spine with the saga seal, instead of a full ceremonial panel. */
-@Composable fun SagaCover(count:Int){Row(Modifier.fillMaxWidth().clip(CutCornerShape(4.dp)).background(if(LocalAppearance.current.dark)Color(0xFF231B16) else Color(0xFFE1D5BF)).forgeMaterial(SurfaceKind.Ceremonial).padding(start=20.dp,end=14.dp,top=10.dp,bottom=10.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){Box(Modifier.size(44.dp),contentAlignment=Alignment.Center){Image(painterResource(R.drawable.forge_brooch),null,Modifier.matchParentSize());CeremonialSeal(SealKind.Saga,true,Modifier.size(24.dp))};Column(Modifier.weight(1f)){Text("Livro de missões",style=MaterialTheme.typography.titleLarge);Text("$count ${if(count==1)"recompensa resgatada" else "recompensas resgatadas"} · contratos e sagas",color=Muted,fontSize=12.sp)}}}
+/** 1.7.5.9.3 · Quiet archival summary strip below the single Missions chapter cover (avoids double banner clutter). */
+@Composable fun SagaCover(count:Int){
+    val nb = LocalNorthborn.current
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(NorthbornShape.sm)
+            .background(nb.surfaceBase.copy(alpha = if (nb.dark) 0.78f else 0.90f))
+            .border(1.dp, nb.hairlineStrong.copy(alpha = 0.55f), NorthbornShape.sm)
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ){
+        Box(
+            Modifier.size(34.dp).clip(CircleShape).background(nb.accentBronze.copy(alpha = 0.14f)).border(1.dp, nb.accentBronze.copy(alpha = 0.45f), CircleShape),
+            contentAlignment = Alignment.Center
+        ){
+            CeremonialSeal(SealKind.Saga, true, Modifier.size(20.dp))
+        }
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)){
+            Text("Livro de missões", style = MaterialTheme.typography.titleMedium, color = nb.inkPrimary)
+            Text("$count ${if(count==1)"recompensa resgatada" else "recompensas resgatadas"} · contratos e sagas", color = nb.inkSecondary, fontSize = 12.sp)
+        }
+    }
+}
 @Composable fun rarityColor(n:Int)=listOf(Muted,Green,Blue,Violet,Gold)[n]
 /** A sprite atlas is sampled at draw time; original image files remain intact. */
 @Composable fun ArtTile(resource:Int,index:Int,rows:Int,modifier:Modifier=Modifier){

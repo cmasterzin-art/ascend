@@ -220,14 +220,31 @@ private fun OdinHallOverviewSection(
                     RebirthAction("Gerar plano", { onGoTab(1) }, Modifier.fillMaxWidth(), glyph = Engraving.Council)
                 }
             }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                RebirthAction("Forja do Tempo", onOpenTimeForge, primary = false)
-                RebirthAction("Disponibilidade", { onGoTab(5) }, primary = false)
-            }
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                NordicCompactAction("Conselho dos 9", onOpenCouncilNine, accent = nb.accentBronze)
-                NordicCompactAction("Caminhos 3.0", onOpenPaths, accent = nb.inkSecondary)
-                NordicCompactAction("Agenda 3.0", onOpenAgenda, accent = nb.inkSecondary)
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val wide = maxWidth >= 300.dp && androidx.compose.ui.platform.LocalDensity.current.fontScale <= 1.15f
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (wide) {
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            RebirthAction("Forja do Tempo", onOpenTimeForge, Modifier.weight(1f), primary = false)
+                            RebirthAction("Disponibilidade", { onGoTab(5) }, Modifier.weight(1f), primary = false)
+                        }
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            NordicCompactAction("Conselho dos 9", onOpenCouncilNine, accent = nb.accentBronze, modifier = Modifier.weight(1f))
+                            NordicCompactAction("Caminhos 3.0", onOpenPaths, accent = nb.inkSecondary, modifier = Modifier.weight(1f))
+                            NordicCompactAction("Agenda 3.0", onOpenAgenda, accent = nb.inkSecondary, modifier = Modifier.weight(1f))
+                        }
+                    } else {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            RebirthAction("Forja do Tempo", onOpenTimeForge, primary = false)
+                            RebirthAction("Disponibilidade", { onGoTab(5) }, primary = false)
+                        }
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            NordicCompactAction("Conselho dos 9", onOpenCouncilNine, accent = nb.accentBronze)
+                            NordicCompactAction("Caminhos 3.0", onOpenPaths, accent = nb.inkSecondary)
+                            NordicCompactAction("Agenda 3.0", onOpenAgenda, accent = nb.inkSecondary)
+                        }
+                    }
+                }
             }
             if (!OdinPlanningEngine.hasConfiguredAvailability(s)) {
                 NorthbornSurface(role = NorthbornSurfaceRole.Informative, accent = nb.accentBronze) {
@@ -246,29 +263,50 @@ private fun OdinHallOverviewSection(
             }
         }
 
-        Column {
-            RebirthRule()
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            NorthbornDivider(NorthbornDividerStyle.DiamondKnot)
             NordicSectionHeader(
                 eyebrow = "Estratégias de Odin (apenas pesos de planejamento)",
                 subtitle = "Alteram prioridades, margem entre blocos e carga alvo."
             )
             odinStrategies.forEach { strategy ->
                 val selected = strategy.id == activeStrategy.id
+                val rowShape = NorthbornShape.sm
                 Row(
-                    Modifier.fillMaxWidth().heightIn(min = 56.dp)
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 58.dp)
+                        .clip(rowShape)
+                        .background(if (selected) nb.accentBronze.copy(alpha = if (nb.dark) .12f else .10f) else Color.Transparent)
+                        .then(
+                            if (selected) Modifier.border(1.dp, nb.accentBronze.copy(alpha = .45f), rowShape)
+                            else Modifier
+                        )
                         .selectable(selected, role = Role.RadioButton) { vm.run { vm.repo.setOdinStrategy(strategy.id) } }
-                        .padding(vertical = 8.dp),
+                        .padding(horizontal = 10.dp, vertical = 9.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    Box(
+                        Modifier
+                            .width(2.5.dp)
+                            .height(28.dp)
+                            .background(if (selected) nb.accentBronze else Color.Transparent)
+                    )
                     OdinStrategyMedal(strategy, Modifier.size(34.dp))
                     Column(Modifier.weight(1f)) {
-                        Text(strategy.name, style = MaterialTheme.typography.titleMedium, color = nb.inkPrimary)
+                        Text(
+                            strategy.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = if (selected) (if (nb.dark) nb.accentPaleGold else nb.accentBronze) else nb.inkPrimary
+                        )
                         Text(strategy.title, color = nb.inkSecondary, fontSize = 12.sp)
                     }
-                    if (selected) Text("Ativa", color = nb.accentPatina, fontSize = 12.sp)
+                    if (selected) {
+                        Text("◆ Ativa", color = nb.accentPatina, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                    }
                 }
-                RebirthRule()
+                if (!selected) RebirthRule()
             }
         }
 

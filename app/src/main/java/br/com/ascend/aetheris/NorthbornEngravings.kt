@@ -201,7 +201,9 @@ internal fun EngravedDivider(rail: EngravedRail, modifier: Modifier = Modifier) 
         return
     }
     val bitmap = ImageBitmap.imageResource(rail.art)
-    Canvas(modifier.fillMaxWidth().height(if (rail == EngravedRail.Voyage) 11.dp else 15.dp)) {
+    val railHeight = if (rail == EngravedRail.Voyage) 9.dp else 13.dp
+    val railAlpha = if (nb.dark) 0.94f else 0.88f
+    Canvas(modifier.fillMaxWidth().height(railHeight)) {
         val width = size.width.toInt()
         val height = size.height.toInt()
         val srcEdge = bitmap.width / 6
@@ -210,13 +212,22 @@ internal fun EngravedDivider(rail: EngravedRail, modifier: Modifier = Modifier) 
         fun slice(from: Int, srcWidth: Int, to: Int, dstWidth: Int) {
             drawImage(
                 bitmap, srcOffset = IntOffset(from, 0), srcSize = IntSize(srcWidth, bitmap.height),
-                dstOffset = IntOffset(to, 0), dstSize = IntSize(dstWidth, height)
+                dstOffset = IntOffset(to, 0), dstSize = IntSize(dstWidth, height),
+                alpha = railAlpha
             )
         }
         slice(0, srcEdge, 0, dstEdge)
         slice(srcEdge, bitmap.width - srcEdge * 2, dstEdge, width - dstEdge * 2)
         slice(bitmap.width - srcEdge, srcEdge, width - dstEdge, dstEdge)
-        if (!nb.dark) drawRect(nb.accentPaleGold.copy(alpha = .07f))
+        // Subtle canvas-matched fade on the far 3% ends so rails feel seamlessly inlaid
+        drawRect(
+            androidx.compose.ui.graphics.Brush.horizontalGradient(
+                0f to nb.canvas.copy(alpha = 0.55f),
+                0.04f to Color.Transparent,
+                0.96f to Color.Transparent,
+                1f to nb.canvas.copy(alpha = 0.55f)
+            )
+        )
     }
 }
 

@@ -291,19 +291,11 @@ fun MimirLibraryScreen(
             RebirthAction("Iniciar Runas da Memória\u00A0(${dueCards.size})", { onStartReview("") }, Modifier.fillMaxWidth(),
                 glyph = Engraving.Folio)
         }
-        val nb = LocalNorthborn.current
-        TextField(
+        FormField(
             value = search,
-            onValueChange = { search = it },
-            modifier = Modifier.fillMaxWidth().testTag("mimir_search"),
-            label = { Text("Buscar páginas por título, texto ou tag") },
-            singleLine = true,
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = nb.surfaceDocument,
-                unfocusedContainerColor = nb.surfaceDocument,
-                focusedIndicatorColor = nb.accentPatina,
-                unfocusedIndicatorColor = nb.hairlineStrong
-            )
+            onChange = { search = it },
+            label = "Buscar páginas por título, texto ou tag",
+            modifier = Modifier.testTag("mimir_search")
         )
         RebirthIndex(listOf("Cadernos", "Recentes", "Favoritos", "Tags", "Revisões"), tab) { tab = it }
 
@@ -1078,9 +1070,9 @@ fun PageDetailScreen(
         }
 
         // Links & Backlinks
-        RebirthReadingLeaf {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Eyebrow("Páginas relacionadas (${outgoing.size})", Blue)
+        NorthbornSurface(role = NorthbornSurfaceRole.Document, accent = Blue) {
+            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Box(Modifier.align(Alignment.CenterVertically)) { Eyebrow("Páginas relacionadas (${outgoing.size})", Blue) }
                 TextButton({ linkPickerOpen = true }) { Text("+ Ligar página", fontSize = 12.sp) }
             }
             if (outgoing.isEmpty()) {
@@ -1115,9 +1107,9 @@ fun PageDetailScreen(
         }
 
         // Bibliographic References
-        RebirthReadingLeaf {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Eyebrow("Referências bibliográficas (${refs.size})", Gold)
+        NorthbornSurface(role = NorthbornSurfaceRole.Document, accent = Gold) {
+            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Box(Modifier.align(Alignment.CenterVertically)) { Eyebrow("Referências bibliográficas (${refs.size})", Gold) }
                 TextButton({ refEditorId = "__new__" }) { Text("+ Referência", fontSize = 12.sp) }
             }
             if (refs.isEmpty()) {
