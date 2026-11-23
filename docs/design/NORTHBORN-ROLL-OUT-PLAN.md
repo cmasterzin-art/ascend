@@ -1,5 +1,7 @@
 # NORTHBORN 4.1 · Expansão proposta
 
+A expansão a partir do piloto foi aplicada na 1.7.5.9.2. [Resultado e comparativos](NORTHBORN-FINALIZACAO.md)
+
 A aprovação visual das três telas reais precede qualquer expansão. Usar as capturas à mesma largura como referência e manter cada migração em commit próprio.
 
 | Destinos | Próxima decisão depois da revisão |
@@ -11,4 +13,4 @@ A aprovação visual das três telas reais precede qualquer expansão. Usar as c
 | Atlas e Codex | Separar leitura cartográfica de acervo documental. Testar os rótulos sobre o mapa e as páginas em fonte ampliada. |
 | Configurações, onboarding e formulários | Levar o vocabulário de ações, foco de campo e mensagens de validação da 4.1 para os fluxos. Preservar o acesso aos rascunhos. |
 
-Em cada etapa, comparar entrada, estado vazio e ação principal. Verificar retorno, acessibilidade, 320 dp e fonte 130%, temas e modo minimalista. A direção segue experimental até a avaliação do proprietário.
+O plano da expansão usou as telas piloto como referência para comparar entradas, estados vazios e ações principais. Os recortes de 320 dp, fonte a 130%, tema claro e modo minimalista estão na galeria da nova versão. [Galeria](../screenshots/1.7.5.9.2/)

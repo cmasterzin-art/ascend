@@ -1,6 +1,6 @@
 # Continuidade de assinatura
 
-Identificador estável: `br.com.ascend.aetheris`. Versão `1.7.5.9`, `versionCode 29`. O certificado do APK oficial é preservado via `ASCEND_KEYSTORE_BASE64` e coincide com as versões `1.1` a `1.7.5.1`. [Relatório de assinatura](docs/validation/APK-1.7.5.9.txt).
+O ASCEND 1.7.5.9.2 usa `br.com.ascend.aetheris` e código de versão 35. A assinatura foi verificada contra a compilação anterior. [Certificado do APK atual](docs/validation/APK-1.7.5.9.2.txt)
 
 ## Estado dos APKs 1.6.8 a 1.7.5.9 e preservação do certificado
 

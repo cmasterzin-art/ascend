@@ -1,10 +1,10 @@
 # ASCEND — Crônicas da Ascensão · NORTHBORN 4.1
 
-A branch 1.7.5.9.1 contém o protótipo visual **O Renascimento de Northborn** para Jornada, Mesa de Odin e Biblioteca de Mímir. [Comparações em Compose](docs/design/THREE-SCREEN-VISUAL-REVIEW.md) · [Direção artística](docs/design/NORTHBORN-ART-DIRECTION.md)
+O **ASCEND 1.7.5.9.2** aplica o NORTHBORN 4.1 à rotina, ao planejamento, à exploração, aos códices e ao personagem. As três telas do piloto forneceram os materiais, as gravuras e as microinterações compartilhadas. [Galeria e comparativos](docs/design/NORTHBORN-FINALIZACAO.md) · [Direção artística](docs/design/NORTHBORN-ART-DIRECTION.md)
 
-[APK de desenvolvimento · acabamento rústico e movimento](downloads/ASCEND-1.7.5.9.1-dev-rustico.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.1-dev-rustico.apk.sha256) · [Arte e comparativos](docs/design/NORTHBORN-MOVIMENTO.md) · [Validação](VALIDACAO.md)
+[**Baixar ASCEND 1.7.5.9.2 para Android**](downloads/ASCEND-1.7.5.9.2.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.2.apk.sha256) · [Validação](VALIDACAO.md)
 
-[APK de fundos e gravuras](downloads/ASCEND-1.7.5.9.1-dev-gravuras.apk?raw=true) · [APK de escudo, madeira e velino](downloads/ASCEND-1.7.5.9.1-dev-entalhe.apk?raw=true) · [APK da revisão nórdica](downloads/ASCEND-1.7.5.9.1-dev-nordico.apk?raw=true) · [APK do primeiro protótipo](downloads/ASCEND-1.7.5.9.1-dev.apk?raw=true)
+[APK do piloto rústico](downloads/ASCEND-1.7.5.9.1-dev-rustico.apk?raw=true) · [APK de fundos e gravuras](downloads/ASCEND-1.7.5.9.1-dev-gravuras.apk?raw=true) · [APK de escudo, madeira e velino](downloads/ASCEND-1.7.5.9.1-dev-entalhe.apk?raw=true) · [APK da revisão nórdica](downloads/ASCEND-1.7.5.9.1-dev-nordico.apk?raw=true) · [APK do primeiro protótipo](downloads/ASCEND-1.7.5.9.1-dev.apk?raw=true)
 
 [**Baixar APK Android 1.7.5.9**](downloads/ASCEND-1.7.5.9.apk?raw=true) · [APK 1.7.5.1](downloads/ASCEND-1.7.5.1.apk?raw=true) · [APK 1.7.5](downloads/ASCEND-1.7.5.apk?raw=true) · [APK 1.7.3.1](downloads/ASCEND-1.7.3.1.apk?raw=true) · [APK 1.7.3](downloads/ASCEND-1.7.3.apk?raw=true) · [APK 1.7.2](downloads/ASCEND-1.7.2.apk?raw=true) · [APK 1.7.1](downloads/ASCEND-1.7.1.apk?raw=true) · [APK 1.7.0.1](downloads/ASCEND-1.7.0.1.apk?raw=true) · [APK 1.6.9.19](downloads/ASCEND-1.6.9.19.apk?raw=true)
 

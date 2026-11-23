@@ -1,3 +1,13 @@
+# ASCEND 1.7.5.9.2 · Acabamento completo NORTHBORN 4.1
+
+23/11/2026. Expansão do acabamento visual a partir do piloto `e971319`. Código de versão 35. Publicação na branch `feat/ascend-1.7.5.9.2`.
+
+- `./gradlew testDebugUnitTest lintDebug assembleDebug --offline` concluído com **228 testes aprovados, 0 erros de lint e 36 avisos**. O único aviso acrescentado é de convenção da assinatura Compose em `ChapterHeading`. [Build](docs/validation/BUILD-1.7.5.9.2.txt) · [Lint](docs/validation/LINT-1.7.5.9.2.txt)
+- APK alinhado, assinado com o mesmo certificado da versão anterior e com permissões idênticas, sem `INTERNET`. Room v11 e backup v13 foram preservados. [APK](downloads/ASCEND-1.7.5.9.2.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.2.apk.sha256) · [Certificado e manifesto](docs/validation/APK-1.7.5.9.2.txt)
+- **60 capturas** de Compose e RemoteViews em Robolectric. A galeria inclui tema claro a 320 dp com fonte 130%, texto de Diário no tema escuro minimalista, seleção na barra, formulários e estados do widget. Instalação em telefone, TalkBack e launcher real ficam pendentes. [Acabamento e comparações](docs/design/NORTHBORN-FINALIZACAO.md)
+
+---
+
 # ASCEND 1.7.5.9.1 · Acabamento rústico e movimento
 
 23/11/2026. Acabamento da Jornada, da Mesa de Odin e da Biblioteca de Mímir com movimento contextual nas telas piloto e na navegação global. `versionCode 34`, com o mesmo identificador e certificado da versão anterior.
