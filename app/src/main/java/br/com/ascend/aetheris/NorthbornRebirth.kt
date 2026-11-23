@@ -2,6 +2,7 @@ package br.com.ascend.aetheris
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -19,10 +20,24 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 
-/** Design prototypes scoped to the Journey, Odin and Mímir screens. */
+private val Hearth = Color(0xFF101318)
+private val Embers = Color(0xFFE4B582)
+private val Ivory = Color(0xFFF7EADB)
+private val Ash = Color(0xFFD3C7B9)
+
+/** Original illustrated settings and materials for the three Northborn pilot screens. */
 @Composable
-private fun rebirthSignal(): Color =
-    if (LocalNorthborn.current.dark) Color(0xFFBFD6CB) else Color(0xFF25463F)
+internal fun RebirthFrieze(modifier: Modifier = Modifier) {
+    if (LocalAppearance.current.minimal) {
+        RebirthRule(modifier)
+    } else {
+        Image(
+            painterResource(R.drawable.rebirth_carved_rail), null,
+            modifier.fillMaxWidth().height(15.dp),
+            contentScale = ContentScale.Crop
+        )
+    }
+}
 
 @Composable
 internal fun RebirthRule(modifier: Modifier = Modifier) {
@@ -30,23 +45,62 @@ internal fun RebirthRule(modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun RebirthMasthead(title: String, subtitle: String, art: Int, modifier: Modifier = Modifier) {
+internal fun RebirthRune(rune: HistoricalFutharkRune, color: Color, modifier: Modifier = Modifier) {
+    val rim = CutCornerShape(7.dp)
+    Box(
+        modifier.size(40.dp).clip(rim).background(color.copy(alpha = .08f))
+            .border(1.dp, color.copy(alpha = .58f), rim),
+        contentAlignment = Alignment.Center
+    ) {
+        FutharkRuneGlyph(rune, color, size = 21.dp)
+    }
+}
+
+internal data class RebirthSceneInk(val title: Color, val body: Color, val accent: Color)
+
+@Composable
+internal fun RebirthScene(
+    art: Int,
+    height: Dp,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.(RebirthSceneInk) -> Unit
+) {
     val nb = LocalNorthborn.current
-    Box(modifier.fillMaxWidth().clip(CutCornerShape(topEnd = 14.dp, bottomStart = 5.dp))) {
-        if (!LocalAppearance.current.minimal) {
-            Image(painterResource(art), null, Modifier.matchParentSize(), alignment = Alignment.CenterEnd, contentScale = ContentScale.Crop)
+    val artOn = !LocalAppearance.current.minimal
+    val ink = if (artOn) RebirthSceneInk(Ivory, Ash, Embers)
+        else RebirthSceneInk(nb.inkPrimary, nb.inkSecondary, nb.accentBronze)
+    Box(
+        modifier.fillMaxWidth().heightIn(min = if (artOn) height else 0.dp)
+            .background(if (artOn) Hearth else nb.surfaceBase)
+    ) {
+        if (artOn) {
+            Image(painterResource(art), null, Modifier.matchParentSize(), contentScale = ContentScale.Crop)
+            Box(Modifier.matchParentSize().background(Brush.verticalGradient(
+                0f to Hearth.copy(alpha = .53f), .35f to Color.Transparent,
+                .58f to Hearth.copy(alpha = .36f), 1f to Hearth
+            )))
             Box(Modifier.matchParentSize().background(Brush.horizontalGradient(
-                0f to nb.canvas, .46f to nb.canvas.copy(alpha = .96f), .71f to nb.canvas.copy(alpha = .72f),
-                1f to nb.canvas.copy(alpha = .08f)
+                0f to Hearth.copy(alpha = .56f), .46f to Hearth.copy(alpha = .22f), 1f to Color.Transparent
             )))
         }
-        Column(
-            Modifier.fillMaxWidth().heightIn(min = 120.dp).padding(start = 12.dp, end = 26.dp, top = 18.dp, bottom = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically)
-        ) {
-            Text(title, color = nb.inkPrimary, style = MaterialTheme.typography.headlineSmall)
-            Text(subtitle, color = nb.inkSecondary, style = MaterialTheme.typography.bodyMedium)
+        content(ink)
+    }
+}
+
+@Composable
+internal fun RebirthMasthead(title: String, subtitle: String, art: Int, rune: HistoricalFutharkRune) {
+    Column {
+        RebirthScene(art, 185.dp) { ink ->
+            Column(
+                Modifier.align(Alignment.BottomStart).fillMaxWidth().padding(15.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                RebirthRune(rune, ink.accent)
+                Text(title, style = MaterialTheme.typography.headlineMedium, color = ink.title)
+                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = ink.body)
+            }
         }
+        RebirthFrieze()
     }
 }
 
@@ -60,22 +114,38 @@ internal fun RebirthAction(
     enabled: Boolean = true
 ) {
     val nb = LocalNorthborn.current
-    val signal = rebirthSignal()
-    val foreground = if (!primary) nb.inkPrimary else if (nb.dark) Color(0xFF13241F) else Color(0xFFF4F7F4)
-    Button(
-        onClick, modifier.heightIn(min = 48.dp), enabled = enabled,
-        shape = CutCornerShape(topEnd = 10.dp, bottomStart = 5.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (primary) signal else nb.surfaceElevated,
-            contentColor = foreground
-        ),
-        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)
+    val shape = CutCornerShape(8.dp)
+    val textured = primary && enabled && !LocalAppearance.current.minimal
+    val base = if (textured) Color(0xFF3C2821) else nb.surfaceElevated
+    val ink = if (textured) Ivory else nb.inkPrimary
+    val edge = if (primary && enabled) nb.accentBronze else nb.hairlineStrong
+    Box(
+        modifier.heightIn(min = 48.dp).clip(shape).background(base).border(1.dp, edge, shape),
+        propagateMinConstraints = true
     ) {
-        if (glyph != null) {
-            NorthbornIcon(glyph, foreground, size = 17.dp)
-            Spacer(Modifier.width(8.dp))
+        if (textured) {
+            Image(
+                painterResource(R.drawable.rebirth_oak), null, Modifier.matchParentSize(),
+                contentScale = ContentScale.Crop, alpha = .57f
+            )
+            Box(Modifier.matchParentSize().background(Brush.horizontalGradient(
+                listOf(Color(0xFF6B4029).copy(alpha = .68f), Color.Transparent)
+            )))
         }
-        Text(label, fontWeight = FontWeight.SemiBold)
+        Button(
+            onClick, Modifier.heightIn(min = 48.dp), enabled = enabled, shape = shape,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.Transparent, contentColor = ink,
+                disabledContainerColor = Color.Transparent, disabledContentColor = nb.inkMuted
+            ),
+            contentPadding = PaddingValues(horizontal = 13.dp, vertical = 11.dp)
+        ) {
+            if (glyph != null) {
+                NorthbornIcon(glyph, if (textured) Embers else edge, size = 19.dp)
+                Spacer(Modifier.width(8.dp))
+            }
+            Text(label, fontWeight = FontWeight.SemiBold)
+        }
     }
 }
 
@@ -87,14 +157,20 @@ internal fun RebirthIndex(labels: List<String>, selected: Int, onSelect: (Int) -
         FlowRow(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
             labels.forEachIndexed { index, label ->
                 val active = selected == index
+                val shape = CutCornerShape(topEnd = 7.dp)
                 Column(
-                    Modifier.heightIn(min = 48.dp).selectable(active, role = Role.Tab, onClick = { onSelect(index) })
-                        .padding(horizontal = 8.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically)
+                    Modifier.heightIn(min = 48.dp).clip(shape)
+                        .background(if (active) nb.accentBronze.copy(alpha = .13f) else Color.Transparent)
+                        .selectable(active, role = Role.Tab, onClick = { onSelect(index) })
+                        .padding(horizontal = 9.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically)
                 ) {
-                    Text(label, color = if (active) rebirthSignal() else nb.inkSecondary,
-                        style = MaterialTheme.typography.labelLarge, fontWeight = if (active) FontWeight.Bold else FontWeight.Medium)
-                    Box(Modifier.width(18.dp).height(2.dp).background(if (active) rebirthSignal() else Color.Transparent))
+                    Text(
+                        label, color = if (active) nb.inkPrimary else nb.inkSecondary,
+                        style = MaterialTheme.typography.labelLarge,
+                        fontWeight = if (active) FontWeight.Bold else FontWeight.Medium
+                    )
+                    Box(Modifier.width(18.dp).height(2.dp).background(if (active) nb.accentBronze else Color.Transparent))
                 }
             }
         }
@@ -105,8 +181,21 @@ internal fun RebirthIndex(labels: List<String>, selected: Int, onSelect: (Int) -
 @Composable
 internal fun RebirthReadingLeaf(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
     val nb = LocalNorthborn.current
-    Row(modifier.fillMaxWidth().background(nb.surfaceDocument)) {
-        Box(Modifier.width(3.dp).height(32.dp).background(rebirthSignal()))
-        Column(Modifier.weight(1f).padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp), content = content)
+    Box(modifier.fillMaxWidth().background(nb.surfaceDocument)) {
+        if (!LocalAppearance.current.minimal) {
+            Image(
+                painterResource(R.drawable.rebirth_vellum), null, Modifier.matchParentSize(),
+                alignment = Alignment.CenterStart, contentScale = ContentScale.FillBounds,
+                alpha = if (nb.dark) .23f else .53f
+            )
+            Box(Modifier.matchParentSize().background(Brush.horizontalGradient(
+                0f to Color.Transparent, .12f to nb.surfaceDocument.copy(alpha = .76f),
+                .65f to nb.surfaceDocument.copy(alpha = .84f), 1f to nb.surfaceDocument.copy(alpha = .54f)
+            )))
+        }
+        Column(
+            Modifier.fillMaxWidth().padding(start = 23.dp, top = 16.dp, end = 16.dp, bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp), content = content
+        )
     }
 }

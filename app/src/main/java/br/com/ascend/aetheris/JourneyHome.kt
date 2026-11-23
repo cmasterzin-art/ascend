@@ -68,9 +68,11 @@ import java.util.Locale
       verticalArrangement=Arrangement.spacedBy(11.dp)
   ){
    s.focus?.let { focus -> item(key="active-focus") { FocusCard(focus,s,vm) } }
-   item { CompactHero(s, day, onPortrait) }
    item {
-    DayLedger(done, due.size, rested, relaxed, dialSize)
+    Column {
+     CompactHero(s, day, onPortrait)
+     DayLedger(done, due.size, rested, relaxed, dialSize)
+    }
    }
    item {
     Column {

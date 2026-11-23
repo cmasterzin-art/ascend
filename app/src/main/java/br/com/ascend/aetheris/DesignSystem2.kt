@@ -135,82 +135,93 @@ fun SectionHeader(title: String, sub: String = "") {
     NorthbornEditorialHeader(title = title, subtitle = sub)
 }
 
-/**
- * Cabeçalho heroico da Jornada (NORTHBORN 4.0): pintura do fiorde dissolvida suavemente no fundo
- * sem caixa artificial, retrato integrado com luz fria discreta e identidade editorial limpa.
- */
+/** Jornada · entrada pelo fiorde, com retrato e progresso na mesma cena. */
 @Composable
 fun CompactHero(s: GameState, day: String, onPortrait: () -> Unit) {
     val player = requireNotNull(s.player)
-    val nb = LocalNorthborn.current
     val xp = Progression.current(s.xp)
     val goal = Progression.requirement(s.level)
-    BoxWithConstraints(Modifier.fillMaxWidth().clip(CutCornerShape(topEnd = 16.dp))) {
-        val narrow = maxWidth < 310.dp
-        if (!LocalAppearance.current.minimal) {
-            Image(
-                androidx.compose.ui.res.painterResource(R.drawable.rebirth_fjord), null,
-                Modifier.matchParentSize(),
-                alignment = Alignment.CenterEnd,
-                contentScale = androidx.compose.ui.layout.ContentScale.Crop
-            )
-            Box(Modifier.matchParentSize().background(Brush.verticalGradient(
-                0f to nb.canvas.copy(alpha = .82f), .25f to nb.canvas.copy(alpha = .18f),
-                .62f to nb.canvas.copy(alpha = .70f), 1f to nb.canvas
-            )))
-            Box(Modifier.matchParentSize().background(Brush.horizontalGradient(
-                0f to nb.canvas.copy(alpha = .88f), .65f to nb.canvas.copy(alpha = .45f), 1f to Color.Transparent
-            )))
+    val minimal = LocalAppearance.current.minimal
+
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val portraitSize = when {
+            minimal -> 58.dp
+            maxWidth < 310.dp -> 75.dp
+            else -> 93.dp
         }
-        Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.SpaceBetween) {
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Eyebrow("ASCEND  /  Minha Jornada", nb.inkPrimary)
-                    Text(displayDate(day), color = nb.inkSecondary, fontSize = 12.sp)
+        RebirthScene(R.drawable.rebirth_fjord, 248.dp) { ink ->
+            Column(
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(11.dp)
+            ) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    RebirthRune(HistoricalFutharkRune.Raido, ink.accent)
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Text("ASCEND / Minha Jornada", color = ink.title, style = MaterialTheme.typography.labelLarge)
+                        Text(displayDate(day), color = ink.body, style = MaterialTheme.typography.labelMedium)
+                    }
+                    ClassEmblem(player.heroClass, Modifier.size(30.dp))
                 }
-                ClassEmblem(player.heroClass, Modifier.size(26.dp))
-            }
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
-                    Text(player.name, style = MaterialTheme.typography.headlineMedium, color = nb.inkPrimary)
-                    Text("${classes[player.heroClass]} · Nível ${s.level}", color = nb.inkPrimary, fontSize = 13.sp)
-                    Text(player.title, color = nb.inkSecondary, fontSize = 12.sp)
-                    s.heraldry?.let { HeraldicCrest(it, size = 20.dp) }
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Box(
+                        Modifier.clickable(onClickLabel = "Ampliar retrato", onClick = onPortrait),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        ForgePortrait(s, portraitSize)
+                    }
+                    Column(Modifier.weight(1f).padding(bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Text(player.name, style = MaterialTheme.typography.headlineLarge, color = ink.title)
+                        Text(classes[player.heroClass], color = ink.title, style = MaterialTheme.typography.titleSmall)
+                        if (player.title.isNotBlank()) {
+                            Text(player.title, color = ink.body, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Text("Nível ${s.level}", color = ink.accent, style = MaterialTheme.typography.labelLarge)
+                        s.heraldry?.let { HeraldicCrest(it, size = 20.dp) }
+                    }
                 }
-                Box(Modifier.clickable(onClickLabel = "Ampliar retrato", onClick = onPortrait)) {
-                    ForgePortrait(s, if (narrow) 51.dp else 62.dp)
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text("$xp/$goal XP", Modifier.weight(1f), color = ink.title, style = MaterialTheme.typography.labelMedium)
+                    Text("${s.coins} fragmentos", color = ink.body, style = MaterialTheme.typography.labelMedium)
                 }
-            }
-            Meter(xp.toFloat() / goal, nb.accentPatina, slim = true)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Text("$xp/$goal XP", Modifier.weight(1f), color = nb.inkPrimary, fontSize = 12.sp)
-                Text("${s.coins} fragmentos", color = nb.inkSecondary, fontSize = 12.sp)
+                Meter(xp.toFloat() / goal, ink.accent, trackColor = ink.body.copy(alpha = .30f))
             }
         }
     }
 }
 
-/** Progresso diário editorial em linha aberta, sem cartão redundante. */
+/** A leitura do dia continua logo sob a cena, em uma peça de carvalho entalhado. */
 @Composable
 fun DayLedger(done: Int, total: Int, rested: Boolean, relaxed: Boolean, dial: Dp) {
     val nb = LocalNorthborn.current
+    val minimal = LocalAppearance.current.minimal
     val pending = (total - done).coerceAtLeast(0)
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-        DayDial(if (total == 0) 0f else done.toFloat() / total, if (total == 0) "—" else "${done * 100 / total}%", dial)
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            Eyebrow(if (rested) "Dia de descanso" else "Jornada de hoje", if (rested) nb.accentPatina else nb.accentBronze)
-            Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("$done de $total", style = MaterialTheme.typography.titleLarge, color = nb.inkPrimary)
-                Text(
-                    "$pending ${if (pending == 1) "pendente" else "pendentes"}",
-                    fontSize = 12.5.sp,
-                    color = nb.inkSecondary,
-                    modifier = Modifier.padding(bottom = 2.dp)
+    Column {
+        RebirthFrieze()
+        Box(Modifier.fillMaxWidth().background(nb.surfaceElevated)) {
+            if (!minimal && nb.dark) {
+                Image(
+                    androidx.compose.ui.res.painterResource(R.drawable.rebirth_oak), null,
+                    Modifier.matchParentSize(), contentScale = androidx.compose.ui.layout.ContentScale.Crop, alpha = .56f
                 )
             }
-            if (relaxed) Text("Modo livre · o widget mantém a agenda programada.", fontSize = 11.5.sp, color = nb.inkSecondary)
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 7.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                DayDial(if (total == 0) 0f else done.toFloat() / total,
+                    if (total == 0) "—" else "${done * 100 / total}%", dial)
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    Eyebrow(if (rested) "Dia de descanso" else "Jornada de hoje", if (rested) nb.accentPatina else nb.accentBronze)
+                    Text("$done de $total · $pending ${if (pending == 1) "pendente" else "pendentes"}",
+                        color = nb.inkPrimary, style = MaterialTheme.typography.bodyMedium)
+                    if (relaxed) {
+                        Text("Modo livre · o widget mantém a agenda programada.", color = nb.inkSecondary,
+                            style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
         }
     }
 }

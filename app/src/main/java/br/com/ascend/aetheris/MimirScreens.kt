@@ -64,7 +64,7 @@ private fun MimirLibraryBanner(notebooksCount: Int, pagesCount: Int, dueCount: I
         "A Biblioteca de Mímir",
         "$notebooksCount ${if (notebooksCount == 1) "caderno" else "cadernos"} · " +
             "$pagesCount ${if (pagesCount == 1) "página" else "páginas"} · $dueCount para revisar",
-        R.drawable.rebirth_folio
+        R.drawable.rebirth_folio, HistoricalFutharkRune.Ansuz
     )
 }
 
@@ -288,7 +288,8 @@ fun MimirLibraryScreen(
     Page {
         MimirLibraryBanner(activeNotebooks.size, activePages.size, dueCards.size)
         if (dueCards.isNotEmpty()) {
-            RebirthAction("Iniciar Runas da Memória (${dueCards.size})", { onStartReview("") }, Modifier.fillMaxWidth())
+            RebirthAction("Iniciar Runas da Memória (${dueCards.size})", { onStartReview("") }, Modifier.fillMaxWidth(),
+                glyph = NorthbornGlyph.Library)
         }
         val nb = LocalNorthborn.current
         TextField(
@@ -340,14 +341,13 @@ fun MimirLibraryScreen(
                         val nbCards = s.flashcards.count { it.notebookId == nb.id && !it.archived }
                         val nbDue = dueCards.count { it.notebookId == nb.id }
                         val linkedPath = s.paths.find { it.id == nb.pathId }
-                        Column(Modifier.fillMaxWidth().testTag("notebook:${nb.id}")) {
-                            RebirthRule()
+                        RebirthReadingLeaf(Modifier.testTag("notebook:${nb.id}")) {
                             Row(
-                                Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable { onOpenNotebook(nb.id) }.padding(vertical = 10.dp),
+                                Modifier.fillMaxWidth().heightIn(min = 62.dp).clickable { onOpenNotebook(nb.id) },
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                MimirCodexArt(nb.cover, Modifier.size(width = 30.dp, height = 60.dp), accent = if (nb.archived) Muted else Blue)
+                                MimirCodexArt(nb.cover, Modifier.size(width = 44.dp, height = 62.dp), accent = if (nb.archived) Muted else Gold)
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                                     Eyebrow(
                                         "${nb.category}${if (nb.archived) " · Arquivado" else ""}",
@@ -367,7 +367,8 @@ fun MimirLibraryScreen(
                                     }
                                 }
                             }
-                            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            RebirthRule()
+                            FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                 TextButton({ onOpenNotebook(nb.id) }) { Text("Abrir", fontSize = 12.sp) }
                                 TextButton({ notebookEditorId = nb.id }) { Text("Editar", fontSize = 12.sp) }
                                 TextButton({ vm.run { vm.repo.archiveNotebook(nb.id, !nb.archived) } }) {

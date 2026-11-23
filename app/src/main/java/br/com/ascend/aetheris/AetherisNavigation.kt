@@ -57,8 +57,9 @@ fun AetherisNavigation(route: String, onSelect: (String) -> Unit) {
     val nb = LocalNorthborn.current
     val motion = LocalAppearance.current.reducedMotion
     val pilot = route == "journey" || route.startsWith("odin") || route.startsWith("mimir")
-    val activeInk = if (pilot) nb.accentPatina else nb.accentBronze
-    val barBg = if (nb.dark) Color(0xFF101215) else nb.surfaceBase
+    val carved = pilot && !LocalAppearance.current.minimal
+    val activeInk = if (carved && nb.dark) Color(0xFFE4B582) else nb.accentBronze
+    val barBg = if (carved && nb.dark) Color(0xFF1B1716) else if (nb.dark) Color(0xFF101215) else nb.surfaceBase
 
     Column(
         Modifier
@@ -66,7 +67,11 @@ fun AetherisNavigation(route: String, onSelect: (String) -> Unit) {
             .background(barBg)
             .navigationBarsPadding()
     ) {
-        Box(Modifier.fillMaxWidth().height(1.dp).background(nb.hairlineStrong.copy(alpha = 0.72f)))
+        if (carved) {
+            RebirthFrieze()
+        } else {
+            Box(Modifier.fillMaxWidth().height(1.dp).background(nb.hairlineStrong.copy(alpha = 0.72f)))
+        }
         Row(
             Modifier
                 .fillMaxWidth()

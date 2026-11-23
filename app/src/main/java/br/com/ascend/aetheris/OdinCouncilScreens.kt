@@ -100,7 +100,10 @@ fun OdinCouncilScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            if (tab == 0) RebirthMasthead("Mesa de Odin", "Estratégia ativa · ${activeStrategy.name}", R.drawable.rebirth_chart)
+            if (tab == 0) RebirthMasthead(
+                "Mesa de Odin", "Estratégia ativa · ${activeStrategy.name}",
+                R.drawable.rebirth_chart, HistoricalFutharkRune.Tiwaz
+            )
             RebirthIndex(tabs, tab) { tab = it }
         }
 
@@ -192,23 +195,27 @@ private fun OdinHallOverviewSection(
 
     Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text("Capacidade 7d", color = nb.inkSecondary, style = MaterialTheme.typography.labelLarge)
-                    Text(
+            RebirthReadingLeaf {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(15.dp)) {
+                    DayDial(
+                        weekCapacity.utilizationPercent.toFloat() / 100f,
                         if (weekCapacity.status == CapacityStatus.UNCONFIGURED) "—" else "${weekCapacity.utilizationPercent}%",
-                        color = nb.inkPrimary, style = MaterialTheme.typography.displaySmall
+                        76.dp
                     )
-                    Text(weekCapacity.status.label, color = nb.inkSecondary, fontSize = 13.sp)
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Text("Capacidade em 7 dias", color = nb.inkPrimary, style = MaterialTheme.typography.titleMedium)
+                        Text(weekCapacity.status.label, color = nb.inkSecondary, style = MaterialTheme.typography.bodySmall)
+                    }
                 }
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                RebirthRule()
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text("Hoje", style = MaterialTheme.typography.titleMedium, color = nb.inkPrimary)
                     Text("${todayBlocks.size} ${if (todayBlocks.size == 1) "bloco" else "blocos"} · " +
                         "${todayEvents.size} ${if (todayEvents.size == 1) "evento" else "eventos"}", color = nb.inkSecondary, fontSize = 13.sp)
                     Text("${replanItems.size} para replanejar · ${dueMimir.size} ${if (dueMimir.size == 1) "revisão" else "revisões"}", color = nb.inkSecondary, fontSize = 13.sp)
                 }
             }
-            Meter(weekCapacity.utilizationPercent.toFloat() / 100f, nb.accentPatina, slim = true)
             RebirthAction("Gerar plano", { onGoTab(1) }, Modifier.fillMaxWidth(), glyph = NorthbornGlyph.Odin)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 RebirthAction("Forja do Tempo", onOpenTimeForge, primary = false)
