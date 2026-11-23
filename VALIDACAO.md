@@ -1,3 +1,14 @@
+# ASCEND 1.7.5.9.1 · Escudo, madeira e velino
+
+23/11/2026. Terceiro protótipo visual de Jornada, Mesa de Odin e Biblioteca de Mímir. `versionCode 32`, com o mesmo identificador e certificado da versão anterior.
+
+- `./gradlew testDebugUnitTest lintDebug assembleDebug --offline` concluído com **228 testes aprovados, 0 erros de lint e 38 avisos**. [Build](docs/validation/BUILD-1.7.5.9.1-entalhe.txt) · [Lint](docs/validation/LINT-1.7.5.9.1-entalhe.txt)
+  Três dos avisos apontam para a arte da revisão anterior mantida como referência (`rebirth_fjord`, `rebirth_oak` e `rebirth_vellum`).
+- APK de desenvolvimento com alinhamento verificado. O manifesto tem as mesmas permissões do protótipo anterior, sem `INTERNET`. Room v11 e backup v13 foram preservados. [APK](downloads/ASCEND-1.7.5.9.1-dev-entalhe.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.1-dev-entalhe.apk.sha256) · [Certificado e manifesto](docs/validation/APK-1.7.5.9.1-entalhe.txt)
+- 13 capturas em Robolectric Native Graphics. Instalação em telefone e TalkBack seguem pendentes. [Antes e depois](docs/design/NORTHBORN-MATERIAIS.md)
+
+---
+
 # ASCEND 1.7.5.9.1 · Revisão nórdica
 
 23/11/2026. Segundo protótipo visual de Jornada, Mesa de Odin e Biblioteca de Mímir. `versionCode 31`, com o mesmo identificador e certificado da versão anterior.
