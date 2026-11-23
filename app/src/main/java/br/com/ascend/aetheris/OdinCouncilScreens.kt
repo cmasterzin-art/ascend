@@ -210,9 +210,9 @@ private fun OdinHallOverviewSection(
             }
             Meter(weekCapacity.utilizationPercent.toFloat() / 100f, nb.accentPatina, slim = true)
             RebirthAction("Gerar plano", { onGoTab(1) }, Modifier.fillMaxWidth(), glyph = NorthbornGlyph.Odin)
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                RebirthAction("Forja do Tempo", onOpenTimeForge, Modifier.weight(1f), primary = false)
-                RebirthAction("Disponibilidade", { onGoTab(5) }, Modifier.weight(1f), primary = false)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                RebirthAction("Forja do Tempo", onOpenTimeForge, primary = false)
+                RebirthAction("Disponibilidade", { onGoTab(5) }, primary = false)
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 NordicCompactAction("Conselho dos 9", onOpenCouncilNine, accent = nb.accentBronze)

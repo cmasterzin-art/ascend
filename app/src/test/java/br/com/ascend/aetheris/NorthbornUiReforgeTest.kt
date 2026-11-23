@@ -555,6 +555,8 @@ class NorthbornUiReforgeTest {
         }
         compose.onNodeWithText("Princípios NORTHBORN").assertIsDisplayed()
         shot("35-mimir-leitura")
+        compose.onNodeWithText("+ Referência").performScrollTo().assertIsDisplayed()
+        shot("39-mimir-referencias-360-fonte-130")
         renderScreen(dark = true, widthDp = 360) {
             FlashcardReviewScreen("", s0, vm, {})
         }
@@ -572,9 +574,10 @@ class NorthbornUiReforgeTest {
                 }
             }
         }
-        compose.onNodeWithContentDescription("Todos os destinos").performScrollTo().performClick()
+        val allDestinations = compose.onNodeWithContentDescription("Todos os destinos").performScrollTo()
+        shot("38-jornada-360")
+        allDestinations.performClick()
         compose.onNodeWithText("Conselho 9").assertIsDisplayed()
-        shot("38-jornada-diretorio-360")
 
         val expected = listOf(
             "01-jornada", "02-navegacao-inferior", "03-registro-habito", "04-lista-habitos", "05-perfil-heroi",

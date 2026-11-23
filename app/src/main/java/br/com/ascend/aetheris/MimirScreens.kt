@@ -1077,8 +1077,8 @@ fun PageDetailScreen(
         }
 
         // Links & Backlinks
-        AetherSurface(SurfaceKind.Operational) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        RebirthReadingLeaf {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Eyebrow("Páginas relacionadas (${outgoing.size})", Blue)
                 TextButton({ linkPickerOpen = true }) { Text("+ Ligar página", fontSize = 12.sp) }
             }
@@ -1114,8 +1114,8 @@ fun PageDetailScreen(
         }
 
         // Bibliographic References
-        AetherSurface(SurfaceKind.Operational) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+        RebirthReadingLeaf {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Eyebrow("Referências bibliográficas (${refs.size})", Gold)
                 TextButton({ refEditorId = "__new__" }) { Text("+ Referência", fontSize = 12.sp) }
             }
