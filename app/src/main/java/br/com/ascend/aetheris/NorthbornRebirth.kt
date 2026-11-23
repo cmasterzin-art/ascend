@@ -359,11 +359,13 @@ private val ManuscriptPalette = NorthbornLightPalette.copy(
 )
 
 @Composable
-internal fun RebirthReadingLeaf(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+internal fun RebirthReadingLeaf(
+    modifier: Modifier = Modifier, parchment: Boolean = false, content: @Composable ColumnScope.() -> Unit
+) {
     val plain = LocalAppearance.current.minimal
-    val palette = if (plain) LocalNorthborn.current else ManuscriptPalette
-    val scheme = MaterialTheme.colorScheme
-    val leafScheme = if (plain) scheme else lightColorScheme(
+    val documentInk = !plain || parchment
+    val palette = if (documentInk) ManuscriptPalette else LocalNorthborn.current
+    val leafScheme = if (!documentInk) MaterialTheme.colorScheme else lightColorScheme(
         primary = palette.accentBronze,
         onPrimary = palette.onAccent,
         secondary = palette.accentFjord,

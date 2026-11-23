@@ -115,8 +115,8 @@ import java.util.Locale
     var tab by rememberSaveable{mutableIntStateOf(0)};var showArchived by remember{mutableStateOf(false)};var menu by remember{mutableStateOf<Habit?>(null)};var delete by remember{mutableStateOf<Habit?>(null)};var routine by remember{mutableStateOf<Routine?>(null)};var newRoutine by remember{mutableStateOf(false)};var date by remember{mutableStateOf(today())}
     var search by rememberSaveable{mutableStateOf("")};var status by rememberSaveable{mutableIntStateOf(0)};var attr by rememberSaveable{mutableIntStateOf(0)};var order by rememberSaveable{mutableIntStateOf(0)}
     val nb=LocalNorthborn.current
-    Page{
-        Title("Livro de hábitos","Constância diária, calendário, rotinas e histórico.")
+    Page(NorthbornChapter.Daily){
+        ChapterHeading("Livro de hábitos", "Constância diária, calendário, rotinas e histórico.", NorthbornChapter.Daily, Engraving.Tally, cover = true)
         ShortcutStrip(listOf(Triple("Planejador",Glyph.Planner,onPlanner),Triple("Análises",Glyph.Analysis,onAnalysis),Triple("Foco",Glyph.Focus,onHistory)))
         AetherisTabs(listOf("Hábitos","Calendário","Rotinas","Histórico"),tab,{tab=it})
         when(tab){
@@ -192,8 +192,8 @@ import java.util.Locale
 }
 @Composable fun MissionsScreen(s:GameState,vm:GameViewModel,bosses:Boolean){
     var tab by rememberSaveable{mutableIntStateOf(0)};var editor by remember{mutableStateOf(false)};var editing by remember{mutableStateOf<Quest?>(null)}
-    Page{
-        Title("Contratos da jornada","O livro das ações que devolvem luz ao mundo.")
+    Page(NorthbornChapter.Archive){
+        ChapterHeading("Contratos da jornada", "O livro das ações que devolvem luz ao mundo.", NorthbornChapter.Archive, Engraving.Banner, cover = true)
         SagaCover(s.claims.size)
         AetherisTabs(listOf("Diárias","Semanais","Épicas","Chefes","Resgates","Sagas"),tab,{tab=it});if(tab!=5)Action("+ Missão personalizada",{editor=true})
         if(tab==5)SagaBook(s,vm)

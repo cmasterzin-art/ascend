@@ -13,9 +13,7 @@ import androidx.compose.ui.unit.*
 @Composable fun SagaBook(s:GameState,vm:GameViewModel){
  var editor by remember{mutableStateOf<Quest?>(null)};var modelPicker by remember{mutableStateOf(false)};var history by rememberSaveable{mutableStateOf(false)};var abandon by remember{mutableStateOf<Quest?>(null)}
  Column(Modifier.fillMaxWidth().padding(vertical=4.dp),verticalArrangement=Arrangement.spacedBy(10.dp)){
-  Eyebrow("Juramentos de longo curso",Blue)
-  Text("Sagas Pessoais",style=MaterialTheme.typography.headlineMedium)
-  Text("Escolha os hábitos que darão forma ao seu juramento. Apenas o progresso posterior ao início será contado.",color=Muted,fontSize=14.sp,lineHeight=22.sp)
+  ChapterHeading("Sagas Pessoais", "Escolha os hábitos que darão forma ao seu juramento. Apenas o progresso posterior ao início será contado.", NorthbornChapter.Archive, Engraving.Banner)
   Action("Iniciar saga",{modelPicker=true})
  }
  Hairline()

@@ -59,12 +59,12 @@ fun PlannerScreen(
     val pendingCount = s.pathTasks.count { isTaskActivePending(s, it) && !it.completed }
 
     LazyColumn(
-        Modifier.fillMaxSize().background(nb.canvas).testTag("planner_list"),
+        Modifier.fillMaxSize().chapterBackdrop(NorthbornChapter.Strategy).testTag("planner_list"),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Title("Planejador Semanal", "Agenda 3.0 integrada à Mesa de Odin, blocos fixados, recorrência e Forja do Tempo.")
+            ChapterHeading("Planejador Semanal", "Agenda 3.0 integrada à Mesa de Odin, blocos fixados, recorrência e Forja do Tempo.", NorthbornChapter.Strategy, Engraving.Calendar, cover = true)
         }
         item {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -907,12 +907,12 @@ fun InboxScreen(
     val items = remember(s.inboxItems) { s.inboxItems.filter { !it.archived } }
 
     LazyColumn(
-        Modifier.fillMaxSize().testTag("inbox_list"),
+        Modifier.fillMaxSize().chapterBackdrop(NorthbornChapter.Strategy).testTag("inbox_list"),
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Title("Caixa de Entrada", "Capture rápido ideias e demandas antes de decidir onde pertencem.")
+            ChapterHeading("Caixa de Entrada", "Capture rápido ideias e demandas antes de decidir onde pertencem.", NorthbornChapter.Strategy, Engraving.Tally)
         }
         item {
             AetherSurface(SurfaceKind.Heroic) {
@@ -1089,12 +1089,12 @@ fun PendingCenterScreen(
     var quickTaskDialog by remember { mutableStateOf(false) }
 
     LazyColumn(
-        Modifier.fillMaxSize().testTag("pending_list"),
+        Modifier.fillMaxSize().chapterBackdrop(NorthbornChapter.Strategy).testTag("pending_list"),
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Title("Central de Pendências", "Todas as entregas ativas agrupadas por urgência e horizonte.")
+            ChapterHeading("Central de Pendências", "Todas as entregas ativas agrupadas por urgência e horizonte.", NorthbornChapter.Strategy, Engraving.Banner)
         }
         item {
             AetherisTabs(labels, tab, { tab = it })

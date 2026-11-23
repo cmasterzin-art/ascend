@@ -124,12 +124,12 @@ fun PathsScreen(
 
     val nb = LocalNorthborn.current
     LazyColumn(
-        Modifier.fillMaxSize().background(nb.canvas).testTag("paths_list"),
+        Modifier.fillMaxSize().chapterBackdrop(NorthbornChapter.Strategy).testTag("paths_list"),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Title("Caminhos", "Projetos pessoais com etapas, tarefas, Gantt, Kanban, caminho crítico e marcos.")
+            ChapterHeading("Caminhos", "Projetos pessoais com etapas, tarefas, Gantt, Kanban, caminho crítico e marcos.", NorthbornChapter.Strategy, Engraving.Cairns)
         }
         item {
             NorthbornSurface(role = NorthbornSurfaceRole.Informative, accent = nb.accentBronze) {
@@ -414,7 +414,7 @@ fun PathDetailScreen(
     val day = currentDay()
     val p = s.paths.find { it.id == pathId }
     if (p == null) {
-        Page {
+        Page(NorthbornChapter.Strategy) {
             Empty("Caminho não encontrado ou removido.")
             SagaButton("Voltar", onBack)
         }
@@ -474,7 +474,7 @@ fun PathDetailScreen(
     val accent = habitColor(p.color.coerceIn(0, 4))
 
     LazyColumn(
-        Modifier.fillMaxSize().testTag("path_detail_list"),
+        Modifier.fillMaxSize().chapterBackdrop(NorthbornChapter.Strategy).testTag("path_detail_list"),
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {

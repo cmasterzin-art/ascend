@@ -65,8 +65,8 @@ import androidx.compose.ui.unit.*
 
 @Composable fun RegionScreen(index:Int,s:GameState,onLocation:(String)->Unit){
  val explReg=explorableRegion(index)
- LazyColumn(Modifier.fillMaxSize().testTag("exploration_list"),contentPadding=PaddingValues(horizontal=20.dp,vertical=24.dp),verticalArrangement=Arrangement.spacedBy(20.dp)){
-  item{Title(regions[index],"Nível ${regionLevels[index]} · ${if(s.level>=regionLevels[index])"Revelada" else "Sob a névoa"}")}
+ LazyColumn(Modifier.fillMaxSize().chapterBackdrop(NorthbornChapter.World).testTag("exploration_list"),contentPadding=PaddingValues(horizontal=20.dp,vertical=24.dp),verticalArrangement=Arrangement.spacedBy(20.dp)){
+  item{ChapterHeading(regions[index], "Nível ${regionLevels[index]} · ${if(s.level>=regionLevels[index])"Revelada" else "Sob a névoa"}", NorthbornChapter.World, Engraving.Compass)}
   if(explReg!=null){
    val stage=if(index==1) forestStage(s) else regionRestorationStage(s,index)
    val stageName=listOf("abandonada","em recuperação","restaurada")[stage.coerceIn(0,2)]
@@ -165,8 +165,8 @@ private fun locationLabelFor(e:ExpeditionDef,s:GameState):String{
  val reg=expeditionRegion(e)
  val available=expeditionAvailable(s,e)
  val known=s.quests.any{it.id==expeditionQuestId(e,0)}
- Page{
-  Title(if(available||known) e.location else "Local velado",regions[e.regionIndex])
+ Page(NorthbornChapter.World){
+  ChapterHeading(if(available||known) e.location else "Local velado", regions[e.regionIndex], NorthbornChapter.World, Engraving.Cairns)
   if(!available&&!known){Empty("A névoa guarda este lugar. Recupere o caminho anterior antes de entrar.");return@Page}
   RealmPainting(reg.atlasRes,locationTileFor(e,s),locationLabelFor(e,s))
   StatusSeal(expeditionState(s,e),if(expeditionComplete(s,e)) Green else Blue)
@@ -253,8 +253,8 @@ private fun locationLabelFor(e:ExpeditionDef,s:GameState):String{
  val isGuardian=e.guardianName.isNotBlank()
  val useIntegrated=e.integratedMetric!=EXPEDITION_METRIC_HABITS && modeIndex==0
  val relicItem=if(e.item.isNotBlank()) shopItems.find{it.id==e.item} else null
- LazyColumn(Modifier.fillMaxSize().testTag("exploration_list"),contentPadding=PaddingValues(horizontal=20.dp,vertical=24.dp),verticalArrangement=Arrangement.spacedBy(20.dp)){
-  item{Title(e.name,"${e.location} · ${regions[e.regionIndex]}")}
+ LazyColumn(Modifier.fillMaxSize().chapterBackdrop(NorthbornChapter.World).testTag("exploration_list"),contentPadding=PaddingValues(horizontal=20.dp,vertical=24.dp),verticalArrangement=Arrangement.spacedBy(20.dp)){
+  item{ChapterHeading(e.name, "${e.location} · ${regions[e.regionIndex]}", NorthbornChapter.World, Engraving.Banner)}
   item{
    if(q!=null&&!complete){
     StatusSeal(

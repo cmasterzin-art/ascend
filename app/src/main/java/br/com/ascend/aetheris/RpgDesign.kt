@@ -29,7 +29,7 @@ import kotlin.math.*
 
 val Parchment=Color(0xFFBDB196)
 val Sepia=Color(0xFF29251E)
-@Composable fun Manuscript(content:@Composable ColumnScope.()->Unit){AetherSurface(SurfaceKind.Parchment){content()}}
+@Composable fun Manuscript(content:@Composable ColumnScope.()->Unit){RebirthReadingLeaf(parchment = true, content = content)}
 /** 1.6.9.10 · The codex binding: one slim leather spine with the saga seal, instead of a full ceremonial panel. */
 @Composable fun SagaCover(count:Int){Row(Modifier.fillMaxWidth().clip(CutCornerShape(4.dp)).background(if(LocalAppearance.current.dark)Color(0xFF231B16) else Color(0xFFE1D5BF)).forgeMaterial(SurfaceKind.Ceremonial).padding(start=20.dp,end=14.dp,top=10.dp,bottom=10.dp),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(12.dp)){Box(Modifier.size(44.dp),contentAlignment=Alignment.Center){Image(painterResource(R.drawable.forge_brooch),null,Modifier.matchParentSize());CeremonialSeal(SealKind.Saga,true,Modifier.size(24.dp))};Column(Modifier.weight(1f)){Text("Livro de missões",style=MaterialTheme.typography.titleLarge);Text("$count ${if(count==1)"recompensa resgatada" else "recompensas resgatadas"} · contratos e sagas",color=Muted,fontSize=12.sp)}}}
 @Composable fun rarityColor(n:Int)=listOf(Muted,Green,Blue,Violet,Gold)[n]

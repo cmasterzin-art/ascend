@@ -47,7 +47,7 @@ fun ForgeScreen(
 
     val nb = LocalNorthborn.current
     val dark = nb.dark
-    Page {
+    Page(NorthbornChapter.Forge) {
         // Cabeçalho pictórico da Oficina de Darian
         Column(
             Modifier

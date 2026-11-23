@@ -133,12 +133,12 @@ fun TimeForgeScreen(
     val nb = LocalNorthborn.current
 
     LazyColumn(
-        Modifier.fillMaxSize().background(nb.canvas).testTag("time_forge_list"),
+        Modifier.fillMaxSize().chapterBackdrop(NorthbornChapter.Forge).testTag("time_forge_list"),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
         item {
-            Title("Forja do Tempo", "Cinco modos de foco, Pomodoro real sem contar pausas, blocos vinculados e modo imersivo.")
+            ChapterHeading("Forja do Tempo", "Cinco modos de foco, Pomodoro real sem contar pausas, blocos vinculados e modo imersivo.", NorthbornChapter.Forge, Engraving.Forge, cover = focus == null)
         }
 
         // Painel ativo de cronômetro (instrumentos pictóricos DS 4.0: trabalho bronze vs descanso fiorde vs pausa)

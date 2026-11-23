@@ -22,7 +22,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.*
 
 internal enum class Engraving {
-    Ship, Tally, Banner, Compass, Shield, Council, Forge, Calendar, Folio, Cairns, Focus, Analysis, Add
+    Ship, Tally, Banner, Compass, Shield, Council, Forge, Calendar, Folio, Cairns, Focus, Analysis, Add, Settings, Back, Check
 }
 
 /** Original incised silhouettes on a 24-unit grid, usable on dark iron or light vellum. */
@@ -162,6 +162,23 @@ private fun DrawScope.engrave(icon: Engraving, ink: Color, offset: Offset, weigh
             cut(11, 20, 11, 9, 14, 9, 14, 20, shaded = true)
             cut(17, 20, 17, 5, 20, 5, 20, 20, shaded = true)
             cut(4, 9, 9, 6, 14, 3)
+        }
+        Engraving.Settings -> {
+            cut(4, 5, 4, 19)
+            cut(12, 3, 12, 21)
+            cut(20, 5, 20, 19)
+            cut(2, 9, 4, 7, 6, 9, 4, 11, closed = true, shaded = true)
+            cut(10, 15, 12, 13, 14, 15, 12, 17, closed = true, shaded = true)
+            cut(18, 11, 20, 9, 22, 11, 20, 13, closed = true, shaded = true)
+        }
+        Engraving.Back -> {
+            cut(21, 12, 4, 12, 11, 5)
+            cut(4, 12, 11, 19)
+            cut(7, 12, 11, 9)
+        }
+        Engraving.Check -> {
+            cut(4, 12, 9, 17, 20, 6)
+            cut(17, 8, 20, 6, 20, 10)
         }
         Engraving.Add -> {
             cut(12, 3, 20, 7, 20, 17, 12, 21, 4, 17, 4, 7, closed = true)

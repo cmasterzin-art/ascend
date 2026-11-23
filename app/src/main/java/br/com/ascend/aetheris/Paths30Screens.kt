@@ -139,8 +139,8 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
                         ) {
                             Text(
                                 if (weeklyScale) "S${(i / 7) + 1} (${d.dayOfMonth}/${d.monthValue})" else "${d.dayOfMonth}/${d.monthValue}",
-                                color = if (isToday) nb.accentBronze else nb.inkMuted,
-                                fontSize = 10.sp,
+                                color = if (isToday) nb.accentBronze else nb.inkSecondary,
+                                fontSize = 11.sp,
                                 fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
                                 maxLines = 1
                             )
@@ -249,14 +249,14 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
                                         .background(nb.canvas)
                                         .border(0.5.dp, nb.hairline, NorthbornShape.xs)
                                 ) {
-                                    val barWidthDp = (dayWidth * spanDays).coerceAtLeast(48.dp)
+                                    val barWidthDp = dayWidth * spanDays
                                     val innerLabel = when {
                                         barWidthDp >= 78.dp && node.task.completed -> "Concluída"
                                         barWidthDp >= 78.dp && node.isCritical -> "Crítica"
                                         barWidthDp >= 78.dp -> "Folga ${node.slackMinutes}m"
                                         node.task.completed -> "✓"
                                         node.isCritical -> "◆"
-                                        else -> "+${node.slackMinutes}m"
+                                        else -> "·"
                                     }
                                     Row(
                                         Modifier
@@ -326,6 +326,7 @@ fun PathGanttPanel(path: PersonalPath, s: GameState) {
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
     val nb = LocalNorthborn.current
@@ -394,8 +395,10 @@ fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Box(Modifier.width(3.dp).height(18.dp).background(col.accent))
                     NordicPlanningMark(col.mark, Modifier.size(18.dp), tintFallback = col.accent)
-                    Eyebrow("${col.title} (${col.list.size})", col.accent)
-                    Spacer(Modifier.weight(1f))
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                        Text("${col.title} (${col.list.size})", style = MaterialTheme.typography.titleMedium, color = nb.inkPrimary)
+                        NorthbornDivider(color = col.accent.copy(alpha = .55f))
+                    }
                     FutharkRuneGlyph(col.rune, col.accent.copy(alpha = 0.72f), size = 14.dp)
                 }
                 if (col.list.isEmpty()) {
@@ -435,7 +438,11 @@ fun PathKanbanPanel(path: PersonalPath, s: GameState, vm: GameViewModel) {
                                 }
                             }
                             // Botões táteis e acessíveis de movimentação (nunca depende apenas de drag-and-drop!)
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.horizontalScroll(rememberScrollState())) {
+                            FlowRow(
+                                Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                            ) {
                                 if (col.key != "todo" && col.key != "blocked") {
                                     NordicCompactAction(
                                         text = "→ A fazer",

@@ -16,7 +16,7 @@ import java.time.LocalDate
 @Composable fun WeeklyScreen(s:GameState){
  val firstWeek=weekOf((listOfNotNull(s.player?.created)+s.habits.map{it.created}+s.records.map{it.date}+s.ledger.map{it.date}).minOrNull()?:today())
  var week by rememberSaveable{mutableStateOf(weekOf(today()))};val c=weeklyChronicle(s,week)
- Page{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Box(Modifier.weight(1f)){Title("Crônica da Semana","As marcas permanecem abertas a correções.")};HeraldicCrest(resolvedHeraldry(s),size=40.dp)}
+ Page(NorthbornChapter.Archive){Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Box(Modifier.weight(1f)){ChapterHeading("Crônica da Semana", "As marcas permanecem abertas a correções.", NorthbornChapter.Archive, Engraving.Folio)};HeraldicCrest(resolvedHeraldry(s),size=40.dp)}
  Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(10.dp)){SagaButton("Anterior",{week=LocalDate.parse(week).minusWeeks(1).toString()},Modifier.weight(1f),enabled=week>firstWeek,secondary=true);SagaButton("Seguinte",{week=LocalDate.parse(week).plusWeeks(1).toString()},Modifier.weight(1f),enabled=week<weekOf(today()),secondary=true)}
  Manuscript{
   Eyebrow(displayPeriod(c.start,c.end),Sepia)
@@ -37,8 +37,8 @@ import java.time.LocalDate
 }
 @Composable fun MemoryHall(s:GameState){
  var filter by rememberSaveable{mutableIntStateOf(0)};val categories=listOf("Todas","Conquistas","Sagas","Caminhos","Mundo","Personagem","História");val memories=remember(s,filter){hallMemories(s).filter{filter==0||it.category==categories[filter]}}
- LazyColumn(Modifier.fillMaxSize().testTag("memory_list"),contentPadding=PaddingValues(horizontal=20.dp,vertical=24.dp),verticalArrangement=Arrangement.spacedBy(18.dp)){
-  item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Box(Modifier.weight(1f)){Title("Salão das Memórias","${s.player?.name} · inscrições de uma jornada real")};HeraldicCrest(resolvedHeraldry(s),size=44.dp)}}
+ LazyColumn(Modifier.fillMaxSize().chapterBackdrop(NorthbornChapter.Archive).testTag("memory_list"),contentPadding=PaddingValues(horizontal=20.dp,vertical=24.dp),verticalArrangement=Arrangement.spacedBy(18.dp)){
+  item{Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){Box(Modifier.weight(1f)){ChapterHeading("Salão das Memórias", "${s.player?.name} · inscrições de uma jornada real", NorthbornChapter.Archive, Engraving.Folio)};HeraldicCrest(resolvedHeraldry(s),size=44.dp)}}
   item{AetherisTabs(categories,filter,{filter=it})}
   item{Eyebrow("${memories.size} ${if(memories.size==1)"inscrição" else "inscrições"} · ${categories[filter]}",Muted)}
   if(memories.isEmpty())item{Empty(if(filter==categories.indexOf("História"))"As vozes ainda aguardam uma conversa. Memórias reconhecidas aparecerão aqui." else "Ainda não há inscrições nesta parte do salão. O lugar permanece reservado.")}
@@ -77,7 +77,7 @@ import java.time.LocalDate
  val spec=activeSpecialization(s)
  val heraldry=remember(s.heraldry,hero.created){resolvedHeraldry(s)}
  val equipped=s.assets.filter{it.equipped}.mapNotNull{a->shopItems.find{it.id==a.id}?.let{it to a}}
- Page{
+ Page(NorthbornChapter.Forge){
   Title(hero.name,"${classes[hero.heroClass]}${if(spec!=null)" · ${spec.name}" else ""} · ${hero.title} · nível ${s.level}")
   Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.Center,verticalAlignment=Alignment.CenterVertically){
    ClassEmblem(hero.heroClass,Modifier.size(36.dp))

@@ -24,7 +24,7 @@ import java.time.format.DateTimeFormatter
  var snapshot by remember{mutableStateOf<AnalyticsSnapshot?>(null)}
  LaunchedEffect(scoped,p){snapshot=null;snapshot=withContext(Dispatchers.Default){analyticsSnapshot(scoped,p)}}
 
- Title(if(habit==null)"Central de Análises" else "Análise · ${habit.name}","Informações reais, sem previsões ou julgamentos.")
+ ChapterHeading(if(habit==null)"Central de Análises" else "Análise · ${habit.name}", "Informações reais, sem previsões ou julgamentos.", NorthbornChapter.Strategy, Engraving.Analysis)
  AetherisTabs(listOf("7 dias","30 dias","90 dias","Semana civil","Mês civil"),choice,{choice=it})
  Text("${p.label} · ${displayPeriod(p.start,p.end)}",color=Blue,fontSize=12.sp)
  val data=snapshot?.takeIf{it.source===scoped&&it.period==p}
@@ -44,13 +44,13 @@ import java.time.format.DateTimeFormatter
  Hairline()
  Column(Modifier.fillMaxWidth(),verticalArrangement=Arrangement.spacedBy(10.dp)){SectionHeader("Leitura dos seus dados");data.insights.forEach{ReadingBlock(it)};Text("Dias dispensados e descansos ficam fora da taxa. Atividades extras conservam recompensas e aparecem nos totais.",color=Muted,fontSize=12.sp)}
 }
-@Composable fun AnalysisScreen(s:GameState){var selected by remember{mutableStateOf<Habit?>(null)};Page{AnalysisContent(s,onHabit={selected=it})};selected?.let{h->FullForm("Análise do hábito",{selected=null},{selected=null},"Fechar"){AnalysisContent(s,h)}}}
+@Composable fun AnalysisScreen(s:GameState){var selected by remember{mutableStateOf<Habit?>(null)};Page(NorthbornChapter.Strategy){AnalysisContent(s,onHabit={selected=it})};selected?.let{h->FullForm("Análise do hábito",{selected=null},{selected=null},"Fechar"){AnalysisContent(s,h)}}}
 @Composable fun FocusHistoryScreen(s:GameState){
  var choice by rememberSaveable{mutableIntStateOf(0)};var detail by remember{mutableStateOf<FocusSession?>(null)};val p=analysisPeriod(choice,currentDay());val sessions=remember(s.focusSessions,p){s.focusSessions.filter{it.date in p.start..p.end}}
  fun sessionName(f:FocusSession)=f.habitName.ifBlank{f.targetLabel.ifBlank{"Sessão de projeto"}}
  val nb=LocalNorthborn.current
- LazyColumn(Modifier.fillMaxSize().background(nb.canvas).testTag("focus_history_list"),contentPadding=PaddingValues(horizontal=20.dp,vertical=16.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
-  item{Title("Histórico de Foco","Sessões reais registradas em hábitos e caminhos.");AetherisTabs(listOf("7 dias","30 dias","90 dias","Semana civil","Mês civil"),choice,{choice=it})}
+ LazyColumn(Modifier.fillMaxSize().chapterBackdrop(NorthbornChapter.Strategy).testTag("focus_history_list"),contentPadding=PaddingValues(horizontal=20.dp,vertical=16.dp),verticalArrangement=Arrangement.spacedBy(16.dp)){
+  item{ChapterHeading("Histórico de Foco", "Sessões reais registradas em hábitos e caminhos.", NorthbornChapter.Strategy, Engraving.Focus);AetherisTabs(listOf("7 dias","30 dias","90 dias","Semana civil","Mês civil"),choice,{choice=it})}
   item{NorthbornSurface(role=NorthbornSurfaceRole.Informative,accent=nb.accentFjord){MetricPair("${sessions.sumOf{it.elapsedSeconds}/60}","minutos efetivos","${sessions.size}","sessões no período");Text("Média: ${if(sessions.isEmpty())"—" else "${sessions.sumOf{it.elapsedSeconds}/sessions.size/60} min"} · ${sessions.count{it.status=="completed"}} concluídas",color=nb.inkSecondary,fontSize=13.sp);val prev=s.focusSessions.filter{it.date in p.previous.start..p.previous.end};Text("Período anterior: ${prev.sumOf{it.elapsedSeconds}/60} min. Sessões canceladas são visíveis e não concedem XP.",color=nb.inkMuted,fontSize=12.sp)}}
   if(s.focus!=null)item{StatusSeal("Há uma sessão em andamento. Retome pela Jornada.",Blue)}
   if(sessions.isEmpty())item{Empty("Nenhuma sessão detalhada neste período. Seus registros antigos de minutos continuam nas análises de hábitos.")}

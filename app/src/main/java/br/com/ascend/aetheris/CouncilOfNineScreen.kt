@@ -52,12 +52,12 @@ fun CouncilOfNineScreen(
 
     val nb = LocalNorthborn.current
     LazyColumn(
-        Modifier.fillMaxSize().background(nb.canvas).testTag("council_nine_list"),
+        Modifier.fillMaxSize().chapterBackdrop(NorthbornChapter.Strategy).testTag("council_nine_list"),
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item {
-            Title("Conselho dos Nove", "Áreas da vida opcionais e objetivos pessoais trimestrais e anuais com progresso verificável.")
+            ChapterHeading("Conselho dos Nove", "Áreas da vida opcionais e objetivos pessoais trimestrais e anuais com progresso verificável.", NorthbornChapter.Strategy, Engraving.Council)
         }
         item {
             AetherisTabs(listOf("Áreas da Vida (${areas.size})", "Objetivos (${goals.size})"), tab, { tab = it })

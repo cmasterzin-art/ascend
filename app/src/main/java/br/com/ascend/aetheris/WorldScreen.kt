@@ -24,8 +24,8 @@ import androidx.compose.ui.unit.*
     val effects by vm.soundEnabled.collectAsStateWithLifecycle();val volume by vm.soundVolume.collectAsStateWithLifecycle()
     val pageAudio=remember{AetherisAudio(context)};SideEffect{pageAudio.enabled=effects;pageAudio.volume=volume};DisposableEffect(pageAudio){onDispose{pageAudio.close()}}
     LaunchedEffect(chapter){if(chapter!=null)pageAudio.play("page")}
-    Page{
-        Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween){Column(Modifier.weight(1f)){Title("Atlas de Aetheris","Entre fiordes, ruínas e caminhos velados.")};Text("◈ ${s.coins}",color=Gold,modifier=Modifier.padding(top=14.dp))}
+    Page(NorthbornChapter.World){
+        ChapterHeading("Atlas de Aetheris", "Entre fiordes, ruínas e caminhos velados. · ◈ ${s.coins}", NorthbornChapter.World, Engraving.Compass, cover = true)
         AetherisTabs(listOf("Mapa","Vila","Crônicas"),tab,{tab=it})
         when(tab){
             0->{

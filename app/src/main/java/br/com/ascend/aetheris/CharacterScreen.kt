@@ -23,10 +23,10 @@ import java.time.*
     val tabStates=rememberSaveableStateHolder()
     var tab by rememberSaveable{mutableIntStateOf(0)};var playerEdit by remember{mutableStateOf(false)}
     val nb = LocalNorthborn.current
-    Column(Modifier.fillMaxSize().background(nb.canvas)){
+    Column(Modifier.fillMaxSize().chapterBackdrop(NorthbornChapter.Forge)){
         Column(Modifier.padding(horizontal=20.dp).padding(top=14.dp)){
         Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
-            Column(Modifier.weight(1f)){Title("Seu aventureiro")}
+            Column(Modifier.weight(1f)){ChapterHeading("Seu aventureiro", chapter = NorthbornChapter.Forge, glyph = Engraving.Shield)}
             IconButton(onSettings,Modifier.size(48.dp).semantics{contentDescription="Configurações"}){
                 NorthbornIcon(NorthbornGlyph.Settings, nb.inkPrimary, size = 22.dp)
             }
@@ -34,7 +34,7 @@ import java.time.*
         AetherisTabs(listOf("Perfil","Atributos","Inventário","Loja","Conquistas","Estatísticas","Habilidades"),tab,{tab=it})
         }
         val reduce=LocalAppearance.current.reducedMotion
-        Crossfade(targetState=tab,modifier=Modifier.weight(1f),animationSpec=tween(if(reduce)0 else AetherTokens.scene),label="abas do herói"){visible->tabStates.SaveableStateProvider(visible){Page{
+        Crossfade(targetState=tab,modifier=Modifier.weight(1f),animationSpec=tween(if(reduce)0 else AetherTokens.scene),label="abas do herói"){visible->tabStates.SaveableStateProvider(visible){Page(if (visible == 5) NorthbornChapter.Strategy else NorthbornChapter.Forge){
         when(visible){
             0->{
                 HeroStage(s,onPortrait)
@@ -214,7 +214,7 @@ import java.time.*
 }
 @Composable fun JournalScreen(s:GameState,vm:GameViewModel){
     var search by remember{mutableStateOf("")};var editor by remember{mutableStateOf(false)};var editing by remember{mutableStateOf<Journal?>(null)};var deleting by remember{mutableStateOf<Journal?>(null)}
-    Page{Title("Diário do aventureiro","Nem tudo o que importa cabe em uma barra de XP.");Action("+ Escrever uma página",{editor=true});FormField(search,{search=it},"Pesquisar suas páginas");val entries=s.journal.filter{it.title.contains(search,true)||it.text.contains(search,true)};if(entries.isEmpty())Empty("As páginas estão em silêncio. Escreva quando quiser.");entries.forEach{j->Manuscript{Eyebrow(displayDate(j.date),Sepia);Text(j.title,style=MaterialTheme.typography.titleLarge);Text(j.text,color=Sepia,fontSize=15.sp,lineHeight=25.sp);Row{TextButton({editing=j;editor=true}){Text("Editar")};TextButton({deleting=j}){Text("Excluir",color=Muted)}}}}}
+    Page(NorthbornChapter.Archive){ChapterHeading("Diário do aventureiro", "Nem tudo o que importa cabe em uma barra de XP.", NorthbornChapter.Archive, Engraving.Folio, cover = true);Action("+ Escrever uma página",{editor=true});FormField(search,{search=it},"Pesquisar suas páginas");val entries=s.journal.filter{it.title.contains(search,true)||it.text.contains(search,true)};if(entries.isEmpty())Empty("As páginas estão em silêncio. Escreva quando quiser.");entries.forEach{j->Manuscript{Eyebrow(displayDate(j.date),Sepia);Text(j.title,style=MaterialTheme.typography.titleLarge);Text(j.text,color=Sepia,fontSize=15.sp,lineHeight=25.sp);Row{TextButton({editing=j;editor=true}){Text("Editar")};TextButton({deleting=j}){Text("Excluir",color=Muted)}}}}}
     if(editor)JournalEditor(editing,{editor=false;editing=null},{j->vm.run{vm.repo.journal(j);editor=false;editing=null}})
     deleting?.let{j->AetherDialog(onDismissRequest={deleting=null},title="Excluir esta página?",confirmButton={SagaButton("Excluir",{vm.run{vm.repo.deleteJournal(j.id)};deleting=null},destructive=true)},dismissButton={TextButton({deleting=null}){Text("Cancelar")}}){Text("A página será removida do diário local.")}}
 }

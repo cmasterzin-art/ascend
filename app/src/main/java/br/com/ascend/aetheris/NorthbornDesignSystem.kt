@@ -1,11 +1,8 @@
 package br.com.ascend.aetheris
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.*
@@ -415,9 +412,8 @@ fun NorthbornButton(
     val nb = LocalNorthborn.current
     val appearance = LocalAppearance.current
     val interaction = remember { MutableInteractionSource() }
-    val pressed by interaction.collectIsPressedAsState()
     val focused by interaction.collectIsFocusedAsState()
-    val scale by animateFloatAsState(if (pressed && enabled) 0.985f else 1f, tween(if (appearance.reducedMotion) 0 else 80), label = "nb_btn_scale")
+    val pressure = craftPress(interaction)
 
     val effectiveRole = if (completed) NorthbornButtonRole.Confirm else role
     val isCeremonial = effectiveRole == NorthbornButtonRole.Ceremonial
@@ -471,7 +467,7 @@ fun NorthbornButton(
     }
     val atlas = if (material != null && grainAlpha > 0f) ImageBitmap.imageResource(R.drawable.northborn_materials_atlas) else null
     val shape = if (isContextual) NorthbornShape.pill else NorthbornShape.button
-    val minHeight = if (isContextual) 42.dp else NorthbornSpace.touchMin
+    val minHeight = NorthbornSpace.touchMin
 
     Button(
         onClick = onClick,
@@ -495,7 +491,6 @@ fun NorthbornButton(
         ),
         modifier = modifier
             .heightIn(min = minHeight)
-            .graphicsLayer { scaleX = scale; scaleY = scale }
             .clip(shape)
             .background(containerBg)
             .drawWithCache {
@@ -524,8 +519,8 @@ fun NorthbornButton(
                     if (selected && enabled) {
                         drawLine(nb.accentBronze, Offset(12 * d, h - 2 * d), Offset(w - 12 * d, h - 2 * d), 1.8f * d)
                     }
-                    if (pressed && enabled) {
-                        drawRect(Color.Black.copy(alpha = 0.14f))
+                    if (enabled && pressure.value > 0f) {
+                        drawRect(Color.Black.copy(alpha = .17f * pressure.value))
                     }
                 }
             }
@@ -536,7 +531,9 @@ fun NorthbornButton(
             CircularProgressIndicator(Modifier.size(16.dp), strokeWidth = 2.dp, color = contentFg)
             Spacer(Modifier.width(8.dp))
         } else if (leadingIcon != null) {
-            NorthbornIcon(leadingIcon, contentFg, size = 16.dp)
+            NorthbornIcon(leadingIcon, contentFg, Modifier.graphicsLayer {
+                if (!appearance.reducedMotion) translationY = 1.dp.toPx() * pressure.value
+            }, size = 16.dp)
             Spacer(Modifier.width(8.dp))
         } else if (leadingRune != null) {
             FutharkRuneGlyph(leadingRune, if (enabled) contentFg.copy(alpha = 0.9f) else nb.inkTertiary, size = 13.dp)
@@ -592,7 +589,7 @@ fun NorthbornTopBar(
                     fontFamily = SagaFont,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.Medium,
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
                 if (subtitle.isNotBlank()) {
@@ -603,7 +600,7 @@ fun NorthbornTopBar(
                 Row(verticalAlignment = Alignment.CenterVertically, content = trailing)
             }
         }
-        NorthbornDivider(NorthbornDividerStyle.Hairline)
+        NorthbornDivider(color = nb.accentBronze.copy(alpha = .35f))
     }
 }
 
@@ -657,9 +654,7 @@ fun NorthbornEditorialHeader(
     }
 }
 
-/**
- * Ícones arquitetônicos escandinavos de traço uniforme (1.75 dp), legíveis de 16 dp a 28 dp em ambos os temas.
- */
+/** Shared application icons use the same engraving geometry as the bottom navigation. */
 @Composable
 fun NorthbornIcon(
     glyph: NorthbornGlyph,
@@ -668,150 +663,21 @@ fun NorthbornIcon(
     size: Dp = 22.dp,
     filled: Boolean = false
 ) {
-    Canvas(modifier.size(size)) {
-        val w = this.size.width
-        val h = this.size.height
-        val s = Stroke(width = (w * 0.082f).coerceAtLeast(1.4.dp.toPx()), cap = StrokeCap.Round, join = StrokeJoin.Round)
-        val thin = Stroke(width = (w * 0.062f).coerceAtLeast(1.1.dp.toPx()), cap = StrokeCap.Round, join = StrokeJoin.Round)
-        val fill = color.copy(alpha = if (filled) 0.16f else 0f)
-        when (glyph) {
-            NorthbornGlyph.Journey -> {
-                // Estrela polar / bússola do Norte em losango arquitetônico
-                val p = Path().apply {
-                    moveTo(w * .5f, h * .10f); lineTo(w * .63f, h * .37f); lineTo(w * .90f, h * .5f)
-                    lineTo(w * .63f, h * .63f); lineTo(w * .5f, h * .90f); lineTo(w * .37f, h * .63f)
-                    lineTo(w * .10f, h * .5f); lineTo(w * .37f, h * .37f); close()
-                }
-                if (filled) drawPath(p, fill)
-                drawPath(p, color, style = s)
-                drawCircle(color, w * .08f, Offset(w * .5f, h * .5f))
-            }
-            NorthbornGlyph.Habits -> {
-                // Folha de carvalho nórdico / eixo de constância
-                val leaf = Path().apply {
-                    moveTo(w * .5f, h * .12f)
-                    lineTo(w * .78f, h * .38f); lineTo(w * .72f, h * .66f); lineTo(w * .5f, h * .80f)
-                    lineTo(w * .28f, h * .66f); lineTo(w * .22f, h * .38f); close()
-                }
-                if (filled) drawPath(leaf, fill)
-                drawPath(leaf, color, style = s)
-                drawLine(color, Offset(w * .5f, h * .28f), Offset(w * .5f, h * .90f), s.width, StrokeCap.Round)
-                drawLine(color, Offset(w * .5f, h * .48f), Offset(w * .65f, h * .38f), thin.width, StrokeCap.Round)
-                drawLine(color, Offset(w * .5f, h * .60f), Offset(w * .35f, h * .50f), thin.width, StrokeCap.Round)
-            }
-            NorthbornGlyph.Missions -> {
-                // Pergaminho selado / contrato de juramento
-                val body = Path().apply {
-                    moveTo(w * .22f, h * .16f); lineTo(w * .78f, h * .16f); lineTo(w * .78f, h * .84f); lineTo(w * .22f, h * .84f); close()
-                }
-                if (filled) drawPath(body, fill)
-                drawPath(body, color, style = s)
-                drawLine(color, Offset(w * .34f, h * .36f), Offset(w * .66f, h * .36f), thin.width, StrokeCap.Round)
-                drawLine(color, Offset(w * .34f, h * .52f), Offset(w * .60f, h * .52f), thin.width, StrokeCap.Round)
-                val seal = Path().apply {
-                    moveTo(w * .58f, h * .64f); lineTo(w * .66f, h * .71f); lineTo(w * .58f, h * .78f); lineTo(w * .50f, h * .71f); close()
-                }
-                drawPath(seal, color, style = thin)
-            }
-            NorthbornGlyph.World -> {
-                // Atlas cartográfico dobrado em três folhas (como na prancha NORTHBORN)
-                val map = Path().apply {
-                    moveTo(w * .14f, h * .24f); lineTo(w * .38f, h * .16f); lineTo(w * .62f, h * .24f); lineTo(w * .86f, h * .16f)
-                    lineTo(w * .86f, h * .76f); lineTo(w * .62f, h * .84f); lineTo(w * .38f, h * .76f); lineTo(w * .14f, h * .84f); close()
-                }
-                if (filled) drawPath(map, fill)
-                drawPath(map, color, style = s)
-                drawLine(color, Offset(w * .38f, h * .16f), Offset(w * .38f, h * .76f), thin.width)
-                drawLine(color, Offset(w * .62f, h * .24f), Offset(w * .62f, h * .84f), thin.width)
-            }
-            NorthbornGlyph.Hero -> {
-                // Elmo escandinavo Gjermundbu minimalista
-                val dome = Path().apply {
-                    moveTo(w * .20f, h * .58f)
-                    lineTo(w * .24f, h * .28f); lineTo(w * .50f, h * .14f); lineTo(w * .76f, h * .28f)
-                    lineTo(w * .80f, h * .58f); lineTo(w * .64f, h * .82f); lineTo(w * .50f, h * .86f); lineTo(w * .36f, h * .82f); close()
-                }
-                if (filled) drawPath(dome, fill)
-                drawPath(dome, color, style = s)
-                drawLine(color, Offset(w * .50f, h * .16f), Offset(w * .50f, h * .66f), thin.width, StrokeCap.Round)
-                drawLine(color, Offset(w * .24f, h * .52f), Offset(w * .76f, h * .52f), thin.width, StrokeCap.Round)
-            }
-            NorthbornGlyph.Odin -> {
-                // Gungnir / eixo de decisão estratégica com asas geométricas
-                drawLine(color, Offset(w * .5f, h * .12f), Offset(w * .5f, h * .88f), s.width, StrokeCap.Round)
-                val tip = Path().apply { moveTo(w * .5f, h * .10f); lineTo(w * .62f, h * .30f); lineTo(w * .38f, h * .30f); close() }
-                if (filled) drawPath(tip, fill)
-                drawPath(tip, color, style = thin)
-                drawLine(color, Offset(w * .18f, h * .50f), Offset(w * .50f, h * .38f), s.width, StrokeCap.Round)
-                drawLine(color, Offset(w * .82f, h * .50f), Offset(w * .50f, h * .38f), s.width, StrokeCap.Round)
-                drawCircle(color, w * .08f, Offset(w * .5f, h * .66f), style = thin)
-            }
-            NorthbornGlyph.TimeForge -> {
-                // Aro temporal / ampulheta astrolábio
-                drawCircle(color, w * .38f, Offset(w * .5f, h * .5f), style = s)
-                val glass = Path().apply {
-                    moveTo(w * .36f, h * .30f); lineTo(w * .64f, h * .30f)
-                    lineTo(w * .36f, h * .70f); lineTo(w * .64f, h * .70f); close()
-                }
-                drawPath(glass, color, style = thin)
-            }
-            NorthbornGlyph.CouncilNine -> {
-                // Triângulo duplo / selo dos nove domínios
-                val up = Path().apply { moveTo(w * .5f, h * .14f); lineTo(w * .84f, h * .72f); lineTo(w * .16f, h * .72f); close() }
-                val dn = Path().apply { moveTo(w * .5f, h * .86f); lineTo(w * .84f, h * .28f); lineTo(w * .16f, h * .28f); close() }
-                drawPath(up, color, style = thin)
-                drawPath(dn, color, style = thin)
-                drawCircle(color, w * .07f, Offset(w * .5f, h * .5f))
-            }
-            NorthbornGlyph.Agenda -> {
-                drawRoundRect(color, Offset(w * .16f, h * .22f), Size(w * .68f, h * .64f), CornerRadius(2 * s.width), style = s)
-                drawLine(color, Offset(w * .16f, h * .40f), Offset(w * .84f, h * .40f), thin.width)
-                drawLine(color, Offset(w * .34f, h * .12f), Offset(w * .34f, h * .28f), s.width, StrokeCap.Round)
-                drawLine(color, Offset(w * .66f, h * .12f), Offset(w * .66f, h * .28f), s.width, StrokeCap.Round)
-            }
-            NorthbornGlyph.Paths -> {
-                // Trilha de marcos conectados
-                drawCircle(color, w * .10f, Offset(w * .24f, h * .74f), style = s)
-                drawCircle(color, w * .10f, Offset(w * .52f, h * .48f), style = s)
-                drawCircle(color, w * .10f, Offset(w * .78f, h * .24f), style = s)
-                drawLine(color, Offset(w * .31f, h * .67f), Offset(w * .45f, h * .55f), thin.width, StrokeCap.Round)
-                drawLine(color, Offset(w * .59f, h * .41f), Offset(w * .71f, h * .31f), thin.width, StrokeCap.Round)
-            }
-            NorthbornGlyph.Library -> {
-                val book = Path().apply {
-                    moveTo(w * .14f, h * .22f); lineTo(w * .50f, h * .28f); lineTo(w * .86f, h * .22f)
-                    lineTo(w * .86f, h * .78f); lineTo(w * .50f, h * .84f); lineTo(w * .14f, h * .78f); close()
-                }
-                if (filled) drawPath(book, fill)
-                drawPath(book, color, style = s)
-                drawLine(color, Offset(w * .50f, h * .28f), Offset(w * .50f, h * .84f), thin.width)
-            }
-            NorthbornGlyph.Settings -> {
-                drawCircle(color, w * .22f, Offset(w * .5f, h * .5f), style = s)
-                for (i in 0 until 6) {
-                    val a = Math.toRadians(i * 60.0)
-                    val r1 = w * .28f; val r2 = w * .40f
-                    drawLine(
-                        color,
-                        Offset(w * .5f + (r1 * kotlin.math.cos(a)).toFloat(), h * .5f + (r1 * kotlin.math.sin(a)).toFloat()),
-                        Offset(w * .5f + (r2 * kotlin.math.cos(a)).toFloat(), h * .5f + (r2 * kotlin.math.sin(a)).toFloat()),
-                        s.width, StrokeCap.Round
-                    )
-                }
-            }
-            NorthbornGlyph.Back -> {
-                drawLine(color, Offset(w * .76f, h * .5f), Offset(w * .24f, h * .5f), s.width, StrokeCap.Round)
-                drawLine(color, Offset(w * .46f, h * .26f), Offset(w * .22f, h * .5f), s.width, StrokeCap.Round)
-                drawLine(color, Offset(w * .46f, h * .74f), Offset(w * .22f, h * .5f), s.width, StrokeCap.Round)
-            }
-            NorthbornGlyph.Add -> {
-                drawLine(color, Offset(w * .5f, h * .20f), Offset(w * .5f, h * .80f), s.width, StrokeCap.Round)
-                drawLine(color, Offset(w * .20f, h * .5f), Offset(w * .80f, h * .5f), s.width, StrokeCap.Round)
-            }
-            NorthbornGlyph.Check -> {
-                drawLine(color, Offset(w * .20f, h * .52f), Offset(w * .42f, h * .74f), s.width, StrokeCap.Round)
-                drawLine(color, Offset(w * .42f, h * .74f), Offset(w * .82f, h * .28f), s.width, StrokeCap.Round)
-            }
-        }
+    val engraving = when (glyph) {
+        NorthbornGlyph.Journey -> Engraving.Ship
+        NorthbornGlyph.Habits -> Engraving.Tally
+        NorthbornGlyph.Missions -> Engraving.Banner
+        NorthbornGlyph.World -> Engraving.Compass
+        NorthbornGlyph.Hero -> Engraving.Shield
+        NorthbornGlyph.Odin, NorthbornGlyph.CouncilNine -> Engraving.Council
+        NorthbornGlyph.TimeForge -> Engraving.Forge
+        NorthbornGlyph.Agenda -> Engraving.Calendar
+        NorthbornGlyph.Paths -> Engraving.Cairns
+        NorthbornGlyph.Library -> Engraving.Folio
+        NorthbornGlyph.Settings -> Engraving.Settings
+        NorthbornGlyph.Back -> Engraving.Back
+        NorthbornGlyph.Add -> Engraving.Add
+        NorthbornGlyph.Check -> Engraving.Check
     }
+    EngravedIcon(engraving, color, modifier, size, raised = filled && !LocalAppearance.current.minimal)
 }

@@ -35,7 +35,7 @@ import java.time.LocalDate
 /**
  * ASCEND 1.7.5.9 — A Reforma de Aetheris (NORTHBORN Design System 4.0)
  * Suíte UI Robolectric + Compose capturando todas as 30 telas obrigatórias
- * em build/reports/screenshots/1.7.5.9.1/ para inspeção visual e validação de regressão.
+ * em build/reports/screenshots/1.7.5.9.2/ para inspeção visual e validação de regressão.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28], application = AscendApp::class, qualifiers = "w411dp-h891dp-mdpi")
@@ -92,7 +92,7 @@ class NorthbornUiReforgeTest {
                 android.graphics.Bitmap.Config.ARGB_8888
             )
             view.draw(android.graphics.Canvas(bitmap))
-            val file = File("build/reports/screenshots/1.7.5.9.1/$name.png")
+            val file = File("build/reports/screenshots/1.7.5.9.2/$name.png")
             file.parentFile!!.mkdirs()
             file.outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
             bitmap.recycle()
@@ -440,7 +440,7 @@ class NorthbornUiReforgeTest {
         renderScreen {
             SettingsScreen(s = s0, vm = vm, relaxed = false)
         }
-        compose.onNodeWithText("ASCEND · versão 1.7.5.9.1", ignoreCase = true).assertExists()
+        compose.onNodeWithText("ASCEND · versão 1.7.5.9.2", ignoreCase = true).assertExists()
         shot("23-configuracoes")
 
         // 24. Onboarding
@@ -602,7 +602,8 @@ class NorthbornUiReforgeTest {
                 "Mundo" to Engraving.Compass, "Herói" to Engraving.Shield, "Odin" to Engraving.Council,
                 "Forja" to Engraving.Forge, "Planejador" to Engraving.Calendar, "Mímir" to Engraving.Folio,
                 "Caminhos" to Engraving.Cairns, "Foco" to Engraving.Focus, "Análises" to Engraving.Analysis,
-                "Criar" to Engraving.Add
+                "Criar" to Engraving.Add, "Configurações" to Engraving.Settings,
+                "Voltar" to Engraving.Back, "Confirmar" to Engraving.Check
             )
             EngravedPage {
                 Text("Iconografia de Aetheris")
@@ -643,10 +644,48 @@ class NorthbornUiReforgeTest {
         } finally {
             compose.mainClock.autoAdvance = true
         }
-        val firstMotionFrame = File("build/reports/screenshots/1.7.5.9.1/42-mimir-movimento-inicio.png")
-        val lastMotionFrame = File("build/reports/screenshots/1.7.5.9.1/44-mimir-movimento-fim.png")
+        val firstMotionFrame = File("build/reports/screenshots/1.7.5.9.2/42-mimir-movimento-inicio.png")
+        val lastMotionFrame = File("build/reports/screenshots/1.7.5.9.2/44-mimir-movimento-fim.png")
         assertTrue("A revelação deve produzir quadros distintos",
             !firstMotionFrame.readBytes().contentEquals(lastMotionFrame.readBytes()))
+
+        renderScreen { MissionsScreen(s0, vm, bosses = true) }
+        compose.onNodeWithText("Contratos da jornada").assertIsDisplayed()
+        shot("45-missoes")
+        compose.onNodeWithText("Sagas").performScrollTo().performClick()
+        compose.onNodeWithText("Sagas Pessoais").performScrollTo().assertIsDisplayed()
+        shot("46-sagas")
+
+        renderScreen { WeeklyScreen(s0) }
+        compose.onNodeWithText("Crônica da Semana").assertIsDisplayed()
+        shot("47-cronica-semanal")
+        renderScreen { MemoryHall(s0) }
+        shot("48-memorias")
+        val diary = Journal(id = "northborn-review", title = "À margem do fiorde", text = "A chuva passou. Voltei ao caderno depois do estudo.")
+        renderScreen(dark = true, minimal = true, widthDp = 320, fontScale = 1.3f) {
+            JournalScreen(s0.copy(journal = listOf(diary)), vm)
+        }
+        compose.onNodeWithText(diary.text).performScrollTo().assertIsDisplayed()
+        shot("49-diario-minimalista-320")
+
+        renderScreen(dark = false, widthDp = 320, fontScale = 1.3f) {
+            PlannerScreen(s0, vm, onRecord = { _, _ -> })
+        }
+        compose.onNodeWithText("Planejador Semanal").assertIsDisplayed()
+        compose.onNodeWithText("Dia").performClick()
+        shot("50-planejador-claro-320")
+        renderScreen { AnalysisScreen(s0) }
+        shot("51-analises")
+        renderScreen { FocusHistoryScreen(s0) }
+        shot("52-historico-de-foco")
+        renderScreen { GrimoireScreen(s0, vm, onAdd = {}) }
+        shot("53-grimorio")
+        renderScreen { InboxScreen(s0, vm) }
+        shot("54-caixa-de-entrada")
+        renderScreen { PendingCenterScreen(s0, vm, onOpenPath = {}) }
+        shot("55-pendencias")
+        renderScreen { HeraldryEditorScreen(s0, vm, onOpenCodex = {}, onBack = {}) }
+        shot("56-heraldica")
 
         val expected = listOf(
             "01-jornada", "02-navegacao-inferior", "03-registro-habito", "04-lista-habitos", "05-perfil-heroi",
@@ -655,10 +694,12 @@ class NorthbornUiReforgeTest {
             "16-biblioteca-mimir", "17-flashcards", "18-arsenal", "19-forja-darian", "20-atlas",
             "21-exploracao", "22-codex-runico", "23-configuracoes", "24-onboarding", "25-tema-claro",
             "26-tema-escuro", "27-modo-minimalista", "28-tela-320dp", "29-fonte-130", "30-dialogos-formularios",
-            "40-navegacao-320", "41-icones-e-divisores"
+            "40-navegacao-320", "41-icones-e-divisores", "45-missoes", "46-sagas", "47-cronica-semanal",
+            "48-memorias", "49-diario-minimalista-320", "50-planejador-claro-320", "51-analises",
+            "52-historico-de-foco", "53-grimorio", "54-caixa-de-entrada", "55-pendencias", "56-heraldica"
         )
         expected.forEach { name ->
-            val f = File("build/reports/screenshots/1.7.5.9.1/$name.png")
+            val f = File("build/reports/screenshots/1.7.5.9.2/$name.png")
             assertTrue("Captura esperada ausente ou vazia: ${f.path}", f.exists() && f.length() > 1000L)
         }
     }

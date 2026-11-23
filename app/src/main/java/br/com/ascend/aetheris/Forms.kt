@@ -29,13 +29,13 @@ import androidx.compose.ui.semantics.*
                                 text = saveLabel,
                                 onClick = onSave,
                                 role = NorthbornButtonRole.Primary,
-                                modifier = Modifier.padding(end = 6.dp)
+                                modifier = Modifier.widthIn(max = 146.dp).padding(end = 6.dp)
                             )
                         }
                     )
                 }
             }
-        ){padding->Box(Modifier.padding(padding).imePadding()){Page(content)}}
+        ){padding->Box(Modifier.padding(padding).imePadding()){Page(content = content)}}
     }
 }
 @Composable fun HabitEditor(h:Habit,onDismiss:()->Unit,onSave:(Habit)->Unit){
@@ -122,7 +122,7 @@ import androidx.compose.ui.semantics.*
     var step by remember{mutableIntStateOf(0)};var name by remember{mutableStateOf("")};var cls by remember{mutableIntStateOf(1)};var color by remember{mutableIntStateOf(1)};var face by remember{mutableIntStateOf(0)};var outfit by remember{mutableIntStateOf(0)};var frame by remember{mutableIntStateOf(0)};var title by remember{mutableIntStateOf(0)};var goals by remember{mutableStateOf(setOf("Aprender"))};var starters by remember{mutableStateOf(setOf(0))}
     val titles=listOf("O Desperto","Viajante da Névoa","Portador da Brasa")
     val p=Player(name=name,heroClass=cls,color=color,face=face,outfit=outfit,frame=frame,title=titles[title],goals=goals.joinToString(", "))
-    Page{
+    Page(NorthbornChapter.World){
         Spacer(Modifier.height(12.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {

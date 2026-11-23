@@ -28,9 +28,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
     var filter by rememberSaveable{mutableStateOf(CatalogFilter())};var tab by rememberSaveable{mutableIntStateOf(0)};var expanded by remember{mutableStateOf(false)};var interestsOpen by remember{mutableStateOf(false)};var routine by remember{mutableStateOf<RoutineTemplate?>(null)}
     val interests by vm.catalogInterests.collectAsStateWithLifecycle();val dismissed by vm.dismissedSuggestions.collectAsStateWithLifecycle();val narrative=LocalNarrativeNames.current
     val found=remember(filter){filterTemplates(filter)}
-    LazyColumn(Modifier.fillMaxSize().testTag("catalog_list"),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){
+    LazyColumn(Modifier.fillMaxSize().chapterBackdrop(NorthbornChapter.Daily).testTag("catalog_list"),contentPadding=PaddingValues(20.dp),verticalArrangement=Arrangement.spacedBy(14.dp)){
         item(key="heading"){Column(verticalArrangement=Arrangement.spacedBy(8.dp)){
-            Title("Grimório dos Hábitos","Todo grande feito começa com um pequeno ritual.")
+            ChapterHeading("Grimório dos Hábitos", "Todo grande feito começa com um pequeno ritual.", NorthbornChapter.Daily, Engraving.Folio)
             AetherisTabs(listOf("Hábitos","Modelos de rotina"),tab,{tab=it})
             if(tab==0)FormField(filter.query,{filter=filter.copy(query=it)},"Buscar nome ou palavra-chave")
         }}

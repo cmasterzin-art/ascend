@@ -172,7 +172,7 @@ fun AetherisTabs(values: List<String>, selected: Int, onSelect: (Int) -> Unit) {
     BoxWithConstraints(Modifier.fillMaxWidth().padding(vertical = 2.dp)) {
         val compact = maxWidth < 360.dp && values.size >= 6
         val hPad = if (compact) 7.dp else 12.dp
-        val minH = if (compact) 40.dp else 46.dp
+        val minH = NorthbornSpace.touchMin
         val fSize = if (compact) 11.5.sp else 13.5.sp
         Column(Modifier.fillMaxWidth()) {
             FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {

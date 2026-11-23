@@ -263,12 +263,12 @@ fun HeraldryEditorScreen(
 
     val selectedRunes = remember(inscription) { parseHeraldryInscription(inscription) }
 
-    Page {
+    Page(NorthbornChapter.Forge) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             TextButton({ if (dirty) confirmDiscard = true else onBack() }) { Text("Voltar") }
             TextButton(onOpenCodex) { Text("Codex Rúnico (24)") }
         }
-        Title("Heráldica Rúnica de Aetheris", "Brasão pessoal, estandarte e inscrição rúnica · 100% cosmético.")
+        ChapterHeading("Heráldica Rúnica de Aetheris", "Brasão pessoal, estandarte e inscrição rúnica · 100% cosmético.", NorthbornChapter.Forge, Engraving.Shield)
 
         // Live preview card (Brasão + Estandarte side-by-side)
         Panel(accent = Gold) {
@@ -568,12 +568,12 @@ fun RunicCodexScreen(
     }
 
     val nbC = LocalNorthborn.current
-    Page {
+    Page(NorthbornChapter.Archive) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
             TextButton(onBack) { Text("Voltar") }
             TextButton(onOpenHeraldry) { Text("Heráldica Rúnica") }
         }
-        Title("Codex Rúnico · Elder Futhark", "24 runas históricas vetoriais · enciclopédia offline.")
+        ChapterHeading("Codex Rúnico · Elder Futhark", "24 runas históricas vetoriais · enciclopédia offline.", NorthbornChapter.Archive, Engraving.Folio)
 
         NorthbornSurface(role = NorthbornSurfaceRole.Informative, accent = nbC.accentFjord) {
             Eyebrow("Contexto Histórico · Elder vs. Younger Futhark", nbC.accentFjord)

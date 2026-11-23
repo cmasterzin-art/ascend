@@ -153,8 +153,8 @@ fun Panel(modifier: Modifier = Modifier, accent: Color = LocalNorthborn.current.
 }
 
 @Composable
-fun Page(content: @Composable ColumnScope.() -> Unit) {
-    Box(Modifier.fillMaxSize().background(LocalNorthborn.current.canvas)) {
+fun Page(chapter: NorthbornChapter = NorthbornChapter.Utility, content: @Composable ColumnScope.() -> Unit) {
+    Box(Modifier.fillMaxSize().chapterBackdrop(chapter)) {
         PageColumn(content)
     }
 }
@@ -276,7 +276,7 @@ fun Empty(text: String) {
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            NorthbornIcon(NorthbornGlyph.Journey, nb.inkTertiary, size = 22.dp)
+            EngravedIcon(Engraving.Cairns, nb.accentSilver, size = 22.dp)
             Text(text, color = nb.inkSecondary, fontSize = 14.sp, lineHeight = 21.sp, modifier = Modifier.weight(1f))
         }
     }
@@ -303,7 +303,7 @@ fun ChipRow(values: List<String>, selected: Int, onSelect: (Int) -> Unit, scroll
             val fg = if (isSel) (if (nb.dark) nb.accentPaleGold else nb.accentBronze) else nb.inkSecondary
             Box(
                 Modifier
-                    .heightIn(min = 38.dp)
+                    .heightIn(min = NorthbornSpace.touchMin)
                     .clip(shape)
                     .background(bg)
                     .border(if (isSel) 1.2.dp else 1.dp, border, shape)
@@ -345,6 +345,7 @@ fun FormField(value: String, onChange: (String) -> Unit, label: String, number: 
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = nb.accentBronze,
             unfocusedBorderColor = nb.hairlineStrong,
+            disabledBorderColor = nb.hairline,
             focusedLabelColor = nb.accentBronze,
             unfocusedLabelColor = nb.inkSecondary,
             focusedContainerColor = if (nb.dark) nb.surfaceElevated else nb.surfaceBase,

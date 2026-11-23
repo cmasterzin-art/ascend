@@ -12,6 +12,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -204,6 +205,9 @@ fun Equipment(
     )
 
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (store) {
+            ChapterHeading("Loja de Aetheris", chapter = NorthbornChapter.Forge, glyph = Engraving.Shield)
+        }
         if (!store) {
             AetherisTabs(
                 values = listOf("Equipamentos", "Coleções", "Configurações", "Estúdio"),
@@ -258,6 +262,10 @@ fun Equipment(
                         .background(nb.surfaceBase)
                 ) {
                     if (!minimal) {
+                        Image(
+                            painterResource(R.drawable.surface_iron), null, Modifier.matchParentSize(),
+                            contentScale = ContentScale.FillBounds, alpha = if (dark) .58f else .15f
+                        )
                         AtlasCellCropped(
                             resId = R.drawable.hero_background_atlas,
                             index = 0,

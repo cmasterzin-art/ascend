@@ -659,7 +659,7 @@ fun NotebookDetailScreen(
 ) {
     val nb = s.notebooks.find { it.id == notebookId }
     if (nb == null) {
-        Page {
+        Page(NorthbornChapter.Archive) {
             Empty("Caderno não encontrado ou removido.")
             SagaButton("Voltar", onBack)
         }
@@ -687,7 +687,7 @@ fun NotebookDetailScreen(
     val nbDue = remember(s.notebooks, s.flashcards, notebookId, day) { dueFlashcards(s, day, notebookId) }
     val linkedPath = s.paths.find { it.id == nb.pathId }
 
-    Page {
+    Page(NorthbornChapter.Archive) {
         AetherSurface(SurfaceKind.Operational) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 MimirCodexArt(nb.cover, Modifier.size(68.dp), accent = if (nb.archived) Muted else Gold)
@@ -938,7 +938,7 @@ fun PageDetailScreen(
 ) {
     val page = s.knowledgePages.find { it.id == pageId }
     if (page == null) {
-        Page {
+        Page(NorthbornChapter.Archive) {
             Empty("Página não encontrada ou removida.")
             SagaButton("Voltar", onBack)
         }
@@ -973,7 +973,7 @@ fun PageDetailScreen(
         s.pathTasks.filter { !it.archived && (linkedPathId.isBlank() || it.pathId == linkedPathId) }.take(15)
     }
 
-    Page {
+    Page(NorthbornChapter.Archive) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Eyebrow(notebook?.name ?: "Biblioteca de Mímir", Gold)
@@ -1295,7 +1295,7 @@ fun FlashcardReviewScreen(
     val currentCard = pending.firstOrNull() ?: retryCards.firstOrNull()
     val nbTitle = if (notebookId.isBlank()) "Todos os cadernos" else s.notebooks.find { it.id == notebookId }?.name ?: "Caderno"
 
-    Page {
+    Page(NorthbornChapter.Archive) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             MimirCodexArt(3, Modifier.size(48.dp), accent = Blue)
             Column(Modifier.weight(1f)) {
