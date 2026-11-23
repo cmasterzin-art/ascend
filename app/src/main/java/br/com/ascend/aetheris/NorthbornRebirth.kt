@@ -227,7 +227,12 @@ internal fun RebirthAction(
             contentPadding = PaddingValues(horizontal = 13.dp, vertical = 11.dp)
         ) {
             if (glyph != null) {
-                EngravedIcon(glyph, if (textured) Embers else edge, size = 19.dp, raised = textured)
+                val iconInk = when {
+                    !enabled -> nb.inkMuted
+                    textured -> Embers
+                    else -> nb.accentBronze
+                }
+                EngravedIcon(glyph, iconInk, size = 19.dp, raised = textured)
                 Spacer(Modifier.width(8.dp))
             }
             Text(label, fontWeight = FontWeight.SemiBold)

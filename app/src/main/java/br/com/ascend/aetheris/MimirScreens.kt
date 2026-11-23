@@ -288,7 +288,7 @@ fun MimirLibraryScreen(
     EngravedPage {
         MimirLibraryBanner(activeNotebooks.size, activePages.size, dueCards.size)
         if (dueCards.isNotEmpty()) {
-            RebirthAction("Iniciar Runas da Memória (${dueCards.size})", { onStartReview("") }, Modifier.fillMaxWidth(),
+            RebirthAction("Iniciar Runas da Memória\u00A0(${dueCards.size})", { onStartReview("") }, Modifier.fillMaxWidth(),
                 glyph = Engraving.Folio)
         }
         val nb = LocalNorthborn.current
@@ -331,7 +331,7 @@ fun MimirLibraryScreen(
 
         when (tab) {
             0 -> {
-                RebirthAction("+ Novo caderno", { notebookEditorId = "__new__" }, primary = dueCards.isEmpty(), glyph = Engraving.Add)
+                RebirthAction("Novo caderno", { notebookEditorId = "__new__" }, primary = dueCards.isEmpty(), glyph = Engraving.Add)
                 val visible = if (showArchived) s.notebooks else activeNotebooks
                 if (visible.isEmpty()) {
                     Empty("Sua Biblioteca de Mímir ainda está vazia. Crie um caderno para organizar estudos, leituras e anotações pessoais.")
