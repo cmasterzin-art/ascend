@@ -1,3 +1,14 @@
+# ASCEND 1.7.5.9.3 · Refinamento Nórdico (NORTHBORN 4.2)
+
+23/11/2026. Branch `feat/ascend-1.7.5.9.3` sobre `feat/ascend-1.7.5.9.2` (`e147cfd`). Código de versão **`37`** (`versionName = 1.7.5.9.3`). **Room v11** e **backup v13** preservados integralmente, sem alteração de esquema ou regra de negócio. GitHub Actions execução **`45275139345`** (commit `e6f82ec`, `12m26s`).
+
+- `./gradlew testDebugUnitTest assembleDebug lintDebug --no-daemon` concluído com **229 testes aprovados** (`{'tests': 229, 'failures': 0, 'errors': 0, 'skipped': 0}` em 42 suítes JUnit/Robolectric) e **Android Lint com 0 erros e 48 avisos**. [Build](docs/validation/BUILD-1.7.5.9.3.txt) · [Lint](docs/validation/LINT-1.7.5.9.3.txt)
+- **APK oficial verificado:** [downloads/ASCEND-1.7.5.9.3.apk](downloads/ASCEND-1.7.5.9.3.apk?raw=true) com **29.806.350 bytes** (`28,43 MB`), `package: name='br.com.ascend.aetheris'`, `versionCode='37'`, `versionName='1.7.5.9.3'`, `Zipalign OK`, `APK Signature Scheme v2` válida com o certificado oficial preservado `e1f003efe40d53754db66325c40177178aaa81d4ad02ab910c85642c681caae4`, sem permissão `INTERNET` (`POST_NOTIFICATIONS`, `RECEIVE_BOOT_COMPLETED`, `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`). [Certificado e manifesto](docs/validation/APK-1.7.5.9.3.txt)
+- **Checksum SHA-256:** `840ae99b37ed9e8a160a7ce62dc8c3f610eef73294a71bf9ae2095f6f9bf710b` (`sha256sum -c ASCEND-1.7.5.9.3.apk.sha256`: **OK**). [SHA-256](downloads/ASCEND-1.7.5.9.3.apk.sha256)
+- **Inspeção visual e limites:** **61 capturas reais** (59 telas Compose + 2 widgets `RemoteViews` claro/escuro) em `docs/screenshots/1.7.5.9.3/`, incluindo comparativos `1.7.5.9.2 × 1.7.5.9.3`, tema claro/escuro, modo minimalista, `320 dp` e fonte `130%`. Ativos refinados por renderização procedural determinística 3× (`docs/art/tools/refine_northborn_craft.py`) e Compose nativo (cota de `generate_image` em cooldown durante a sessão; pinturas originais preservadas). Instalação física por cima em aparelho Android real, TalkBack físico, launcher real e GPU física ficam pendentes de conferência no dispositivo. [Relatório visual e comparativos](docs/VISUAL-1.7.5.9.3.md)
+
+---
+
 # ASCEND 1.7.5.9.2 · Controles da Forja
 
 23/11/2026. Código de versão 36 sobre o código 35 da mesma branch. Room v11 e backup v13 foram preservados.
