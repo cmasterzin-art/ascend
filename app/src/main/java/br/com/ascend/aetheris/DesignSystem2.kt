@@ -158,10 +158,9 @@ fun CompactHero(s: GameState, day: String, onPortrait: () -> Unit) {
                     horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     RebirthRune(HistoricalFutharkRune.Raido, ink.accent)
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                        Text("ASCEND / Minha Jornada", color = ink.title, style = MaterialTheme.typography.labelLarge)
+                        Text("ASCEND  /  MINHA JORNADA", color = ink.title, style = MaterialTheme.typography.labelMedium)
                         Text(displayDate(day), color = ink.body, style = MaterialTheme.typography.labelMedium)
                     }
-                    ClassEmblem(player.heroClass, Modifier.size(30.dp))
                 }
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -177,7 +176,10 @@ fun CompactHero(s: GameState, day: String, onPortrait: () -> Unit) {
                         if (player.title.isNotBlank()) {
                             Text(player.title, color = ink.body, style = MaterialTheme.typography.bodySmall)
                         }
-                        Text("Nível ${s.level}", color = ink.accent, style = MaterialTheme.typography.labelLarge)
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                            ClassEmblem(player.heroClass, Modifier.size(24.dp))
+                            Text("Nível ${s.level}", color = ink.accent, style = MaterialTheme.typography.labelLarge)
+                        }
                         s.heraldry?.let { HeraldicCrest(it, size = 20.dp) }
                     }
                 }
