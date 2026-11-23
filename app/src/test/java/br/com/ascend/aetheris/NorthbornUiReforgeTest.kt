@@ -492,7 +492,7 @@ class NorthbornUiReforgeTest {
         shot("28-tela-320dp")
 
         // 29. Fonte ampliada 130%
-        renderScreen(dark = true, fontScale = 1.3f) {
+        renderScreen(dark = true, widthDp = 320, fontScale = 1.3f) {
             Scaffold(
                 containerColor = LocalNorthborn.current.canvas,
                 bottomBar = { AetherisNavigation("journey") {} }
@@ -502,6 +502,8 @@ class NorthbornUiReforgeTest {
                 }
             }
         }
+        compose.onNodeWithText("Forja do Tempo").assertIsDisplayed()
+        compose.onNodeWithText("Planejador").assertIsDisplayed()
         shot("29-fonte-130")
 
         // 30. Diálogos e formulários (showcase real de formulário + controles NORTHBORN 4.0)
@@ -535,6 +537,7 @@ class NorthbornUiReforgeTest {
         compose.onNodeWithText("Mesa de Odin").assertIsDisplayed()
         compose.onNodeWithText("Gerar plano").performScrollTo().assertIsDisplayed().performClick()
         compose.onNodeWithText("Estratégia da prévia").assertExists()
+        compose.onNodeWithText("14 dias").assertIsDisplayed()
         shot("31-odin-320-fonte-130-proposta")
         renderScreen(dark = true, widthDp = 320, fontScale = 1.3f) {
             OdinCouncilScreen(s0, vm)

@@ -45,6 +45,7 @@ import java.util.Locale
 
 @Composable fun currentDay(): String = currentLocalMinute().toLocalDate().toString()
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable fun Journey(s:GameState,onProgress:(Habit,HabitRecord?)->Unit,onEdit:(Habit)->Unit,onFocus:(Habit)->Unit,onAdd:()->Unit,onJournal:()->Unit,vm:GameViewModel,relaxed:Boolean,onPlanner:()->Unit={},onAnalysis:()->Unit={},onHistory:()->Unit={},onPortrait:()->Unit={},onMissions:()->Unit={},onRegion:()->Unit={},onPaths:()->Unit={},onInbox:()->Unit={},onPending:()->Unit={},onOpenPath:(String)->Unit={},onMimirReview:()->Unit={},onOdin:()->Unit={},onTimeForge:()->Unit={},onCouncilNine:()->Unit={}){
  val now=currentLocalMinute();val day=now.toLocalDate().toString();val rested=day in s.restDates
  val due=if(relaxed&&!rested)s.habits.filter{!it.deleted&&!it.archived&&!it.paused}.sortedBy{it.position} else s.due(day)
@@ -72,11 +73,23 @@ import java.util.Locale
     DayLedger(done, due.size, rested, relaxed, dialSize)
    }
    item {
-    ShortcutStrip(listOf(
-     Triple("Mesa de Odin", Glyph.World, onOdin),
-     Triple("Forja Tempo", Glyph.Focus, onTimeForge),
-     Triple("Planejador", Glyph.Planner, onPlanner)
-    ))
+    Column {
+     RebirthRule()
+     FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+      listOf(
+       Triple("Mesa de Odin", NorthbornGlyph.Odin, onOdin),
+       Triple("Forja do Tempo", NorthbornGlyph.TimeForge, onTimeForge),
+       Triple("Planejador", NorthbornGlyph.Agenda, onPlanner)
+      ).forEach { (label, glyph, action) ->
+       TextButton(action, Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 4.dp)) {
+        NorthbornIcon(glyph, nb.accentBronze, size = 14.dp)
+        Spacer(Modifier.width(4.dp))
+        Text(label, color = nb.inkPrimary, style = MaterialTheme.typography.labelMedium)
+       }
+      }
+     }
+     RebirthRule()
+    }
    }
    item {
     val destinations = listOf(

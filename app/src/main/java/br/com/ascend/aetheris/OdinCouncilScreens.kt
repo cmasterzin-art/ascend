@@ -411,7 +411,7 @@ private fun OdinProposalSection(
     Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             NordicSectionHeader("Simulação de plano · ${displayPeriod(proposal.dateFrom, proposal.dateTo)}", rune = HistoricalFutharkRune.Ansuz)
-            ChipRow(
+            RebirthIndex(
                 listOf("Hoje", "3 dias", "7 dias", "14 dias"),
                 listOf(1, 3, 7, 14).indexOf(proposalDays).coerceAtLeast(2),
                 { onProposalDays(listOf(1, 3, 7, 14)[it]) }
