@@ -149,7 +149,7 @@ fun CompactHero(s: GameState, day: String, onPortrait: () -> Unit) {
             maxWidth < 310.dp -> 75.dp
             else -> 93.dp
         }
-        RebirthScene(R.drawable.rebirth_fjord, 248.dp) { ink ->
+        RebirthScene(R.drawable.oath_shore, 248.dp) { ink ->
             Column(
                 Modifier.align(Alignment.BottomCenter).fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(11.dp)
@@ -187,7 +187,7 @@ fun CompactHero(s: GameState, day: String, onPortrait: () -> Unit) {
                     Text("$xp/$goal XP", Modifier.weight(1f), color = ink.title, style = MaterialTheme.typography.labelMedium)
                     Text("${s.coins} fragmentos", color = ink.body, style = MaterialTheme.typography.labelMedium)
                 }
-                Meter(xp.toFloat() / goal, ink.accent, trackColor = ink.body.copy(alpha = .30f))
+                RebirthNotchedTrack(xp.toFloat() / goal, ink.accent, ink.body.copy(alpha = .30f))
             }
         }
     }
@@ -197,23 +197,18 @@ fun CompactHero(s: GameState, day: String, onPortrait: () -> Unit) {
 @Composable
 fun DayLedger(done: Int, total: Int, rested: Boolean, relaxed: Boolean, dial: Dp) {
     val nb = LocalNorthborn.current
-    val minimal = LocalAppearance.current.minimal
     val pending = (total - done).coerceAtLeast(0)
     Column {
-        RebirthFrieze()
-        Box(Modifier.fillMaxWidth().background(nb.surfaceElevated)) {
-            if (!minimal && nb.dark) {
-                Image(
-                    androidx.compose.ui.res.painterResource(R.drawable.rebirth_oak), null,
-                    Modifier.matchParentSize(), contentScale = androidx.compose.ui.layout.ContentScale.Crop, alpha = .56f
-                )
-            }
+        RebirthBraid()
+        RebirthTimber {
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 7.dp),
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-                DayDial(if (total == 0) 0f else done.toFloat() / total,
-                    if (total == 0) "—" else "${done * 100 / total}%", dial)
+                RebirthShieldGauge(
+                    if (total == 0) 0f else done.toFloat() / total,
+                    if (total == 0) "—" else "${done * 100 / total}%", dial
+                )
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                     Eyebrow(if (rested) "Dia de descanso" else "Jornada de hoje", if (rested) nb.accentPatina else nb.accentBronze)
                     Text("$done de $total · $pending ${if (pending == 1) "pendente" else "pendentes"}",
@@ -225,6 +220,7 @@ fun DayLedger(done: Int, total: Int, rested: Boolean, relaxed: Boolean, dial: Dp
                 }
             }
         }
+        RebirthRule()
     }
 }
 

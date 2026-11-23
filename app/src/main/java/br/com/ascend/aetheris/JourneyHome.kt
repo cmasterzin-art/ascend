@@ -50,7 +50,7 @@ import java.util.Locale
  val now=currentLocalMinute();val day=now.toLocalDate().toString();val rested=day in s.restDates
  val due=if(relaxed&&!rested)s.habits.filter{!it.deleted&&!it.archived&&!it.paused}.sortedBy{it.position} else s.due(day)
  val done=due.count{s.record(it.id,day)?.complete==true};var pendingOnly by remember{mutableStateOf(false)};var detail by remember{mutableStateOf<Habit?>(null)}
-  val dialSize=if(LocalConfiguration.current.screenWidthDp<=340)56.dp else 66.dp
+  val dialSize=if(LocalConfiguration.current.screenWidthDp<=340)66.dp else 74.dp
   val inboxCount=s.inboxItems.count{!it.archived}
   val dueCardsCount=remember(s.notebooks,s.flashcards,day){dueFlashcards(s,day).size}
   val rumos=remember(s,now){rumosDoDia(s,day,now.toLocalTime())}
@@ -84,7 +84,9 @@ import java.util.Locale
        Triple("Planejador", NorthbornGlyph.Agenda, onPlanner)
       ).forEach { (label, glyph, action) ->
        TextButton(action, Modifier.heightIn(min = 48.dp), contentPadding = PaddingValues(horizontal = 4.dp)) {
-        NorthbornIcon(glyph, nb.accentBronze, size = 14.dp)
+        RebirthBoss(Modifier.size(23.dp)) {
+         NorthbornIcon(glyph, if (LocalAppearance.current.minimal) nb.accentBronze else Color(0xFFE4B582), size = 14.dp)
+        }
         Spacer(Modifier.width(4.dp))
         Text(label, color = nb.inkPrimary, style = MaterialTheme.typography.labelMedium)
        }

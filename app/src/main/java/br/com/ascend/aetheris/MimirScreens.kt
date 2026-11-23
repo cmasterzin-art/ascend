@@ -1350,8 +1350,8 @@ fun FlashcardReviewScreen(
 
         val cardNotebook = s.notebooks.find { it.id == currentCard.notebookId }
         val cardPage = s.knowledgePages.find { it.id == currentCard.pageId }
-        val nbFc = LocalNorthborn.current
         RebirthReadingLeaf(Modifier.testTag("flashcard_stage")) {
+            val nbFc = LocalNorthborn.current
             Eyebrow(
                 if (isRetryPhase) "Reforço da sessão · não duplica histórico"
                 else listOfNotNull(cardNotebook?.name, cardPage?.title).joinToString(" · ").ifBlank { "Runa da Memória" },

@@ -59,7 +59,7 @@ fun AetherisNavigation(route: String, onSelect: (String) -> Unit) {
     val pilot = route == "journey" || route.startsWith("odin") || route.startsWith("mimir")
     val carved = pilot && !LocalAppearance.current.minimal
     val activeInk = if (carved && nb.dark) Color(0xFFE4B582) else nb.accentBronze
-    val barBg = if (carved && nb.dark) Color(0xFF1B1716) else if (nb.dark) Color(0xFF101215) else nb.surfaceBase
+    val barBg = if (carved && nb.dark) Color(0xFF1E1717) else if (nb.dark) Color(0xFF101215) else nb.surfaceBase
 
     Column(
         Modifier
@@ -68,7 +68,7 @@ fun AetherisNavigation(route: String, onSelect: (String) -> Unit) {
             .navigationBarsPadding()
     ) {
         if (carved) {
-            RebirthFrieze()
+            RebirthBraid()
         } else {
             Box(Modifier.fillMaxWidth().height(1.dp).background(nb.hairlineStrong.copy(alpha = 0.72f)))
         }
@@ -115,12 +115,15 @@ fun AetherisNavigation(route: String, onSelect: (String) -> Unit) {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(5.dp)
                     ) {
-                        NorthbornIcon(
-                            glyph = mainNorthbornGlyphs[i],
-                            color = iconColor,
-                            size = 22.dp,
-                            filled = active
-                        )
+                        Box(Modifier.size(26.dp), contentAlignment = Alignment.Center) {
+                            if (active && carved) {
+                                RebirthBoss(Modifier.matchParentSize()) {
+                                    NorthbornIcon(mainNorthbornGlyphs[i], Color(0xFFE4B582), size = 16.dp, filled = true)
+                                }
+                            } else {
+                                NorthbornIcon(mainNorthbornGlyphs[i], iconColor, size = 22.dp, filled = active)
+                            }
+                        }
                         Text(
                             text = mainNames[i],
                             color = labelColor,

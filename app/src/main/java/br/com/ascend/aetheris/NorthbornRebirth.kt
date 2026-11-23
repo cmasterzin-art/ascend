@@ -1,22 +1,34 @@
 package br.com.ascend.aetheris
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CutCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.progressBarRangeInfo
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.*
 
@@ -45,14 +57,112 @@ internal fun RebirthRule(modifier: Modifier = Modifier) {
 }
 
 @Composable
+internal fun RebirthBraid() {
+    if (LocalAppearance.current.minimal) {
+        RebirthRule()
+    } else {
+        Image(
+            painterResource(R.drawable.oath_braid), null,
+            Modifier.fillMaxWidth().height(10.dp), contentScale = ContentScale.FillBounds
+        )
+    }
+}
+
+@Composable
+internal fun RebirthBoss(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
+    val nb = LocalNorthborn.current
+    Box(modifier.clip(CircleShape), contentAlignment = Alignment.Center) {
+        if (!LocalAppearance.current.minimal) {
+            Image(
+                painterResource(R.drawable.oath_shield), null, Modifier.matchParentSize(),
+                contentScale = ContentScale.FillBounds
+            )
+        } else {
+            Box(Modifier.matchParentSize().border(1.dp, nb.hairlineStrong, CircleShape))
+        }
+        content()
+    }
+}
+
+@Composable
 internal fun RebirthRune(rune: HistoricalFutharkRune, color: Color, modifier: Modifier = Modifier) {
-    val rim = CutCornerShape(7.dp)
-    Box(
-        modifier.size(40.dp).clip(rim).background(color.copy(alpha = .08f))
-            .border(1.dp, color.copy(alpha = .58f), rim),
-        contentAlignment = Alignment.Center
+    RebirthBoss(modifier.size(40.dp)) {
+        FutharkRuneGlyph(rune, if (LocalAppearance.current.minimal) color else Embers, size = 19.dp)
+    }
+}
+
+@Composable
+internal fun RebirthShieldGauge(value: Float, label: String, diameter: Dp) {
+    val nb = LocalNorthborn.current
+    val appearance = LocalAppearance.current
+    val fraction = value.coerceIn(0f, 1f)
+    val sweep by animateFloatAsState(fraction, tween(if (appearance.reducedMotion) 0 else AetherTokens.scene), label = "progresso")
+    val accent = if (appearance.minimal) nb.accentBronze else Embers
+    RebirthBoss(
+        Modifier.size(diameter).semantics { progressBarRangeInfo = ProgressBarRangeInfo(fraction, 0f..1f) }
     ) {
-        FutharkRuneGlyph(rune, color, size = 21.dp)
+        Canvas(Modifier.matchParentSize()) {
+            val inset = size.minDimension * .145f
+            val bounds = Size(size.width - 2 * inset, size.height - 2 * inset)
+            val origin = Offset(inset, inset)
+            val stroke = Stroke(1.8.dp.toPx())
+            drawArc(accent.copy(alpha = .26f), -90f, 360f, false, origin, bounds, style = stroke)
+            drawArc(accent, -90f, 360f * sweep, false, origin, bounds, style = stroke)
+        }
+        Text(
+            label, color = if (appearance.minimal) nb.inkPrimary else Ivory,
+            fontFamily = SagaFont, fontSize = if (diameter < 80.dp) 15.sp else 17.sp, maxLines = 1
+        )
+    }
+}
+
+@Composable
+internal fun RebirthNotchedTrack(value: Float, accent: Color, track: Color) {
+    if (LocalAppearance.current.minimal) {
+        Meter(value, accent, trackColor = track)
+        return
+    }
+    val fraction = value.coerceIn(0f, 1f)
+    val reduced = LocalAppearance.current.reducedMotion
+    val progress by animateFloatAsState(fraction, tween(if (reduced) 0 else AetherTokens.scene), label = "experiência")
+    Canvas(Modifier.fillMaxWidth().height(8.dp).semantics {
+        progressBarRangeInfo = ProgressBarRangeInfo(fraction, 0f..1f)
+    }) {
+        val markCount = 8
+        val stride = size.width / markCount
+        val gap = 3.dp.toPx()
+        repeat(markCount) { index ->
+            val start = index * stride
+            val width = (stride - gap).coerceAtLeast(0f)
+            val origin = Offset(start, 0f)
+            drawRect(track, origin, Size(width, size.height))
+            val filled = (size.width * progress - start).coerceIn(0f, width)
+            if (filled > 0f) {
+                drawRect(accent, origin, Size(filled, size.height))
+                drawLine(Ivory.copy(alpha = .44f), origin, Offset(start + filled, 0f), 1.dp.toPx())
+            }
+        }
+    }
+}
+
+@Composable
+internal fun RebirthTimber(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
+    val nb = LocalNorthborn.current
+    val engraved = !LocalAppearance.current.minimal
+    Box(modifier.fillMaxWidth().background(if (engraved && nb.dark) Hearth else nb.surfaceBase)) {
+        if (engraved) {
+            Image(
+                painterResource(R.drawable.oath_wood), null, Modifier.matchParentSize(),
+                contentScale = ContentScale.FillBounds, alpha = if (nb.dark) .56f else .10f
+            )
+            if (nb.dark) {
+                Box(Modifier.matchParentSize().background(Brush.horizontalGradient(
+                    0f to Hearth.copy(alpha = .2f), .17f to Hearth.copy(alpha = .64f),
+                    .84f to Hearth.copy(alpha = .64f), 1f to Hearth.copy(alpha = .18f)
+                )))
+            }
+        }
+        content()
     }
 }
 
@@ -125,11 +235,11 @@ internal fun RebirthAction(
     ) {
         if (textured) {
             Image(
-                painterResource(R.drawable.rebirth_oak), null, Modifier.matchParentSize(),
-                contentScale = ContentScale.Crop, alpha = .57f
+                painterResource(R.drawable.oath_wood), null, Modifier.matchParentSize(),
+                contentScale = ContentScale.FillBounds, alpha = .73f
             )
             Box(Modifier.matchParentSize().background(Brush.horizontalGradient(
-                listOf(Color(0xFF6B4029).copy(alpha = .68f), Color.Transparent)
+                listOf(Color(0xFF9A4D34).copy(alpha = .42f), Color.Transparent)
             )))
         }
         Button(
@@ -178,24 +288,51 @@ internal fun RebirthIndex(labels: List<String>, selected: Int, onSelect: (Int) -
     }
 }
 
+private val ManuscriptPalette = NorthbornLightPalette.copy(
+    surfaceDocument = Color(0xFFF3E4C9),
+    inkPrimary = Color(0xFF28201A),
+    inkSecondary = Color(0xFF574534),
+    inkTertiary = Color(0xFF634E3A),
+    accentBronze = Color(0xFF71502D),
+    hairlineStrong = Color(0xFF847055)
+)
+
 @Composable
 internal fun RebirthReadingLeaf(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    val nb = LocalNorthborn.current
-    Box(modifier.fillMaxWidth().background(nb.surfaceDocument)) {
-        if (!LocalAppearance.current.minimal) {
+    val plain = LocalAppearance.current.minimal
+    val palette = if (plain) LocalNorthborn.current else ManuscriptPalette
+    val scheme = MaterialTheme.colorScheme
+    val leafScheme = if (plain) scheme else lightColorScheme(
+        primary = palette.accentBronze,
+        onPrimary = palette.onAccent,
+        secondary = palette.accentFjord,
+        tertiary = Color(0xFF6F435C),
+        onSurface = palette.inkPrimary,
+        onSurfaceVariant = palette.inkSecondary,
+        surface = palette.surfaceDocument,
+        surfaceVariant = palette.surfaceElevated
+    )
+
+    Box(modifier.fillMaxWidth().background(palette.surfaceDocument)) {
+        if (!plain) {
             Image(
-                painterResource(R.drawable.rebirth_vellum), null, Modifier.matchParentSize(),
-                alignment = Alignment.CenterStart, contentScale = ContentScale.FillBounds,
-                alpha = if (nb.dark) .23f else .53f
+                painterResource(R.drawable.oath_manuscript), null, Modifier.matchParentSize(),
+                contentScale = ContentScale.FillBounds
             )
             Box(Modifier.matchParentSize().background(Brush.horizontalGradient(
-                0f to Color.Transparent, .12f to nb.surfaceDocument.copy(alpha = .76f),
-                .65f to nb.surfaceDocument.copy(alpha = .84f), 1f to nb.surfaceDocument.copy(alpha = .54f)
+                0f to Color.Transparent, .06f to Color.Transparent, .085f to palette.surfaceDocument.copy(alpha = .92f),
+                .83f to palette.surfaceDocument.copy(alpha = .82f), 1f to palette.surfaceDocument.copy(alpha = .38f)
             )))
         }
-        Column(
-            Modifier.fillMaxWidth().padding(start = 23.dp, top = 16.dp, end = 16.dp, bottom = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp), content = content
-        )
+        CompositionLocalProvider(LocalNorthborn provides palette) {
+            MaterialTheme(colorScheme = leafScheme) {
+                CompositionLocalProvider(LocalContentColor provides palette.inkPrimary) {
+                    Column(
+                        Modifier.fillMaxWidth().padding(start = 33.dp, top = 16.dp, end = 16.dp, bottom = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp), content = content
+                    )
+                }
+            }
+        }
     }
 }
