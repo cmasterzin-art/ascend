@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.Stability1751AuditTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-11-23T06:47:23" hostname="b1513c620947" time="0.976">
+  <properties/>
+  <testcase name="p1_recurrenceRulesProjectedAcrossAgendaAndOdinPlanning" classname="br.com.ascend.aetheris.Stability1751AuditTest" time="0.21"/>
+  <testcase name="p1_diamondDependenciesAndExistingBlocksRequireFullCoverageBeforeReleasingDependent" classname="br.com.ascend.aetheris.Stability1751AuditTest" time="0.112"/>
+  <testcase name="section12_complementaryConcurrencyDeletedTaskArchivedPathAndMidnightFocusChecks" classname="br.com.ascend.aetheris.Stability1751AuditTest" time="0.119"/>
+  <testcase name="p1_pastHoursFilteredOnCurrentDayWithInjectableReferenceClock" classname="br.com.ascend.aetheris.Stability1751AuditTest" time="0.093"/>
+  <testcase name="p1_undoAppliedPlanPreservesManualTaskEditsAndHandlesSequentialPlans" classname="br.com.ascend.aetheris.Stability1751AuditTest" time="0.112"/>
+  <testcase name="p0_pomodoroAutoAdvanceEnabledDisabledCyclesPauseEarlyEndConcurrencyAndClockAnomaly" classname="br.com.ascend.aetheris.Stability1751AuditTest" time="0.128"/>
+  <testcase name="p1_dependenciesRequireFullSchedulingAndRejectInvalidPartialSelection" classname="br.com.ascend.aetheris.Stability1751AuditTest" time="0.113"/>
+  <testcase name="p1_replanValidatesConflictsRejectsStaleOptionsAndNeverFallsBackTo9am" classname="br.com.ascend.aetheris.Stability1751AuditTest" time="0.086"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

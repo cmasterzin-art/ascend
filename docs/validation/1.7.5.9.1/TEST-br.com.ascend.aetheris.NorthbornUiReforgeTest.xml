@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.NorthbornUiReforgeTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-11-23T06:44:16" hostname="b1513c620947" time="16.643">
+  <properties/>
+  <testcase name="captureAll30NorthbornReforgeScreenshots" classname="br.com.ascend.aetheris.NorthbornUiReforgeTest" time="16.643"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

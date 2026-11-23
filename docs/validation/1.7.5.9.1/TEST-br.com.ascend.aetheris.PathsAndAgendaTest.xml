@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.PathsAndAgendaTest" tests="9" skipped="0" failures="0" errors="0" timestamp="2026-11-23T06:45:11" hostname="b1513c620947" time="6.247">
+  <properties/>
+  <testcase name="schemaSixMigrationPreservesDataAndSupportsPathsAndAgenda" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="4.32"/>
+  <testcase name="triageAndStageEditsRejectInvalidWritesWithoutRemovingData" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.271"/>
+  <testcase name="backupNineRoundTripCompatibilityAndAtomicRollback" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.319"/>
+  <testcase name="agendaTimeBlocksEventsInboxTriageAndPendingBucketsWorkAtomically" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.448"/>
+  <testcase name="pathStagesTasksSubtasksDuplicateMoveAndDeletePreserveConsistency" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.321"/>
+  <testcase name="habitLinksAndProjectFocusDoNotDuplicateOrInventXp" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.171"/>
+  <testcase name="activeSessionCannotOverwriteHistoryOnBackupRestore" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.108"/>
+  <testcase name="closingWithOpenTasksRequiresCurrentConfirmationAndReopeningRestoresPending" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.107"/>
+  <testcase name="activeFocusKeepsItsSnapshotAcrossEditsMovesAndDeletes" classname="br.com.ascend.aetheris.PathsAndAgendaTest" time="0.182"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

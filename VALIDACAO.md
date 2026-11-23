@@ -1,3 +1,13 @@
+# ASCEND 1.7.5.9.1 — Validação do protótipo
+
+23/11/2026. Jornada, Mesa de Odin e Biblioteca de Mímir no protótipo NORTHBORN 4.1, sobre a 1.7.5.9 (`aeb3b70`).
+
+- **Gradle** executou `testDebugUnitTest lintDebug assembleDebug --offline` com sucesso. Foram **228 testes aprovados**, sem falhas, erros ou ignorados. O Android Lint registrou **0 erros e 35 avisos**. [Build](docs/validation/BUILD-1.7.5.9.1.txt) · [Lint](docs/validation/LINT-1.7.5.9.1.txt) · [Relatórios JUnit](docs/validation/1.7.5.9.1/)
+- **APK de desenvolvimento** com 31.841.403 bytes, `versionCode 30`, `br.com.ascend.aetheris` e Android 8.0 como mínimo. O APK está alinhado e foi assinado com o mesmo certificado da 1.7.5.9. As permissões são idênticas às da base, sem `INTERNET`. Room v11 e backup v13 foram preservados. [APK](downloads/ASCEND-1.7.5.9.1-dev.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.1-dev.apk.sha256) · [Assinatura e manifesto](docs/validation/APK-1.7.5.9.1-dev.txt)
+- **Revisão visual** feita com telas Compose em Robolectric Native Graphics, a 320, 360 e 411 dp, com amostras de tema escuro, claro, fonte a 130% e modo minimalista. Instalação sobre a versão anterior, TalkBack e renderização em aparelho físico ficam pendentes. [Comparações e limitações](docs/design/THREE-SCREEN-VISUAL-REVIEW.md)
+
+---
+
 # ASCEND 1.7.5.9 — Validação
 
 22/11/2026. Base `feat/ascend-1.7.5.1` (`56f55e4`), reformulação visual global **NORTHBORN Design System 4.0** consolidada na branch `feat/ascend-1.7.5.9`. GitHub Actions execução `44990148340` (commits `f0fecca` / `0fd0516`): `testDebugUnitTest assembleDebug lintDebug` concluído com **BUILD SUCCESSFUL** em `11m55s`.

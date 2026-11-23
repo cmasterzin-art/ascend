@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.FocusAttributionTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-11-23T06:42:36" hostname="b1513c620947" time="0.053">
+  <properties/>
+  <testcase name="pausesReportOnlyProvenMinutes" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.008"/>
+  <testcase name="suspendedPathsKeepTasksOutsideActiveSurfaces" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.015"/>
+  <testcase name="blocksPartitionTimeWithoutDuplicatingIt" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.001"/>
+  <testcase name="movedTaskDoesNotMoveHistoricalFocus" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.0"/>
+  <testcase name="nextActivitiesRespectStartEndDayAndUntimedEvents" classname="br.com.ascend.aetheris.FocusAttributionTest" time="0.029"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

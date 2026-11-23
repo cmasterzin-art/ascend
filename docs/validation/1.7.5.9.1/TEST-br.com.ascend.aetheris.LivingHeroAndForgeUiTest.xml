@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.LivingHeroAndForgeUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-23T06:42:51" hostname="b1513c620947" time="54.587">
+  <properties/>
+  <testcase name="captureJourneyHeroArsenalStudioAndLoadouts" classname="br.com.ascend.aetheris.LivingHeroAndForgeUiTest" time="25.652"/>
+  <testcase name="captureLivingPortraitBaseEquippedAndZoom" classname="br.com.ascend.aetheris.LivingHeroAndForgeUiTest" time="14.068"/>
+  <testcase name="captureVillageForgeMasterLightThemeAndNarrow320" classname="br.com.ascend.aetheris.LivingHeroAndForgeUiTest" time="14.867"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

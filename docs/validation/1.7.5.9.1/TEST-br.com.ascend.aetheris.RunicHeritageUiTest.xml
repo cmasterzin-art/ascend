@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.RunicHeritageUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-23T06:46:42" hostname="b1513c620947" time="40.347">
+  <properties/>
+  <testcase name="captureHeraldryAndCodexScreenshots" classname="br.com.ascend.aetheris.RunicHeritageUiTest" time="15.393"/>
+  <testcase name="captureArsenalLivingPortrait11LightThemeNarrowAndEtapa0Flows" classname="br.com.ascend.aetheris.RunicHeritageUiTest" time="12.055"/>
+  <testcase name="captureForgeUpgradesAndCollectionsScreenshots" classname="br.com.ascend.aetheris.RunicHeritageUiTest" time="12.899"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

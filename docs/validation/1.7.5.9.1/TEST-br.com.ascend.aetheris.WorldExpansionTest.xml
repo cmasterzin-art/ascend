@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.WorldExpansionTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-23T06:48:16" hostname="b1513c620947" time="7.434">
+  <properties/>
+  <testcase name="atlasStatesAndLevelGatesRespectAllSixRegions" classname="br.com.ascend.aetheris.WorldExpansionTest" time="5.211"/>
+  <testcase name="bibliotecaDasErasFullPlaythroughWithCaminhosMimirAndAntiSpam" classname="br.com.ascend.aetheris.WorldExpansionTest" time="1.293"/>
+  <testcase name="montanhasDaDisciplinaFocusSessionsRestDaysAndRelics" classname="br.com.ascend.aetheris.WorldExpansionTest" time="0.706"/>
+  <testcase name="npcsRespondToProgressAndSpecializationsAndBackupRoundTripsCleanly" classname="br.com.ascend.aetheris.WorldExpansionTest" time="0.223"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

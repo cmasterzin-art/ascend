@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="br.com.ascend.aetheris.MimirAndArchetypesUiTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-11-23T06:43:50" hostname="b1513c620947" time="19.701">
+  <properties/>
+  <testcase name="mimirLibraryNotebookPageAndSpacedReviewFlow" classname="br.com.ascend.aetheris.MimirAndArchetypesUiTest" time="6.471"/>
+  <testcase name="mimirNarrow320DpLightThemeLargeTextAndMinimalModeStayReadable" classname="br.com.ascend.aetheris.MimirAndArchetypesUiTest" time="6.229"/>
+  <testcase name="heroSpecializationsAndExpandedSkillTreeFlow" classname="br.com.ascend.aetheris.MimirAndArchetypesUiTest" time="7.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
