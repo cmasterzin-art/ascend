@@ -1,3 +1,13 @@
+# ASCEND 1.7.5.9.1 · Acabamento rústico e movimento
+
+23/11/2026. Acabamento da Jornada, da Mesa de Odin e da Biblioteca de Mímir com movimento contextual nas telas piloto e na navegação global. `versionCode 34`, com o mesmo identificador e certificado da versão anterior.
+
+- `./gradlew testDebugUnitTest lintDebug assembleDebug --offline` concluído com **228 testes aprovados, 0 erros de lint e 35 avisos**. [Build](docs/validation/BUILD-1.7.5.9.1-rustico.txt) · [Lint](docs/validation/LINT-1.7.5.9.1-rustico.txt)
+- APK de desenvolvimento com alinhamento verificado. O manifesto tem as mesmas permissões do protótipo anterior, sem `INTERNET`. Room v11 e backup v13 foram preservados. [APK](downloads/ASCEND-1.7.5.9.1-dev-rustico.apk?raw=true) · [SHA-256](downloads/ASCEND-1.7.5.9.1-dev-rustico.apk.sha256) · [Certificado e manifesto](docs/validation/APK-1.7.5.9.1-rustico.txt)
+- 18 capturas em Robolectric Native Graphics. Instalação em telefone e TalkBack seguem pendentes. [Antes e depois](docs/design/NORTHBORN-MOVIMENTO.md)
+
+---
+
 # ASCEND 1.7.5.9.1 · Fundos e gravuras
 
 23/11/2026. Novos fundos para Jornada, Mesa de Odin e Biblioteca de Mímir e iconografia na barra global de navegação. `versionCode 33`, com o mesmo identificador e certificado da versão anterior.
