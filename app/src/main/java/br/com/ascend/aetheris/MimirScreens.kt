@@ -1366,8 +1366,17 @@ fun FlashcardReviewScreen(
                 Text("Recupere a resposta em memória antes de revelar.", color = nbFc.inkSecondary, fontSize = 12.5.sp)
                 RebirthAction("Revelar resposta", { revealed = true }, Modifier.fillMaxWidth().testTag("reveal_answer"), glyph = Engraving.Folio)
             } else {
-                Eyebrow("Resposta", nbFc.accentPatina)
-                Text(currentCard.answer, color = nbFc.inkPrimary, fontSize = 15.5.sp, lineHeight = 24.sp)
+                val inkAppears = craftReveal(currentCard.id, 235)
+                Column(
+                    Modifier.fillMaxWidth().testTag("mimir_answer").graphicsLayer {
+                        alpha = .28f + .72f * inkAppears.value
+                        translationY = 4.dp.toPx() * (1f - inkAppears.value)
+                    },
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Eyebrow("Resposta", nbFc.accentPatina)
+                    Text(currentCard.answer, color = nbFc.inkPrimary, fontSize = 15.5.sp, lineHeight = 24.sp)
+                }
                 NorthbornDivider(NorthbornDividerStyle.Hairline)
                 if (isRetryPhase) {
                     Text(

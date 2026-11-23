@@ -49,6 +49,7 @@ class NorthbornUiReforgeTest {
     private var hostMounted = false
     private val slotDark = mutableStateOf(true)
     private val slotMinimal = mutableStateOf(false)
+    private val slotReducedMotion = mutableStateOf(true)
     private val slotFontScale = mutableFloatStateOf(1f)
     private val slotWidthDp = mutableStateOf<Int?>(null)
     private val slotKey = mutableIntStateOf(0)
@@ -171,11 +172,13 @@ class NorthbornUiReforgeTest {
         minimal: Boolean = false,
         fontScale: Float = 1f,
         widthDp: Int? = null,
+        reducedMotion: Boolean = true,
         content: @Composable () -> Unit
     ) {
         compose.activity.runOnUiThread {
             slotDark.value = dark
             slotMinimal.value = minimal
+            slotReducedMotion.value = reducedMotion
             slotFontScale.floatValue = fontScale
             slotWidthDp.value = widthDp
             slotContent.value = content
@@ -198,7 +201,7 @@ class NorthbornUiReforgeTest {
                         CompositionLocalProvider(
                             LocalDensity provides Density(base.density, fontScale = scale)
                         ) {
-                            AscendTheme(if (isDark) "dark" else "light", reducedMotion = true, minimal = isMinimal) {
+                            AscendTheme(if (isDark) "dark" else "light", reducedMotion = slotReducedMotion.value, minimal = isMinimal) {
                                 Box(Modifier.fillMaxSize().background(LocalNorthborn.current.canvas)) {
                                     Surface(
                                         color = LocalNorthborn.current.canvas,
@@ -622,6 +625,28 @@ class NorthbornUiReforgeTest {
             }
         }
         shot("41-icones-e-divisores")
+
+        renderScreen(dark = true, widthDp = 360, reducedMotion = false) {
+            FlashcardReviewScreen("", s0, vm, {})
+        }
+        val reveal = compose.onNodeWithTag("reveal_answer").performScrollTo()
+        compose.mainClock.autoAdvance = false
+        try {
+            reveal.performClick()
+            compose.mainClock.advanceTimeBy(48)
+            compose.onNodeWithTag("mimir_answer").assertIsDisplayed()
+            shot("42-mimir-movimento-inicio")
+            compose.mainClock.advanceTimeBy(110)
+            shot("43-mimir-movimento-meio")
+            compose.mainClock.advanceTimeBy(300)
+            shot("44-mimir-movimento-fim")
+        } finally {
+            compose.mainClock.autoAdvance = true
+        }
+        val firstMotionFrame = File("build/reports/screenshots/1.7.5.9.1/42-mimir-movimento-inicio.png")
+        val lastMotionFrame = File("build/reports/screenshots/1.7.5.9.1/44-mimir-movimento-fim.png")
+        assertTrue("A revelação deve produzir quadros distintos",
+            !firstMotionFrame.readBytes().contentEquals(lastMotionFrame.readBytes()))
 
         val expected = listOf(
             "01-jornada", "02-navegacao-inferior", "03-registro-habito", "04-lista-habitos", "05-perfil-heroi",

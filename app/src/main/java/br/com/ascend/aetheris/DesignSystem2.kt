@@ -193,31 +193,31 @@ fun CompactHero(s: GameState, day: String, onPortrait: () -> Unit) {
     }
 }
 
-/** A leitura do dia continua logo sob a cena, em uma peça de carvalho entalhado. */
+/** The opening scene meets a separate hand-cut daily ledger. */
 @Composable
-fun DayLedger(done: Int, total: Int, rested: Boolean, relaxed: Boolean, dial: Dp) {
+fun DayLedger(done: Int, total: Int, rested: Boolean, relaxed: Boolean) {
     val nb = LocalNorthborn.current
     val pending = (total - done).coerceAtLeast(0)
     Column {
         EngravedDivider(EngravedRail.Voyage)
-        RebirthTimber {
+        RusticSurface(RusticMaterial.Timber) {
             Row(
-                Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 7.dp),
-                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)
+                Modifier.fillMaxWidth().padding(horizontal = 15.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                RebirthShieldGauge(
-                    if (total == 0) 0f else done.toFloat() / total,
-                    if (total == 0) "—" else "${done * 100 / total}%", dial
-                )
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                     Eyebrow(if (rested) "Dia de descanso" else "Jornada de hoje", if (rested) nb.accentPatina else nb.accentBronze)
-                    Text("$done de $total · $pending ${if (pending == 1) "pendente" else "pendentes"}",
-                        color = nb.inkPrimary, style = MaterialTheme.typography.bodyMedium)
+                    Text("$done de $total", color = nb.inkPrimary, fontFamily = SagaFont,
+                        fontSize = 22.sp, lineHeight = 27.sp)
+                    Text("$pending ${if (pending == 1) "pendente" else "pendentes"}",
+                        color = nb.inkSecondary, style = MaterialTheme.typography.bodySmall)
                     if (relaxed) {
                         Text("Modo livre · o widget mantém a agenda programada.", color = nb.inkSecondary,
                             style = MaterialTheme.typography.bodySmall)
                     }
                 }
+                DayStaves(done, total)
             }
         }
         RebirthRule()

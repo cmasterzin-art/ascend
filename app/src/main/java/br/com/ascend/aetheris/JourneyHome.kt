@@ -1,5 +1,6 @@
 package br.com.ascend.aetheris
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.*
@@ -13,7 +14,6 @@ import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.*
 import androidx.compose.ui.unit.*
 import androidx.compose.ui.semantics.*
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import kotlinx.coroutines.delay
 import androidx.lifecycle.Lifecycle
@@ -50,7 +50,6 @@ import java.util.Locale
  val now=currentLocalMinute();val day=now.toLocalDate().toString();val rested=day in s.restDates
  val due=if(relaxed&&!rested)s.habits.filter{!it.deleted&&!it.archived&&!it.paused}.sortedBy{it.position} else s.due(day)
  val done=due.count{s.record(it.id,day)?.complete==true};var pendingOnly by remember{mutableStateOf(false)};var detail by remember{mutableStateOf<Habit?>(null)}
-  val dialSize=if(LocalConfiguration.current.screenWidthDp<=340)66.dp else 74.dp
   val inboxCount=s.inboxItems.count{!it.archived}
   val dueCardsCount=remember(s.notebooks,s.flashcards,day){dueFlashcards(s,day).size}
   val rumos=remember(s,now){rumosDoDia(s,day,now.toLocalTime())}
@@ -72,7 +71,7 @@ import java.util.Locale
     item {
      Column {
       CompactHero(s, day, onPortrait)
-      DayLedger(done, due.size, rested, relaxed, dialSize)
+      DayLedger(done, due.size, rested, relaxed)
      }
     }
     item {
@@ -194,58 +193,61 @@ import java.util.Locale
     Text("Runas da Memória · $dueCardsCount ${if (dueCardsCount == 1) "revisão" else "revisões"}", color = nb.accentFjord)
    }
   }
-  if(expanded){
-   NorthbornDivider(NorthbornDividerStyle.Hairline)
-   if(!hasRumos){
-    Text("Sua agenda e caminhos estão leves hoje. Capture uma ideia rápida ou planeje um novo caminho.",color=nb.inkSecondary,fontSize=12.5.sp)
-    Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
-     NorthbornButton("Abrir Caminhos",onPaths,role=NorthbornButtonRole.Secondary,modifier=Modifier.weight(1f))
-     NorthbornButton("Capturar",onInbox,role=NorthbornButtonRole.Secondary,modifier=Modifier.weight(1f))
-    }
-   }else{
-    r.nextEvent?.let{ev->
-     Row(Modifier.fillMaxWidth().clickable(onClick=onPlanner),horizontalArrangement=Arrangement.SpaceBetween){
-      Text("${if(r.eventInProgress) "Compromisso em andamento" else "Próximo compromisso"}: ${ev.title}",Modifier.weight(1f),color=nb.inkPrimary,fontSize=13.sp)
-      if(ev.startTime.isNotBlank())Text(ev.startTime,color=nb.accentFjord,fontSize=12.sp)
+  val reduced = LocalAppearance.current.reducedMotion
+  AnimatedVisibility(expanded, enter = craftSectionEnter(reduced), exit = craftSectionExit(reduced)) {
+   Column {
+    NorthbornDivider(NorthbornDividerStyle.Hairline)
+    if(!hasRumos){
+     Text("Sua agenda e caminhos estão leves hoje. Capture uma ideia rápida ou planeje um novo caminho.",color=nb.inkSecondary,fontSize=12.5.sp)
+     Row(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(8.dp)){
+      NorthbornButton("Abrir Caminhos",onPaths,role=NorthbornButtonRole.Secondary,modifier=Modifier.weight(1f))
+      NorthbornButton("Capturar",onInbox,role=NorthbornButtonRole.Secondary,modifier=Modifier.weight(1f))
      }
-    }
-    r.nextBlock?.let{b->
-     Row(Modifier.fillMaxWidth().clickable(onClick=onPlanner),horizontalArrangement=Arrangement.SpaceBetween){
-      Text("${if(r.blockInProgress) "Bloco em andamento" else "Próximo bloco"}: ${b.title}",Modifier.weight(1f),color=nb.inkPrimary,fontSize=13.sp)
-      Text("${b.startTime}–${b.endTime}",color=Violet,fontSize=12.sp)
+    }else{
+     r.nextEvent?.let{ev->
+      Row(Modifier.fillMaxWidth().clickable(onClick=onPlanner),horizontalArrangement=Arrangement.SpaceBetween){
+       Text("${if(r.eventInProgress) "Compromisso em andamento" else "Próximo compromisso"}: ${ev.title}",Modifier.weight(1f),color=nb.inkPrimary,fontSize=13.sp)
+       if(ev.startTime.isNotBlank())Text(ev.startTime,color=nb.accentFjord,fontSize=12.sp)
+      }
      }
-    }
-    if (r.untimedEvents.isNotEmpty()) {
-     TextButton(onPlanner) { Text("Compromissos sem horário (${r.untimedEvents.size})", color = nb.accentBronze) }
-    }
-    if(r.priorityTasks.isNotEmpty()){
-     Eyebrow("Tarefas prioritárias",nb.accentFjord)
-     r.priorityTasks.forEach{t->
-      val parent=s.paths.find{it.id==t.pathId}
-      Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){
-       Checkbox(checked=t.completed,onCheckedChange = { checked -> vm.run { vm.repo.toggleTask(t.id, checked) } },modifier=Modifier.size(48.dp).semantics{contentDescription="Alternar ${t.title}"})
-       Column(Modifier.weight(1f).clickable(enabled=parent!=null){parent?.let{onOpenPath(it.id)}}){
-        Text(t.title,color=nb.inkPrimary,fontSize=13.sp)
-        Text("${parent?.name?:"Avulsa"}${if(t.deadline.isNotBlank())" · até ${displayDate(t.deadline)}" else ""}",color=if(isTaskOverdue(t))nb.accentEmber else nb.inkSecondary,fontSize=11.5.sp)
+     r.nextBlock?.let{b->
+      Row(Modifier.fillMaxWidth().clickable(onClick=onPlanner),horizontalArrangement=Arrangement.SpaceBetween){
+       Text("${if(r.blockInProgress) "Bloco em andamento" else "Próximo bloco"}: ${b.title}",Modifier.weight(1f),color=nb.inkPrimary,fontSize=13.sp)
+       Text("${b.startTime}–${b.endTime}",color=Violet,fontSize=12.sp)
+      }
+     }
+     if (r.untimedEvents.isNotEmpty()) {
+      TextButton(onPlanner) { Text("Compromissos sem horário (${r.untimedEvents.size})", color = nb.accentBronze) }
+     }
+     if(r.priorityTasks.isNotEmpty()){
+      Eyebrow("Tarefas prioritárias",nb.accentFjord)
+      r.priorityTasks.forEach{t->
+       val parent=s.paths.find{it.id==t.pathId}
+       Row(Modifier.fillMaxWidth(),verticalAlignment=Alignment.CenterVertically,horizontalArrangement=Arrangement.spacedBy(6.dp)){
+        Checkbox(checked=t.completed,onCheckedChange = { checked -> vm.run { vm.repo.toggleTask(t.id, checked) } },modifier=Modifier.size(48.dp).semantics{contentDescription="Alternar ${t.title}"})
+        Column(Modifier.weight(1f).clickable(enabled=parent!=null){parent?.let{onOpenPath(it.id)}}){
+         Text(t.title,color=nb.inkPrimary,fontSize=13.sp)
+         Text("${parent?.name?:"Avulsa"}${if(t.deadline.isNotBlank())" · até ${displayDate(t.deadline)}" else ""}",color=if(isTaskOverdue(t))nb.accentEmber else nb.inkSecondary,fontSize=11.5.sp)
+        }
        }
       }
      }
-    }
-    if(r.upcomingPaths.isNotEmpty()){
-     Eyebrow("Caminhos em curso",nb.accentBronze)
-     r.upcomingPaths.forEach{p->
-      val prog=pathProgress(s,p.id)
-      Row(Modifier.fillMaxWidth().clickable{onOpenPath(p.id)}.padding(vertical=4.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
-       Text(p.name,Modifier.weight(1f),color=nb.inkPrimary,fontSize=13.sp)
-       Text("${prog.done}/${prog.total}",color=nb.accentBronze,fontSize=12.sp)
+     if(r.upcomingPaths.isNotEmpty()){
+      Eyebrow("Caminhos em curso",nb.accentBronze)
+      r.upcomingPaths.forEach{p->
+       val prog=pathProgress(s,p.id)
+       Row(Modifier.fillMaxWidth().clickable{onOpenPath(p.id)}.padding(vertical=4.dp),horizontalArrangement=Arrangement.SpaceBetween,verticalAlignment=Alignment.CenterVertically){
+        Text(p.name,Modifier.weight(1f),color=nb.inkPrimary,fontSize=13.sp)
+        Text("${prog.done}/${prog.total}",color=nb.accentBronze,fontSize=12.sp)
+       }
       }
      }
-    }
-    FlowRow(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){
-     NordicCompactAction("Agenda 3.0", onPlanner, accent = nb.accentFjord)
-     NordicCompactAction("Pendências", onPending, accent = nb.accentBronze)
-     NordicCompactAction("Caminhos", onPaths, accent = nb.inkPrimary)
-     NordicCompactAction("Entrada (${r.inboxCount})", onInbox, accent = nb.inkSecondary)
+     FlowRow(Modifier.fillMaxWidth(),horizontalArrangement=Arrangement.spacedBy(6.dp),verticalArrangement=Arrangement.spacedBy(6.dp)){
+      NordicCompactAction("Agenda 3.0", onPlanner, accent = nb.accentFjord)
+      NordicCompactAction("Pendências", onPending, accent = nb.accentBronze)
+      NordicCompactAction("Caminhos", onPaths, accent = nb.inkPrimary)
+      NordicCompactAction("Entrada (${r.inboxCount})", onInbox, accent = nb.inkSecondary)
+     }
     }
    }
   }

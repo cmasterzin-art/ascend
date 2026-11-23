@@ -6,6 +6,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -15,13 +16,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -119,20 +124,65 @@ internal fun RebirthNotchedTrack(value: Float, accent: Color, track: Color) {
     }
 }
 
+/** A few carved tally marks represent the ratio, with exact counts alongside them. */
 @Composable
-internal fun RebirthTimber(modifier: Modifier = Modifier, content: @Composable BoxScope.() -> Unit) {
+internal fun DayStaves(done: Int, total: Int, modifier: Modifier = Modifier) {
+    if (total <= 0) return
+    val nb = LocalNorthborn.current
+    val appearance = LocalAppearance.current
+    val marks = total.coerceAtMost(5)
+    val fraction = (done.toFloat() / total).coerceIn(0f, 1f)
+    val progress by animateFloatAsState(
+        fraction, tween(if (appearance.reducedMotion) 0 else 230), label = "entalhes da jornada"
+    )
+    Canvas(modifier.size(width = (marks * 14).dp, height = 27.dp).semantics {
+        progressBarRangeInfo = ProgressBarRangeInfo(fraction, 0f..1f)
+    }) {
+        val width = size.width / marks
+        repeat(marks) { index ->
+            val x = width * index
+            val active = (progress * marks - index).coerceIn(0f, 1f)
+            val mark = Path().apply {
+                moveTo(x + width * .44f, 1.dp.toPx())
+                lineTo(x + width * .69f, size.height * .14f)
+                lineTo(x + width * .63f, size.height * .86f)
+                lineTo(x + width * .33f, size.height - 1.dp.toPx())
+                lineTo(x + width * .39f, size.height * .20f)
+                close()
+            }
+            drawPath(mark, nb.hairlineStrong)
+            if (active > 0f) drawPath(mark, nb.accentBronze.copy(alpha = active))
+            if (!appearance.minimal && active > 0f) {
+                drawLine(nb.accentPaleGold.copy(alpha = .68f * active),
+                    Offset(x + width * .48f, size.height * .23f),
+                    Offset(x + width * .42f, size.height * .78f), .8.dp.toPx())
+            }
+        }
+    }
+}
+
+internal enum class RusticMaterial(val art: Int) {
+    Timber(R.drawable.surface_oak), Iron(R.drawable.surface_iron)
+}
+
+@Composable
+internal fun RusticSurface(
+    material: RusticMaterial,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit
+) {
     val nb = LocalNorthborn.current
     val engraved = !LocalAppearance.current.minimal
     Box(modifier.fillMaxWidth().background(if (engraved && nb.dark) Hearth else nb.surfaceBase)) {
         if (engraved) {
             Image(
-                painterResource(R.drawable.oath_wood), null, Modifier.matchParentSize(),
-                contentScale = ContentScale.FillBounds, alpha = if (nb.dark) .56f else .10f
+                painterResource(material.art), null, Modifier.matchParentSize(),
+                contentScale = ContentScale.FillBounds, alpha = if (nb.dark) .93f else .15f
             )
             if (nb.dark) {
                 Box(Modifier.matchParentSize().background(Brush.horizontalGradient(
-                    0f to Hearth.copy(alpha = .2f), .17f to Hearth.copy(alpha = .64f),
-                    .84f to Hearth.copy(alpha = .64f), 1f to Hearth.copy(alpha = .18f)
+                    0f to Hearth.copy(alpha = .12f), .16f to Hearth.copy(alpha = .40f),
+                    .84f to Hearth.copy(alpha = .40f), 1f to Hearth.copy(alpha = .12f)
                 )))
             }
         }
@@ -155,10 +205,21 @@ internal fun RebirthScene(
         else RebirthSceneInk(nb.inkPrimary, nb.inkSecondary, nb.accentBronze)
     Box(
         modifier.fillMaxWidth().heightIn(min = if (artOn) height else 0.dp)
-            .background(if (artOn) Hearth else nb.surfaceBase)
+            .clipToBounds().background(if (artOn) Hearth else nb.surfaceBase)
     ) {
         if (artOn) {
-            Image(painterResource(art), null, Modifier.matchParentSize(), contentScale = ContentScale.Crop)
+            val revealed = craftReveal(art, 340)
+            Image(
+                painterResource(art), null,
+                Modifier.matchParentSize().graphicsLayer {
+                    val settling = 1f - revealed.value
+                    scaleX = 1f + .035f * settling
+                    scaleY = scaleX
+                    translationY = 3.dp.toPx() * settling
+                    alpha = 1f - .2f * settling
+                },
+                contentScale = ContentScale.Crop
+            )
             Box(Modifier.matchParentSize().background(Brush.verticalGradient(
                 0f to Hearth.copy(alpha = .53f), .35f to Color.Transparent,
                 .58f to Hearth.copy(alpha = .36f), 1f to Hearth
@@ -205,6 +266,9 @@ internal fun RebirthAction(
     val base = if (textured) Color(0xFF3C2821) else nb.surfaceElevated
     val ink = if (textured) Ivory else nb.inkPrimary
     val edge = if (primary && enabled) nb.accentBronze else nb.hairlineStrong
+    val interaction = remember { MutableInteractionSource() }
+    val press = craftPress(interaction)
+    val reduced = LocalAppearance.current.reducedMotion
     Box(
         modifier.heightIn(min = 48.dp).clip(shape).background(base).border(1.dp, edge, shape),
         propagateMinConstraints = true
@@ -218,24 +282,33 @@ internal fun RebirthAction(
                 listOf(Color(0xFF9A4D34).copy(alpha = .42f), Color.Transparent)
             )))
         }
+        Box(Modifier.matchParentSize().graphicsLayer { alpha = .19f * press.value }.background(Color.Black))
         Button(
             onClick, Modifier.heightIn(min = 48.dp), enabled = enabled, shape = shape,
+            interactionSource = interaction,
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color.Transparent, contentColor = ink,
                 disabledContainerColor = Color.Transparent, disabledContentColor = nb.inkMuted
             ),
             contentPadding = PaddingValues(horizontal = 13.dp, vertical = 11.dp)
         ) {
-            if (glyph != null) {
-                val iconInk = when {
-                    !enabled -> nb.inkMuted
-                    textured -> Embers
-                    else -> nb.accentBronze
+            Row(
+                Modifier.graphicsLayer {
+                    if (!reduced) translationY = 1.dp.toPx() * press.value
+                },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (glyph != null) {
+                    val iconInk = when {
+                        !enabled -> nb.inkMuted
+                        textured -> Embers
+                        else -> nb.accentBronze
+                    }
+                    EngravedIcon(glyph, iconInk, size = 19.dp, raised = textured)
+                    Spacer(Modifier.width(8.dp))
                 }
-                EngravedIcon(glyph, iconInk, size = 19.dp, raised = textured)
-                Spacer(Modifier.width(8.dp))
+                Text(label, fontWeight = FontWeight.SemiBold)
             }
-            Text(label, fontWeight = FontWeight.SemiBold)
         }
     }
 }
@@ -244,14 +317,18 @@ internal fun RebirthAction(
 @Composable
 internal fun RebirthIndex(labels: List<String>, selected: Int, onSelect: (Int) -> Unit) {
     val nb = LocalNorthborn.current
+    val reduced = LocalAppearance.current.reducedMotion
     Column {
         FlowRow(Modifier.fillMaxWidth().selectableGroup(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
             labels.forEachIndexed { index, label ->
                 val active = selected == index
+                val emphasis by animateFloatAsState(
+                    if (active) 1f else 0f, tween(if (reduced) 0 else 165), label = "seleção do índice"
+                )
                 val shape = CutCornerShape(topEnd = 7.dp)
                 Column(
                     Modifier.heightIn(min = 48.dp).clip(shape)
-                        .background(if (active) nb.accentBronze.copy(alpha = .13f) else Color.Transparent)
+                        .background(nb.accentBronze.copy(alpha = .13f * emphasis))
                         .selectable(active, role = Role.Tab, onClick = { onSelect(index) })
                         .padding(horizontal = 9.dp, vertical = 8.dp),
                     verticalArrangement = Arrangement.spacedBy(5.dp, Alignment.CenterVertically)
@@ -261,7 +338,10 @@ internal fun RebirthIndex(labels: List<String>, selected: Int, onSelect: (Int) -
                         style = MaterialTheme.typography.labelLarge,
                         fontWeight = if (active) FontWeight.Bold else FontWeight.Medium
                     )
-                    Box(Modifier.width(18.dp).height(2.dp).background(if (active) nb.accentBronze else Color.Transparent))
+                    Box(Modifier.width(18.dp).height(2.dp).graphicsLayer {
+                        alpha = emphasis
+                        scaleX = .45f + .55f * emphasis
+                    }.background(nb.accentBronze))
                 }
             }
         }
@@ -297,12 +377,12 @@ internal fun RebirthReadingLeaf(modifier: Modifier = Modifier, content: @Composa
     Box(modifier.fillMaxWidth().background(palette.surfaceDocument)) {
         if (!plain) {
             Image(
-                painterResource(R.drawable.oath_manuscript), null, Modifier.matchParentSize(),
+                painterResource(R.drawable.surface_vellum), null, Modifier.matchParentSize(),
                 contentScale = ContentScale.FillBounds
             )
             Box(Modifier.matchParentSize().background(Brush.horizontalGradient(
-                0f to Color.Transparent, .06f to Color.Transparent, .085f to palette.surfaceDocument.copy(alpha = .92f),
-                .83f to palette.surfaceDocument.copy(alpha = .82f), 1f to palette.surfaceDocument.copy(alpha = .38f)
+                0f to Color.Transparent, .06f to Color.Transparent, .087f to palette.surfaceDocument.copy(alpha = .93f),
+                .78f to palette.surfaceDocument.copy(alpha = .78f), 1f to palette.surfaceDocument.copy(alpha = .40f)
             )))
         }
         CompositionLocalProvider(LocalNorthborn provides palette) {
